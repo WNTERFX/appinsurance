@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/appinsurance/static/css/main.4bad9e21.css",
-    "main.js": "/appinsurance/static/js/main.da671b07.js",
+    "main.css": "/appinsurance/static/css/main.54c07acd.css",
+    "main.js": "/appinsurance/static/js/main.1f43ced3.js",
     "index.html": "/appinsurance/index.html",
-    "main.4bad9e21.css.map": "/appinsurance/static/css/main.4bad9e21.css.map",
-    "main.da671b07.js.map": "/appinsurance/static/js/main.da671b07.js.map"
+    "main.54c07acd.css.map": "/appinsurance/static/css/main.54c07acd.css.map",
+    "main.1f43ced3.js.map": "/appinsurance/static/js/main.1f43ced3.js.map"
   },
   "entrypoints": [
-    "static/css/main.4bad9e21.css",
-    "static/js/main.da671b07.js"
+    "static/css/main.54c07acd.css",
+    "static/js/main.1f43ced3.js"
   ]
 }
