@@ -6,7 +6,8 @@
     align-items: center;
     min-height: 100vh;
     height: 100%;
-    background-color: #f3f3f3;
+    background-color: #9B72C0;
+    color : silver;
     
   }
   
@@ -44,12 +45,13 @@
   }
   
   .right-panel {
-    background-color: #a89d9d;
-    color: #222;
+    background-color: #834eb1;
+    color: silver;
     padding: 40px 30px;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    font-family: 'Inter', sans-serif;
   }
   
   .right-panel h2 {

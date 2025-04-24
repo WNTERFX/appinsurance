@@ -2,6 +2,7 @@ import React from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
 
 export default function Dashboard() {
+    
     return (
         <div className="dashboard-container">
             

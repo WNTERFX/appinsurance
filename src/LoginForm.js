@@ -7,7 +7,7 @@ export default function LoginForm(){
     let navigate = useNavigate();
     const route = () =>
       {
-        let path = "/appinsurance/MainArea";
+        let path = "/appinsurance/MainArea/Dashboard";
         navigate(path);
       }
 
@@ -26,7 +26,7 @@ export default function LoginForm(){
               <label>Password</label>
               <input type="password" placeholder="Enter your password" required />
               <div class="password-button"></div>
-              <button type="submit" onClick={() => route("appinsurance/MainArea")}>Log In</button>
+              <button type="submit" onClick={() => route("appinsurance/MainArea/Dashboard")}>Log In</button>
             </form>
           </div>
         </div>
