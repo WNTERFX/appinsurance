@@ -1,6 +1,7 @@
 body, html {
    margin: 0;
    padding: 0;
+   background-color: #F2F5FA;
 }
 
 .nav-bar {
@@ -25,11 +26,12 @@ body, html {
 .nav-bar .logo {
    padding-left: 20px;
    font-size: 20px;
-}
+} 
 
 .logo-bar .nav-bar-button {
    transition: transform 0.3s ease;
-   
+   padding: 5px 0 5px 0;
+   padding-left: 10px;
 }
 
 
@@ -41,9 +43,10 @@ body, html {
    display: block;
    background-color: #D9D9D9;
    text-align:left;
-   margin-top: 20px;
+   margin-top: 5px;
    font-family: 'Inter', sans-serif;
    transition: padding 0.3s ease;
+   border-radius: 8px;
    
 
 }
@@ -71,12 +74,28 @@ body, html {
    font-size: 30px;
    padding-left: 10px;
    transition: padding 0.3s ease;
+   padding: 5px 0 5px 0;
+   text-align: center;
    
 }
+.side-bar-label {
+   display: flex;
+   align-items: center;
+   gap: 18px; 
+   font-size: 22px;
+   padding-left: 10px;
+   font-size: 20px;
+}
+ 
+.side-bar-icon {
+   font-size: 22px; 
+}
+
+
 
 @media screen and (min-width: 1080px) and (max-width: 2000px) {
    .nav-bar {
-      width: 180px; 
+      width: 270px; 
       
       
    }
@@ -87,14 +106,13 @@ body, html {
    }
    
    .nav-bar .nav-bar-button {
-      margin-left: -5px;
+      margin-left: -5px; 
      
-      
    }
 
    .side-bar .side-bar-item {
       font-size: 20px;
-      padding: 15px 0 15px 0;
+      padding: 10px 0 15px 0; 
       transition: padding 0.3s ease;
       
    }

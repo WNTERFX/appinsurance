@@ -25,25 +25,53 @@ export default function NavBar( {onMinimizeChange}) {
         <button className="nav-bar-button" onClick={handleMinimize}> 
         <Menu className="nav-bar-icon" size={30} color="black" />
         </button>
-        {!isMinimize && <h1 className="logo">Silverstar Insurance</h1>}
+       {!isMinimize && <h1 className="logo">Silverstar Insurance</h1>}       
 
     </div>
     <div className="side-bar">
       
       <Link to="/appinsurance/MainArea/Dashboard" className="side-bar-item">
-        {isMinimize ? <LuLayoutDashboard /> : "Dashboard"}
+       {isMinimize ? (
+         <LuLayoutDashboard />
+        ) : (
+          <div className="side-bar-label">
+            <LuLayoutDashboard className="side-bar-icon" />
+            <span>Dashboard</span>
+          </div>
+        )}
       </Link>
 
       <Link to="/appinsurance/MainArea/Client" className="side-bar-item">
-        {isMinimize ? <LuUser /> : "Clients"}  
+        {isMinimize ? (
+          <LuUser /> 
+        ) : ( 
+          <div className="side-bar-label">
+            <LuUser className="side-bar-icon" />
+            <span>Clients</span>
+          </div>
+        )}   
       </Link>
 
       <Link to="/appinsurance/MainArea/Due" className="side-bar-item">
-        {isMinimize ? <LuCalendarArrowUp /> : "Due"}  
+        {isMinimize ? (
+          <LuCalendarArrowUp />
+        ) : (
+          <div className="side-bar-label">
+            <LuCalendarArrowUp className="side-bar-icon" />
+            <span>Due</span>
+         </div>
+        )}   
       </Link>
 
       <Link to="/appinsurance/MainArea/Policy" className="side-bar-item">
-        {isMinimize ? <LuFolder /> : "Policy"}  
+        {isMinimize ? (
+          <LuFolder /> 
+        ) : ( 
+          <div className="side-bar-label">
+            <LuFolder className="side-bar-icon" />
+            <span>Policy</span>
+          </div>
+        )}  
       </Link>
 
       <Link to="#" className="side-bar-item">

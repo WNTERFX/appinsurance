@@ -3,7 +3,7 @@ export default function Due() {
     return(
         <div className="Due-container">
             <div className="Due-header">
-                <h2>Due</h2>
+                <p2>Due</p2>
             </div>
 
             <div className="Due-content">

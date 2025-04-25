@@ -3,7 +3,7 @@ export default function Client() {
     return(
         <div className="Client-container">
             <div className="Client-header">
-                <h2>Client</h2>
+                <p2>Client</p2>
             </div>
 
             <div className="Client-content">
@@ -17,7 +17,7 @@ export default function Client() {
                         <p>Total Client : ??</p>
                 </div>
                 <div className="Agents">
-                    Sales Agent                  
+                    Sales Agent                 
                         <p>Total Client : ??</p>
                 </div>
             </div>

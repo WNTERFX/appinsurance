@@ -2,34 +2,51 @@
     box-sizing: border-box;
 }
 
+.Client-container{
+    background-color: #F2F5FA;
+    font-family: 'Inter', sans-serif;
+}
+
 .Client-container > div.Client-header {
     
     color: #222;
-    padding: 10px 5px 0px;  
-    font-size: 25px;
+    padding: 40px 5px 0px;  
+    font-size: 30px;
+    align-items: center;
+    padding: 40px 0px 10px 90px;
     
 }
 
 .Client-content{
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 5px;
-    width: 1350px;
+    gap: 10px;
+    width: 1490px;
     height: 200px;
     padding: 0px 10px 10px;
+    padding: 25px 0px 10px 90px;
 }
+
+.Client-content > div {
+    
+    padding: 10px;
+    
+}
+
 .Agents{
-    background: white;
     padding: 20px;
-    background-color: lightgray;
+    background-color: white;
     font-size: 20px;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+
+    
 }
 
 .Agents > p {
     text-align: center;
     font-size: 20px;
 }
-
 
 
 

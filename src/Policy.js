@@ -2,7 +2,7 @@ export default function Policy() {
     return(
         <div className="Policy-container">
             <div className="Policy-header">
-                <h2>Policy</h2>
+                <p2>Policy</p2>
             </div>
             <div className="policy-data-field">
                     <table className="policy-table">

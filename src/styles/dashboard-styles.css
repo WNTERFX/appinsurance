@@ -1,11 +1,16 @@
 * {
     box-sizing: border-box;
 }
+.dashboard-container{
+    background-color: #F2F5FA;
+    font-family: 'Inter', sans-serif;
+    
+}
 
 .dashboard-container > div.dashboard-header {
     
     color: #222;
-    padding: 10px 5px 0px;  
+    padding: 10px 5px 0px 90px;  
     font-size: 30px;
     align-items: center;
     
@@ -18,7 +23,7 @@
         "recentPolicies recentPolicies clientChart";
 
     gap: 10px;     
-    padding: 15px 0px 10px 10px;
+    padding: 4px 10px 10px 90px;
    
     
 }
@@ -30,41 +35,55 @@
 }
 
 .dashboard-content > div.active-clients {
-    background-color: lightgray;
+    background-color: white;
     grid-area: activeclients;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
     
 
 }
 
 .dashboard-content > div.due-clients {
-    background-color: lightgray;
+    background-color: white;
     grid-area: duesClients;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
    
 }
 
 .dashboard-content > div.clients-list {
-    background-color: lightgray;
+    background-color: white;
     grid-area: clients;
     height: 100%;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-content > div.undelivered-policy {
-    background-color: lightgray;
+    background-color: white;
     grid-area: undelieveredPolicy;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-content > div.delivered-policy {
-    background-color: lightgray;
+    background-color: white;
     grid-area: deliveredPolicy;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 .dashboard-content > div.recent-policy {
-    background-color: lightgray;
+    background-color: white;
     grid-area: recentPolicies;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .dashboard-content > div.monthly-data {
-    background-color: lightgray;
+    background-color: white;
     grid-area: clientChart;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 @media screen and (max-height: 600px) {
