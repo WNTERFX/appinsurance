@@ -4,10 +4,11 @@ import Dashboard from './Dashboard';
 import Due from './Due';
 import Policy from './Policy';
 import Client from './Client';
-import {Routes, Route } from "react-router-dom";
+import {Routes, Route, HashRouter } from "react-router-dom";
 
 function App() {
   return (
+    
     <Routes>
       <Route path="/appinsurance" element={<LoginForm /> }/>
       
@@ -21,6 +22,7 @@ function App() {
       </Route>
 
     </Routes>
+    
   );
   
    
