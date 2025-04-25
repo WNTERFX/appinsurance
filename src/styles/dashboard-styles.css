@@ -4,6 +4,7 @@
 .dashboard-container{
     background-color: #F2F5FA;
     font-family: 'Inter', sans-serif;
+    height: auto;
     
 }
 
@@ -12,7 +13,8 @@
     color: #222;
     padding: 10px 5px 0px 90px;  
     font-size: 30px;
-    align-items: center;
+    
+     
     
 }
 .dashboard-content {
@@ -21,7 +23,7 @@
         "activeclients duesClients clients"
         "undelieveredPolicy deliveredPolicy clients"
         "recentPolicies recentPolicies clientChart";
-
+   
     gap: 10px;     
     padding: 4px 10px 10px 90px;
    
@@ -86,11 +88,11 @@
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-@media screen and (max-height: 600px) {
+@media screen and (min-width: 1024px)  {
   
-    .dashboard-content > div {
+    .dashboard-container > div.dashboard-content {
         
-        height: 250px;
+        height: 90vh !important;
     }
 
 }

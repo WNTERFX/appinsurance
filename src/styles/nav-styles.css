@@ -19,19 +19,33 @@ body, html {
    display: flex;
    align-items: center;
    padding: 1px 0 1px 0;
-   transition: margin 0.3s ease
+   transition: margin 1s ease
+   
 }
 
 
-.nav-bar .logo {
-   padding-left: 20px;
+.logo {
+   padding: 5px 0 5px 0;
    font-size: 20px;
+   margin-left: 20px;
+   font-family: 'Inter', sans-serif;
+
+
+   
 } 
+
+.logo-bar .logo:hover {
+   color: #ffffff;
+   transition: color 0.3s ease;
+}
+
+
 
 .logo-bar .nav-bar-button {
    transition: transform 0.3s ease;
    padding: 5px 0 5px 0;
    padding-left: 10px;
+   background-color: transparent;;
 }
 
 
@@ -93,30 +107,6 @@ body, html {
 
 
 
-@media screen and (min-width: 1080px) and (max-width: 2000px) {
-   .nav-bar {
-      width: 270px; 
-      
-      
-   }
-   
-   .nav-bar .logo {
-      padding: 10px;
-      
-   }
-   
-   .nav-bar .nav-bar-button {
-      margin-left: -5px; 
-     
-   }
-
-   .side-bar .side-bar-item {
-      font-size: 20px;
-      padding: 10px 0 15px 0; 
-      transition: padding 0.3s ease;
-      
-   }
-}
 
 @media screen and (min-height: 300px) and (max-height: 900px) {
    .nav-bar {
@@ -140,3 +130,31 @@ body, html {
       transition: padding 0.3s ease;
    }
 }
+
+@media screen and (max-height: 1080px) {
+   .nav-bar {
+      width: 180px; 
+      
+   }
+   
+   .nav-bar .logo {
+      padding: 10px;
+      
+   }
+   
+   .nav-bar .nav-bar-button {
+      margin-left: -5px;
+      
+   }
+
+   .side-bar .side-bar-item {
+      font-size: 20px;
+      padding: 15px 0 15px 0;
+      transition: padding 0.3s ease;
+   }
+   
+ }
+
+ 
+
+

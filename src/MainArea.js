@@ -1,13 +1,9 @@
 
 import "./styles/main_area-styles.css";
 import NavBar from "./NavBar";
-//import Policy from "./Policy";
 import "./styles/policy-styles.css"
-//import Dashboard from "./Dashboard";
 import "./styles/dashboard-styles.css"
-//import Client from "./Client";
 import "./styles/client-styles.css"
-//import Due from "./Due";
 import "./styles/due-styles.css"
 import React, { useState } from "react";
 import { Outlet } from 'react-router-dom';
@@ -26,7 +22,15 @@ export default function MainArea()
             <div className="nav-area" > 
                 <NavBar onMinimizeChange={handleMinimizeChange} /> 
             </div>
-            <div className="content-area"  style={{ marginLeft: isMinimized ? "50px" : "200px" }}> 
+            <div className="content-area"
+                style={{
+                    marginLeft: isMinimized ? "-220px" : "-80px",
+                    marginRight: isMinimized ? "-110px" : "0",
+                    paddingLeft: isMinimized ? "0px" : "0px",
+                    
+                    transition: "margin 0.3s ease", 
+                  }}
+                >
                 <Outlet/>
             </div>
         </div>

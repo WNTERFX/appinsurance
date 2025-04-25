@@ -29,14 +29,13 @@ export default function NavBar( {onMinimizeChange}) {
 
     </div>
     <div className="side-bar">
-      
       <Link to="/appinsurance/MainArea/Dashboard" className="side-bar-item">
        {isMinimize ? (
          <LuLayoutDashboard />
         ) : (
           <div className="side-bar-label">
             <LuLayoutDashboard className="side-bar-icon" />
-            <span>Dashboard</span>
+            <span className="side-bar-name" >Dashboard</span>
           </div>
         )}
       </Link>
