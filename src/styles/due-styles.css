@@ -4,15 +4,14 @@
 .Due-container{
     background-color: #F2F5FA;
     font-family: 'Inter', sans-serif;
+    margin-left: 200px;
 }
 
 .Due-container > div.Due-header {
     
     color: #222;
-    padding: 40px 5px 0px;  
     font-size: 30px;
     align-items: center;
-    padding: 40px 0px 10px 90px;
     
 }
 
@@ -22,7 +21,7 @@
     gap: 5px;
     width: 1490px;
     height: 200px;
-    padding: 25px 0px 10px 90px;
+    
 }
 .Due-total{
     padding: 20px;

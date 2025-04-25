@@ -15,14 +15,4 @@
    
 }
 
-.nav-area {
-  
-  width: 200px; 
-}
 
-@media screen and (max-height: 1080px) {
-  .main-area .content-area {
-    margin-left: 110px ;
-  }
-  
-}

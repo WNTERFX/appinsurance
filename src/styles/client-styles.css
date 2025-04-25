@@ -5,17 +5,17 @@
 .Client-container{
     background-color: #F2F5FA;
     font-family: 'Inter', sans-serif;
-    
+    margin-left: 200px;
    
 }
 
 .Client-container > div.Client-header {
     
     color: #222;
-
+    
     font-size: 30px;
     align-items: center;
-    padding: 40px 0px 10px 90px;
+  
     
 }
 
@@ -28,11 +28,6 @@
     
 }
 
-.Client-content > div {
-    
-    padding: 10px;
-    
-}
 
 .Agents{
     padding: 20px;
