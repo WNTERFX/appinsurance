@@ -5,12 +5,14 @@
 .Client-container{
     background-color: #F2F5FA;
     font-family: 'Inter', sans-serif;
+    padding: 10px 5px 0 90px;
+   
 }
 
 .Client-container > div.Client-header {
     
     color: #222;
-    padding: 40px 5px 0px;  
+
     font-size: 30px;
     align-items: center;
     padding: 40px 0px 10px 90px;
