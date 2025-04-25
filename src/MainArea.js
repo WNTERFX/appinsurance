@@ -22,15 +22,7 @@ export default function MainArea()
             <div className="nav-area" > 
                 <NavBar onMinimizeChange={handleMinimizeChange} /> 
             </div>
-            <div className="content-area"
-                style={{
-                    marginLeft: isMinimized ? "-220px" : "-80px",
-                    marginRight: isMinimized ? "-110px" : "0",
-                    paddingLeft: isMinimized ? "0px" : "0px",
-                    
-                    transition: "margin 0.3s ease", 
-                  }}
-                >
+            <div className="content-area" style={{ marginLeft: isMinimized ? "-130px" : "20px" }}>
                 <Outlet/>
             </div>
         </div>
