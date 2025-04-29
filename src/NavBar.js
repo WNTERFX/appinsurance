@@ -6,6 +6,8 @@ import { LuLayoutDashboard } from "react-icons/lu";
 import { LuUser } from "react-icons/lu";
 import { LuCalendarArrowUp } from "react-icons/lu";
 import { LuFolder } from "react-icons/lu";
+import { LuSettings } from "react-icons/lu";
+import { LuActivity } from "react-icons/lu";
 
 export default function NavBar( {onMinimizeChange}) {
 
@@ -74,11 +76,25 @@ export default function NavBar( {onMinimizeChange}) {
       </Link>
 
       <Link to="#" className="side-bar-item">
-        {isMinimize ? "M" : "Monthly Data"}  
+      {isMinimize ? (
+         <LuActivity />
+        ) : (
+          <div className="side-bar-label">
+            <LuActivity className="side-bar-icon" />
+            <span className="side-bar-name" >Monthly Data</span>
+          </div>
+        )}  
       </Link> 
 
       <Link to="/appinsurance" className="side-bar-item">
-        {isMinimize ? "L" : "Login"}  
+        {isMinimize ? (
+         <LuSettings />
+        ) : (
+          <div className="side-bar-label">
+            <LuSettings className="side-bar-icon" />
+            <span className="side-bar-name" >Settings</span>
+          </div>
+        )}
       </Link>
       
     </div>

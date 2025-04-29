@@ -15,7 +15,8 @@
     
     font-size: 30px;
     align-items: center;
-  
+    margin-bottom: 33px;
+    padding: 30px 5px 0;
     
 }
 
@@ -46,6 +47,9 @@
 
 
 
-
-
-
+@media screen and (max-height: 1080px) {
+    .Client-content {
+        width: 700px;
+        height: 200px;
+    }
+}
