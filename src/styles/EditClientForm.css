@@ -1,0 +1,57 @@
+.EditClientForm-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    font-family: sans-serif;
+  }
+  
+  h2 {
+    margin-bottom: 1rem;
+  }
+  
+  .form-card {
+    background-color: #dcdcdc;
+    padding: 2rem;
+    border-radius: 8px;
+  }
+  
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-group label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  
+  .form-group input {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    outline: none;
+    border: 1px solid #ccc;
+  }
+  
+  .button-container {
+    margin-top: 1rem;
+    text-align: right;
+  }
+  
+  .confirm-btn {
+    padding: 0.6rem 1.5rem;
+    background-color: #ccc;
+    border: none;
+    border-radius: 20px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  
+  .confirm-btn:hover {
+    background-color: #aaa;
+  }

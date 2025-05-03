@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+
 export default function Policy() {
+    const navigate = useNavigate();
+
     return(
         <div className="Policy-container">
             <div className="Policy-header">
@@ -34,8 +38,8 @@ export default function Policy() {
             <div className="Policy-content">
                
                 <div className="button-grid">
-                    <button className="policy-btn">Create new</button>
-                    <button className="policy-btn">Edit</button>
+                    <button className="policy-btn" onClick={() => navigate("/appinsurance/MainArea/Policy/NewClient")}>Create new</button>
+                    <button className="policy-btn" onClick={() => navigate("/appinsurance/MainArea/Policy/ListClient")}>Edit</button>
                 </div>                  
             </div>
         </div>

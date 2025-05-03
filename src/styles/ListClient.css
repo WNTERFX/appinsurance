@@ -1,0 +1,44 @@
+.client-list-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1rem;
+    font-family: sans-serif;
+  }
+  
+  h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+  }
+  
+  .client-list-box {
+    position: relative;
+    background-color: #d3d3d3;
+    padding: 2rem;
+    border-radius: 8px;
+  }
+  
+  .edit-button-wrapper {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+  
+  .edit-button {
+    background-color: #dcdcdc;
+    border: none;
+    border-radius: 999px;
+    padding: 0.5rem 1.2rem;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  
+  .client-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .client-list li {
+    margin: 1rem 0;
+    font-size: 1.1rem;
+  }
