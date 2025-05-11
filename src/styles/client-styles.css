@@ -45,7 +45,27 @@
     font-size: 20px;
 }
 
+.client-table-container {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    height: 100%;
+    margin-top: 20px;
+    font-size: 20px;
+    background-color: #8A7F7F;
+}   
 
+.Agents > .view-all-client-button {
+    background-color: #F2F5FA;
+    color: #222;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 20px;
+    cursor: pointer;
+    display: block;
+    margin: 0 auto;
+}
 
 @media screen and (max-height: 1080px) {
     .Client-content {

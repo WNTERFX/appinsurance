@@ -1,4 +1,6 @@
 
+import ClientTable from "./ClientTable";
+
 export default function Client() {
     return(
         <div className="Client-container">
@@ -10,16 +12,23 @@ export default function Client() {
                 
                 <div className="Agents">
                     Lily bon                    
-                        <p>Total Client : ??</p>                    
+                        <p>Total Client : ??</p>
+                        <button className="view-all-client-button">View All</button>                    
                 </div>
                 <div className="Agents">
                     Sales Agent                  
                         <p>Total Client : ??</p>
+                        <button className="view-all-client-button">View All</button>     
                 </div>
                 <div className="Agents">
                     Sales Agent                 
                         <p>Total Client : ??</p>
+                        <button className="view-all-client-button">View All</button>     
                 </div>
+            </div>
+
+            <div className="client-table-container"> 
+                <ClientTable/>
             </div>
         </div>
     );

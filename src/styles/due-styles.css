@@ -37,6 +37,17 @@
     font-size: 20px;
 }
 
+.Due-total > .view-all-client-button {
+    background-color: #F2F5FA;
+    color: #222;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 20px;
+    cursor: pointer;
+    display: block;
+    margin: 0 auto;
+}
 
 
 
