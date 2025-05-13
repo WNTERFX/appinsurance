@@ -70,7 +70,7 @@
 
 @media screen and (max-height: 1080px) {
     .Client-content {
-        width: 700px;
+        width: 90%;
         height: 200px;
     }
 }

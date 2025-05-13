@@ -6,7 +6,7 @@ export default function Profile() {
      const navigate = useNavigate();
   return (
     <div className="profile-page">
-      <h1>Profile</h1>
+      <p>Profile</p>
       <div className="profile-header">
         <div className="header-left">
          <img src={require('./images/user-icon.png')} className="avatar" alt = "user-icon"/>
