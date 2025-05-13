@@ -30,7 +30,7 @@ export default function Profile() {
               <span className="moon">🌙</span>
               <strong>Dark mode</strong><br />
               <span className="subtext">
-                Adjust the appearance of Silverstar Insurance to reduce glare and give your eyes a break
+                Adjust the appearance of the application to reduce glare and give your eyes a break
               </span>
             </p>
             <div className="toggle-options">
