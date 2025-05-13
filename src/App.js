@@ -10,6 +10,7 @@ import ListClient from './ListClient';
 import EditClientForm from './EditClientForm';
 import EditVehicleDetailsForm from './EditVehicleDetailsForm';
 import {Routes, Route} from "react-router-dom";
+import Profile from './Profile';
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path="/appinsurance/MainArea/Client" element={<Client />} />
         <Route path="/appinsurance/MainArea/Due" element={<Due />} />
         <Route path="/appinsurance/MainArea/Policy" element={<Policy />} />
+        <Route path="/appinsurance/MainArea/Profile" element={<Profile />} />
         
         <Route path="/appinsurance/MainArea/Policy/NewClient" element={<NewClient />} />
         <Route path="/appinsurance/MainArea/Policy/NewClient/VehicleDetails" element={<VehicleDetails />} />
