@@ -75,7 +75,7 @@ export default function NavBar( {onMinimizeChange}) {
         )}  
       </Link>
 
-      <Link to="#" className="side-bar-item">
+      <Link to="/appinsurance/MainArea/MonthlyData" className="side-bar-item">
       {isMinimize ? (
          <LuActivity />
         ) : (
