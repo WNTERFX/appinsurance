@@ -7,6 +7,11 @@ export default function Policy() {
         <div className="Policy-container">
             <div className="Policy-header">
                 <p2>Policy</p2>
+                <input
+                type="text"
+                className="policy-search"
+                placeholder="Search clients..."
+                />
             </div>
             <div className="policy-data-field">
                     <table className="policy-table">

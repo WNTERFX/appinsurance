@@ -6,6 +6,11 @@ export default function Client() {
         <div className="Client-container">
             <div className="Client-header">
                 <p2>Client</p2>
+                <input
+                type="text"
+                className="client-search"
+                placeholder="Search clients..."
+                />
             </div>
 
             <div className="Client-content">

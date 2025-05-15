@@ -57,4 +57,27 @@
 .policy-btn:hover {
     background-color: #eee;
 }
-  
+
+.Policy-header {
+    display: flex;
+    gap: 20px; 
+    align-items: center;
+    color: #222;
+    font-size: 30px;
+    margin-bottom: 33px;
+    padding: 30px 5px 0;
+    width: 95%;
+}
+
+.Policy-header h2 {
+    margin: 0;
+    font-size: 30px;
+}
+
+.policy-search {
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    width: 250px;
+}

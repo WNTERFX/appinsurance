@@ -7,6 +7,11 @@ export default function Due() {
         <div className="Due-container">
             <div className="Due-header">
                 <p2>Due</p2>
+                <input
+                type="text"
+                className="due-search"
+                placeholder="Search clients..."
+                />
             </div>
 
             <div className="Due-content">
