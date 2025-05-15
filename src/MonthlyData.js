@@ -6,7 +6,7 @@ export default function MonthlyData() {
 
 
         <div className="monthly-data-container">
-            <p>Montly Data</p>
+            <p>Monthly Data</p>
 
             <div className="client-counter-container">
                 <div className="total-clients">

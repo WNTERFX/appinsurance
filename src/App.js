@@ -5,6 +5,7 @@ import Due from './Due';
 import Policy from './Policy';
 import Client from './Client';
 import MonthlyData from './MonthlyData';
+import PaymentRecords from './PaymentRecords';
 import NewClient from './Policy-new-client';
 import VehicleDetails from './VehicleDetails';
 import ListClient from './ListClient';
@@ -26,6 +27,7 @@ function App() {
         <Route path="/appinsurance/MainArea/Due" element={<Due />} />
         <Route path="/appinsurance/MainArea/Policy" element={<Policy />} />
         <Route path="/appinsurance/MainArea/MonthlyData" element={<MonthlyData />}/>
+        <Route path="/appinsurance/MainArea/PaymentRecords" element={<PaymentRecords />}/>
         <Route path="/appinsurance/MainArea/Profile" element={<Profile />} />
         
         <Route path="/appinsurance/MainArea/Policy/NewClient" element={<NewClient />} />
