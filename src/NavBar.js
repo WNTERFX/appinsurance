@@ -5,6 +5,8 @@ import React, { useState } from "react";
 import { LuLayoutDashboard } from "react-icons/lu";
 import { LuUser } from "react-icons/lu";
 import { LuCalendarArrowUp } from "react-icons/lu";
+import { LuClipboard } from "react-icons/lu";
+import { LuMail } from "react-icons/lu";
 import { LuFolder } from "react-icons/lu";
 import { LuCreditCard } from "react-icons/lu";
 import { LuSettings } from "react-icons/lu";
@@ -66,7 +68,7 @@ export default function NavBar( {onMinimizeChange}) {
          </div>
         )}   
       </Link>
-
+      
       <Link to="/appinsurance/MainArea/Policy" className="side-bar-item">
         {isMinimize ? (
           <LuFolder /> 
@@ -77,6 +79,29 @@ export default function NavBar( {onMinimizeChange}) {
           </div>
         )}  
       </Link>
+
+      <Link to="/appinsurance/MainArea/ClaimTable" className="side-bar-item">
+        {isMinimize ? (
+         <LuClipboard />
+        ) : (
+          <div className="side-bar-label">
+            <LuClipboard   className="side-bar-icon" />
+            <span className="side-bar-name">Claims</span>
+          </div>
+        )}
+      </Link>
+
+      <Link to="/appinsurance/MainArea/DeliveryTable" className="side-bar-item">
+        {isMinimize ? (
+         <LuMail />
+        ) : (
+          <div className="side-bar-label">
+            <LuMail   className="side-bar-icon" />
+            <span className="side-bar-name">Deliveries</span>
+          </div>
+        )}
+      </Link>
+
 
       <Link to="/appinsurance/MainArea/MonthlyData" className="side-bar-item">
       {isMinimize ? (

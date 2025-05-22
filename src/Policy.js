@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-
+import ClientTable from "./ClientTable";
+import Filter from "./Filter";
 export default function Policy() {
     const navigate = useNavigate();
 
@@ -12,34 +13,18 @@ export default function Policy() {
                 className="policy-search"
                 placeholder="Search clients..."
                 />
+
+                <div className="filter-client-policy">
+                    <Filter />
+                 </div>   
             </div>
             <div className="policy-data-field">
-                    <table className="policy-table">
-                        <thead>
-                            <tr>
-                                <th>Policy Number</th>
-                                <th>Policy Holder</th>
-                                <th>Start Date</th>
-                                <th>End Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>12345</td>
-                                <td>John Doe</td>
-                                <td>2023-01-01</td>
-                                <td>2023-12-31</td>
-                            </tr>
-                            <tr>
-                                <td>67890</td>
-                                <td>Jane Smith</td>
-                                <td>2023-02-01</td>
-                                <td>2023-11-30</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
+                <div className="control-options">
+                    <button className="approve-btn-policy">Approve</button>
+                    <button className="print-btn-policy">Print</button>
                 </div>
+                 <ClientTable/>
+            </div>
             <div className="Policy-content">
                
                 <div className="button-grid">

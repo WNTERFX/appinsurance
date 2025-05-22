@@ -3,6 +3,8 @@ import MainArea from './MainArea';
 import Dashboard from './Dashboard';
 import Due from './Due';
 import Policy from './Policy';
+import ClaimTable from './ClaimTable';
+import DeliveryTable from './DeliveryTable';
 import Client from './Client';
 import MonthlyData from './MonthlyData';
 import PaymentRecords from './PaymentRecords';
@@ -26,6 +28,8 @@ function App() {
         <Route path="/appinsurance/MainArea/Client" element={<Client />} />
         <Route path="/appinsurance/MainArea/Due" element={<Due />} />
         <Route path="/appinsurance/MainArea/Policy" element={<Policy />} />
+        <Route path="/appinsurance/MainArea/ClaimTable" element={<ClaimTable />} />
+        <Route path="/appinsurance/MainArea/DeliveryTable" element={<DeliveryTable />} />
         <Route path="/appinsurance/MainArea/MonthlyData" element={<MonthlyData />}/>
         <Route path="/appinsurance/MainArea/PaymentRecords" element={<PaymentRecords />}/>
         <Route path="/appinsurance/MainArea/Profile" element={<Profile />} />

@@ -1,7 +1,7 @@
-import React from 'react';
+
 
 import ClientTableDue from './ClientTableDue';
-
+import Filter from './Filter';
 export default function Due() {
     return(
         <div className="Due-container">
@@ -12,6 +12,9 @@ export default function Due() {
                 className="due-search"
                 placeholder="Search clients..."
                 />
+                <div className="filter-client-due">
+                    <Filter />
+                </div>   
             </div>
 
             <div className="Due-content">

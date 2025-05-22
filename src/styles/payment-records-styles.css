@@ -33,14 +33,26 @@
     width: 250px;
 }
 
-.client-records-table > table {
+.policy-data-field {
+    padding: 20px 5px 10px 5px;
+    background-color: white;;
+}
+.client-payment-table {
+    width: 100%;
+    margin: 0 auto;
+    padding: 5px 0 0 0;
+    border-radius: 10px;
+}
+
+.client-payment-table > table {
     width: 100%;
     padding: 20px 5px 10px 5px;
     
 }
 
 
-.client-records-table > table > thead > tr > th {
+
+.client-payment-table > table > thead > tr > th {
     padding: 10px;
     text-align: left;
     font-size: 20px;
@@ -49,7 +61,7 @@
    
 }
 
-.client-records-table > table > tbody > tr > td {
+.client-payment-table > table > tbody > tr > td {
     background-color: white;
     text-align: left;
     padding: 20px 5px 10px 5px;

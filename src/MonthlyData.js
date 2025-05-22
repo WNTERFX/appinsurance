@@ -1,48 +1,38 @@
-import React from 'react';
+import React, { useState } from "react";
 import { BarChart } from '@mui/x-charts/BarChart';
+import Filter from './Filter';
+import MonthlyDataPartners from './MonthlyDataPartners';
+import MonthlyDataAgents from './MonthlyDataAgents';
+
 import './styles/monthly-styles.css'; 
 export default function MonthlyData() {
+
+    const [view, setView] = useState("partners");
     return (
 
-
         <div className="monthly-data-container">
-            <p>Monthly Data</p>
+            <div className="monthly-data-header">
+                <p>Monthly Data</p>
+                <input
+                    type="text"
+                    className="monthly-data-search"
+                    placeholder="Search clients..."
+                />
 
-            <div className="client-counter-container">
-                <div className="total-clients">
-                    <h2>Total Clients</h2>
-                    <p>100</p>
-                </div>
-                <div className="partner-item">
-                    <h2>COCOGEN INSURANCE CO.</h2>
-                    <div className="partner-info">
-                        <p>50 🟩</p>
-                        
-                    </div>   
-                    
-                </div>
-                <div className="partner-item">
-                    <h2>STRONGHOLD CO.</h2>
-                      <div className="partner-info">
-                        <p>50 🟦</p>
-                        
-                    </div>   
-                </div>
-                <div className="partner-item">
-                    <h2>THE MERCANTILE INSURANCE CO.</h2>
-                      <div className="partner-info">
-                        <p>50 🟪</p>
-
-                    </div>   
-                </div>
-                <div className="partner-item">
-                    <h2>STANDARD INSURANCE CO.</h2>
-                      <div className="partner-info">
-                        <p>50 🟥</p>
-
-                    </div>   
+                <div>
+                   <Filter />
                 </div>
             </div>
+
+            <div className="monthly-data-buttons">
+                <button onClick={() => setView("partners")}>Monthly View</button>
+                <button onClick={() => setView("agent")}>Agent View</button>
+            </div>
+
+            <div className='data-area'>
+                 {view === "partners" ? <MonthlyDataPartners /> : <MonthlyDataAgents />}
+            </div>
+           
 
             <div className="graph-container">
                 <p>Insurance</p>

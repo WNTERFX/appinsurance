@@ -1,6 +1,6 @@
 
 import ClientTable from "./ClientTable";
-
+import Filter from "./Filter";
 export default function Client() {
     return(
         <div className="Client-container">
@@ -11,6 +11,10 @@ export default function Client() {
                 className="client-search"
                 placeholder="Search clients..."
                 />
+
+                <div className="filter-client">
+                    <Filter />
+                </div>   
             </div>
 
             <div className="Client-content">
