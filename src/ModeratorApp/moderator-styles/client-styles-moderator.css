@@ -1,0 +1,99 @@
+* {
+    box-sizing: border-box;
+}
+
+.Client-container-moderator {
+    background-color: #F2F5FA;
+    font-family: 'Inter', sans-serif;
+    margin-left: 200px;
+   
+}
+
+.Client-container-moderator  > div.Client-header-moderator  {
+    
+    color: #222;
+    font-size: 30px;
+    align-items: center;
+    margin-bottom: 33px;
+    padding: 30px 5px 0;
+    
+}
+
+.Client-content-moderator {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 1490px;
+    height: 200px;
+    
+}
+
+
+.Agents-moderator {
+    padding: 20px;
+    background-color: white;
+    font-size: 20px;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+
+    
+}
+
+.Agents-moderator  > p {
+    text-align: center;
+    font-size: 20px;
+}
+
+.client-table-container-moderator  {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    height: 100%;
+    margin-top: 20px;
+    font-size: 20px;
+    background-color: #8A7F7F;
+    margin-right: 10px;
+}   
+
+.Agents-moderator  > .view-all-client-button-moderator  {
+    background-color: #F2F5FA;
+    color: #222;
+    border: 1px solid #222;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 20px;
+    cursor: pointer;
+    display: block;
+    margin: 0 auto;
+}
+
+@media screen and (max-height: 1080px) {
+    .Client-content-moderator  {
+        width: 90%;
+        height: 200px;
+    }
+}
+
+.Client-header-moderator  {
+    display: flex;
+    gap: 20px; 
+    align-items: center;
+    color: #222;
+    font-size: 30px;
+    margin-bottom: 33px;
+    padding: 30px 5px 0;
+    width: 95%;
+}
+
+.Client-header-moderator  h2 {
+    margin: 0;
+    font-size: 30px;
+}
+
+.client-search-moderator  {
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    width: 250px;
+}

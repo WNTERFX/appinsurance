@@ -1,0 +1,18 @@
+.main-area-moderator {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  
+}
+
+.main-area-moderator .content-area-moderator{
+    
+    width: 100%;
+    margin-left: auto;
+    background-color: #f3f3f3; 
+    margin-left: 130px;
+    transition: margin 0.3s ease;
+   
+}
+
+

@@ -1,0 +1,42 @@
+.monthly-data-container-moderator {
+    background-color: #F2F5FA;
+    font-family: 'Inter', sans-serif;
+    margin-left: 200px;
+    margin-right: 1%;
+}
+
+.monthly-data-container-moderator p {
+    font-size: 30px;
+    margin-bottom: 20px;
+}
+
+
+
+.monthly-data-header-moderator {
+    display: flex;
+    gap: 20px; 
+    align-items: center;
+    color: #222;
+    font-size: 30px;
+
+
+}
+
+.monthly-data-header-moderator h2 {
+    margin: 0;
+    font-size: 30px;
+}
+
+.monthly-data-search-moderator {
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    width: 250px;
+}
+
+.monthly-data-buttons-moderator {
+     display: flex;
+     padding-left: 20px;
+     gap: 20px;
+}

@@ -16,12 +16,36 @@ import EditVehicleDetailsForm from './EditVehicleDetailsForm';
 import {Routes, Route} from "react-router-dom";
 import Profile from './Profile';
 
-
+import MainAreaModerator from './ModeratorApp/MainAreaModerator';
+import DashboardModerator from './ModeratorApp/DashboardModerator';
+import ClientModerator from './ModeratorApp/ClientModerator';
+import DueModerator from './ModeratorApp/DueModerator';
+import PolicyModerator from './ModeratorApp/PolicyModerator';
+import ClaimTableModerator from './ModeratorApp/ClaimTableModerator';
+import DeliveryTableModerator from './ModeratorApp/DeliveryTableModerator';
+import MonthlyDataModerator from './ModeratorApp/MonthlyDataModerator';
+import PaymentRecordsModerator from './ModeratorApp/PaymentRecordsModerator';
+import ProfileModerator from './ModeratorApp/ProfileModerator'; 
 function App() {
   return (
     
     <Routes>
       <Route path="/appinsurance" element={<LoginForm /> }/>
+
+      <Route path="/appinsurance/MainAreaModerator" element={<MainAreaModerator /> }>
+        <Route path="/appinsurance/MainAreaModerator/DashboardModerator" element={<DashboardModerator />} />
+        <Route path ="/appinsurance/MainAreaModerator/ClientModerator" element={<ClientModerator />} />
+        <Route path="/appinsurance/MainAreaModerator/DueModerator" element={<DueModerator />} />
+        <Route path="/appinsurance/MainAreaModerator/PolicyModerator" element={<PolicyModerator />} />
+        <Route path="/appinsurance/MainAreaModerator/ClaimTableModerator" element={<ClaimTableModerator />} />
+        <Route path="/appinsurance/MainAreaModerator/DeliveryTableModerator" element={<DeliveryTableModerator />} />
+        <Route path="/appinsurance/MainAreaModerator/MonthlyDataModerator" element={<MonthlyDataModerator />} />
+        <Route path="/appinsurance/MainAreaModerator/PaymentRecordsModerator" element={<PaymentRecordsModerator />} />
+        <Route path="/appinsurance/MainAreaModerator/ProfileModerator" element={<ProfileModerator />} />
+        <Route path="*" element={<div>Page not found</div>} />  
+      </Route>
+
+
       
       <Route path="/appinsurance/MainArea" element={<MainArea /> }> 
         <Route path="/appinsurance/MainArea/Dashboard" element={<Dashboard />} />

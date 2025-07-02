@@ -1,0 +1,39 @@
+.client-table-moderator {
+    width: 100%;
+    margin: 0 auto;
+    padding: 5px 0 0 0;
+    border-radius: 10px;
+   
+}
+
+.client-table-moderator > table {
+    width: 100%;
+    padding: 20px 5px 10px 5px;
+    
+}
+
+.client-table-moderator > table > thead {
+    background-color: #F2F5FA;
+   
+ 
+}
+
+.client-table-moderator > table > thead > tr {
+    background-color: #F2F5FA;
+    
+}
+
+.client-table-moderator > table > thead > tr > th {
+    padding: 10px;
+    text-align: left;
+    font-size: 20px;
+    color: #222;
+    
+}
+
+@media screen and (max-height: 1080px) {
+    .Due-content-moderator {
+        width: 90%;
+        height: 200px;
+    }
+}

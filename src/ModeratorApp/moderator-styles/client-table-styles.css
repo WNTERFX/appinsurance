@@ -1,0 +1,31 @@
+.client-table-moderator {
+    width: 100%;
+    margin: 0 auto;
+    padding: 5px 0 0 0;
+    border-radius: 10px;
+}
+
+.client-table-moderator  > table {
+    width: 100%;
+    padding: 20px 5px 10px 5px;
+    
+}
+
+
+
+.client-table-moderator  > table > thead > tr > th {
+    padding: 10px;
+    text-align: left;
+    font-size: 20px;
+    background-color: #F2F5FA;
+  
+   
+}
+
+.client-table-moderator  > table > tbody > tr > td {
+    background-color: white;
+    text-align: left;
+    padding: 20px 5px 10px 5px;
+  
+    
+}   

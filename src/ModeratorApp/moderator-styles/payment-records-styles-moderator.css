@@ -1,0 +1,70 @@
+
+
+
+.payment-records-container-moderator{
+    background-color: #F2F5FA;
+    font-family: 'Inter', sans-serif;
+    margin-left: 200px;
+    margin-right: 1%; 
+    
+
+}
+
+.payment-record-header-moderator {
+    display: flex;
+    gap: 30px;
+}
+
+.payment-records-container-moderator > .payment-record-header-moderator{
+    
+    color: #222;
+    font-size: 30px;
+    align-items: center;
+    margin-bottom: 33px;
+   
+}
+
+
+.record-search-moderator {
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    width: 250px;
+}
+
+.policy-data-field-moderator {
+    padding: 20px 5px 10px 5px;
+    background-color: white;;
+}
+.client-payment-table-moderator {
+    width: 100%;
+    margin: 0 auto;
+    padding: 5px 0 0 0;
+    border-radius: 10px;
+}
+
+.client-payment-table-moderator > table {
+    width: 100%;
+    padding: 20px 5px 10px 5px;
+    
+}
+
+
+
+.client-payment-table-moderator > table > thead > tr > th {
+    padding: 10px;
+    text-align: left;
+    font-size: 20px;
+    background-color: #F2F5FA;
+  
+   
+}
+
+.client-payment-table-moderator > table > tbody > tr > td {
+    background-color: white;
+    text-align: left;
+    padding: 20px 5px 10px 5px;
+  
+    
+}   

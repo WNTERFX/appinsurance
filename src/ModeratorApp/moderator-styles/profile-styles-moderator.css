@@ -1,0 +1,123 @@
+
+
+.profile-page-moderator {
+  margin: 0 auto;
+  padding: 0px 50px 20px 200px;
+  font-family: 'Inter', sans-serif;
+  height: auto;
+  
+}
+
+.profile-page-moderator p {
+  font-size: 30px;
+
+}
+
+.profile-header-moderator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: orange;
+  color: #fff;
+  
+  padding: 10px 20px 20px 20px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); 
+}
+
+.header-left-moderator {
+  display: flex;
+  align-items: center;
+}
+
+
+
+.avatar-moderator {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  margin-right: 15px;
+  object-fit: cover;
+}
+
+.edit-btn-moderator {
+  background: #e0e0e0;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.edit-btn-moderator.small {
+  padding: 4px 10px;
+  font-size: 14px;
+}
+
+.info-display-moderator {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.account-info-moderator,
+.settings-moderator > div {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.display-mode-moderator .moon {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.mode-label-moderator {
+  margin: 10px 0;
+  line-height: 1.5;
+}
+
+.subtext-moderator {
+  color: #666;
+  font-size: 14px;
+}
+
+.toggle-options-moderator label {
+  margin-right: 15px;
+  font-size: 14px;
+}
+
+.accounts-moderator {
+  margin-top: 20px;
+}
+
+.account-entry-moderator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.account-left-moderator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.small-avatar-moderator {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.logout-btn-moderator {
+  margin-top: 30px;
+  float: right;
+  padding: 8px 20px;
+  border: none;
+  background: #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+}
