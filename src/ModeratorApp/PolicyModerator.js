@@ -30,7 +30,7 @@ export default function PolicyModerator() {
             <div className="Policy-content-moderator">
                
                 <div className="button-container-moderator">
-                    <button className="policy-btn-moderator" onClick={() => navigate("/appinsurance/MainArea/Policy/NewClient")}>Create new</button>
+                    <button className="policy-btn-moderator" onClick={() => navigate("/appinsurance/MainAreaModerator/PolicyModerator/NewClientModerator")}>Create new</button>
                    
                 </div>                  
             </div>

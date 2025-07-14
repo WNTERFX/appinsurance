@@ -26,6 +26,8 @@ import DeliveryTableModerator from './ModeratorApp/DeliveryTableModerator';
 import MonthlyDataModerator from './ModeratorApp/MonthlyDataModerator';
 import PaymentRecordsModerator from './ModeratorApp/PaymentRecordsModerator';
 import ProfileModerator from './ModeratorApp/ProfileModerator'; 
+import PolicyNewClientModerator from './ModeratorApp/PolicyNewClientModerator';
+import VehicleDetailsModerator from './ModeratorApp/VehicleDetailsModerator';
 function App() {
   return (
     
@@ -42,6 +44,10 @@ function App() {
         <Route path="/appinsurance/MainAreaModerator/MonthlyDataModerator" element={<MonthlyDataModerator />} />
         <Route path="/appinsurance/MainAreaModerator/PaymentRecordsModerator" element={<PaymentRecordsModerator />} />
         <Route path="/appinsurance/MainAreaModerator/ProfileModerator" element={<ProfileModerator />} />
+
+        <Route path="/appinsurance/MainAreaModerator/PolicyModerator/NewClientModerator" element={<PolicyNewClientModerator />} />
+        <Route path="/appinsurance/MainAreaModerator/PolicyModerator/NewClientModerator/VehicleDetailsModerator" element={<VehicleDetailsModerator />} />
+
         <Route path="*" element={<div>Page not found</div>} />  
       </Route>
 
