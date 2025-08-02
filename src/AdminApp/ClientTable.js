@@ -3,6 +3,13 @@ import './styles/client-table-styles.css';
 
 export default function ClientTable() {
 
+
+    // this should be a function that handles the click event for the row
+    // for now, it will just pop-up an alert message
+    const handleClick = () => {
+    alert('Row Test Clicked!');
+    };
+
     return(
         <div className="client-table"> 
             <table>
@@ -24,7 +31,8 @@ export default function ClientTable() {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <tr onClick={handleClick} style={{ cursor: 'pointer' }}>
+                        // When the row is clicked, it should display an overlay with more details of the client
                         <td>1</td>
                         <td>John Doe</td>
                         <td>Lily Bon</td>

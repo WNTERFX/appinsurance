@@ -17,6 +17,7 @@ import { LuActivity } from "react-icons/lu";
 export default function NavBar( {onMinimizeChange}) {
 
   const [isMinimize, setIsMinimize] = useState(false);
+  //const [btnState, setBtnState] = useState(false); // create a state variable to manage the button color when clicked
 
   const handleMinimize = () => {
     setIsMinimize((prev) => {
