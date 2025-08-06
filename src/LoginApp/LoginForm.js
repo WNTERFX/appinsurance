@@ -5,9 +5,15 @@ import { useNavigate } from "react-router-dom";
 export default function LoginForm(){
 
     let navigate = useNavigate();
-    const route = () =>
+    const routeAdmin = () =>
       {
         let path = "/appinsurance/MainArea/Dashboard";
+        navigate(path);
+      }
+
+    const routeModerator = () => 
+      {
+        let path = "/appinsurance/MainAreaModerator/DashboardModerator";
         navigate(path);
       }
 
@@ -26,8 +32,16 @@ export default function LoginForm(){
               <label>Password</label>
               <input type="password" placeholder="Enter your password" required />
               <div class="password-button"></div>
-              <button type="submit" onClick={() => route("appinsurance/MainAreaModerator")}>Log In</button>
+
+              {/* The buttons for Admin and Moderator login, this should be replaced with actual authentication logic in deployment. */}
+              
+              <button type="submit" onClick={() => routeAdmin("/appinsurance/MainArea/Dashboard")}>Admin</button>
+              <button type="submit" onClick={() => routeModerator("/appinsurance/MainAreaModerator/DashboardModerator")}>Moderator</button>
+              
+              <button type="submit" class="login-button">Login</button>
+            
             </form>
+            
           </div>
         </div>
     </div>
