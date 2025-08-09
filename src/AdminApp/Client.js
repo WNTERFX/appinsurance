@@ -5,7 +5,7 @@ export default function Client() {
     return(
         <div className="Client-container">
             <div className="Client-header">
-                <p2>Client</p2>
+                <p>Client</p>
                 <input
                 type="text"
                 className="client-search"

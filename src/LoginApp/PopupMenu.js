@@ -1,4 +1,7 @@
 export default function PopupMenu(props) {
+
+  // this function should be hidden when the app is deployed
+  
   return (props.isOpen && props.onClose) ? (
     
     <div className="popup-login-menu">

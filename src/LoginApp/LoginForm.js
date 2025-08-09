@@ -38,7 +38,7 @@ export default function LoginForm(){
               <button type="submit" onClick={() => routeAdmin("/appinsurance/MainArea/Dashboard")}>Admin</button>
               <button type="submit" onClick={() => routeModerator("/appinsurance/MainAreaModerator/DashboardModerator")}>Moderator</button>
               
-              <button type="submit" class="login-button">Login</button>
+           
             
             </form>
             

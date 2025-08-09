@@ -55,3 +55,16 @@
   .confirm-btn:hover {
     background-color: #aaa;
   }
+
+  .cancel-btn {
+    padding: 0.6rem 1.5rem;
+    background-color: #ccc;
+    border: none;
+    border-radius: 20px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  
+  .cancel-btn:hover {
+    background-color: #aaa;
+  }

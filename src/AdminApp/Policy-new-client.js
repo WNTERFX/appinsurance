@@ -53,7 +53,11 @@ export default function NewClient() {
         </div>
   
         <div className="button-container">
+          <button className="cancel-btn" onClick={() => navigate("/appinsurance/MainArea/Policy")}>Cancel</button>
           <button className="confirm-btn" onClick={() => navigate("/appinsurance/MainArea/Policy/NewClient/VehicleDetails")}>Confirm</button>
+
+          {/* this section should prevent the user from being able to go back to the previous page without using the cancel button */}
+          
         </div>
       </div>
     );

@@ -155,6 +155,8 @@ body, html {
    
  }
 
- 
-
+ .side-bar-item-moderator.active {
+   background-color:  #f3f3f3;
+   color: black;
+ }
 

@@ -1,7 +1,9 @@
 import "./moderator-styles/nav-moderator-styles.css"
-import {Menu} from 'lucide-react';
-import { Link } from 'react-router-dom';
+
+import { Link, useLocation } from 'react-router-dom';
 import React, { useState } from "react";
+
+import {Menu} from 'lucide-react';
 import { LuLayoutDashboard } from "react-icons/lu";
 import { LuUser } from "react-icons/lu";
 import { LuCalendarArrowUp } from "react-icons/lu";
@@ -26,6 +28,11 @@ export default function NavBarModerator( {onMinimizeChange}) {
     });
   };
 
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path;
+
+
   return (
     <div className={`nav-bar-moderator  ${isMinimize ? "minimize" : ""}`}>
       <div className="logo-bar-moderator ">
@@ -36,7 +43,7 @@ export default function NavBarModerator( {onMinimizeChange}) {
 
     </div>
     <div className="side-bar-moderator ">
-      <Link to="/appinsurance/MainAreaModerator/DashboardModerator" className="side-bar-item-moderator ">
+      <Link to="/appinsurance/MainAreaModerator/DashboardModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/DashboardModerator") ? " active" : "")}>
        {isMinimize ? (
          <LuLayoutDashboard />
         ) : (
@@ -47,7 +54,7 @@ export default function NavBarModerator( {onMinimizeChange}) {
         )}
       </Link>
 
-      <Link to="/appinsurance/MainAreaModerator/ClientModerator" className="side-bar-item-moderator ">
+      <Link to="/appinsurance/MainAreaModerator/ClientModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/ClientModerator") ? " active" : "")}>
         {isMinimize ? (
           <LuUser /> 
         ) : ( 
@@ -58,7 +65,7 @@ export default function NavBarModerator( {onMinimizeChange}) {
         )}   
       </Link>
 
-      <Link to="/appinsurance/MainAreaModerator/DueModerator" className="side-bar-item-moderator ">
+      <Link to="/appinsurance/MainAreaModerator/DueModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/DueModerator") ? " active" : "")}>
         {isMinimize ? (
           <LuCalendarArrowUp />
         ) : (
@@ -69,7 +76,7 @@ export default function NavBarModerator( {onMinimizeChange}) {
         )}   
       </Link>
       
-      <Link to="/appinsurance/MainAreaModerator/PolicyModerator" className="side-bar-item-moderator ">
+      <Link to="/appinsurance/MainAreaModerator/PolicyModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/PolicyModerator") ? " active" : "")}>
         {isMinimize ? (
           <LuFolder /> 
         ) : ( 
@@ -80,7 +87,7 @@ export default function NavBarModerator( {onMinimizeChange}) {
         )}  
       </Link>
 
-      <Link to="/appinsurance/MainAreaModerator/ClaimTableModerator" className="side-bar-item-moderator ">
+      <Link to="/appinsurance/MainAreaModerator/ClaimTableModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/ClaimTableModerator") ? " active" : "")}>
         {isMinimize ? (
          <LuClipboard />
         ) : (
@@ -91,7 +98,7 @@ export default function NavBarModerator( {onMinimizeChange}) {
         )}
       </Link>
 
-      <Link to="/appinsurance/MainAreaModerator/DeliveryTableModerator" className="side-bar-item-moderator ">
+      <Link to="/appinsurance/MainAreaModerator/DeliveryTableModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/DeliveryTableModerator") ? " active" : "")}>
         {isMinimize ? (
          <LuMail />
         ) : (
@@ -103,7 +110,7 @@ export default function NavBarModerator( {onMinimizeChange}) {
       </Link>
 
 
-      <Link to="/appinsurance/MainAreaModerator/MonthlyDataModerator" className="side-bar-item-moderator ">
+      <Link to="/appinsurance/MainAreaModerator/MonthlyDataModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/MonthlyDataModerator") ? " active" : "")}>
       {isMinimize ? (
          <LuActivity />
         ) : (
@@ -115,7 +122,7 @@ export default function NavBarModerator( {onMinimizeChange}) {
       </Link> 
 
       
-      <Link to="/appinsurance/MainAreaModerator/PaymentRecordsModerator"className="side-bar-item-moderator ">
+      <Link to="/appinsurance/MainAreaModerator/PaymentRecordsModerator"className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/PaymentRecordsModerator") ? " active" : "")}>
       {isMinimize ? (
          <LuCreditCard />
         ) : (
@@ -126,7 +133,7 @@ export default function NavBarModerator( {onMinimizeChange}) {
         )}  
       </Link> 
 
-      <Link to="/appinsurance/MainAreaModerator/ProfileModerator" className="side-bar-item-moderator ">
+      <Link to="/appinsurance/MainAreaModerator/ProfileModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/ProfileModerator") ? " active" : "")}>
         {isMinimize ? (
          <LuSettings />
         ) : (

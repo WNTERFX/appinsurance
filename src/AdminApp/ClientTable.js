@@ -1,4 +1,3 @@
-import React from 'react';
 import './styles/client-table-styles.css';
 
 export default function ClientTable() {
@@ -32,7 +31,7 @@ export default function ClientTable() {
                 </thead>
                 <tbody>
                     <tr onClick={handleClick} style={{ cursor: 'pointer' }}>
-                        // When the row is clicked, it should display an overlay with more details of the client
+                        {/* When the row is clicked, it should display an overlay with more details of the client */}
                         <td>1</td>
                         <td>John Doe</td>
                         <td>Lily Bon</td>

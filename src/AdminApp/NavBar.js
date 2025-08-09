@@ -1,7 +1,9 @@
 import "./styles/nav-styles.css"
-import {Menu} from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 import React, { useState } from "react";
+
+import {Menu} from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import { LuLayoutDashboard } from "react-icons/lu";
 import { LuUser } from "react-icons/lu";
 import { LuCalendarArrowUp } from "react-icons/lu";
@@ -27,6 +29,10 @@ export default function NavBar( {onMinimizeChange}) {
     });
   };
 
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path;
+
   return (
     <div className={`nav-bar ${isMinimize ? "minimize" : ""}`}>
       <div className="logo-bar">
@@ -37,7 +43,7 @@ export default function NavBar( {onMinimizeChange}) {
 
     </div>
     <div className="side-bar">
-      <Link to="/appinsurance/MainArea/Dashboard" className="side-bar-item">
+      <Link to="/appinsurance/MainArea/Dashboard" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Dashboard") ? " active" : "")}>
        {isMinimize ? (
          <LuLayoutDashboard />
         ) : (
@@ -48,7 +54,7 @@ export default function NavBar( {onMinimizeChange}) {
         )}
       </Link>
 
-      <Link to="/appinsurance/MainArea/Client" className="side-bar-item">
+      <Link to="/appinsurance/MainArea/Client" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Client") ? " active" : "")}>
         {isMinimize ? (
           <LuUser /> 
         ) : ( 
@@ -59,7 +65,7 @@ export default function NavBar( {onMinimizeChange}) {
         )}   
       </Link>
 
-      <Link to="/appinsurance/MainArea/Due" className="side-bar-item">
+      <Link to="/appinsurance/MainArea/Due" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Due") ? " active" : "")}>
         {isMinimize ? (
           <LuCalendarArrowUp />
         ) : (
@@ -70,7 +76,7 @@ export default function NavBar( {onMinimizeChange}) {
         )}   
       </Link>
       
-      <Link to="/appinsurance/MainArea/Policy" className="side-bar-item">
+      <Link to="/appinsurance/MainArea/Policy" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Policy") ? " active" : "")}>
         {isMinimize ? (
           <LuFolder /> 
         ) : ( 
@@ -81,7 +87,7 @@ export default function NavBar( {onMinimizeChange}) {
         )}  
       </Link>
 
-      <Link to="/appinsurance/MainArea/ClaimTable" className="side-bar-item">
+      <Link to="/appinsurance/MainArea/ClaimTable" className={"side-bar-item" + (isActive("/appinsurance/MainArea/ClaimTable") ? " active" : "")}>
         {isMinimize ? (
          <LuClipboard />
         ) : (
@@ -92,7 +98,7 @@ export default function NavBar( {onMinimizeChange}) {
         )}
       </Link>
 
-      <Link to="/appinsurance/MainArea/DeliveryTable" className="side-bar-item">
+      <Link to="/appinsurance/MainArea/DeliveryTable" className={"side-bar-item" + (isActive("/appinsurance/MainArea/DeliveryTable") ? " active" : "")}>
         {isMinimize ? (
          <LuMail />
         ) : (
@@ -104,7 +110,7 @@ export default function NavBar( {onMinimizeChange}) {
       </Link>
 
 
-      <Link to="/appinsurance/MainArea/MonthlyData" className="side-bar-item">
+      <Link to="/appinsurance/MainArea/MonthlyData" className={"side-bar-item" + (isActive("/appinsurance/MainArea/MonthlyData") ? " active" : "")}>
       {isMinimize ? (
          <LuActivity />
         ) : (
@@ -116,7 +122,7 @@ export default function NavBar( {onMinimizeChange}) {
       </Link> 
 
       
-      <Link to="/appinsurance/MainArea/PaymentRecords" className="side-bar-item">
+      <Link to="/appinsurance/MainArea/PaymentRecords" className={"side-bar-item" + (isActive("/appinsurance/MainArea/PaymentRecords") ? " active" : "")}>
       {isMinimize ? (
          <LuCreditCard />
         ) : (
@@ -127,7 +133,7 @@ export default function NavBar( {onMinimizeChange}) {
         )}  
       </Link> 
 
-      <Link to="/appinsurance/MainArea/Profile" className="side-bar-item">
+      <Link to="/appinsurance/MainArea/Profile" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Profile") ? " active" : "")}>
         {isMinimize ? (
          <LuSettings />
         ) : (

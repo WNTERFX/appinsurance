@@ -155,6 +155,10 @@ body, html {
    
  }
 
- 
+ .side-bar-item.active {
+   background-color: #ffffff;
+   color: black;
+   
+ }
 
 
