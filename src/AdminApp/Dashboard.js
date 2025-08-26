@@ -1,75 +1,106 @@
 import React from 'react';
+import { useNavigate } from "react-router-dom";
 import { BarChart } from '@mui/x-charts/BarChart';
 
 export default function Dashboard() {
     
+    const navigate = useNavigate();
+
+    
+
     return (
         <div className="dashboard-container">
             
             <div className="dashboard-header">
                 <p>Dashboard</p>
             </div>
-
+            
             <div className="dashboard-content">
 
                 <div className ="active-clients">
-                    Active Clients
+                    
                     <div className="active-clients-data">
                         <h2>Active Clients</h2>
-                        <p>Number of active clients: 150</p>
+                        
+                        <p>150</p>
                     </div>
                 </div>
 
                 <div className ="due-clients">
-                    Due Clients
+                    
                     <div className="due-clients-data">
                         <h2>Due Clients</h2>
-                        <p>Number of due clients: 50</p>
+                        <p>50</p>
                     </div>
                 </div>
 
-                <div className="clients-list">  
-                    Clients List
+                <div className="clients-list" 
+                    onClick={() =>  navigate("/appinsurance/MainArea/Client")} 
+                    style={{ cursor: "pointer" }}>  
+     
+                    
                     <div className="clients-list-data">
                         <h2>Clients List</h2>
-                        <ul>
-                            <li>Client 1</li>
-                            <li>Client 2</li>
-                            <li>Client 3</li>
-                            <li>Client 4</li>
-                            <li>Client 5</li>
-                        </ul>
+                        
+                        <div className="dashboard-table">
+                        <table > 
+                            <tr> 
+                                <th>Policy Number</th>
+                                <th>Agent</th>
+                                <th>Policy Holder</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                            </tr> 
+                            <tr>
+                                 
+                                <td>12345</td>
+                                <td>Lily Bon</td>
+                                <td>John Doe</td>
+                                <td>2023-01-01</td>
+                                <td>2023-12-31</td>
+                            </tr>
+                           
+                         </table>    
+
+                         </div> 
+                         
                     </div>
                 </div>
 
                 <div className="undelivered-policy">
-                    Undelivered Policy
+                    
                     <div className="undelivered-policy-data">
                         <h2>Undelivered Policy</h2>
-                        <p>Number of undelivered policies: 10</p>
+                        <p>10</p>
                     </div>
                 </div>
 
                 <div className="delivered-policy">
-                    Delivered Policy
+                    
                     <div className="delivered-policy-data">
                         <h2>Delivered Policy</h2>
-                        <p>Number of delivered policies: 140</p>
+                        <p>140</p>
                     </div>
                 </div>
 
                 <div className="recent-policy">
-                    Recent Policy
+                    
                     <div className="recent-policy-data">
                         <h2>Recent Policy</h2>
-                        <ul>
-                            <li>Policy 1</li>
-                            <li>Policy 2</li>
-                            <li>Policy 3</li>
-                            <li>Policy 4</li>
-                            <li>Policy 5</li>
-                        </ul>
-                    </div>
+                         <div className="dashboard-table">
+                         <table>
+                            
+                            <tbody>
+                            <tr>
+                                <td>1001</td>
+                                <td>Jane Smith</td>
+                                <td>2023-12-01</td>
+                            </tr>
+                           
+                            </tbody>
+                        </table>
+                        </div>
+                     </div>
                 </div>
 
                 <div className="monthly-data">

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import ClientTable from "./ClientTable";
+import ClientTable from "./AdminTables/ClientTable";
 import Filter from "./Filter";
 export default function Policy() {
     const navigate = useNavigate();
@@ -25,6 +25,8 @@ export default function Policy() {
                 </div>
                  <ClientTable/>
             </div>
+
+            
             <div className="Policy-content">
                
                 <div className="button-grid">

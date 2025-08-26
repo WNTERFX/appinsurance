@@ -6,6 +6,9 @@
     font-family: 'Inter', sans-serif;
     height: auto;
     padding-left: 200px;
+    max-width: 100%;         
+    overflow-x: hidden; 
+   
     
 }
 
@@ -60,6 +63,14 @@
     height: 100%;
     border-radius: 8px;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-content > div.clients-list:hover {
+    transform: translateY(-3px); 
+    background-color: #f2f5fa; 
+   
 }
 
 .dashboard-content > div.undelivered-policy {
@@ -88,6 +99,55 @@
     border-radius: 8px;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
+
+
+.dashboard-content > div.active-clients,
+.dashboard-content > div.due-clients,
+.dashboard-content > div.undelivered-policy,
+.dashboard-content > div.delivered-policy {
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer; 
+}
+
+.dashboard-content > div.active-clients p,
+.dashboard-content > div.due-clients p,
+.dashboard-content > div.undelivered-policy p,
+.dashboard-content > div.delivered-policy p {
+  font-size: 30px;
+  margin: 0; 
+}
+
+
+.dashboard-table table,
+.dashboard-table table th,
+.dashboard-table table td {
+  border: 1px solid #ddd;
+  border-collapse: collapse; 
+ 
+}
+
+.dashboard-content > div.active-clients:hover,
+.dashboard-content > div.due-clients:hover,
+.dashboard-content > div.undelivered-policy:hover,
+.dashboard-content > div.delivered-policy:hover {
+  background-color: #f2f5fa; 
+  transform: translateY(-3px);
+  box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.15); 
+}
+.dashboard-table table {
+  width: 100%;
+  font-size: 20px;
+  margin: 5px;
+  
+}
+
+.dashboard-table table th,
+.dashboard-table table td {
+  padding: 8px 12px;
+  text-align: left;
+}
+
+
 
 @media screen and (min-width: 1024px)  {
   

@@ -1,10 +1,7 @@
-import './styles/client-table-styles.css';
+import '../styles/client-table-styles.css';
 
 export default function ClientTable() {
 
-
-    // this should be a function that handles the click event for the row
-    // for now, it will just pop-up an alert message
     const handleClick = () => {
     alert('Row Test Clicked!');
     };

@@ -1,6 +1,6 @@
 import "./styles/nav-styles.css"
 
-import React, { useState } from "react";
+import { useState } from "react";
 
 import {Menu} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -19,7 +19,6 @@ import { LuActivity } from "react-icons/lu";
 export default function NavBar( {onMinimizeChange}) {
 
   const [isMinimize, setIsMinimize] = useState(false);
-  //const [btnState, setBtnState] = useState(false); // create a state variable to manage the button color when clicked
 
   const handleMinimize = () => {
     setIsMinimize((prev) => {
@@ -33,13 +32,19 @@ export default function NavBar( {onMinimizeChange}) {
 
   const isActive = (path) => location.pathname === path;
 
+
   return (
     <div className={`nav-bar ${isMinimize ? "minimize" : ""}`}>
       <div className="logo-bar">
         <button className="nav-bar-button" onClick={handleMinimize}> 
         <Menu className="nav-bar-icon" size={30} color="black" />
         </button>
-       {!isMinimize && <h1 className="logo">Silverstar Insurance</h1>}       
+       {!isMinimize && <h1 className="logo">Silverstar Insurance</h1>}   
+      
+
+        
+
+      
 
     </div>
     <div className="side-bar">

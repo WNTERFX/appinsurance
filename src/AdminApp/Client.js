@@ -1,5 +1,5 @@
 
-import ClientTable from "./ClientTable";
+import ClientTable from "./AdminTables/ClientTable";
 import Filter from "./Filter";
 export default function Client() {
     return(
