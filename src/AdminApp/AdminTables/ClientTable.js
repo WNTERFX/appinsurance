@@ -1,66 +1,71 @@
-import '../styles/client-table-styles.css';
+import { useEffect, useState } from "react";
+import { fetchClients } from "../AdminActions/ClientActions";
+import "../styles/client-table-styles.css";
 
 export default function ClientTable() {
+  const [clients, setClients] = useState([]);
 
-    const handleClick = () => {
-    alert('Row Test Clicked!');
-    };
+  useEffect(() => {
+    async function loadClients() {
+      const data = await fetchClients();
+      setClients(data);
+    }
+    loadClients();
+  }, []);
 
-    return(
-        <div className="client-table"> 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Client ID</th>
-                        <th>Client Name</th>
-                        <th>Agent</th>
-                        <th>Insurance Partner</th>
-                        <th>Address</th>
-                        <th>Phone Number</th>
-                        <th>Vehicle</th>
-                        <th>Client Status</th>
-                        <th>Client Registered</th>
-                        <th>Policy Exception </th>
-                        <th>Policy Expiration</th>
-                        <th>Remarks</th>
+  const handleClick = (client) => {
+    alert(`Row clicked! Client: ${client.client_Name}`);
+    // here you can later open an overlay with client details
+  };
 
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr onClick={handleClick} style={{ cursor: 'pointer' }}>
-                        {/* When the row is clicked, it should display an overlay with more details of the client */}
-                        <td>1</td>
-                        <td>John Doe</td>
-                        <td>Lily Bon</td>
-                        <td>Cocogen</td>
-                        <td>123 Main St, Quezon City</td>
-                        <td>123-456-7890</td>
-                        <td>Toyota Vios</td>
-                        <td>Active</td>
-                        <td>2025-10-01</td>
-                        <td>2025-10-01</td>
-                        <td>2026-10-01</td>
-                        <td>Approved</td>
-                    </tr>
-                </tbody>
-
-                  <tbody>
-                    <tr>
-                        <td>2</td>
-                        <td>Jane Doe</td>
-                        <td>Lily Bon</td>
-                        <td>Cocogen</td>
-                        <td>123 Main St, Quezon City</td>
-                        <td>123-456-7890</td>
-                        <td>Toyota Vios</td>
-                        <td>Active</td>
-                        <td>2025-10-01</td>
-                        <td>-------</td>
-                        <td>-------</td>
-                        <td>Pending</td>
-                    </tr>
-                </tbody>
-            </table>                        
-        </div>
-    );
+  return (
+    <div className="client-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Client ID</th>
+            <th>Client Name</th>
+            <th>Agent</th>
+            <th>Insurance Partner</th>
+            <th>Address</th>
+            <th>Phone Number</th>
+            <th>Vehicle</th>
+            <th>Client Status</th>
+            <th>Client Registered</th>
+            <th>Policy Exception</th>
+            <th>Policy Expiration</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {clients.length > 0 ? (
+            clients.map((client) => (
+              <tr
+                key={client.id}
+                onClick={() => handleClick(client)}
+                style={{ cursor: "pointer" }}
+              >
+                <td>{client.id}</td>
+                <td>{client.client_Name}</td>
+                <td>{client.agent_Id}</td>
+                <td>{client.insurance_Id}</td>
+                <td>{client.address}</td>
+                <td>{client.phone_Number}</td>
+                <td>{client.vehicle_Model}</td>
+                <td>{client.client_Status || "Active"}</td>
+                <td>{client.client_Registered}</td>
+                <td>{client.policy_Exception || "-------"}</td>
+                <td>{client.policy_Expiration || "-------"}</td>
+                <td>{client.remarks}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="12">No clients found</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
 }

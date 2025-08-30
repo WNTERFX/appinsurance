@@ -8,11 +8,12 @@ import DeliveryTable from './AdminApp/DeliveryTable';
 import Client from './AdminApp/Client';
 import MonthlyData from './AdminApp/MonthlyData';
 import PaymentRecords from './AdminApp/PaymentRecords';
-import NewClient from './AdminApp/Policy-new-client';
+
 import VehicleDetails from './AdminApp/VehicleDetails';
 import ListClient from './AdminApp/ListClient';
 import EditClientForm from './AdminApp/EditClientForm';
 import EditVehicleDetailsForm from './AdminApp/EditVehicleDetailsForm';
+import NewClientController from './AdminApp/ControllerAdmin/NewClientController';
 import {Routes, Route} from "react-router-dom";
 import Profile from './AdminApp/Profile';
 
@@ -64,8 +65,9 @@ function App() {
         <Route path="/appinsurance/MainArea/PaymentRecords" element={<PaymentRecords />}/>
         <Route path="/appinsurance/MainArea/Profile" element={<Profile />} />
         
-        <Route path="/appinsurance/MainArea/Policy/NewClient" element={<NewClient />} />
-        <Route path="/appinsurance/MainArea/Policy/NewClient/VehicleDetails" element={<VehicleDetails />} />
+        <Route path="/appinsurance/MainArea/Policy/PolicyNewClient" element={<NewClientController />} />
+  
+        <Route path="/appinsurance/MainArea/Policy/PolicyNewClient/VehicleDetails" element={<VehicleDetails />} />
 
         <Route path="/appinsurance/MainArea/Policy/ListClient" element={<ListClient />} />
         <Route path="/appinsurance/MainArea/Policy/ListClient/EditClientForm" element={<EditClientForm />} />

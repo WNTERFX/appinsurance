@@ -133,7 +133,7 @@ export default function NavBar( {onMinimizeChange}) {
         ) : (
           <div className="side-bar-label">
             <LuCreditCard className="side-bar-icon" />
-            <span className="side-bar-name" >Records</span>
+            <span className="side-bar-name" >Payments</span>
           </div>
         )}  
       </Link> 
@@ -145,6 +145,18 @@ export default function NavBar( {onMinimizeChange}) {
           <div className="side-bar-label">
             <LuSettings className="side-bar-icon" />
             <span className="side-bar-name" >Profile</span>
+          </div>
+        )}
+      </Link>
+
+      
+      <Link to="/appinsurance/MainArea/Profile" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Profile") ? " active" : "")}>
+        {isMinimize ? (
+         <LuSettings />
+        ) : (
+          <div className="side-bar-label">
+            <LuSettings className="side-bar-icon" />
+            <span className="side-bar-name" >Manage Users</span>
           </div>
         )}
       </Link>

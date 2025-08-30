@@ -18,7 +18,7 @@ export async function loginFunction(email, password) {
 
 
   const { data: accountData, error: accountError } = await db
-    .from("privilages_Table")
+    .from("employee_Accounts")
     .select("is_Admin")
     .eq("id", userId)
     .single();
