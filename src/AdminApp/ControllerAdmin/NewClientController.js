@@ -4,6 +4,7 @@ import { useState, useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import { NewClientCreation } from "../AdminActions/NewClientActions";
 import PolicyNewClient from '../PolicyNewClient'; 
+import { db } from "../../dbServer";
 
 export default function NewClientController() {
 
@@ -97,6 +98,7 @@ const safeNumber = (value) => {
   const [email, setEmail] = useState("");
   const [insurancePartner, setInsurancePartner] = useState("");
 
+
 const handleSaveClient = async () => {
   const clientData = {
     agent_Id: "00000000-0000-0000-0000-000000000000", 
@@ -108,6 +110,7 @@ const handleSaveClient = async () => {
     remarks: "", 
     vehicle_Type_Id: selected ? vehicleTypes.find(v => v.vehicle_Type === selected)?.id : null,
     vehicle_Model: vehicleDetails?.vehicle_Model || "",
+    
   };
 
   const result = await NewClientCreation(clientData);
@@ -118,7 +121,34 @@ const handleSaveClient = async () => {
   } else {
     alert("Error saving client: " + result.error);
   }
+
+  const clientpolicydata = {
+    client_Id:"00000000-0000-0000-0000-000000000000",
+    email_Address:email,
+    vehicle_Year:yearInput,
+    Original_Value_of_Vehicle:vehicleCost,
+    VAT_Tax:vehicleDetails.vat_Tax,
+    docu_stamp:vehicleDetails.docu_Stamp,
+    gov_Tax:vehicleDetails.local_Gov_Tax,
+    rate:vehicleDetails.vehicle_Rate ,
+    Vehicle_Value:vehicleValue,
+
+  };
+
+  const { error: policyError } = await db.from("ClientPolicy_Table").insert([clientpolicydata]);
+
+  if (policyError) {
+    alert("Error saving policy: " + policyError.message);
+    return;
+  }
+
+  alert("Saved successfully!");
+  navigate("/appinsurance/MainArea/Policy");
+
 };
+
+  
+
 
   return (
     <PolicyNewClient
@@ -145,6 +175,9 @@ const handleSaveClient = async () => {
       insurancePartner={insurancePartner}
       setInsurancePartner={setInsurancePartner}
       onSaveClient={handleSaveClient}
+   
+     
+
       navigate={navigate}
     />
   );

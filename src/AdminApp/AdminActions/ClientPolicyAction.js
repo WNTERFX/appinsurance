@@ -2,7 +2,7 @@ import { db } from "../../dbServer";
 
 export async function fetchClients() {
   const { data, error } = await db
-    .from("clients_Table")
+    .from("ClientPolicy_Table")
     .select("*")
     .order("id", { ascending: true });
 
@@ -12,5 +12,3 @@ export async function fetchClients() {
   }
   return data;
 }
-
-
