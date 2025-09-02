@@ -33,11 +33,13 @@ export function ComputationActionsTax(BasicPremium, vatTaxRate, documentaryStamp
     const TotalTax = EVAT + documentaryStamp + localGovTax + BasicPremium;
 
     return TotalTax;
-}
+} 
+export function ComputationActionsAoN(vehicleTotalValue, AoNRate) {
+    const vehicleValueWithAoN = vehicleTotalValue * (AoNRate/100);
+   
 
-export function ComputationActionsAoN(vehicleValueYear, AoNRate, vehicleTypeRate ) {
-
-    const AoN = (vehicleValueYear * AoNRate) * vehicleTypeRate;
-
-    return AoN;
+    return  vehicleValueWithAoN;
+       
+      
+    
 }

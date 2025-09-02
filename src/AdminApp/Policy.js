@@ -3,10 +3,13 @@ import { useEffect, useState } from "react";
 import ClientTable from "./AdminTables/ClientTable";
 import Filter from "./Filter";
 import {fetchClients} from "./AdminActions/ClientActions";
+import ClientModal from "./ClientInfo";
 
 
 export default function Policy() {
 const navigate = useNavigate();
+
+  const [selectedClient, setSelectedClient] = useState(null);
   
   const [clients, setClients] = useState([]);
 
@@ -34,16 +37,6 @@ const navigate = useNavigate();
         </div>
       </div>
 
-      <div className="policy-data-field">
-        <div className="control-options">
-          <button className="approve-btn-policy">Approve</button>
-          <button className="print-btn-policy">Print</button>
-        </div>
-
-      
-        <ClientTable clients={clients} />
-      </div>
-
       <div className="Policy-content">
         <div className="button-grid">
           <button
@@ -64,6 +57,19 @@ const navigate = useNavigate();
           </button>
         </div>
       </div>
+
+      <div className="policy-data-field">
+        <div className="control-options">
+          <button className="approve-btn-policy">Approve</button>
+          <button className="print-btn-policy">Print</button>
+        </div>
+
+      
+        <ClientTable clients={clients} onSelectClient={setSelectedClient} />
+        <ClientModal client={selectedClient} onClose={() => setSelectedClient(null)} />
+      </div>
+
+      
     </div>
   );
 }

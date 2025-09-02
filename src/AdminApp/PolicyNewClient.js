@@ -1,32 +1,61 @@
 import './styles/Policy-new-client.css';
 
 export default function PolicyNewClient({
-  vehicleTypes,
-  selected,
-  setSelected,
-  vehicleDetails,
-  yearInput,
-  setYearInput,  
-  vehicleCost,
-  setVehicleCost,
-  vehicleValue,
-  vehicleValueRate,
-  basicPremiumValue,
-  totalPremiumValue,
-  fullName,
-  setFullName,
-  phoneNumber,
-  setPhoneNumber,
-  address,
-  setAddress,
-  email,
-  setEmail,
-  insurancePartner,
-  setInsurancePartner,
-  onSaveClient,
-  navigate,
+  // Total Premium Calculation
+      vehicleTypes,
+      selected,
+      setSelected,
+      vehicleDetails,
+      yearInput,
+      setYearInput,   
+      vehicleCost,
+      setVehicleCost,  
+      basicPremiumValue,         
+   
+      
+      isAoN,
+      setIsAoN,
+
+      //VehicleValue
+      orginalVehicleCost,
+      currentVehicleValueCost,
+      totalVehicleValueRate,
+      totalPremiumCost,
+      actOfNatureCost,
+      
+      
+      // Client Name
+      prefixName,
+      setPrefix,
+      firstName,
+      setFirstName,
+      middleName,
+      setMiddleName,
+      familyName,
+      setFamilyName,
+      suffixName,
+      setSuffixName,
+     
+      phoneNumber,
+      setPhoneNumber,
+      address,
+      setAddress,
+      email,
+      setEmail,
+      partners,
+      selectedPartner,
+      setSelectedPartner,
+      vehicleName,
+      setVehicleName,
+      
+      
+      onSaveClient,
+      navigate
 })  {
+ console.log("Selected Partner:", selectedPartner);
  
+
+
   return (
     <div className="new-client-container">
       <h2>New Client Form</h2>
@@ -35,14 +64,63 @@ export default function PolicyNewClient({
         <form className="form-grid">
           
           <div className="form-left-column">
+          
+          <div className="name-row">
+            
+            <div className="form-group prefix">
+              <label>Prefix</label>
+         
+              <input
+                type="text"
+                value={prefixName}
+                onChange={(e) => setPrefix(e.target.value)}
+              />
+              
+            </div>
+
+            
             <div className="form-group">
-            <label>Full Name</label>
-            <input 
-              type="text" 
-              value={fullName} 
-              onChange={(e) => setFullName(e.target.value)} 
-            />
+              <label>First Name</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+            </div>
+
+            
+            <div className="form-group">
+              <label>Middle Name</label>
+              <input
+                type="text"
+                value={middleName}
+                onChange={(e) => setMiddleName(e.target.value)}
+              />
+            </div>
+
+            
+            <div className="form-group">
+              <label>Last Name</label>
+              <input
+                type="text"
+                value={familyName}
+                onChange={(e) => setFamilyName(e.target.value)}
+              />
+            </div>
+
+            
+            <div className="form-group suffix">
+
+              <label>Suffix</label>
+              <input
+                type="text"
+                value={suffixName}
+                onChange={(e) => setSuffixName(e.target.value)}
+              />
+             
+            </div>
           </div>
+                  
 
           <div className="form-group">
             <label>Email</label>
@@ -71,14 +149,15 @@ export default function PolicyNewClient({
             />
           </div>
 
-          <div className="form-group">
-            <label>Insurance Partner</label>
-            <input 
-              type="text" 
-              value={insurancePartner} 
-              onChange={(e) => setInsurancePartner(e.target.value)} 
-            />
-          </div>
+        
+           <div className="form-group">
+              <label>Vehicle Name</label>
+              <input type="text" 
+              value= {vehicleName}
+              onChange={(e) => setVehicleName(e.target.value)} />
+              
+            </div>
+          
 
             <div className="form-group">
               <label>Vehicle Year</label>
@@ -87,6 +166,24 @@ export default function PolicyNewClient({
               onChange={(e) => setYearInput(Number(e.target.value))} />
               
             </div>
+
+              <div className="form-group">
+             <label>Partners</label>
+              <select
+                id="company-select"
+                value={selectedPartner}
+                onChange={(e) => setSelectedPartner(e.target.value)} 
+              >
+                <option value="">-- Select a Partner --</option>
+                {Array.isArray(partners) &&
+                  partners.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.insurance_Name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
 
             <div className="form-group">
               <label>Vehicle Type</label>
@@ -139,9 +236,14 @@ export default function PolicyNewClient({
               </div>
 
 
-            <div className="form-group">
+           <div className="form-group aon-row">
               <label>AoN (Act of Nature)</label>
-              <input type="checkbox"></input>
+              <input 
+                type="checkbox" 
+                checked={isAoN}
+                onChange={(e) => setIsAoN(e.target.checked)}
+                
+              />
             </div>
 
             <div className="form-group">
@@ -151,33 +253,79 @@ export default function PolicyNewClient({
               readOnly />
             </div>
 
-            <div className="form-group">
-              <label>Current Vehicle Value</label>
-              <input type="text" value={vehicleValue|| ""} 
-              readOnly />
-            </div>
           </div>
 
         
           <div className="form-right-column">
-            <div className="calculation-card">
-              <h3>Calculation Summary</h3>
-                <p>Original Vehicle Cost: <span>₱ {vehicleCost || "—"}</span></p>
-                <p>Current Vehicle Value: <span>₱ {vehicleValue || "—"}</span></p>
-                <p>Total Vehicle Value Rate: <span>₱ {vehicleValueRate || "—"}</span></p>
-                <p>Bodily Injury <span>₱ {vehicleDetails?.bodily_Injury || "—"}</span></p>
-                <p>Property Damage: <span>₱ {vehicleDetails?.property_Damage || "—"}</span></p>
-                <p>Personal Accident: <span>₱ {vehicleDetails?.personal_Accident || "—"}</span></p>
-                <p>Basic Premium: <span>₱ {basicPremiumValue || "—"}</span></p>
-                <p>Local Government Tax: <span>{vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "—"}</span></p>
-                <p>VAT: <span>{vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "—"}</span></p>
-                <p>Documentary Stamp: <span>{vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "—"}</span></p>
+                  <div className="calculation-card">
+                    <h3>Calculation Summary</h3>
+                    <p>Original Vehicle Cost: 
+                      <span>
+                         ₱ {orginalVehicleCost.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
+                      </span>
+                    </p>
 
-                <hr />
-                <strong>
-                  <p>Total: <span>₱ {vehicleDetails ? totalPremiumValue.toFixed(2) : "—"}</span></p>
-                </strong>
-              </div>
+                    <p>Current Vehicle Value: 
+                      <span>
+                        ₱ {currentVehicleValueCost.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
+                      </span>
+                    </p>
+
+                    <p>Total Vehicle Value Rate: 
+                      <span>
+                        ₱ {totalVehicleValueRate.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
+                      </span>
+                    </p>
+
+                    <p>Bodily Injury 
+                      <span>
+                        ₱ {vehicleDetails?.bodily_Injury ? vehicleDetails.bodily_Injury.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
+                      </span>
+                    </p>
+
+                    <p>Property Damage: 
+                      <span>
+                        ₱ {vehicleDetails?.property_Damage ? vehicleDetails.property_Damage.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
+                      </span>
+                    </p>
+
+                    <p>Personal Accident: 
+                      <span>
+                        ₱ {vehicleDetails?.personal_Accident ? vehicleDetails.personal_Accident.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
+                      </span>
+                    </p>
+
+                    <p>Basic Premium: 
+                      <span>
+                        ₱ {basicPremiumValue ? basicPremiumValue.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
+                      </span>
+                    </p>
+
+                     <p>Local Government Tax: 
+                        <span>{vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "—"}</span>
+                      </p>
+
+                      <p>VAT: 
+                        <span>{vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "—"}</span>
+                      </p>
+
+                      <p>Documentary Stamp: 
+                        <span>{vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "—"}</span>
+                      </p>
+
+                     {isAoN && (
+                        <p>AoN (Act of Nature): 
+                          <span>₱ {actOfNatureCost.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
+                        </p>
+                      )}
+                    <hr />
+                    <strong>
+                      <p>Total Premium: 
+                        <span>₱ {totalPremiumCost.toLocaleString("en-PH")}</span>
+                      </p>
+                    </strong>
+                  </div>
+
 
           </div>
         </form>

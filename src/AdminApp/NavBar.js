@@ -121,7 +121,7 @@ export default function NavBar( {onMinimizeChange}) {
         ) : (
           <div className="side-bar-label">
             <LuActivity className="side-bar-icon" />
-            <span className="side-bar-name" >Monthly Data</span>
+            <span className="side-bar-name" >Records</span>
           </div>
         )}  
       </Link> 
