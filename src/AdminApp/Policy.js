@@ -4,6 +4,7 @@ import ClientTable from "./AdminTables/ClientTable";
 import Filter from "./Filter";
 import {fetchClients} from "./AdminActions/ClientActions";
 import ClientModal from "./ClientInfo";
+import { FaPlus, FaArchive, FaUser } from "react-icons/fa";
 
 
 export default function Policy() {
@@ -25,6 +26,7 @@ const navigate = useNavigate();
   return (
     <div className="Policy-container">
       <div className="Policy-header">
+        <div className="right-actions">
         <p2>Policy</p2>
         <input
           type="text"
@@ -36,28 +38,21 @@ const navigate = useNavigate();
           <Filter />
         </div>
       </div>
-
-      <div className="Policy-content">
-        <div className="button-grid">
-          <button
-            className="policy-btn"
-            onClick={() =>
+      <div className="left-actions">
+        <button className="btn btn-create" onClick={() =>
               navigate("/appinsurance/MainArea/Policy/PolicyNewClient")
             }
-          >
-            Create new
+>
+        <FaPlus className="btn-icon" /> Create
+         </button>
+                      
+          <button className="btn btn-archive">
+          <FaArchive className="btn-icon" /> View Archive
           </button>
-          <button
-            className="policy-btn"
-            onClick={() =>
-              navigate("/appinsurance/MainArea/Policy/ListClient")
-            }
-          >
-            Edit
-          </button>
-        </div>
+                      
       </div>
-
+      </div>
+                  
       <div className="policy-data-field">
         <div className="control-options">
           <button className="approve-btn-policy">Approve</button>

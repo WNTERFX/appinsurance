@@ -5,7 +5,7 @@
 .Policy-container{
     background-color: #F2F5FA;
     font-family: 'Inter', sans-serif;
-    margin-left: 200px;
+    margin-left: 167px;
     
 }
 
@@ -28,23 +28,26 @@
 
 }
 
-.Policy-content{
-    background-color: #8A7F7F;
-    padding: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 8px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-    
+.Policy-header {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 10px;
 }
 
-.button-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 200px);
-    gap: 20px;
+
+.left-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px; 
 }
 
+
+.right-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 .policy-btn {
     padding: 30px 0;
     font-size: 18px;
@@ -82,8 +85,6 @@
     border: 1px solid #ccc;
     width: 250px;
 }
-
-
 
 
 .policy-table {
