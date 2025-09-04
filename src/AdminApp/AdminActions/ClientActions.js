@@ -5,6 +5,7 @@ export async function fetchClients() {
     .from("clients_Table")
     .select(`
       id,
+      uid,
       prefix_Name,
       first_Name,
       middle_Name,

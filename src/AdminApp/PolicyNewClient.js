@@ -22,6 +22,7 @@ export default function PolicyNewClient({
       totalVehicleValueRate,
       totalPremiumCost,
       actOfNatureCost,
+
       
       
       // Client Name
@@ -58,7 +59,7 @@ export default function PolicyNewClient({
 
   return (
     <div className="new-client-container">
-      <h2>New Client Form</h2>
+      <h2>New Policy Form</h2>
 
       <div className="form-card">
         <form className="form-grid">

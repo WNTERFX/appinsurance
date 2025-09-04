@@ -1,16 +1,34 @@
-import { getComputationValue, fetchVehicleDetails } from "../AdminActions/VehicleTypeActions";
-import { ComputationActionsVehicleValue, ComputatationRate, ComputationActionsBasicPre,  ComputationActionsTax, ComputationActionsAoN  } from "../AdminActions/ComputationActions";
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { NewClientCreation, NewComputationCreation, fetchPartners} from "../AdminActions/NewClientActions";
-import { getCurrentUser } from "../AdminActions/CurrentUserActions";
 
-import PolicyNewClient from '../PolicyNewClient'; 
+import { 
+  getComputationValue, 
+  fetchVehicleDetails 
+} from "../AdminActions/VehicleTypeActions";
+
+import { 
+  ComputationActionsVehicleValue,
+  ComputatationRate,
+  ComputationActionsBasicPre,  
+  ComputationActionsTax, 
+  ComputationActionsAoN  
+} from "../AdminActions/ComputationActions";
+
+import { 
+  NewClientCreation, 
+  NewComputationCreation, 
+  fetchPartners 
+} from "../AdminActions/NewClientActions";
+
+import { getCurrentUser } from "../AdminActions/CurrentUserActions";
+import PolicyNewClient from "../PolicyNewClient"; 
 
 export default function NewClientController() {
-
   const navigate = useNavigate();
 
+  // -----------------------------
+  // VEHICLE TYPES & DETAILS
+  // -----------------------------
   const [vehicleTypes, setVehicleTypes] = useState([]);
   const [selected, setSelected] = useState(""); 
   const [vehicleDetails, setVehicleDetails] = useState(null);
@@ -32,21 +50,22 @@ export default function NewClientController() {
     loadDetails();
   }, [selected]);
 
-    const [rateInput, setRateInput] = useState(0);
-    const [yearInput, setYearInput] = useState(0);
-    const [vehicleCost, setVehicleCost] = useState(0);
-    const [bodily_Injury, setBodily_Injury] = useState(0);
-    const [property_Damage, setProperty_Damage] = useState(0);
-    const [personal_Accident, setPersonal_Accident] = useState(0);
-    const [vat_Tax, setVat_Tax] = useState(0);
-    const [docu_Stamp, setDocu_Stamp] = useState(0);
-    const [local_Gov_Tax, setLocal_Gov_Tax] = useState(0); 
-    const [AoNRate, setAoNRate] = useState(0);
-    const [isAoN, setIsAoN] = useState(false);
-    
-  
+  // -----------------------------
+  // PREMIUM INPUTS
+  // -----------------------------
+  const [rateInput, setRateInput] = useState(0);
+  const [yearInput, setYearInput] = useState(0);
+  const [vehicleCost, setVehicleCost] = useState(0);
+  const [bodily_Injury, setBodily_Injury] = useState(0);
+  const [property_Damage, setProperty_Damage] = useState(0);
+  const [personal_Accident, setPersonal_Accident] = useState(0);
+  const [vat_Tax, setVat_Tax] = useState(0);
+  const [docu_Stamp, setDocu_Stamp] = useState(0);
+  const [local_Gov_Tax, setLocal_Gov_Tax] = useState(0); 
+  const [AoNRate, setAoNRate] = useState(0);
+  const [isAoN, setIsAoN] = useState(false);
 
-  useEffect (() => {
+  useEffect(() => {
     if (vehicleDetails) {
       setRateInput(vehicleDetails.vehicle_Rate || 0);
       setBodily_Injury(vehicleDetails.bodily_Injury || 0);
@@ -58,12 +77,14 @@ export default function NewClientController() {
       setAoNRate(vehicleDetails.aon || 0);
     }
   }, [vehicleDetails]);
-  
-const safeNumber = (value) => {
+
+  // -----------------------------
+  // SAFE CALC HELPERS
+  // -----------------------------
+  const safeNumber = (value) => {
     const num = Number(value);
     return isNaN(num) ? 0 : num;
   };
-
 
   const safeCalculate = (calculationFn, ...args) => {
     try {
@@ -71,36 +92,57 @@ const safeNumber = (value) => {
       const result = calculationFn(...safeArgs);
       return isNaN(result) ? 0 : result;
     } catch (error) {
-      console.error('Calculation error:', error);
+      console.error("Calculation error:", error);
       return 0;
     }
   };
 
- 
+  // -----------------------------
+  // PREMIUM CALCULATIONS
+  // -----------------------------
   const vehicleValue = safeCalculate(ComputationActionsVehicleValue, vehicleCost, yearInput, rateInput);
   const vehicleValueRate = safeCalculate(ComputatationRate, rateInput, vehicleValue);
-  const basicPremiumValue = safeCalculate(ComputationActionsBasicPre, bodily_Injury, property_Damage, personal_Accident) + vehicleValueRate;
-  const totalPremiumValue = safeCalculate(ComputationActionsTax, basicPremiumValue, vat_Tax, docu_Stamp, local_Gov_Tax);
-  const vehicleValueWithAoN = isAoN ? safeCalculate(ComputationActionsAoN, vehicleValue, AoNRate) : vehicleValue;
-  
- 
+  const basicPremiumValue = safeCalculate(
+    ComputationActionsBasicPre, 
+    bodily_Injury, 
+    property_Damage, 
+    personal_Accident
+  ) + vehicleValueRate;
 
-  const totalPremiumValueWithAoN = isAoN  ? totalPremiumValue + vehicleValueWithAoN : totalPremiumValue;
-  
+  const totalPremiumValue = safeCalculate(
+    ComputationActionsTax, 
+    basicPremiumValue, 
+    vat_Tax, 
+    docu_Stamp, 
+    local_Gov_Tax
+  );
 
+  // AoN ADD-ON (extra fee only)
+  const actOfNatureCost = isAoN 
+    ? safeCalculate(ComputationActionsAoN, vehicleValue, AoNRate) 
+    : 0;
 
- 
-  const handleYearInputChange = (value) => {
-    const numValue = value === "" ? 0 : safeNumber(value);
-    setYearInput(numValue);
-  };
+  // Final total (base premium + AoN if selected)
+  const totalPremiumValueWithAoN = totalPremiumValue + actOfNatureCost;
 
-  const handleVehicleCostChange = (value) => {
-    const numValue = value === "" ? 0 : safeNumber(value);
-    setVehicleCost(numValue);
-  };
+  // -----------------------------
+  // STATE TRACKING
+  // -----------------------------
+  const [orginalVehicleCost, setOriginalVehicleCost] = useState(0);
+  const [currentVehicleValueCost, setCurrentVehicleCost] = useState(0);
+  const [totalVehicleValueRate, setTotalVehicleValueRate] = useState(0);
+  const [totalPremiumCost, setTotalPremiumCost] = useState(0);
 
+  useEffect(() => {
+    setOriginalVehicleCost(vehicleCost);
+    setCurrentVehicleCost(vehicleValue);
+    setTotalVehicleValueRate(vehicleValueRate);
+    setTotalPremiumCost(totalPremiumValueWithAoN); // ✅ now includes AoN
+  }, [vehicleCost, vehicleValue, vehicleValueRate, totalPremiumValueWithAoN]);
 
+  // -----------------------------
+  // USER + CLIENT INFO
+  // -----------------------------
   const [prefixName, setPrefix] = useState("");
   const [firstName, setFirstName] = useState("");
   const [middleName, setMiddleName] = useState("");
@@ -112,40 +154,21 @@ const safeNumber = (value) => {
   const [vehicleName, setVehicleName] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
 
-  const [orginalVehicleCost, setOriginalVehicleCost] = useState(0);
-  const [currentVehicleValueCost, setCurrentVehicleCost] = useState(0);
-  const [totalVehicleValueRate, setTotalVehicleValueRate] = useState(0);
-  const [totalPremiumCost, setTotalPremiumCost] = useState(0);
-  const [actOfNatureCost, setActofNatureCost] = useState(0);
-
-  useEffect(() => {
-  setOriginalVehicleCost(vehicleCost);
-  setCurrentVehicleCost(vehicleValue);
-  setTotalVehicleValueRate(vehicleValueRate);
-  setTotalPremiumCost(totalPremiumValue);
-  setActofNatureCost(isAoN ? vehicleValueWithAoN - vehicleValue : 0);
-}, [vehicleCost, vehicleValue, vehicleValueRate, totalPremiumValue, vehicleValueWithAoN, isAoN]);
-
-
-  
-
-
   useEffect(() => {
     const fetchUser = async () => {
       const user = await getCurrentUser();
       setCurrentUser(user);
     };
     fetchUser();
-     
-    }, []);
-    
+  }, []);
 
-
+  // -----------------------------
+  // SAVE CLIENT
+  // -----------------------------
   const handleSaveClient = async () => {
     const clientData = {
       agent_Id: currentUser.id, 
       insurance_Id: selectedPartner || null, 
-
       prefix_Name: prefixName,
       first_Name: firstName,
       middle_Name: middleName,
@@ -154,51 +177,47 @@ const safeNumber = (value) => {
       address: address,
       phone_Number: phoneNumber,
       vehicle_Model: vehicleName,
-      vehicle_Type_Id: selected ? vehicleTypes.find(v => v.vehicle_Type === selected)?.id : null,
+      vehicle_Type_Id: selected 
+        ? vehicleTypes.find(v => v.vehicle_Type === selected)?.id 
+        : null,
       client_Registered: new Date().toISOString().split("T")[0], 
       remarks: ""
-    
-    
     };
 
-     const newClientResult = await NewClientCreation(clientData);
-   
-     
+    const newClientResult = await NewClientCreation(clientData);
+    if (!newClientResult.success) {
+      return alert("Error saving client: " + newClientResult.error);
+    }
 
-  if (!newClientResult.success) {
-    return alert("Error saving client: " + newClientResult.error);
-  }
-
-  const clientId = newClientResult.uid;
+    const clientId = newClientResult.uid;
     if (!clientId) {
-    console.error("New client ID not returned:", newClientResult);
-    return alert("Failed to get client ID from server.");
-  }
+      console.error("New client ID not returned:", newClientResult);
+      return alert("Failed to get client ID from server.");
+    }
 
-
- 
     const clientComputationData = {
-    client_Id: clientId,
-    vehicle_Year: yearInput,
-    original_Value: orginalVehicleCost,
-    current_Value: currentVehicleValueCost,
-    total_Premium: totalPremiumCost,
-    vehicle_Rate_Value: totalVehicleValueRate,
-    aon_Cost: actOfNatureCost
+      client_Id: clientId,
+      vehicle_Year: yearInput,
+      original_Value: orginalVehicleCost,
+      current_Value: currentVehicleValueCost,
+      total_Premium: totalPremiumCost,
+      vehicle_Rate_Value: totalVehicleValueRate,
+      aon_Cost: actOfNatureCost
+    };
+
+    const newComputationResult = await NewComputationCreation(clientComputationData);
+
+    if (newComputationResult.success) {
+      alert("Client and computation saved successfully!");
+      navigate("/appinsurance/MainArea/Policy");
+    } else {
+      alert("Error saving computation: " + newComputationResult.error);
+    }
   };
 
-  const newComputationResult = await NewComputationCreation(clientComputationData);
-
-  if (newComputationResult.success) {
-    alert("Client and computation saved successfully!");
-    navigate("/appinsurance/MainArea/Policy");
-  } else {
-    alert("Error saving computation: " + newComputationResult.error);
-  }
-};
-
-
-
+  // -----------------------------
+  // PARTNERS
+  // -----------------------------
   const [partners, setPartners] = useState([]);
   const [selectedPartner, setSelectedPartner] = useState("");
 
@@ -206,43 +225,38 @@ const safeNumber = (value) => {
     async function loadPartners() {
       const data = await fetchPartners();
       setPartners(data);
-      
     }
     loadPartners();
   }, []);
 
-  
-
-
-  
+  // -----------------------------
+  // RENDER
+  // -----------------------------
   return (
     <PolicyNewClient
-      // Total Premium Calculation
+      // Premium Calculation
       vehicleTypes={vehicleTypes}
       selected={selected}
       setSelected={setSelected}
       vehicleDetails={vehicleDetails}
       yearInput={yearInput}
-      setYearInput={handleYearInputChange}      
+      setYearInput={(v) => setYearInput(v === "" ? 0 : safeNumber(v))}
       vehicleCost={vehicleCost}
-      setVehicleCost={handleVehicleCostChange}  
+      setVehicleCost={(v) => setVehicleCost(v === "" ? 0 : safeNumber(v))}
       vehicleValue={vehicleValue}
       vehicleValueRate={vehicleValueRate}
-      basicPremiumValue={basicPremiumValue}           
-      vehicleValueWithAoN={vehicleValueWithAoN} 
+      basicPremiumValue={basicPremiumValue}
       totalPremiumValue={totalPremiumValue}
       totalPremiumValueWithAoN={totalPremiumValueWithAoN}
       isAoN={isAoN}
-      setIsAoN={setIsAoN}  
-
+      setIsAoN={setIsAoN}
       orginalVehicleCost={orginalVehicleCost}
       currentVehicleValueCost={currentVehicleValueCost}
       totalVehicleValueRate={totalVehicleValueRate}
       totalPremiumCost={totalPremiumCost}
       actOfNatureCost={actOfNatureCost}
       
-      
-      // Client Name
+      // Client Info
       prefixName={prefixName}
       setPrefix={setPrefix}
       firstName={firstName}
@@ -253,7 +267,6 @@ const safeNumber = (value) => {
       setFamilyName={setFamilyName}
       suffixName={suffixName}
       setSuffixName={setSuffixName}
-     
       phoneNumber={phoneNumber}
       setPhoneNumber={setPhoneNumber}
       address={address}
@@ -263,9 +276,10 @@ const safeNumber = (value) => {
       partners={partners}
       selectedPartner={selectedPartner}
       setSelectedPartner={setSelectedPartner}
-      vehicleName = {vehicleName}
-      setVehicleName = {setVehicleName}
+      vehicleName={vehicleName}
+      setVehicleName={setVehicleName}
       
+      // Actions
       onSaveClient={handleSaveClient}
       navigate={navigate}
     />
