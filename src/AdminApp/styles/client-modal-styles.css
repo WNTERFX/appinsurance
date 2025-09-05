@@ -11,6 +11,7 @@
   z-index: 1000;
   font-family: 'Inter', sans-serif;
   animation: fadeIn 0.2s ease-in-out;
+  overflow-y: auto;
 }
 
 .modal-content {
@@ -18,7 +19,7 @@
   background: #fff;
   padding: 2rem;
   border-radius: 12px;
-  width: 900px;
+  width: 900p;
   height: auto;
   max-width: 90%;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import ClientTable from "./AdminTables/ClientTable";
+import PolicyTable from "./AdminTables/PolicyTable";
 import Filter from "./Filter";
 import {fetchClients} from "./AdminActions/ClientActions";
 import ClientModal from "./ClientInfo";
@@ -60,7 +60,7 @@ const navigate = useNavigate();
         </div>
 
       
-        <ClientTable clients={clients} onSelectClient={setSelectedClient} />
+        <PolicyTable clients={clients} onSelectClient={setSelectedClient} />
         <ClientModal client={selectedClient} onClose={() => setSelectedClient(null)} />
       </div>
 

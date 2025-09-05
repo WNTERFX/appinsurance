@@ -30,11 +30,8 @@ export default function ClientTable() {
               <th>Client ID</th>
               <th>Client Name</th>
               <th>Agent</th>
-              <th>Insurance Partner</th>
               <th>Address</th>
               <th>Phone Number</th>
-              <th>Vehicle Model</th>
-              <th>Vehicle Type</th>
             </tr>
           </thead>
           <tbody>
@@ -52,11 +49,8 @@ export default function ClientTable() {
                       .join(" ")}
                   </td>
                   <td>{client.employee?.personnel_Name || "Unknown"}</td>
-                  <td>{client.partner?.insurance_Name}</td>
                   <td>{client.address}</td>
                   <td>{client.phone_Number}</td>
-                  <td>{client.vehicle_Model}</td>
-                  <td>{client.vehicle?.vehicle_Type}</td>
                 </tr>
               ))
             ) : (

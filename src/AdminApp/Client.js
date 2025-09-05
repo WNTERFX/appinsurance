@@ -1,8 +1,13 @@
 
 import ClientTable from "./AdminTables/ClientTable";
-import Filter from "./Filter";
 import { FaPlus, FaArchive, FaUser } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+
 export default function Client() {
+
+    const navigate = useNavigate();
+
+
     return(
         <div className="Client-container">
            
@@ -14,15 +19,15 @@ export default function Client() {
                 className="client-search"
                 placeholder="Search clients..."
                 />
-
-                <div className="filter-client">
-                    <Filter />
-                </div>   
                 </div>
 
                  <div className="left-actions">
-                <button className="btn btn-create">
-                   <FaPlus className="btn-icon" /> Create
+                <button 
+                  className="btn btn-create"
+                  onClick={() => navigate("/appinsurance/MainArea/Client/ClientCreationForm")}
+                >
+                   <FaPlus className="btn-icon" />
+                  Create
                 </button>
                 
                  <button className="btn btn-archive">

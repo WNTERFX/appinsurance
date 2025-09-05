@@ -1,4 +1,4 @@
-import './styles/Policy-new-client.css';
+import '../styles/Policy-new-client.css';
 
 export default function PolicyNewClient({
   // Total Premium Calculation
@@ -12,7 +12,6 @@ export default function PolicyNewClient({
       setVehicleCost,  
       basicPremiumValue,         
    
-      
       isAoN,
       setIsAoN,
 
@@ -24,32 +23,23 @@ export default function PolicyNewClient({
       actOfNatureCost,
 
       
-      
-      // Client Name
-      prefixName,
-      setPrefix,
-      firstName,
-      setFirstName,
-      middleName,
-      setMiddleName,
-      familyName,
-      setFamilyName,
-      suffixName,
-      setSuffixName,
-     
-      phoneNumber,
-      setPhoneNumber,
-      address,
-      setAddress,
-      email,
-      setEmail,
-      partners,
-      selectedPartner,
       setSelectedPartner,
       vehicleName,
       setVehicleName,
+      vehicleColor,
+      setVehicleColor,
+      vehicleVinNumber,
+      setVinNumber,
+      vehiclePlateNumber,
+      setPlateNumber,
       
+
+      clients,
+      selectedClient,
+      setSelectedClient,
       
+      partners,
+      selectedPartner,
       onSaveClient,
       navigate
 })  {
@@ -65,100 +55,65 @@ export default function PolicyNewClient({
         <form className="form-grid">
           
           <div className="form-left-column">
-          
-          <div className="name-row">
-            
-            <div className="form-group prefix">
-              <label>Prefix</label>
-         
-              <input
-                type="text"
-                value={prefixName}
-                onChange={(e) => setPrefix(e.target.value)}
-              />
-              
-            </div>
 
-            
             <div className="form-group">
-              <label>First Name</label>
-              <input
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-              />
+              <label>Client</label>
+              <select
+                value={selectedClient || ""}
+                onChange={(e) => {
+                  console.log("Form - Client selected:", e.target.value);
+                  setSelectedClient(e.target.value);
+                }}
+                required
+              >
+                <option value="">-- Select Client --</option>
+                {clients.map((c) => {
+                  console.log("Rendering client option:", c.uid, c.first_Name); 
+                  return (
+                    <option key={c.uid} value={c.uid}>
+                      {c.first_Name} {c.middle_Name || ""} {c.family_Name}
+                    </option>
+                  );
+                })}
+              </select>
             </div>
+                    
 
-            
-            <div className="form-group">
-              <label>Middle Name</label>
-              <input
-                type="text"
-                value={middleName}
-                onChange={(e) => setMiddleName(e.target.value)}
-              />
-            </div>
-
-            
-            <div className="form-group">
-              <label>Last Name</label>
-              <input
-                type="text"
-                value={familyName}
-                onChange={(e) => setFamilyName(e.target.value)}
-              />
-            </div>
-
-            
-            <div className="form-group suffix">
-
-              <label>Suffix</label>
-              <input
-                type="text"
-                value={suffixName}
-                onChange={(e) => setSuffixName(e.target.value)}
-              />
-             
-            </div>
-          </div>
-                  
-
-          <div className="form-group">
-            <label>Email</label>
-            <input 
-              type="email" 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Phone Number</label>
-            <input 
-              type="text" 
-              value={phoneNumber} 
-              onChange={(e) => setPhoneNumber(e.target.value)} 
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Home Address</label>
-            <input 
-              type="text" 
-              value={address} 
-              onChange={(e) => setAddress(e.target.value)} 
-            />
-          </div>
-
-        
-           <div className="form-group">
+             <div className="form-group">
               <label>Vehicle Name</label>
-              <input type="text" 
-              value= {vehicleName}
-              onChange={(e) => setVehicleName(e.target.value)} />
-              
+              <input 
+                type="text" 
+                value={vehicleName}
+                onChange={(e) => setVehicleName(e.target.value)} 
+              />
             </div>
-          
+
+            <div className="form-group">
+              <label>Vehicle Vin Number</label>
+              <input 
+                type="text"
+                value={vehicleVinNumber || ""}
+                onChange={(e) => setVinNumber(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Vehicle Plate Number</label>
+              <input 
+                type="text"
+                value={vehiclePlateNumber || ""}
+                onChange={(e) => setPlateNumber(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Vehicle Color</label>
+              <input 
+                type="text"
+                value={vehicleColor || ""}
+                onChange={(e) => setVehicleColor(e.target.value)}
+              />
+            </div>          
 
             <div className="form-group">
               <label>Vehicle Year</label>
@@ -167,6 +122,8 @@ export default function PolicyNewClient({
               onChange={(e) => setYearInput(Number(e.target.value))} />
               
             </div>
+
+            
 
               <div className="form-group">
              <label>Partners</label>
@@ -195,8 +152,8 @@ export default function PolicyNewClient({
                 >
                   <option value="">-- Select Vehicle Type --</option>
                   {(vehicleTypes || []).map((v) => (
-                    <option key={v.id} value={v.vehicle_Type}>
-                      {v.vehicle_Type}
+                    <option key={v.id} value={v.vehicle_type}>
+                      {v.vehicle_type}
                     </option>
                   ))}
                 </select>

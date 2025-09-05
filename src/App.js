@@ -5,15 +5,16 @@ import Due from './AdminApp/Due';
 import Policy from './AdminApp/Policy';
 import ClaimTable from './AdminApp/ClaimTable';
 import DeliveryTable from './AdminApp/DeliveryTable';
-import Client from './AdminApp/Client';
+import Client from './AdminApp/Client'; 
 import MonthlyDataController from './AdminApp/ControllerAdmin/MonthlyDataController';
-
+import ClientCreationForm from './AdminApp/AdminForms/ClientCreationForm'
 import PaymentRecords from './AdminApp/PaymentRecords';
 
 import VehicleDetails from './AdminApp/VehicleDetails';
 import ListClient from './AdminApp/ListClient';
 import EditClientForm from './AdminApp/EditClientForm';
 import EditVehicleDetailsForm from './AdminApp/EditVehicleDetailsForm';
+import NewPolicyController from './AdminApp/ControllerAdmin/NewPolicyController';
 import NewClientController from './AdminApp/ControllerAdmin/NewClientController';
 import {Routes, Route} from "react-router-dom";
 import Profile from './AdminApp/Profile';
@@ -57,7 +58,11 @@ function App() {
       
       <Route path="/appinsurance/MainArea" element={<MainArea /> }> 
         <Route path="/appinsurance/MainArea/Dashboard" element={<Dashboard />} />
+
+
+      
         <Route path="/appinsurance/MainArea/Client" element={<Client />} />
+        <Route path="/appinsurance/MainArea/Client/ClientCreationForm" element={<NewClientController/>} />
         <Route path="/appinsurance/MainArea/Due" element={<Due />} />
         <Route path="/appinsurance/MainArea/Policy" element={<Policy />} />
         <Route path="/appinsurance/MainArea/ClaimTable" element={<ClaimTable />} />
@@ -66,7 +71,7 @@ function App() {
         <Route path="/appinsurance/MainArea/PaymentRecords" element={<PaymentRecords />}/>
         <Route path="/appinsurance/MainArea/Profile" element={<Profile />} />
         
-        <Route path="/appinsurance/MainArea/Policy/PolicyNewClient" element={<NewClientController />} />
+        <Route path="/appinsurance/MainArea/Policy/PolicyNewClient" element={<NewPolicyController />} />
   
         <Route path="/appinsurance/MainArea/Policy/PolicyNewClient/VehicleDetails" element={<VehicleDetails />} />
 
