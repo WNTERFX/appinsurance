@@ -183,9 +183,9 @@ export default function NewPolicyController() {
 
     const policyData = {
     policy_type: "Auto",                
-    policy_inception: new Date(),       
+    policy_inception: null,   
     policy_expirty: null,               
-    policy_is_active: true,
+    policy_is_active: false,
     client_id: selectedClient,               
     partner_id: selectedPartner
   };
