@@ -1,4 +1,3 @@
-
 import { db } from "../../dbServer";
 
 export async function getClientInfo(clientID) {
@@ -41,11 +40,14 @@ export async function getVehicleInfo(policyIDs) {
   return data || [];
 }
 
-export async function getPolicyComputationInfo(clientID) {
+// ✅ Updated: fetch by policy_id instead of client_Id
+export async function getPolicyComputationInfo(policyIDs) {
+  if (!policyIDs.length) return [];
+
   const { data, error } = await db
     .from("policy_Computation_Table")
     .select("*")
-    .eq("client_Id", clientID);
+    .in("policy_id", policyIDs);
   
   if (error) throw error;
   return data || [];

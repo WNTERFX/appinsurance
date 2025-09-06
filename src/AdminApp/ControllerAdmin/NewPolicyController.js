@@ -182,7 +182,7 @@ export default function NewPolicyController() {
    
 
     const policyData = {
-    policy_type: "Auto",                
+    policy_type: "Comprehensive",                
     policy_inception: null,   
     policy_expirty: null,               
     policy_is_active: false,
@@ -213,18 +213,17 @@ export default function NewPolicyController() {
       return console.error("Error Saving Vehicle Details" + newVehicleDataResult.error);
     }
 
-
-
     const clientComputationData = {
-      client_Id: selectedClient,
-      original_Value: orginalVehicleCost,
-      current_Value: currentVehicleValueCost,
-      total_Premium: totalPremiumCost,
-      vehicle_Rate_Value: totalVehicleValueRate,
-      aon_Cost: actOfNatureCost
-    };
+        policy_id: policyId, // <-- use the newly created policy id
+        "original_Value": orginalVehicleCost,
+        "current_Value": currentVehicleValueCost,
+        "total_Premium": totalPremiumCost,
+        "vehicle_Rate_Value": totalVehicleValueRate,
+        "aon_Cost": actOfNatureCost
+      };
 
     const newComputationResult = await NewComputationCreation(clientComputationData);
+
 
     if (newComputationResult.success) {
       alert("Client and computation saved successfully!");
