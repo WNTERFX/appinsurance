@@ -18,7 +18,7 @@ export async function getPolicyInfo(clientID) {
       id,
       policy_type,
       policy_inception,
-      policy_expirty,
+      policy_expiry,
       policy_is_active,
       insurance_Partners(insurance_Name, insurance_Rate)
     `)
@@ -40,7 +40,7 @@ export async function getVehicleInfo(policyIDs) {
   return data || [];
 }
 
-// ✅ Updated: fetch by policy_id instead of client_Id
+
 export async function getPolicyComputationInfo(policyIDs) {
   if (!policyIDs.length) return [];
 

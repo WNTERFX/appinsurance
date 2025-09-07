@@ -89,13 +89,18 @@ export default function PolicyNewClient({
             </div>
 
             <div className="form-group">
-              <label>Vehicle Vin Number</label>
+              <label>Vehicle VIN Number</label>
               <input 
                 type="text"
                 value={vehicleVinNumber || ""}
+                maxLength={17} 
                 onChange={(e) => setVinNumber(e.target.value)}
               />
+              <small style={{ color: vehicleVinNumber?.length >= 17 ? "red" : "gray" }}>
+                {vehicleVinNumber?.length || 0}/17 characters
+              </small>
             </div>
+
 
             <div className="form-group">
               <label>Vehicle Plate Number</label>

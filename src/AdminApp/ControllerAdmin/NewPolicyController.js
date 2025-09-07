@@ -184,7 +184,7 @@ export default function NewPolicyController() {
     const policyData = {
     policy_type: "Comprehensive",                
     policy_inception: null,   
-    policy_expirty: null,               
+    policy_expiry: null,               
     policy_is_active: false,
     client_id: selectedClient,               
     partner_id: selectedPartner
