@@ -76,7 +76,7 @@ export default function NewPolicyController() {
   // -----------------------------
   const [vehicleName, setVehicleName] = useState("");
   const [vehicleColor, setVehicleColor] = useState("");
-  const [vehicleVinNumber, setVinNumber] = useState(0);
+  const [vehicleVinNumber, setVinNumber] = useState("");
   const [vehiclePlateNumber, setPlatnumber] = useState(0);
   const [vehicleYear, setVehicleYear] = useState(0)
 
