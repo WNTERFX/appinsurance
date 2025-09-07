@@ -1,6 +1,7 @@
 import "../styles/client-creation-styles.css";
-
+import { useNavigate } from "react-router-dom";
 export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
+  const navigate = useNavigate();
   return (
     <div className="client-creation-container">
       <h2>Client Creation Form</h2>
@@ -85,7 +86,12 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
       </div>
       <div className="client-creation-controls">
         <button type="button" onClick={onSubmit}>Submit</button>
-        <button type="button">Cancel</button>
+        <button
+          className="cancel-btn"
+          onClick={() => navigate("/appinsurance/MainArea/Client")}
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );

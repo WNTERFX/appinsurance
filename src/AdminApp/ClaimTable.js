@@ -1,22 +1,79 @@
 import './styles/claims-table-styles.css';
 import Filter from './Filter';
+import React, { useState, useRef, useEffect } from "react";
+import { FaUserCircle , FaMoon, FaSignOutAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+
 export default function ClaimTable() {
+    
+    const navigate = useNavigate();
+
+     const [open, setOpen] = useState(false);
+      const dropdownRef = useRef(null);
+      const buttonRef = useRef(null);
+    
+      // close when clicking outside
+      useEffect(() => {
+        function handleClickOutside(e) {
+          if (
+            dropdownRef.current &&
+            !dropdownRef.current.contains(e.target) &&
+            buttonRef.current &&
+            !buttonRef.current.contains(e.target)
+          ) {
+            setOpen(false);
+          }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+      }, []);
 
     return(
-     <div className="claims-records-container">
-            <div className="claims-record-header">
-                <p>Claims</p>
+     <div className="claims-container">
+            <div className="claims-header">
+                <div className="right-actions">
+                <p className="claims-title">Claims</p>
                 <input
                 type="text"
-                className="claims-record-search"
+                className="claims-search"
                 placeholder="Search clients..."
-                />
-
-                 <div className="filter-client-claims">
-                    <Filter />
-                 </div>   
-              
+                />              
             </div>
+            <div className="left-actions">
+        <div className="profile-menu">
+        <button
+          ref={buttonRef}
+          className="profile-button"
+          onClick={() => setOpen((s) => !s)}
+          aria-haspopup="true"
+          aria-expanded={open}
+        >
+            <span className="profile-name">Admin</span>
+          <FaUserCircle className="profile-icon" />
+          
+        </button>
+
+        <div
+          ref={dropdownRef}
+          className={`dropdown ${open ? "open" : ""}`}
+          role="menu"
+          aria-hidden={!open}
+        >
+          <button className="dropdown-item">
+                <FaMoon className="dropdown-icon" />
+                Dark Mode
+              </button>
+              <button className="dropdown-item" onClick={() => navigate("/appinsurance")}>
+                <FaSignOutAlt className="dropdown-icon" />
+                Log Out
+              </button>
+        </div>
+        </div>
+        </div>
+
+            </div>
+        
+
             <div className="claims-records-content">
             <div className="claims-data-field">
                 <div className="control-options-claims">
@@ -70,6 +127,9 @@ export default function ClaimTable() {
             </div>
             
             </div>  
+             
+
+
     </div>
     );
 }

@@ -54,8 +54,9 @@ export default function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              <div className="password-button"></div>
-              <button type="submit">Login</button>
+              <div className="button-wrapper">
+              <button type="submit" className="btn btn-button">Login</button>
+              </div>
             </form>
           </div>
         </div>

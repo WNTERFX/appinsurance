@@ -1,29 +1,21 @@
-
-
-
+* {
+    box-sizing: border-box;
+}
 .payment-records-container{
-    background-color: #F2F5FA;
-    font-family: 'Inter', sans-serif;
-    margin-left: 200px;
-    margin-right: 1%; 
+background-color: #F2F5FA;
+font-family: 'Inter', sans-serif;
+height: auto;
+
+max-width: 100%;         
+overflow-x: hidden; 
     
-
 }
 
-.payment-record-header {
-    display: flex;
-    gap: 30px;
+.Payment-title, .due-title{
+  margin: 10;
+  font-size: 24px;
+  font-weight: 600;
 }
-
-.payment-records-container > .payment-record-header{
-    
-    color: #222;
-    font-size: 30px;
-    align-items: center;
-    margin-bottom: 33px;
-   
-}
-
 
 .record-search {
     padding: 10px 15px;
@@ -31,6 +23,23 @@
     border-radius: 8px;
     border: 1px solid #ccc;
     width: 250px;
+}
+
+.payment-records-container > .payment-record-header{
+    
+    color: #222;
+    font-size: 30px;
+    margin-bottom: 20px;
+    padding: 10px 5px 0;
+   
+}
+
+.payment-record-header {
+      display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 10px;
+  position: relative;
 }
 
 .policy-data-field {
@@ -68,3 +77,12 @@
   
     
 }   
+
+.payment-records-content > div.policy-data-field{  
+    background-color: white;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    padding: 20px 5px 10px 5px;
+     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+

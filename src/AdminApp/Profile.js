@@ -5,7 +5,11 @@ import { useNavigate } from "react-router-dom";
 export default function Profile() {
      const navigate = useNavigate();
   return (
-    <div className="profile-page">
+     
+    <p>Manage Account</p>
+   
+   
+    /*<div className="profile-page">
       <p>Profile</p>
       <div className="profile-header">
         <div className="header-left">
@@ -56,5 +60,6 @@ export default function Profile() {
 
       <button className="logout-btn" onClick={() => navigate("/appinsurance")}>Log out</button>
     </div>
+   */
   );
 }

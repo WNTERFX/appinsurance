@@ -1,22 +1,47 @@
-.claims-records-container{
-    background-color: #F2F5FA;
-    font-family: 'Inter', sans-serif;
-    margin-left: 200px;
-    margin-right: 1%;
+* {
+    box-sizing: border-box;
 }
 
+.claims-container{
+background-color: #F2F5FA;
+font-family: 'Inter', sans-serif;
+height: auto;
+max-width: 100%;         
+overflow-x: hidden; 
+}
 
+.claims-title {
+  margin: 10;
+  font-size: 24px;
+  font-weight: 600;
+}
 
-.claims-records-container > div.claims-record-header {
+.claims-search {
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    width: 250px;
+}
+
+.claims-container > div.claims-header {
     
     color: #222;
     font-size: 30px;
-    align-items: center;
-    margin-bottom: 9px;
+    margin-bottom: 20px;
+    padding: 10px 5px 0;
 
     
 }
 
+.claims-header{
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 10px;
+  position: relative;
+
+}
 
 .claims-records-content > div.claims-data-field{  
     background-color: white;
@@ -26,33 +51,11 @@
      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.claims-record-header{
-    display: flex;
-    gap: 20px; 
-    align-items: center;
-    color: #222;
-    font-size: 30px;
-
-
-}
-
-.claims-record-header h2 {
-    margin: 0;
-    font-size: 30px;
-}
-
-.claims-record-search {
-    padding: 10px 15px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    width: 250px;
-}
-
 .claims-data-field {
     padding: 20px 5px 10px 5px;
     background-color: white;;
 }
+
 .claims-table {
     width: 100%;
     margin: 0 auto;
@@ -65,8 +68,6 @@
     padding: 20px 5px 10px 5px;
     
 }
-
-
 
 .claims-table > table > thead > tr > th {
     padding: 10px;
