@@ -186,16 +186,23 @@ export default function NewPolicyController() {
     policy_inception: null,   
     policy_expiry: null,               
     policy_is_active: false,
-    client_id: selectedClient,               
-    partner_id: selectedPartner
+    client_id: selectedClient?.uid,               
+    partner_id: selectedPartner?.id
   };
 
   const { success: policySuccess, data: policyRow, error: policyError } =
     await NewPolicyCreation(policyData);
 
+    
+
   if (!policySuccess) {
     return alert("Error saving policy: " + policyError);
   }
+
+        const selectedVehicleType = vehicleTypes.find(
+        (v) => v.vehicle_type === selected
+      );
+
 
       const policyId = policyRow[0].id;
 
@@ -205,7 +212,8 @@ export default function NewPolicyController() {
       plate_num: vehiclePlateNumber,
       vehicle_year: yearInput,  
       vin_num: vehicleVinNumber,
-      policy_id: policyId
+      policy_id: policyId,
+      vehicle_type_id: selectedVehicleType?.id 
     }
 
     const newVehicleDataResult = await NewVehicleCreation(vehicleData);

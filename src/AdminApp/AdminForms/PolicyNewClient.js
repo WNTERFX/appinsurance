@@ -58,23 +58,20 @@ export default function PolicyNewClient({
 
             <div className="form-group">
               <label>Client</label>
-              <select
-                value={selectedClient || ""}
+             <select
+                value={selectedClient?.uid || ""}
                 onChange={(e) => {
-                  console.log("Form - Client selected:", e.target.value);
-                  setSelectedClient(e.target.value);
+                  const client = clients.find(c => c.uid === e.target.value);
+                  setSelectedClient(client);
                 }}
                 required
               >
                 <option value="">-- Select Client --</option>
-                {clients.map((c) => {
-                  console.log("Rendering client option:", c.uid, c.first_Name); 
-                  return (
-                    <option key={c.uid} value={c.uid}>
-                      {c.first_Name} {c.middle_Name || ""} {c.family_Name}
-                    </option>
-                  );
-                })}
+                {clients.map((c) => (
+                  <option key={c.uid} value={c.uid}>
+                    {c.first_Name} {c.middle_Name || ""} {c.family_Name}
+                  </option>
+                ))}
               </select>
             </div>
                     
