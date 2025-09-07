@@ -8,7 +8,14 @@ font-family: 'Inter', sans-serif;
 height: auto;
 max-width: 100%;         
 overflow-x: hidden; 
+margin-left: 100px;
     
+}
+
+@media screen and (max-width: 1920px) {
+  .Policy-container {
+    margin-left: 10px; /* smaller margin */
+  }
 }
 
 .Policy-container > div.Policy-header {

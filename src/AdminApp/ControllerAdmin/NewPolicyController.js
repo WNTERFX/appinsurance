@@ -187,7 +187,7 @@ export default function NewPolicyController() {
     policy_expiry: null,               
     policy_is_active: false,
     client_id: selectedClient?.uid,               
-    partner_id: selectedPartner?.id
+    partner_id: selectedPartner
   };
 
   const { success: policySuccess, data: policyRow, error: policyError } =
