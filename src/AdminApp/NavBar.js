@@ -96,23 +96,21 @@ export default function NavBar( {onMinimizeChange}) {
           )}
         </Link>
 
-     {/** <Link to="/appinsurance/MainArea/DeliveryTable" className={"side-bar-item" + (isActive("/appinsurance/MainArea/DeliveryTable") ? " active" : "")}>
-        {isMinimize ? (
-         <LuMail />
-        ) : (
+      <Link to="/appinsurance/MainArea/DeliveryTable" className={"side-bar-item" + (isActive("/appinsurance/MainArea/DeliveryTable") ? " active" : "")}>
+        {isMinimize ? <LuMail /> : (
           <div className="side-bar-label">
-            <LuMail   className="side-bar-icon" />
-            <span className="side-bar-name">Deliveries</span>
+            <LuMail  className="side-bar-icon" />
+            <span>Deliveries</span>
           </div>
         )}
-      </Link>  */}
+      </Link>  
 
 
        <Link to="/appinsurance/MainArea/MonthlyData" className={"side-bar-item" + (isActive("/appinsurance/MainArea/MonthlyData") ? " active" : "")}>
           {isMinimize ? <LuActivity /> : (
             <div className="side-bar-label">
               <LuActivity className="side-bar-icon" />
-              <span>Records</span>
+              <span>Reports</span>
             </div>
           )}
         </Link>

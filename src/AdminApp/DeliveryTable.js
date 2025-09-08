@@ -11,9 +11,7 @@ export default function DeliveryTable() {
                 className="delivery-record-search"
                 placeholder="Search clients..."
                 />
-                 <div className="filter-client-delivery">
-                    <Filter />
-                </div>   
+                  
               
             </div>
             <div className="delivery-records-content">
