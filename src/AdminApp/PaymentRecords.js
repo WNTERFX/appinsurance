@@ -5,6 +5,7 @@ import { FaUserCircle , FaMoon, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState , useRef } from "react";
 import ClientTableDue from './ClientTableDue';
+import  DropdownAccounts  from './DropDownAccounts'
 
 export default function PaymentRecords() {
 
@@ -59,22 +60,14 @@ export default function PaymentRecords() {
                                   
                    </button>
                         
-                  <div
-                   ref={dropdownRef}
-                  className={`dropdown ${open ? "open" : ""}`}
-                  role="menu"
-                  aria-hidden={!open}
-                   >
-                  <button className="dropdown-item">
-                   <FaMoon className="dropdown-icon" />
-                    Dark Mode
-                  </button>
-                    <button className="dropdown-item" onClick={() => navigate("/appinsurance")}>
-                    <FaSignOutAlt className="dropdown-icon" />
-                    Log Out
-                    </button>
-                     </div>          
-                     </div>
+                  <div>
+                  <DropdownAccounts 
+                   open={open}
+                    onClose={() => setOpen(false)}
+                    onDarkMode={() => console.log("Dark Mode toggled")}
+                  />
+                  </div>          
+             </div>
                                 
 
             </div>

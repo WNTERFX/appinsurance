@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState , useRef } from "react";
 import PolicyTable from "./AdminTables/PolicyTable";
-import Filter from "./Filter";
+import  DropdownAccounts  from './DropDownAccounts'
 import {fetchClients} from "./AdminActions/ClientActions";
 import ClientModal from "./ClientInfo";
 import { FaPlus, FaArchive, FaUser } from "react-icons/fa";
@@ -83,20 +83,12 @@ const navigate = useNavigate();
                       
                     </button>
             
-                    <div
-                      ref={dropdownRef}
-                      className={`dropdown ${open ? "open" : ""}`}
-                      role="menu"
-                      aria-hidden={!open}
-                    >
-                      <button className="dropdown-item">
-                            <FaMoon className="dropdown-icon" />
-                            Dark Mode
-                          </button>
-                          <button className="dropdown-item" onClick={() => navigate("/appinsurance")}>
-                            <FaSignOutAlt className="dropdown-icon" />
-                            Log Out
-                          </button>
+                    <div>
+                     <DropdownAccounts 
+                       open={open}
+                       onClose={() => setOpen(false)}
+                       onDarkMode={() => console.log("Dark Mode toggled")}
+                       />
                     </div>          
                     </div>
                 </div>

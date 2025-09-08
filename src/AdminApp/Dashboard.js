@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { BarChart } from '@mui/x-charts/BarChart';
 
 import { FaUserCircle , FaMoon, FaSignOutAlt } from "react-icons/fa";
+import  DropdownAccounts  from './DropDownAccounts'
 
 
 export default function Dashboard() {
@@ -28,6 +29,8 @@ export default function Dashboard() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+
 
  
     return (
@@ -59,20 +62,12 @@ export default function Dashboard() {
           
         </button>
 
-        <div
-          ref={dropdownRef}
-          className={`dropdown ${open ? "open" : ""}`}
-          role="menu"
-          aria-hidden={!open}
-        >
-          <button className="dropdown-item">
-                <FaMoon className="dropdown-icon" />
-                Dark Mode
-              </button>
-              <button className="dropdown-item" onClick={() => navigate("/appinsurance")}>
-                <FaSignOutAlt className="dropdown-icon" />
-                Log Out
-              </button>
+        <div>
+          <DropdownAccounts 
+          open={open}
+          onClose={() => setOpen(false)}
+          onDarkMode={() => console.log("Dark Mode toggled")}
+          />
         </div>
       </div>
     </div>

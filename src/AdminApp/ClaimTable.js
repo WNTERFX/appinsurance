@@ -3,6 +3,7 @@ import Filter from './Filter';
 import React, { useState, useRef, useEffect } from "react";
 import { FaUserCircle , FaMoon, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import  DropdownAccounts  from './DropDownAccounts'
 
 export default function ClaimTable() {
     
@@ -53,20 +54,12 @@ export default function ClaimTable() {
           
         </button>
 
-        <div
-          ref={dropdownRef}
-          className={`dropdown ${open ? "open" : ""}`}
-          role="menu"
-          aria-hidden={!open}
-        >
-          <button className="dropdown-item">
-                <FaMoon className="dropdown-icon" />
-                Dark Mode
-              </button>
-              <button className="dropdown-item" onClick={() => navigate("/appinsurance")}>
-                <FaSignOutAlt className="dropdown-icon" />
-                Log Out
-              </button>
+        <div>
+          <DropdownAccounts 
+           open={open}
+           onClose={() => setOpen(false)}
+           onDarkMode={() => console.log("Dark Mode toggled")}
+           />
         </div>
         </div>
         </div>

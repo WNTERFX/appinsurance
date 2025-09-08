@@ -3,6 +3,7 @@ import ClientTable from "./AdminTables/ClientTable";
 import { FaPlus, FaArchive, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { FaUserCircle , FaMoon, FaSignOutAlt } from "react-icons/fa";
+import  DropdownAccounts  from './DropDownAccounts'
 
 export default function Client() {
 
@@ -71,20 +72,12 @@ export default function Client() {
           
         </button>
 
-        <div
-          ref={dropdownRef}
-          className={`dropdown ${open ? "open" : ""}`}
-          role="menu"
-          aria-hidden={!open}
-        >
-          <button className="dropdown-item">
-                <FaMoon className="dropdown-icon" />
-                Dark Mode
-              </button>
-              <button className="dropdown-item" onClick={() => navigate("/appinsurance")}>
-                <FaSignOutAlt className="dropdown-icon" />
-                Log Out
-              </button>
+        <div>
+           <DropdownAccounts 
+            open={open}
+            onClose={() => setOpen(false)}
+             onDarkMode={() => console.log("Dark Mode toggled")}
+            />
         </div>
       </div>
     </div>
