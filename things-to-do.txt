@@ -1,0 +1,6 @@
+
+
+
+1. In the clients table, when a row is clicked, it should show the current policies for that client.
+2. Finish the CRUD, especially the Update and Delete (archival, delete should only be used when discarding heavily errored inputs)
+3. 
