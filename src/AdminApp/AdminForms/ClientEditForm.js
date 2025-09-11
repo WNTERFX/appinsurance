@@ -1,174 +1,142 @@
-import "../styles/client-update-styles.css"
-
-
+import "../styles/client-update-styles.css";
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { editClient } from "../AdminActions/EditClientActions";
 
 export default function ClientEditForm() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    // temporary values for now
-    const originalData = {
-    prefix: "Mr.",
-    firstName: "John",
-    middleName: "M.",
-    lastName: "Doe",
-    homeAddress: "123 Elm Street",
-    phoneNumber: "09123456789",
-    email: "john.doe@email.com"
+  // client data passed from table
+  const client = location.state?.client;
+
+  // original data from Supabase
+  const originalData = {
+    uid: client?.uid || "",
+    prefix: client?.prefix || "",
+    first_Name: client?.first_Name || "",
+    middle_Name: client?.middle_Name || "",
+    family_Name: client?.family_Name || "",
+    address: client?.address || "",
+    phone_Number: client?.phone_Number || "",
+    email: client?.email || "",
   };
 
-  const updatedData = {
-    prefix: "",
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    homeAddress: "",
-    phoneNumber: "",
-    email: ""
+  const [formData, setFormData] = useState({ ...originalData });
+  const [errors] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
 
-return (
-  <div className="client-update-container">
-    <h2>Update Client Information</h2>
-    <div className="form-card-client-update">
-      <div className="form-grid-client-update">
-        <div className="form-left-column-client-update">
+  const handleSubmit = async () => {
+ 
+    console.log("Submitting UID:", formData.uid); 
 
-          {/* Prefix */}
-          <div className="form-group-client-update">
-            <label>Prefix</label>
-            <input
-              type="text"
-              value={originalData?.prefix || ""}
-              readOnly
-              className="original-value"
-            />
-            <input
-              type="text"
-              name="prefix"
-              value={updatedData?.prefix || ""}
-              onChange={onChange}
-            />
+    try {
+      const result = await editClient(
+        formData.uid,
+        formData.prefix,
+        formData.first_Name,
+        formData.middle_Name,
+        formData.family_Name,
+        formData.address,
+        formData.phone_Number,
+        formData.email
+      );
+
+      //  update success
+    alert("Client updated successfully!");
+    navigate("/appinsurance/MainArea/Client");
+
+  } catch (error) {
+    console.error("Update error:", error);
+    alert("Error updating client.");
+  }
+  };
+
+  return (
+    <div className="client-update-container">
+      <h2>Update Client Information</h2>
+      <div className="form-card-client-update">
+        <div className="form-grid-client-update">
+          <div className="form-left-column-client-update">
+
+            {/* Prefix */}
+            <div className="form-group-client-update">
+              <label>Prefix</label>
+              <input type="text" value={originalData.prefix} readOnly className="original-value" />
+              <input type="text" name="prefix" value={formData.prefix} onChange={handleChange} />
+            </div>
+
+            {/* First Name */}
+            <div className="form-group-client-update">
+              <label>First Name *</label>
+              <input type="text" value={originalData.first_Name} readOnly className="original-value" />
+              <input type="text" name="first_Name" value={formData.first_Name} onChange={handleChange} />
+              {errors.first_Name && <p style={{ color: "red" }}>{errors.first_Name}</p>}
+            </div>
+
+            {/* Middle Name */}
+            <div className="form-group-client-update">
+              <label>Middle Name</label>
+              <input type="text" value={originalData.middle_Name} readOnly className="original-value" />
+              <input type="text" name="middle_Name" value={formData.middle_Name} onChange={handleChange} />
+            </div>
+
+            {/* Family Name */}
+            <div className="form-group-client-update">
+              <label>Family Name</label>
+              <input type="text" value={originalData.family_Name} readOnly className="original-value" />
+              <input type="text" name="family_Name" value={formData.family_Name} onChange={handleChange} />
+            </div>
+
+            {/* Address */}
+            <div className="form-group-client-update">
+              <label>Address *</label>
+              <input type="text" value={originalData.address} readOnly className="original-value" />
+              <input type="text" name="address" value={formData.address} onChange={handleChange} />
+              {errors.address && <p style={{ color: "red" }}>{errors.address}</p>}
+            </div>
+
+            {/* Phone Number */}
+            <div className="form-group-client-update">
+              <label>Phone Number *</label>
+              <input type="text" value={originalData.phone_Number} readOnly className="original-value" />
+              <input
+                type="text"
+                name="phone_Number"
+                value={formData.phone_Number}
+                onChange={handleChange}
+                placeholder="0xxxxxxxxxx"
+              />
+              {errors.phone_Number && <p style={{ color: "red" }}>{errors.phone_Number}</p>}
+            </div>
+
+            {/* Email */}
+            <div className="form-group-client-update">
+              <label>Email *</label>
+              <input type="text" value={originalData.email} readOnly className="original-value" />
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="example@email.com"
+              />
+              {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
+            </div>
+
           </div>
-
-          {/* First Name */}
-          <div className="form-group-client-update">
-            <label>First Name *</label>
-            <input
-              type="text"
-              value={originalData?.firstName || ""}
-              readOnly
-              className="original-value"
-            />
-            <input
-              type="text"
-              name="firstName"
-              value={updatedData?.firstName || ""}
-              onChange={handleFirstNameChange}
-            />
-            {errors.firstName && <p style={{ color: "red" }}>{errors.firstName}</p>}
-          </div>
-
-          {/* Middle Name */}
-          <div className="form-group-client-update">
-            <label>Middle Name</label>
-            <input
-              type="text"
-              value={originalData?.middleName || ""}
-              readOnly
-              className="original-value"
-            />
-            <input
-              type="text"
-              name="middleName"
-              value={updatedData?.middleName || ""}
-              onChange={onChange}
-            />
-          </div>
-
-          {/* Last Name */}
-          <div className="form-group-client-update">
-            <label>Last/Family Name</label>
-            <input
-              type="text"
-              value={originalData?.lastName || ""}
-              readOnly
-              className="original-value"
-            />
-            <input
-              type="text"
-              name="lastName"
-              value={updatedData?.lastName || ""}
-              onChange={onChange}
-            />
-          </div>
-
-          {/* Home Address */}
-          <div className="form-group-client-update">
-            <label>Home Address *</label>
-            <input
-              type="text"
-              value={originalData?.homeAddress || ""}
-              readOnly
-              className="original-value"
-            />
-            <input
-              type="text"
-              name="homeAddress"
-              value={updatedData?.homeAddress || ""}
-              onChange={handleHomeAddressChange}
-            />
-            {errors.homeAddress && <p style={{ color: "red" }}>{errors.homeAddress}</p>}
-          </div>
-
-          {/* Phone Number */}
-          <div className="form-group-client-update">
-            <label>Phone Number *</label>
-            <input
-              type="text"
-              value={originalData?.phoneNumber || ""}
-              readOnly
-              className="original-value"
-            />
-            <input
-              type="text"
-              name="phoneNumber"
-              value={updatedData?.phoneNumber || ""}
-              onChange={handlePhoneChange}
-              onBlur={handlePhoneBlur}
-              placeholder="0xxxxxxxxxx"
-            />
-            {errors.phoneNumber && <p style={{ color: "red" }}>{errors.phoneNumber}</p>}
-          </div>
-
-          {/* Email */}
-          <div className="form-group-client-update">
-            <label>Email Address *</label>
-            <input
-              type="text"
-              value={originalData?.email || ""}
-              readOnly
-              className="original-value"
-            />
-            <input
-              type="email"
-              name="email"
-              value={updatedData?.email || ""}
-              onChange={handleEmailChange}
-              placeholder="example@email.com"
-            />
-            {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
-          </div>
-
         </div>
       </div>
-    </div>
 
-    <div className="client-update-controls">
-      <button type="button" onClick={handleSubmit}>Update</button>
-      <button className="cancel-btn" onClick={() => navigate("/appinsurance/MainArea/Client")}>Cancel</button>
+      <div className="client-update-controls">
+        <button type="button" onClick={handleSubmit}>Update</button>
+        <button className="cancel-btn" onClick={() => navigate("/appinsurance/MainArea/Client")}>Cancel</button>
+      </div>
     </div>
-  </div>
-);
-
-    
+  );
 }

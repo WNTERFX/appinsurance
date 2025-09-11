@@ -1,6 +1,6 @@
 import { db } from "../../dbServer";
 
-export async function editClient (clientId, updatePrefix, updateFirst, updateMiddle, updateFamily, updateSuffix, updateAddress, updatePhoneNum, updateEmail) {
+export async function editClient (clientId, updatePrefix, updateFirst, updateMiddle, updateFamily, updateAddress, updatePhoneNum, updateEmail) {
 
     const {data, error} = await db 
     .from("clients_Table")
@@ -9,9 +9,8 @@ export async function editClient (clientId, updatePrefix, updateFirst, updateMid
       first_Name: updateFirst,
       middle_Name: updateMiddle,
       family_Name: updateFamily,
-      suffix: updateSuffix,
       address: updateAddress,
-      dphone_Number: updatePhoneNum,
+      phone_Number: updatePhoneNum,
       email: updateEmail
     })
     .eq("uid", clientId)
