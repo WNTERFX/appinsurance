@@ -59,6 +59,7 @@ export default function ClientTable() {
                   <td>{client.employee?.personnel_Name || "Unknown"}</td>
                   <td>{client.address}</td>
                   <td>{client.phone_Number}</td>
+                  
                   <td className="actions-button-client-table">
                     <button
                       className="edit-btn-client"

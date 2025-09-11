@@ -59,12 +59,23 @@ tr:hover {
   background-color: #e6f7ff;
 }
 
+.actions-button-client-table {
+
+    max-width: 90px;
+    min-width: 100px;
+}
+
 
 .actions-button-client-table .edit-btn-client .archive-btn-client {
     display: flex;
     justify-content:flex-start;
     flex-direction: row;
-   
+    
+}
+
+.edit-btn-client, .archive-btn-client {
+    margin: 3px;
+    padding: 15px;
 }
 
 
