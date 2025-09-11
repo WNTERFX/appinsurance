@@ -59,15 +59,24 @@ export default function ClientTable() {
                   <td>{client.employee?.personnel_Name || "Unknown"}</td>
                   <td>{client.address}</td>
                   <td>{client.phone_Number}</td>
-                  <td>
+                  <td className="actions-button-client-table">
                     <button
-                      className="edit-btn"
+                      className="edit-btn-client"
+                      title="Edit the information of this Client"
                       onClick={(e) => { 
                         e.stopPropagation(); // prevent row click
                         handleEditClick(client); //open ClientEditForm
                       }}
                     >
                       <FaEdit />
+                       Edit
+                    </button>
+
+                    <button 
+                      className="archive-btn-client"
+                      title="Archive this Client">
+
+                        Archive 
                     </button>
                   </td>
                 </tr>

@@ -60,6 +60,14 @@ tr:hover {
 }
 
 
+.actions-button-client-table .edit-btn-client .archive-btn-client {
+    display: flex;
+    justify-content:flex-start;
+    flex-direction: row;
+   
+}
+
+
 .table-scroll-wrapper::-webkit-scrollbar {
     height: 8px;
 }
