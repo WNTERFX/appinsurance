@@ -40,11 +40,7 @@ export default function Dashboard() {
     {/* Left side */}
     <div className="right-actions">
       <p className="dashboard-title">Dashboard</p>
-      <input
-        type="text"
-        className="Dashboard-search"
-        placeholder="Search clients..."
-      />
+      
     </div>
 
     {/* Right side */}

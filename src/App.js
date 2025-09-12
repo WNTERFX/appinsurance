@@ -7,7 +7,7 @@ import ClaimTable from './AdminApp/ClaimTable';
 import DeliveryTable from './AdminApp/DeliveryTable';
 import Client from './AdminApp/Client'; 
 import MonthlyDataController from './AdminApp/ControllerAdmin/MonthlyDataController';
-import ClientCreationForm from './AdminApp/AdminForms/ClientCreationForm'
+import ClientArchiveTable from './AdminApp/AdminTables/ClientArchiveTable';
 import PaymentRecords from './AdminApp/PaymentRecords';
 
 import VehicleDetails from './AdminApp/VehicleDetails';
@@ -71,6 +71,7 @@ function App() {
         <Route path="/appinsurance/MainArea/Due" element={<Due />} />
         <Route path="/appinsurance/MainArea/Policy" element={<Policy />} />
         <Route path="/appinsurance/MainArea/ClaimTable" element={<ClaimTable />} />
+       
         <Route path="/appinsurance/MainArea/DeliveryTable" element={<DeliveryTable />} />
         <Route path="/appinsurance/MainArea/MonthlyData" element={<MonthlyDataController />}/>
         <Route path="/appinsurance/MainArea/PaymentRecords" element={<PaymentRecords />}/>

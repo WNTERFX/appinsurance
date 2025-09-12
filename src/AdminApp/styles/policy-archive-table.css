@@ -9,6 +9,15 @@
   border-radius: 10px;
 }
 
+.policy-id-column {
+  max-width: 40px;        /* smaller width for Policy ID */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9rem;       /* slightly smaller font */
+}
+
+
 .policy-table-scroll {
   overflow-x: auto;
   overflow-y: hidden;
@@ -30,7 +39,7 @@
   text-align: left;
   background-color: #F2F5FA;
   white-space: nowrap;
-  min-width: 150px;
+  min-width: 120px;
 }
 
 .policy-table-scroll > table > tbody > tr > td {
@@ -41,9 +50,6 @@
   min-width: 120px;
 }
 
-tr:hover {
-  background-color: #f0f0f0;
-}
 
 .policy-table-clickable-row {
   cursor: pointer;

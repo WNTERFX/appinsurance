@@ -2,13 +2,20 @@
     box-sizing: border-box;
 }
 
-.claims-container{
+.claims-container {
 background-color: #F2F5FA;
 font-family: 'Inter', sans-serif;
 height: auto;
 max-width: 100%;         
 overflow-x: hidden; 
 }
+
+  @media (min-width: 3440px) {
+  .claims-container {
+    padding-left: 100px;
+  }
+}
+
 
 .claims-title {
   margin: 10;

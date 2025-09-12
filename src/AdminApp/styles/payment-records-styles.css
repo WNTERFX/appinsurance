@@ -1,7 +1,7 @@
 * {
     box-sizing: border-box;
 }
-.payment-records-container{
+.payment-records-container {
 background-color: #F2F5FA;
 font-family: 'Inter', sans-serif;
 height: auto;
@@ -9,6 +9,12 @@ height: auto;
 max-width: 100%;         
 overflow-x: hidden; 
     
+}
+
+  @media (min-width: 3440px) {
+  .payment-records-container {
+    padding-left: 100px;
+  }
 }
 
 .Payment-title, .due-title{

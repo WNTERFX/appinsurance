@@ -11,6 +11,13 @@ overflow-x: hidden;
 
 }
 
+ @media (min-width: 3440px) {
+  .Client-container {
+    padding-left: 100px;
+  }
+}
+
+
 .client-title {
   margin: 10;
   font-size: 24px;

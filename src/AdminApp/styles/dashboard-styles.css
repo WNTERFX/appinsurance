@@ -10,6 +10,7 @@
   padding: 10px;
   position: relative;
   
+  
 }
 
 .right-actions {
@@ -114,17 +115,27 @@
   color: #555;
 }
 .dashboard-container{
-background-color: #F2F5FA;
-font-family: 'Inter', sans-serif;
-height: auto;
-/*padding-left: 230px;*/
-max-width: 100%;         
-overflow-x: hidden; 
-    
+  background-color: #F2F5FA;
+  font-family: 'Inter', sans-serif;
+  height: auto;
+  /*padding-left: 230px;*/
+  max-width: 100%;         
+  overflow-x: hidden; 
+      
       
   }
 
-  .dashboard-container > div.dashboard-header {
+  
+
+  @media (min-width: 3440px) {
+  .dashboard-container {
+    padding-left: 100px;
+  }
+}
+
+
+
+.dashboard-container > div.dashboard-header {
       
       color: #222;
     
