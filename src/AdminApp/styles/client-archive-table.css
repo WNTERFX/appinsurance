@@ -1,15 +1,15 @@
-.client-table-container h2 {
+.client-archive-table-container h2 {
   margin-left: 10px;
 }
 
-.client-table-wrapper {
+.client-archive-table-wrapper {
   width: 100%;
   margin: 0 auto;
   padding: 15px 0 0 0;
   border-radius: 10px;
 }
 
-.client-table-scroll {
+.client-archive-table-scroll {
   overflow-x: auto;
   overflow-y: hidden;
   width: 100%;
@@ -18,14 +18,14 @@
   scroll-behavior: smooth;
 }
 
-.client-table-scroll > table {
+.client-archive-table-scroll > table {
   width: 100%;
   min-width: 1200px;
   padding: 20px 5px 10px 5px;
   border-collapse: collapse;
 }
 
-.client-table-scroll > table > thead > tr > th {
+.client-archive-table-scroll > table > thead > tr > th {
   padding: 20px 15px;
   text-align: left;
   background-color: #F2F5FA;
@@ -33,45 +33,46 @@
   min-width: 150px;
 }
 
-.client-table-scroll > table > tbody > tr > td {
+.client-archive-table-scroll > table > tbody > tr > td {
+  width: 100%;
   text-align: left;
   padding: 25px 15px 40px;
   white-space: nowrap;
   min-width: 120px;
 }
 
-.client-table-clickable-row {
+.client-archive-table-clickable-row {
   cursor: pointer;
   font-size: 20px;
 }
 
-.client-table-clickable-row > td {
+.client-archive-table-clickable-row > td {
   padding: 12px;
 }
 
-.client-table-clickable-row:hover {
+.client-archive-table-clickable-row:hover {
   background-color: #e6f7ff;
 }
 
-.client-table-scroll::-webkit-scrollbar {
+.client-archive-table-scroll::-webkit-scrollbar {
   height: 8px;
 }
 
-.client-table-scroll::-webkit-scrollbar-track {
+.client-archive-table-scroll::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 4px;
 }
 
-.client-table-scroll::-webkit-scrollbar-thumb {
+.client-archive-table-scroll::-webkit-scrollbar-thumb {
   background: #c1c1c1;
   border-radius: 4px;
 }
 
-.client-table-scroll::-webkit-scrollbar-thumb:hover {
+.client-archive-table-scroll::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
 
-.client-table-actions button {
+.client-archive-table-actions button {
   margin-right: 8px;
   padding: 6px 10px;
   border-radius: 6px;
@@ -79,6 +80,6 @@
   cursor: pointer;
 }
 
-.client-table-actions button:hover {
+.client-archive-table-actions button:hover {
   background-color: #f0f0f0;
 }

@@ -34,11 +34,7 @@ export default function ClaimTable() {
             <div className="claims-header">
                 <div className="right-actions">
                 <p className="claims-title">Claims</p>
-                <input
-                type="text"
-                className="claims-search"
-                placeholder="Search clients..."
-                />              
+                          
             </div>
             <div className="left-actions">
         <div className="profile-menu">

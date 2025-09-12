@@ -34,7 +34,7 @@ export default function PolicyTable() {
     if (!confirmArchive) return;
 
     try {
-      await archivePolicy(policyId); // call to your Supabase update
+      await archivePolicy(policyId); 
       setPolicies((prev) =>
         prev.filter((p) => p.id !== policyId) // remove from list immediately
       );
@@ -114,6 +114,7 @@ export default function PolicyTable() {
 
                       <td className="policy-table-actions">
                         <button>Edit</button>
+                        
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
