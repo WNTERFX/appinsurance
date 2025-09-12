@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import ClientInfo from "../ClientInfo";
-import "../styles/policy-archive-table.css"; // you can rename this to policy-table.css if you want
+import "../styles/policy-archive-table.css"; 
 
-import { fetchPolicies } from "../AdminActions/PolicyActions";
+import { fetchPolicies } from "../AdminActions/PolicyArchiveActions";
 
 export default function PolicyArchiveTable() {
   const [policies, setPolicies] = useState([]);

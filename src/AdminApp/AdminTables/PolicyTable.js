@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import ClientInfo from "../ClientInfo";
 import "../styles/policy-table-styles.css";
-import { fetchPolicies } from "../AdminActions/PolicyActions";
+import { fetchPolicies, archivePolicy } from "../AdminActions/PolicyActions";
 
 export default function PolicyTable() {
   const [policies, setPolicies] = useState([]);
@@ -26,6 +26,23 @@ export default function PolicyTable() {
       clientId: policy.client_id,
     });
   };
+
+  const handleArchiveClick = async (policyId) => {
+    const confirmArchive = window.confirm(
+      "Proceed to archive this selection?"
+    );
+    if (!confirmArchive) return;
+
+    try {
+      await archivePolicy(policyId); // call to your Supabase update
+      setPolicies((prev) =>
+        prev.filter((p) => p.id !== policyId) // remove from list immediately
+      );
+    } catch (error) {
+      console.error("Error archiving policy:", error);
+    }
+  };
+
 
   return (
     <div className="policy-table-container">
@@ -97,7 +114,14 @@ export default function PolicyTable() {
 
                       <td className="policy-table-actions">
                         <button>Edit</button>
-                        <button>Archive</button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleArchiveClick(policy.id);
+                          }}
+                        >
+                          Archive
+                        </button>
                       </td>
                     </tr>
                   );

@@ -20,8 +20,8 @@ export async function fetchPolicies() {
         insurance_Rate
       )
     `)
-    .or("is_archived.is.null,is_archived.eq.false")
-    .is("archival_date", null) 
+    .eq("is_archived", true)      
+    .not("archival_date", "is", null) 
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -53,23 +53,10 @@ export async function getPolicyById(policyId) {
       )
     `)
     .eq('id', policyId)
-    .or("(is_archived.is.null,is_archived.eq.false)and(archival_date.is.null)") 
+    .eq("is_archived", true)          // must be true
+    .not("archival_date", "is", null) // must not be null
     .single();
 
   if (error) throw error;
   return data;
-}
-
-export async function archivePolicy(policyId) {
-  const { data, error } = await db
-    .from("policy_Table")
-    .update({
-      is_archived: true,
-      archival_date: new Date().toISOString().split("T")[0], 
-    })
-    .eq("id", policyId)
-    .select(); 
-
-  if (error) throw error;
-  return data?.[0] || null;
 }
