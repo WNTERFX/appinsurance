@@ -1,20 +1,63 @@
 import './moderator-styles/delivery-table-styles-moderator.css';
 import FilterModerator from './FilterModerator';
+import DropdownAccountsModerator from "./DropDownAccountsModerator";
+import { FaPlus, FaArchive, FaUserCircle } from "react-icons/fa";
+import { useEffect, useState, useRef } from "react";
 export default function DeliveryTableModerator() {
+
+      const [open, setOpen] = useState(false);
+        const dropdownRef = useRef(null);
+        const buttonRef = useRef(null);
+    
+        // dropdown close
+          useEffect(() => {
+            function handleClickOutside(e) {
+              if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(e.target) &&
+                buttonRef.current &&
+                !buttonRef.current.contains(e.target)
+              ) {
+                setOpen(false);
+              }
+            }
+            document.addEventListener("mousedown", handleClickOutside);
+            return () => document.removeEventListener("mousedown", handleClickOutside);
+          }, []);
 
     return(
      <div className="delivery-records-container-moderator">
             <div className="delivery-record-header-moderator">
-                <p>Delivery</p>
+                   <div className="right-actions-moderator">
+                <p className="deliveries-title-moderator">Delivery</p>
                 <input
                 type="text"
                 className="delivery-record-search-moderator"
                 placeholder="Search clients..."
                 />
-                 <div className="filter-client-delivery-moderator">
-                    <FilterModerator />
-                </div>   
-              
+               </div>
+               <div className="left-actions-moderator">
+                 <div className="profile-menu-moderator">
+                    <button
+                     ref={buttonRef}
+                     className="profile-button-moderator"
+                     onClick={() => setOpen((s) => !s)}
+                     aria-haspopup="true"
+                     aria-expanded={open}
+                     >
+                      <span className="profile-name-moderator">Agent:?</span>
+                      <FaUserCircle className="profile-icon-moderator" />
+                    </button>
+                                          
+                    <div>
+                   <DropdownAccountsModerator
+                     open={open}
+                      onClose={() => setOpen(false)}
+                     onDarkMode={() => console.log("Dark Mode toggled")}
+                     />
+                     </div>
+                    </div>
+                    </div>
             </div>
             <div className="delivery-records-content-moderator">
             <div className="delivery-data-field-moderator">

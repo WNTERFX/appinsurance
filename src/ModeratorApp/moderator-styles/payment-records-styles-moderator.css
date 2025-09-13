@@ -2,10 +2,11 @@
 
 
 .payment-records-container-moderator{
-    background-color: #F2F5FA;
-    font-family: 'Inter', sans-serif;
-    margin-left: 200px;
-    margin-right: 1%; 
+          background-color: #F2F5FA;
+font-family: 'Inter', sans-serif;
+height: auto;
+max-width: 100%;         
+overflow-x: hidden; 
     
 
 }

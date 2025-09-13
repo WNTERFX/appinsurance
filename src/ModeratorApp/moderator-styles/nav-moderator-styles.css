@@ -6,13 +6,41 @@ body, html {
 
 .nav-bar-moderator {
    position: fixed;
-   background-color: orange;
+   background-color: #DADADA;
+ 
    height: 100%;
-   width: 200px; 
+   width: 300px; 
    transition: width 0.3s ease;
+   border-right: 5px solid transparent;
+   
+   /*border-image-slice: 1;
+   border-left: none;
+   border-bottom: none;
+   border-top: none;*/
+   
+   display: flex;             
+  flex-direction: column; 
+
+
 }
 
-.nav-bar-moderator .logo-bar-moderator
+.side-bar-moderator-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;            /*  takes all remaining height below logo */
+  overflow-y: auto;   /* optional scroll if too many items */
+}
+
+.moderator-top-links {
+  flex: 1;            /*  pushes bottom-links down */
+}
+
+.moderator-bottom-links {
+  margin-top: auto;   /*  force it to bottom */
+  padding: 15px 0;
+}
+
+.nav-bar-moderator .logo-bar-moderator 
 {
    height: 100px;
    width: 100%;
@@ -24,40 +52,39 @@ body, html {
 }
 
 
-.logo-moderator {
+.logo {
    padding: 5px 0 5px 0;
    font-size: 20px;
-   margin-left: 20px;
+   margin-left: 10px;
    font-family: 'Inter', sans-serif;
 
 
    
 } 
 
-.logo-bar-moderator .logo-moderator:hover {
+.logo-bar-moderator .logo:hover {
    color: #ffffff;
    transition: color 0.3s ease;
 }
 
 
 
-.logo-bar-moderator .nav-bar-button {
+.logo-bar-moderator .nav-bar-button-moderator {
    transition: transform 0.3s ease;
    padding: 5px 0 5px 0;
-   padding-left: 10px;
-   background-color: transparent;;
+   padding-left: 25px;
+   background-color: transparent;
 }
 
 
-.side-bar-moderator .side-bar-item-moderator {
+.side-bar .side-bar-item-moderator {
    padding: 30px 0 30px 0;
-   color: black;
+   color: #000000;
    font-size: 30px;
    text-decoration: none;
    display: block;
-   background-color: #D9D9D9;
+   background-color: #DADADA;
    text-align:left;
-   margin-top: 5px;
    font-family: 'Inter', sans-serif;
    transition: padding 0.3s ease;
    border-radius: 8px;
@@ -65,33 +92,36 @@ body, html {
 
 }
 
-.side-bar-moderator .side-bar-item-moderator:hover {
-   background-color: #ffffff;
+.side-bar .side-bar-item-moderator:hover {
+   background-color: #8F71B1;
+   color: #ffffff;
 }
-.side-bar-moderator .side-bar-item-moderator.active {
-   background-color: #ffffff;
+.side-bar .side-bar-item-moderator.active {
+   background-color: #8F71B1;
+   color: #ffffff;
 }
 
-.nav-bar-moderator.minimize {
-   width: 50px; 
+.nav-bar-moderator.minimize {           /* little side bar*/
+   width: 80px;                    
    transition: width 0.3s ease
 }
 
-.nav-bar-moderator.minimize .nav-bar-button-moderator{
+/*.nav-bar-moderator.minimize .nav-bar-button-moderator{
    transform: rotate(90deg);
    transition: transform 0.3s ease;
    margin-left: 0px;
  
-}
+}*/
 
-.nav-bar-moderator.minimize .side-bar-moderator .side-bar-item-moderator {
-   font-size: 30px;
-   padding-left: 10px;
+.nav-bar-moderator.minimize .side-bar .side-bar-item-moderator {
+   font-size: 20px;
+  
    transition: padding 0.3s ease;
-   padding: 5px 0 5px 0;
    text-align: center;
    
 }
+
+
 .side-bar-label-moderator {
    display: flex;
    align-items: center;
@@ -102,7 +132,7 @@ body, html {
 }
  
 .side-bar-icon-moderator {
-   font-size: 22px; 
+   font-size: 20px; 
 }
 
 
@@ -114,7 +144,7 @@ body, html {
       
    }
    
-   .nav-bar .logo-moderator {
+   .nav-bar-moderator .logo {
       padding: 10px;
       
    }
@@ -124,7 +154,7 @@ body, html {
       
    }
 
-   .side-bar-moderator .side-bar-item-moderator {
+   .side-bar .side-bar-item-moderator {
       font-size: 20px;
       padding: 15px 0 15px 0;
       transition: padding 0.3s ease;
@@ -133,21 +163,21 @@ body, html {
 
 @media screen and (max-height: 1080px) {
    .nav-bar-moderator {
-      width: 180px; 
+      width: 230px; 
       
    }
    
-   .nav-bar-moderator  .logo-moderator  {
+   .nav-bar-moderator .logo {
       padding: 10px;
       
    }
    
-   .nav-bar-moderator  .nav-bar-button-moderator  {
+   .nav-bar-moderator .nav-bar-button-moderator {
       margin-left: -5px;
       
    }
 
-   .side-bar-moderator  .side-bar-item-moderator  {
+   .side-bar .side-bar-item-moderator {
       font-size: 20px;
       padding: 15px 0 15px 0;
       transition: padding 0.3s ease;
@@ -156,7 +186,7 @@ body, html {
  }
 
  .side-bar-item-moderator.active {
-   background-color:  #f3f3f3;
-   color: black;
+   background-color: #F6F4FE;
+   color: #F6F4FE;
+   
  }
-

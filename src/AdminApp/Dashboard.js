@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { BarChart } from '@mui/x-charts/BarChart';
-
 import { FaUserCircle , FaMoon, FaSignOutAlt } from "react-icons/fa";
-import  DropdownAccounts  from './DropDownAccounts'
+import  DropdownAccounts  from './DropDownAccounts';
 
 
 export default function Dashboard() {

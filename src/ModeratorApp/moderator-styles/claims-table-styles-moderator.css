@@ -1,11 +1,16 @@
 .claims-records-container-moderator {
-    background-color: #F2F5FA;
-    font-family: 'Inter', sans-serif;
-    margin-left: 200px;
-    margin-right: 1%;
+  background-color: #F2F5FA;
+font-family: 'Inter', sans-serif;
+height: auto;
+max-width: 100%;         
+overflow-x: hidden; 
 }
 
-
+.claims-title-moderator{
+  margin: 10;
+  font-size: 24px;
+  font-weight: 600;
+}
 
 .claims-records-container-moderator > div.claims-record-header-moderator {
     
@@ -27,11 +32,11 @@
 }
 
 .claims-record-header-moderator{
-    display: flex;
-    gap: 20px; 
-    align-items: center;
-    color: #222;
-    font-size: 30px;
+ display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 10px;
+  position: relative;
 
 
 }

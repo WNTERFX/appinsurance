@@ -1,31 +1,31 @@
 .monthly-data-container-moderator {
-    background-color: #F2F5FA;
-    font-family: 'Inter', sans-serif;
-    margin-left: 200px;
-    margin-right: 1%;
+      background-color: #F2F5FA;
+font-family: 'Inter', sans-serif;
+height: auto;
+max-width: 100%;         
+overflow-x: hidden; 
 }
 
-.monthly-data-container-moderator p {
-    font-size: 30px;
-    margin-bottom: 20px;
-}
 
+
+.reports-title-moderator{
+  margin: 10;
+  font-size: 24px;
+  font-weight: 600;
+}
 
 
 .monthly-data-header-moderator {
-    display: flex;
-    gap: 20px; 
-    align-items: center;
-    color: #222;
-    font-size: 30px;
+ display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 10px;
+  position: relative;
 
 
 }
 
-.monthly-data-header-moderator h2 {
-    margin: 0;
-    font-size: 30px;
-}
+
 
 .monthly-data-search-moderator {
     padding: 10px 15px;
@@ -39,4 +39,46 @@
      display: flex;
      padding-left: 20px;
      gap: 20px;
+}
+
+
+
+.client-table-moderator {
+    width: 100%;
+    margin: 0 auto;
+    padding: 5px 0 0 0;
+    border-radius: 10px;
+}
+
+.client-table-moderator  > table {
+    width: 100%;
+    padding: 20px 5px 10px 5px;
+    
+}
+
+
+
+.client-table-moderator  > table > thead > tr > th {
+    padding: 10px;
+    text-align: left;
+    font-size: 20px;
+    background-color: #F2F5FA;
+  
+   
+}
+
+.client-table-moderator  > table > tbody > tr > td {
+    background-color: white;
+    text-align: left;
+    padding: 20px 5px 10px 5px;
+  
+    
+} 
+
+.client-table-moderator {  
+    background-color: white;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    padding: 20px 5px 10px 5px;
+     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }

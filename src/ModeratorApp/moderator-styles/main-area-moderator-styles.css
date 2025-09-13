@@ -2,17 +2,18 @@
   display: flex;
   flex-direction: row;
   height: 100vh;
-  
 }
 
-.main-area-moderator .content-area-moderator{
-    
-    width: 100%;
-    margin-left: auto;
-    background-color: #f3f3f3; 
-    margin-left: 130px;
-    transition: margin 0.3s ease;
-   
+.main-area-moderator .content-area-moderator {
+  width: 100%;
+  background-color: #f3f3f3;
+  margin-left: 250px;       /* default full sidebar width */
+  transition: margin-left 0.3s ease;
+  padding: 5px;           /* keep spacing inside content */
+}
+
+.main-area-moderator .content-area-moderator.minimized {
+  margin-left: 80px;       /* minimized sidebar width */
 }
 
 

@@ -1,10 +1,11 @@
 
 
 .profile-page-moderator {
-  margin: 0 auto;
-  padding: 0px 50px 20px 200px;
-  font-family: 'Inter', sans-serif;
-  height: auto;
+       background-color: #F2F5FA;
+font-family: 'Inter', sans-serif;
+height: auto;
+max-width: 100%;         
+overflow-x: hidden; 
   
 }
 

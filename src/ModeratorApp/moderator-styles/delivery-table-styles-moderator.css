@@ -1,18 +1,24 @@
 .delivery-records-container-moderator{
-    background-color: #F2F5FA;
-    font-family: 'Inter', sans-serif;
-    margin-left: 200px;
-    margin-right: 1%;
-}
+  background-color: #F2F5FA;
+font-family: 'Inter', sans-serif;
+height: auto;
+max-width: 100%;         
+overflow-x: hidden; 
 
+}
+.deliveries-title-moderator{
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
 
 
 .delivery-records-container-moderator > div.delivery-record-header-moderator {
     
-    color: #222;
+  color: #222;
     font-size: 30px;
-    align-items: center;
-    margin-bottom: 9px;
+    margin-bottom: 33px;
+    padding: 30px 5px 0;
 
     
 }
@@ -28,18 +34,14 @@
 
 .delivery-record-header-moderator{
     display: flex;
-    gap: 20px; 
-    align-items: center;
-    color: #222;
-    font-size: 30px;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 10px;
+  position: relative;
 
 
 }
 
-.delivery-record-header-moderator h2 {
-    margin: 0;
-    font-size: 30px;
-}
 
 .delivery-record-search-moderator {
     padding: 10px 15px;

@@ -41,7 +41,7 @@ export default function Client() {
            className="client-search"
            placeholder="Search clients..."
           />
-  </div>
+        </div>
 
   {/* Right side: create + archive + profile */}
     <div className="left-actions">

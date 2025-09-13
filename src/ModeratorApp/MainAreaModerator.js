@@ -18,7 +18,7 @@ export default function MainAreaModerator()
             <div className="nav-area-moderator" > 
                 <NavBarModerator onMinimizeChange={handleMinimizeChange} /> 
             </div>
-            <div className="content-area-moderator" style={{ marginLeft: isMinimized ? "-130px" : "20px" }}>
+            <div className={`content-area-moderator ${isMinimized ? "minimized" : ""}`}>
                 <Outlet/>
             </div>
         </div>

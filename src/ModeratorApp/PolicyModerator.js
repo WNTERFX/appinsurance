@@ -2,23 +2,78 @@ import { useNavigate } from "react-router-dom";
 import ClientTableModerator from "./ClientTableModerator";
 import FilterModerator from "./FilterModerator";
 import './moderator-styles/policy-styles-moderator.css';
+import DropdownAccountsModerator from "./DropDownAccountsModerator";
+import { FaPlus, FaArchive, FaUserCircle } from "react-icons/fa";
+import { useEffect, useState, useRef } from "react";
 export default function PolicyModerator() {
 
     const navigate = useNavigate();
 
+    const [open, setOpen] = useState(false);
+    const dropdownRef = useRef(null);
+    const buttonRef = useRef(null);
+
+    // dropdown close
+      useEffect(() => {
+        function handleClickOutside(e) {
+          if (
+            dropdownRef.current &&
+            !dropdownRef.current.contains(e.target) &&
+            buttonRef.current &&
+            !buttonRef.current.contains(e.target)
+          ) {
+            setOpen(false);
+          }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+      }, []);
+
     return(
         <div className="Policy-container-moderator">
             <div className="Policy-header-moderator">
-                <p2>Policy</p2>
+                <div className="right-actions-moderator">
+                <p className="policy-title-moderator">Policy</p>
                 <input
                 type="text"
                 className="policy-search-moderator"
                 placeholder="Search clients..."
                 />
+             </div>
 
-                <div className="filter-client-policy-moderator">
-                    <FilterModerator />
-                 </div>   
+            <div className="left-actions-moderator">
+                      <button
+                        className="btn btn-create-moderator" >
+                        <FaPlus className="btn-icon-moderator" /> Create
+                      </button>
+            
+                      <button
+                        className="btn btn-archive-moderator" > 
+                        <FaArchive className="btn-icon-moderator" />View Archive
+                      </button>
+            
+                      <div className="profile-menu-moderator">
+                        <button
+                          ref={buttonRef}
+                          className="profile-button-moderator"
+                          onClick={() => setOpen((s) => !s)}
+                          aria-haspopup="true"
+                          aria-expanded={open}
+                        >
+                          <span className="profile-name-moderator">Agent:?</span>
+                          <FaUserCircle className="profile-icon-moderator" />
+                        </button>
+            
+                        <div>
+                          <DropdownAccountsModerator
+                            open={open}
+                            onClose={() => setOpen(false)}
+                            onDarkMode={() => console.log("Dark Mode toggled")}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  
             </div>
             <div className="policy-data-field-moderator">
                 <div className="control-options-moderator">
@@ -27,13 +82,14 @@ export default function PolicyModerator() {
                 </div>
                  <ClientTableModerator/>
             </div>
-            <div className="Policy-content-moderator">
+           
+          {/**<div className="Policy-content-moderator">
                
-                <div className="button-container-moderator">
+             {/** <div className="button-container-moderator">
                     <button className="policy-btn-moderator" onClick={() => navigate("/appinsurance/MainAreaModerator/PolicyModerator/NewClientModerator")}>Create new</button>
                    
                 </div>                  
-            </div>
+            </div> */}  
         </div>
     );
 }
