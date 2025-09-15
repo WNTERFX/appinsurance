@@ -9,11 +9,17 @@
   background-color: #f3f3f3;
   margin-left: 250px;       /* default full sidebar width */
   transition: margin-left 0.3s ease;
-  padding: 5px;           /* keep spacing inside content */
+  padding: 5px;             /* keep spacing inside content */
+  overflow: auto;           /* Allow scrolling when content is scaled */
 }
 
 .main-area .content-area.minimized {
-  margin-left: 80px;       /* minimized sidebar width */
+  margin-left: 80px;        /* minimized sidebar width */
 }
 
-
+.content-wrapper {
+  transform-origin: top left;  /* Scale from top-left corner */
+  width: 100%;
+  height: fit-content;
+  min-height: 100%;
+}

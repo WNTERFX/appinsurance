@@ -24,6 +24,8 @@ export default function PolicyNewClient({
 
       
       setSelectedPartner,
+      vehicleMaker,
+      setVehicleMaker,
       vehicleName,
       setVehicleName,
       vehicleColor,
@@ -75,6 +77,15 @@ export default function PolicyNewClient({
               </select>
             </div>
                     
+
+             <div className="form-group">
+              <label>Vehicle Maker</label>
+              <input 
+                type="text" 
+                value={vehicleMaker}
+                onChange={(e) => setVehicleMaker(e.target.value)} 
+              />
+            </div>
 
              <div className="form-group">
               <label>Vehicle Name</label>

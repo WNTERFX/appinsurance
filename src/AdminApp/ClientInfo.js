@@ -131,6 +131,7 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
                 <div style={{ maxHeight: "300px", overflowY: "auto" }}>
                   {policyVehicles.map((v) => (
                     <Card key={v.id} className="vehicle-card">
+                      <InfoRow label="Vehicle Name" value={v.vehicle_maker || 'N/A'} />
                       <InfoRow label="Vehicle Name" value={v.vehicle_name || 'N/A'} />
                       <InfoRow label="Year" value={v.vehicle_year || 'N/A'} />
                       <InfoRow label="Color" value={v.vehicle_color || 'N/A'} />

@@ -75,6 +75,7 @@ export default function NewPolicyController() {
   // Vehicle Details
   // -----------------------------
   const [vehicleName, setVehicleName] = useState("");
+  const [vehicleMaker, setVehicleMaker] = useState("");
   const [vehicleColor, setVehicleColor] = useState("");
   const [vehicleVinNumber, setVinNumber] = useState("");
   const [vehiclePlateNumber, setPlatnumber] = useState(0);
@@ -208,6 +209,7 @@ export default function NewPolicyController() {
 
       const vehicleData = {
       vehicle_name: vehicleName,
+      vehicle_maker: vehicleMaker,
       vehicle_color: vehicleColor,
       plate_num: vehiclePlateNumber,
       vehicle_year: yearInput,  
@@ -286,6 +288,9 @@ export default function NewPolicyController() {
     partners={partners}
     selectedPartner={selectedPartner}
     setSelectedPartner={setSelectedPartner}
+
+    vehicleMaker={vehicleMaker}
+    setVehicleMaker={setVehicleMaker}
     vehicleName={vehicleName}
     setVehicleName={setVehicleName}
    

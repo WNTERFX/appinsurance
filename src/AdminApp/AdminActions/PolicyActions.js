@@ -73,3 +73,11 @@ export async function archivePolicy(policyId) {
   if (error) throw error;
   return data?.[0] || null;
 }
+
+export async function activatePolicy(policyId) {
+  const {data, error} = await db
+  .from("policy_Table")
+  .update({
+    
+  })
+}

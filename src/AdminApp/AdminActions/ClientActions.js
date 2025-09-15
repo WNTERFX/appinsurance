@@ -50,3 +50,4 @@ export async function archiveClient(clientUid) {
 
   return data?.[0] || null;
 }
+
