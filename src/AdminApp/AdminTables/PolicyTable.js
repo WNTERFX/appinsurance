@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ClientInfo from "../ClientInfo";
 import "../styles/policy-table-styles.css";
 import { fetchPolicies, archivePolicy } from "../AdminActions/PolicyActions";
@@ -6,6 +7,7 @@ import { fetchPolicies, archivePolicy } from "../AdminActions/PolicyActions";
 export default function PolicyTable() {
   const [policies, setPolicies] = useState([]);
   const [selectedPolicy, setSelectedPolicy] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function loadPolicies() {
@@ -113,7 +115,15 @@ export default function PolicyTable() {
                       </td>
 
                       <td className="policy-table-actions">
-                        <button>Edit</button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // prevent row click
+                            // Navigate to edit page with policy ID
+                            navigate(`/appinsurance/MainArea/Policy/Edit/${policy.id}`);
+                          }}
+                        >
+                          Edit
+                        </button>
                         
                         <button
                           onClick={(e) => {

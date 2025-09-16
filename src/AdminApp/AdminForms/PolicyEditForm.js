@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/policy-update-styles.css";
+import '../styles/Policy-new-client.css';
 
 export default function PolicyEditForm({
   vehicleTypes,
@@ -7,20 +7,22 @@ export default function PolicyEditForm({
   setSelected,
   vehicleDetails,
   yearInput,
-  setYearInput,   
-  vehicleCost,
-  setVehicleCost,  
-  basicPremiumValue,         
+  setYearInput,
+  vehicleOriginalValueFromDB,
+  setVehicleOriginalValueFromDB,
+  basicPremiumValue,
   isAoN,
   setIsAoN,
-  orginalVehicleCost,
+  setOriginalVehicleCost,
+  originalVehicleCost,
   currentVehicleValueCost,
   totalVehicleValueRate,
   totalPremiumCost,
   actOfNatureCost,
-  setSelectedPartner,
   vehicleName,
   setVehicleName,
+  vehicleMaker,
+  setVehicleMaker,
   vehicleColor,
   setVehicleColor,
   vehicleVinNumber,
@@ -32,53 +34,38 @@ export default function PolicyEditForm({
   setSelectedClient,
   partners,
   selectedPartner,
+  setSelectedPartner,
   onSaveClient,
   navigate
 }) {
 
-  // State for updated values
-  const [updatedValues, setUpdatedValues] = React.useState({
-    vehicleName: vehicleName,
-    vehicleVinNumber: vehicleVinNumber,
-    vehiclePlateNumber: vehiclePlateNumber,
-    vehicleColor: vehicleColor,
-    yearInput: yearInput,
-    vehicleCost: vehicleCost,
-    selectedPartner: selectedPartner,
-    selected: selected,
-    isAoN: isAoN,
-  });
-
-  const handleChange = (field, value) => {
-    setUpdatedValues(prev => ({ ...prev, [field]: value }));
-  };
+  // Helper to safely format numbers
+  const formatPHP = (num, digits = 2) => {
+    return num != null ? num.toLocaleString("en-PH", { minimumFractionDigits: digits }) : "0.00";
+  }
 
   return (
-    <div className="new-client-policy-edit">
+    <div className="new-client-container">
       <h2>Edit Policy</h2>
 
-      <div className="form-card-policy-edit">
-        <form className="form-grid-policy-edit">
-          {/* Left Column */}
-          <div className="form-left-column-policy-edit">
+      <div className="form-card">
+        <form className="form-grid">
+          
+          <div className="form-left-column">
 
             {/* Client */}
-            <div className="form-group-policy-edit">
-              <label>Client (Original)</label>
-              <input type="text" value={`${selectedClient?.first_Name} ${selectedClient?.middle_Name || ""} ${selectedClient?.family_Name}`} disabled />
-            </div>
-
-            <div className="form-group-policy-edit">
-              <label>Client (Updated)</label>
+            <div className="form-group">
+              <label>Client</label>
               <select
-                value={updatedValues.selectedClient?.uid || ""}
+                value={selectedClient?.uid || ""}
                 onChange={(e) => {
                   const client = clients.find(c => c.uid === e.target.value);
-                  handleChange("selectedClient", client);
+                  setSelectedClient(client);
                 }}
+                required
               >
                 <option value="">-- Select Client --</option>
-                {clients.map(c => (
+                {clients.map((c) => (
                   <option key={c.uid} value={c.uid}>
                     {c.first_Name} {c.middle_Name || ""} {c.family_Name}
                   </option>
@@ -86,132 +73,206 @@ export default function PolicyEditForm({
               </select>
             </div>
 
-            {/* Vehicle Name */}
-            <div className="form-group-policy-edit">
-              <label>Vehicle Name (Original)</label>
-              <input type="text" value={vehicleName} disabled />
+            {/* Vehicle Maker */}
+            <div className="form-group">
+              <label>Vehicle Maker</label>
+              <input 
+                type="text" 
+                value={vehicleMaker}
+                onChange={(e) => setVehicleMaker(e.target.value)} 
+              />
             </div>
-            <div className="form-group-policy-edit">
-              <label>Vehicle Name (Updated)</label>
-              <input type="text" value={updatedValues.vehicleName} onChange={(e) => handleChange("vehicleName", e.target.value)} />
+
+            {/* Vehicle Name */}
+            <div className="form-group">
+              <label>Vehicle Name</label>
+              <input 
+                type="text" 
+                value={vehicleName}
+                onChange={(e) => setVehicleName(e.target.value)} 
+              />
             </div>
 
             {/* Vehicle VIN */}
-            <div className="form-group-policy-edit">
-              <label>Vehicle VIN Number (Original)</label>
-              <input type="text" value={vehicleVinNumber} disabled />
-            </div>
-            <div className="form-group-policy-edit">
-              <label>Vehicle VIN Number (Updated)</label>
-              <input type="text" value={updatedValues.vehicleVinNumber} maxLength={17} onChange={(e) => handleChange("vehicleVinNumber", e.target.value)} />
+            <div className="form-group">
+              <label>Vehicle VIN Number</label>
+              <input 
+                type="text"
+                value={vehicleVinNumber || ""}
+                maxLength={17} 
+                onChange={(e) => setVinNumber(e.target.value)}
+              />
+              <small style={{ color: vehicleVinNumber?.length >= 17 ? "red" : "gray" }}>
+                {vehicleVinNumber?.length || 0}/17 characters
+              </small>
             </div>
 
             {/* Vehicle Plate */}
-            <div className="form-group-policy-edit">
-              <label>Vehicle Plate Number (Original)</label>
-              <input type="text" value={vehiclePlateNumber} disabled />
-            </div>
-            <div className="form-group-policy-edit">
-              <label>Vehicle Plate Number (Updated)</label>
-              <input type="text" value={updatedValues.vehiclePlateNumber} onChange={(e) => handleChange("vehiclePlateNumber", e.target.value)} />
+            <div className="form-group">
+              <label>Vehicle Plate Number</label>
+              <input 
+                type="text"
+                value={vehiclePlateNumber || ""}
+                onChange={(e) => setPlateNumber(e.target.value)}
+              />
             </div>
 
             {/* Vehicle Color */}
-            <div className="form-group-policy-edit">
-              <label>Vehicle Color (Original)</label>
-              <input type="text" value={vehicleColor} disabled />
-            </div>
-            <div className="form-group-policy-edit">
-              <label>Vehicle Color (Updated)</label>
-              <input type="text" value={updatedValues.vehicleColor} onChange={(e) => handleChange("vehicleColor", e.target.value)} />
+            <div className="form-group">
+              <label>Vehicle Color</label>
+              <input 
+                type="text"
+                value={vehicleColor || ""}
+                onChange={(e) => setVehicleColor(e.target.value)}
+              />
             </div>
 
             {/* Vehicle Year */}
-            <div className="form-group-policy-edit">
-              <label>Vehicle Year (Original)</label>
-              <input type="text" value={yearInput} disabled />
-            </div>
-            <div className="form-group-policy-edit">
-              <label>Vehicle Year (Updated)</label>
-              <input type="text" value={updatedValues.yearInput} onChange={(e) => handleChange("yearInput", Number(e.target.value))} />
+            <div className="form-group">
+              <label>Vehicle Year</label>
+              <input 
+                type="number"
+                value={yearInput || ""}
+                onChange={(e) => setYearInput(Number(e.target.value))}
+              />
             </div>
 
             {/* Partner */}
-            <div className="form-group-policy-edit">
-              <label>Partner (Original)</label>
-              <input type="text" value={selectedPartner} disabled />
-            </div>
-            <div className="form-group-policy-edit">
-              <label>Partner (Updated)</label>
-              <select value={updatedValues.selectedPartner} onChange={(e) => handleChange("selectedPartner", e.target.value)}>
+            <div className="form-group">
+              <label>Partner</label>
+              <select
+                value={selectedPartner || ""}
+                onChange={(e) => setSelectedPartner(e.target.value)} 
+              >
                 <option value="">-- Select a Partner --</option>
-                {partners.map(p => <option key={p.id} value={p.id}>{p.insurance_Name}</option>)}
+                {Array.isArray(partners) &&
+                  partners.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.insurance_Name}
+                    </option>
+                  ))}
               </select>
             </div>
 
             {/* Vehicle Type */}
-            <div className="form-group-policy-edit">
-              <label>Vehicle Type (Original)</label>
-              <input type="text" value={selected} disabled />
-            </div>
-            <div className="form-group-policy-edit">
-              <label>Vehicle Type (Updated)</label>
-              <select value={updatedValues.selected} onChange={(e) => handleChange("selected", e.target.value)}>
+            <div className="form-group">
+              <label>Vehicle Type</label>
+              <select
+                value={selected || ""}
+                onChange={(e) => setSelected(e.target.value)}
+              >
                 <option value="">-- Select Vehicle Type --</option>
-                {vehicleTypes.map(v => <option key={v.id} value={v.vehicle_type}>{v.vehicle_type}</option>)}
+                {(vehicleTypes || []).map((v) => (
+                  <option key={v.id} value={v.vehicle_type}>
+                    {v.vehicle_type}
+                  </option>
+                ))}
               </select>
             </div>
 
             {/* Vehicle Cost */}
-            <div className="form-group-policy-edit">
+            <div className="form-group">
               <label>Original Value of Vehicle</label>
-              <input type="text" value={vehicleCost} disabled />
+           <div className="form-group">
+              <input
+                type="number"
+                value={vehicleOriginalValueFromDB}
+                onChange={(e) =>
+                  setOriginalVehicleCost(e.target.value === "" ? 0 : parseFloat(e.target.value))
+                }
+              />
             </div>
-            <div className="form-group-policy-edit">
-              <label>Updated Value of Vehicle</label>
-              <input type="text" value={updatedValues.vehicleCost} onChange={(e) => handleChange("vehicleCost", Number(e.target.value))} />
+            </div>
+
+            {/* Taxes & Rates */}
+            <div className="form-group">
+              <label>VAT Tax</label>
+              <input 
+                type="text" 
+                value={vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "0%"} 
+                readOnly 
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Documentary Stamp</label>
+              <input 
+                type="text" 
+                value={vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "0%"} 
+                readOnly 
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Local Gov Tax</label>
+              <input 
+                type="text" 
+                value={vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "0%"} 
+                readOnly 
+              />
             </div>
 
             {/* AoN */}
-            <div className="form-group-policy-edit aon-row">
-              <label>AoN (Original)</label>
-              <input type="checkbox" checked={isAoN} disabled />
-            </div>
-            <div className="form-group-policy-edit aon-row">
-              <label>AoN (Updated)</label>
-              <input type="checkbox" checked={updatedValues.isAoN} onChange={(e) => handleChange("isAoN", e.target.checked)} />
+            <div className="form-group aon-row">
+              <label>AoN (Act of Nature)</label>
+              <input 
+                type="checkbox" 
+                checked={isAoN}
+                onChange={(e) => setIsAoN(e.target.checked)}
+              />
             </div>
 
-            {/* Buttons */}
-            <div className="button-container-policy-edit">
-              <button type="button" className="confirm-btn-policy-edit" onClick={() => onSaveClient(updatedValues)}>Save</button>
-              <button type="button" className="cancel-btn-policy-edit" onClick={() => navigate("/appinsurance/MainArea/Policy")}>Cancel</button>
+            <div className="form-group">
+              <label>Rate</label>
+              <input 
+                type="text" 
+                value={vehicleDetails?.vehicle_Rate ? `${vehicleDetails.vehicle_Rate}%` : "0%"} 
+                readOnly 
+              />
             </div>
+
           </div>
 
-          {/* Right Column - Calculation Cards */}
-          <div className="form-right-column-policy-edit">
-            <div className="calculation-card-policy-edit">
-              <h3>Original Calculation</h3>
-              <p>Original Vehicle Cost: <span>₱ {orginalVehicleCost.toLocaleString("en-PH")}</span></p>
-              <p>Current Vehicle Value: <span>₱ {currentVehicleValueCost.toLocaleString("en-PH")}</span></p>
-              <p>Total Vehicle Value Rate: <span>₱ {totalVehicleValueRate.toLocaleString("en-PH")}</span></p>
-              <p>Basic Premium: <span>₱ {basicPremiumValue?.toLocaleString("en-PH") || "-"}</span></p>
-              {isAoN && <p>AoN: <span>₱ {actOfNatureCost.toLocaleString("en-PH")}</span></p>}
-              <p>Total Premium: <span>₱ {totalPremiumCost.toLocaleString("en-PH")}</span></p>
-            </div>
-
-            <div className="calculation-card-policy-edit">
-              <h3>Updated Calculation</h3>
-              <p>Updated Vehicle Cost: <span>₱ {updatedValues.vehicleCost?.toLocaleString("en-PH") || "-"}</span></p>
-              <p>Updated Vehicle Value: <span>₱ {updatedValues.vehicleCost ? updatedValues.vehicleCost.toLocaleString("en-PH") : "-"}</span></p>
-              <p>Total Vehicle Value Rate: <span>₱ {updatedValues.vehicleCost ? updatedValues.vehicleCost.toLocaleString("en-PH") : "-"}</span></p>
-              <p>Basic Premium: <span>₱ {updatedValues.vehicleCost ? updatedValues.vehicleCost.toLocaleString("en-PH") : "-"}</span></p>
-              {updatedValues.isAoN && <p>AoN: <span>₱ {updatedValues.vehicleCost?.toLocaleString("en-PH") || "-"}</span></p>}
-              <p>Total Premium: <span>₱ {updatedValues.vehicleCost?.toLocaleString("en-PH") || "-"}</span></p>
+          {/* RIGHT COLUMN: Calculation Summary */}
+          <div className="form-right-column">
+            <div className="calculation-card">
+              <h3>Calculation Summary</h3>
+              
+              <p>Original Vehicle Cost: <span>₱ {formatPHP(originalVehicleCost)}</span></p>
+              <p>Current Vehicle Value: <span>₱ {formatPHP(currentVehicleValueCost)}</span></p>
+              <p>Total Vehicle Value Rate: <span>₱ {formatPHP(totalVehicleValueRate)}</span></p>
+              <p>Bodily Injury: <span>₱ {formatPHP(vehicleDetails?.bodily_Injury)}</span></p>
+              <p>Property Damage: <span>₱ {formatPHP(vehicleDetails?.property_Damage)}</span></p>
+              <p>Personal Accident: <span>₱ {formatPHP(vehicleDetails?.personal_Accident)}</span></p>
+              <p>Basic Premium: <span>₱ {formatPHP(basicPremiumValue)}</span></p>
+              <p>Local Government Tax: <span>{vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "—"}</span></p>
+              <p>VAT: <span>{vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "—"}</span></p>
+              <p>Documentary Stamp: <span>{vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "—"}</span></p>
+              {isAoN && <p>AoN (Act of Nature): <span>₱ {formatPHP(actOfNatureCost)}</span></p>}
+              <hr />
+              <strong>
+                <p>Total Premium: <span>₱ {formatPHP(totalPremiumCost)}</span></p>
+              </strong>
             </div>
           </div>
         </form>
+      </div>
+
+      {/* Buttons */}
+      <div className="button-container">
+        <button
+          className="cancel-btn"
+          onClick={() => navigate("/appinsurance/MainArea/Policy")}
+        >
+          Cancel
+        </button>
+        <button
+          className="confirm-btn"
+          type="button"
+          onClick={onSaveClient}
+        >
+          Confirm
+        </button>
       </div>
     </div>
   );
