@@ -58,6 +58,10 @@ export default function EditPolicyController() {
   // Keep DB original value for comparison (readonly)
   const [vehicleOriginalValueFromDB, setVehicleOriginalValueFromDB] = useState(0);
 
+
+  // keep track of the original/default values
+
+
   // -----------------------------
   // Premium inputs
   // -----------------------------
@@ -77,6 +81,9 @@ export default function EditPolicyController() {
   const [currentVehicleValueCost, setCurrentVehicleCost] = useState(0);
   const [totalVehicleValueRate, setTotalVehicleValueRate] = useState(0);
   const [totalPremiumCost, setTotalPremiumCost] = useState(0);
+
+  // State to track if initial data is loaded
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   // -----------------------------
   // Helpers
@@ -111,25 +118,36 @@ export default function EditPolicyController() {
   // Load existing policy (single source of truth)
   // -----------------------------
   useEffect(() => {
-    if (!policyId || clients.length === 0) return;
+    if (!policyId || clients.length === 0 || vehicleTypes.length === 0) return;
 
     (async () => {
       try {
+        //devLogs
+        console.log("🔄 Loading policy data for ID:", policyId);
+        
         const [policy, vehicle, computation] = await Promise.all([
           fetchPolicyById(policyId),
           fetchVehicleByPolicyId(policyId),
           fetchComputationByPolicyId(policyId)
         ]);
 
+         //devLogs
+        console.log("📋 Policy data:", policy);
+        console.log("🚗 Vehicle data:", vehicle);
+        console.log("📊 Computation data:", computation);
+        console.log("🎯 Available vehicle types:", vehicleTypes);
+
         // Set client & partner
         if (policy) {
-          setSelectedClient(clients.find(c => c.uid === policy.client_id) || null);
+          const foundClient = clients.find(c => c.uid === policy.client_id);
+          setSelectedClient(foundClient || null);
           setSelectedPartner(policy.partner_id || "");
+          console.log("👤 Found client:", foundClient);
         }
 
         // Set vehicle info
         if (vehicle) {
-          setVehicleDetails(vehicle);
+          // Set basic vehicle info
           setVehicleName(vehicle.vehicle_name || "");
           setVehicleMaker(vehicle.vehicle_maker || "");
           setVehicleColor(vehicle.vehicle_color || "");
@@ -141,9 +159,41 @@ export default function EditPolicyController() {
           setVehicleOriginalValueFromDB(vehicle.original_value || 0);
         }
 
-        // Set computation values
+        // Set computation values and get vehicle type from calculation_Table
         if (computation) {
           const original = computation.original_Value || 0;
+          
+           //devLogs
+          console.log("🎯 Vehicle type from computation:", computation.vehicle_type);
+          
+          // IMPORTANT: Get the vehicle_type from the computation/calculation_Table
+          if (computation.vehicle_type) {
+            const matchedVehicleType = vehicleTypes.find(
+              (vt) => vt.vehicle_type.toLowerCase() === computation.vehicle_type.toLowerCase()
+            );
+            
+             //devLogs
+            console.log("🔍 Looking for vehicle type:", computation.vehicle_type);
+            console.log("✅ Matched vehicle type:", matchedVehicleType);
+            
+            if (matchedVehicleType) {
+              console.log("🎉 Setting vehicle type to:", matchedVehicleType.vehicle_type);
+              setSelectedVehicleType(matchedVehicleType.vehicle_type);
+              
+              // Load vehicle details for this type
+              const details = await fetchVehicleDetails(matchedVehicleType.vehicle_type);
+              if (details) {
+                setVehicleDetails(details);
+              }
+            } else {
+              console.log("❌ No matching vehicle type found");
+              console.log("Available types:", vehicleTypes.map(v => v.vehicle_type));
+            }
+          } else {
+            console.log("❌ No vehicle_type found in computation data");
+          }
+          
+          // Set the actual saved computation values
           setRateInput(computation.vehicle_Rate || 0);
           setBodily_Injury(computation.bodily_Injury || 0);
           setProperty_Damage(computation.property_Damage || 0);
@@ -160,31 +210,24 @@ export default function EditPolicyController() {
           setVehicleOriginalValueFromDB(original);
         }
 
+        setIsDataLoaded(true);
+        console.log("✅ Data loading complete");
+
       } catch (err) {
-        console.error("Error loading policy data:", err);
+        console.error("❌ Error loading policy data:", err);
         alert("Error loading policy data. See console.");
       }
     })();
-  }, [policyId, clients]);
+  }, [policyId, clients, vehicleTypes]); // Added vehicleTypes as dependency
 
-  // -----------------------------
-  // Pre-fill Vehicle Type based on loaded vehicle
-  // -----------------------------
+  // Debug: Log the selected vehicle type whenever it changes
   useEffect(() => {
-  if (!vehicleDetails || vehicleTypes.length === 0) return;
-
-  const match = vehicleTypes.find(
-    (v) => v.vehicle_type.toLowerCase() === (vehicleDetails.vehicle_type || "").toLowerCase()
-  );
-
-  setSelectedVehicleType(match ? match.vehicle_type : "");
-}, [vehicleDetails, vehicleTypes]);
-
-  // -----------------------------
-  // Load vehicle details on type change
-  // -----------------------------
+    console.log("🎯 Selected vehicle type changed to:", selectedVehicleType);
+    console.log("🎯 Vehicle types available:", vehicleTypes.map(v => v.vehicle_type));
+    console.log("🎯 Is data loaded:", isDataLoaded);
+  }, [selectedVehicleType]);
   useEffect(() => {
-    if (!selectedVehicleType) return;
+    if (!selectedVehicleType || !isDataLoaded) return;
 
     (async () => {
       const details = await fetchVehicleDetails(selectedVehicleType);
@@ -201,12 +244,14 @@ export default function EditPolicyController() {
         setAoNRate(details.aon || 0);
       }
     })();
-  }, [selectedVehicleType]);
+  }, [selectedVehicleType, isDataLoaded]);
 
   // -----------------------------
   // Recompute totals on changes
   // -----------------------------
   useEffect(() => {
+    if (!isDataLoaded) return; // Don't compute until data is loaded
+
     const vehicleValue = safeCalculate(
       ComputationActionsVehicleValue, 
       originalVehicleCost, 
@@ -237,7 +282,8 @@ export default function EditPolicyController() {
   }, [
     originalVehicleCost, yearInput, rateInput, 
     bodily_Injury, property_Damage, personal_Accident, 
-    vat_Tax, docu_Stamp, local_Gov_Tax, isAoN, AoNRate
+    vat_Tax, docu_Stamp, local_Gov_Tax, isAoN, AoNRate,
+    isDataLoaded
   ]);
 
   // -----------------------------
@@ -245,28 +291,43 @@ export default function EditPolicyController() {
   // -----------------------------
   const handleUpdatePolicy = async () => {
     try {
-      await updatePolicy(policyId, {
+      // Update policy
+      const policyResult = await updatePolicy(policyId, {
         client_id: selectedClient?.uid,
         partner_id: selectedPartner
       });
+      
+      if (!policyResult.success) {
+        throw new Error(policyResult.error);
+      }
 
+      // Get the vehicle to update
       const vehicle = await fetchVehicleByPolicyId(policyId);
+      if (!vehicle) {
+        throw new Error("Vehicle not found");
+      }
 
       const vehicleTypeId = vehicleTypes.find(
         (v) => v.vehicle_type === selectedVehicleType
       )?.id || null;
 
-      await updateVehicle(vehicle.id, {
+      // Update vehicle
+      const vehicleResult = await updateVehicle(vehicle.id, {
         vehicle_name: vehicleName,
         vehicle_maker: vehicleMaker,
         vehicle_color: vehicleColor,
         vin_num: vehicleVinNumber,
         plate_num: vehiclePlateNumber,
-        vehicle_year: vehicleYear,
-        vehicle_type_id: vehicleTypeId
+        vehicle_year: yearInput,
+        vehicle_type_id: vehicleTypeId,
       });
 
-      await updateComputation(policyId, {
+      if (!vehicleResult.success) {
+        throw new Error(vehicleResult.error);
+      }
+
+      // Update computation
+      const computationResult = await updateComputation(policyId, {
         original_Value: originalVehicleCost,
         current_Value: currentVehicleValueCost,
         vehicle_Rate_Value: totalVehicleValueRate,
@@ -274,18 +335,35 @@ export default function EditPolicyController() {
         aon_Cost: isAoN ? safeCalculate(ComputationActionsAoN, currentVehicleValueCost, AoNRate) : 0
       });
 
+      if (!computationResult.success) {
+        throw new Error(computationResult.error);
+      }
+
       alert("Policy updated successfully!");
       navigate("/appinsurance/MainArea/Policy");
     } catch (err) {
       console.error("Error updating policy:", err);
-      alert("Error updating policy. See console.");
+      alert(`Error updating policy: ${err.message}`);
     }
   };
+
+  // Calculate basicPremiumValue for display
+  const basicPremiumValue = safeCalculate(
+    ComputationActionsBasicPre, 
+    bodily_Injury, 
+    property_Damage, 
+    personal_Accident
+  ) + totalVehicleValueRate;
+
+  // Calculate actOfNatureCost for display
+  const actOfNatureCost = isAoN 
+    ? safeCalculate(ComputationActionsAoN, currentVehicleValueCost, AoNRate)
+    : 0;
 
   return (
     <PolicyEditForm
       vehicleTypes={vehicleTypes}
-      selected={selectedVehicleType}       // <-- this is what you called it
+      selected={selectedVehicleType}
       setSelected={setSelectedVehicleType}
       vehicleDetails={vehicleDetails}
       yearInput={yearInput}
@@ -294,6 +372,7 @@ export default function EditPolicyController() {
       vehicleOriginalValueFromDB={vehicleOriginalValueFromDB} 
       setVehicleOriginalValueFromDB={setVehicleOriginalValueFromDB}
       setOriginalVehicleCost={setOriginalVehicleCost}
+      basicPremiumValue={basicPremiumValue}
       vehicleName={vehicleName}
       setVehicleName={setVehicleName}
       vehicleMaker={vehicleMaker}
@@ -308,7 +387,6 @@ export default function EditPolicyController() {
       setSelectedClient={setSelectedClient}
       selectedPartner={selectedPartner}
       setSelectedPartner={setSelectedPartner}
-      
       clients={clients}
       partners={partners}
       vehicleYear={vehicleYear}
@@ -318,6 +396,7 @@ export default function EditPolicyController() {
       currentVehicleValueCost={currentVehicleValueCost}
       totalVehicleValueRate={totalVehicleValueRate}
       totalPremiumCost={totalPremiumCost}
+      actOfNatureCost={actOfNatureCost}
       rateInput={rateInput}
       bodily_Injury={bodily_Injury}
       property_Damage={property_Damage}

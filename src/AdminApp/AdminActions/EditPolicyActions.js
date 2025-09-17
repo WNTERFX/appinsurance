@@ -8,7 +8,7 @@ export async function updatePolicy(policyId, updateData) {
     const { data, error } = await db
       .from("policy_Table")
       .update(updateData)
-      .eq("id", policyId) // <-- use "id", not "policy_id"
+      .eq("id", policyId)
       .select();
 
     if (error) throw error;
@@ -46,7 +46,7 @@ export async function updateVehicle(vehicleId, updateData) {
     const { data, error } = await db
       .from("vehicle_table")
       .update(updateData)
-      .eq("id", vehicleId)   // <-- use vehicle id, not policy id
+      .eq("id", vehicleId)
       .select();
 
     if (error) throw error;
@@ -123,22 +123,122 @@ export async function fetchVehicleByPolicyId(policyId) {
 }
 
 // ================================
-// 8. Fetch computation by policy ID
+// 8. Fetch computation by policy ID - ALTERNATIVE: Try to find vehicle type from vehicle_table
 // ================================
 export async function fetchComputationByPolicyId(policyId) {
-  const { data, error } = await db
-    .from("policy_Computation_Table")
-    .select("*")
-    .eq("policy_id", policyId)
-    .single();
+  try {
+    // Get the computation data first
+    const { data: computation, error: compError } = await db
+      .from("policy_Computation_Table")
+      .select("*")
+      .eq("policy_id", policyId)
+      .single();
 
-  if (error) {
-    console.error("Error fetching computation:", error);
+    if (compError) {
+      console.error("Error fetching computation:", compError);
+      return null;
+    }
+
+    // Try Method 1: If there's a direct calculation_id reference
+    if (computation && computation.calculation_id) {
+      const { data: calculation, error: calcError } = await db
+        .from("calculation_Table")
+        .select("*")
+        .eq("id", computation.calculation_id)
+        .single();
+
+      if (!calcError && calculation) {
+        console.log("Method 1: Found vehicle_type via calculation_id:", calculation.vehicle_type);
+        return {
+          ...computation,
+          vehicle_type: calculation.vehicle_type,
+          // Include all calculation fields for reference
+          vat_Tax: calculation.vat_Tax,
+          bodily_Injury: calculation.bodily_Injury,
+          property_Damage: calculation.property_Damage,
+          vehicle_Rate: calculation.vehicle_Rate,
+          personal_Accident: calculation.personal_Accident,
+          docu_Stamp: calculation.docu_Stamp,
+          aon_Rate: calculation.aon,
+          local_Gov_Tax: calculation.local_Gov_Tax
+        };
+      }
+    }
+
+    // Try Method 2: Get vehicle_type from vehicle_table
+    const { data: vehicle, error: vehicleError } = await db
+      .from("vehicle_table")
+      .select("vehicle_type_id")
+      .eq("policy_id", policyId)
+      .single();
+
+    if (!vehicleError && vehicle && vehicle.vehicle_type_id) {
+      // Get the vehicle type from calculation_Table using vehicle_type_id
+      const { data: calculation, error: calcError } = await db
+        .from("calculation_Table")
+        .select("*")
+        .eq("id", vehicle.vehicle_type_id)
+        .single();
+
+      if (!calcError && calculation) {
+        console.log("Method 2: Found vehicle_type via vehicle_type_id:", calculation.vehicle_type);
+        return {
+          ...computation,
+          vehicle_type: calculation.vehicle_type,
+          // Include calculation fields
+          vat_Tax: calculation.vat_Tax,
+          bodily_Injury: calculation.bodily_Injury,
+          property_Damage: calculation.property_Damage,
+          vehicle_Rate: calculation.vehicle_Rate,
+          personal_Accident: calculation.personal_Accident,
+          docu_Stamp: calculation.docu_Stamp,
+          aon_Rate: calculation.aon,
+          local_Gov_Tax: calculation.local_Gov_Tax
+        };
+      }
+    }
+
+    // Try Method 3: Match by rates (as fallback)
+    const { data: allCalculations, error: allCalcError } = await db
+      .from("calculation_Table")
+      .select("*");
+
+    if (!allCalcError && allCalculations) {
+      const matchingCalc = allCalculations.find(calc => 
+        Math.abs(calc.vehicle_Rate - (computation.vehicle_Rate || 0)) < 0.001 &&
+        Math.abs(calc.vat_Tax - (computation.vat_Tax || 0)) < 0.001 &&
+        Math.abs(calc.bodily_Injury - (computation.bodily_Injury || 0)) < 0.001
+      );
+
+      if (matchingCalc) {
+        console.log("Method 3: Found vehicle_type by matching rates:", matchingCalc.vehicle_type);
+        return {
+          ...computation,
+          vehicle_type: matchingCalc.vehicle_type,
+          vat_Tax: matchingCalc.vat_Tax,
+          bodily_Injury: matchingCalc.bodily_Injury,
+          property_Damage: matchingCalc.property_Damage,
+          vehicle_Rate: matchingCalc.vehicle_Rate,
+          personal_Accident: matchingCalc.personal_Accident,
+          docu_Stamp: matchingCalc.docu_Stamp,
+          aon_Rate: matchingCalc.aon,
+          local_Gov_Tax: matchingCalc.local_Gov_Tax
+        };
+      }
+    }
+
+    console.log("All methods failed - returning computation without vehicle_type");
+    return computation;
+
+  } catch (err) {
+    console.error("Error in fetchComputationByPolicyId:", err.message);
     return null;
   }
-  return data;
 }
 
+// ================================
+// 9. Fetch calculation by vehicle type
+// ================================
 export async function fetchCalculationByVehicleType(vehicleType) {
   try {
     const { data, error } = await db

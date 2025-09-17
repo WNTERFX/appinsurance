@@ -1,5 +1,5 @@
 import React from "react";
-import '../styles/Policy-new-client.css';
+import '../styles/policy-update-styles.css';
 
 export default function PolicyEditForm({
   vehicleTypes,
@@ -39,22 +39,22 @@ export default function PolicyEditForm({
   navigate
 }) {
 
-  // Helper to safely format numbers
   const formatPHP = (num, digits = 2) => {
     return num != null ? num.toLocaleString("en-PH", { minimumFractionDigits: digits }) : "0.00";
   }
 
   return (
-    <div className="new-client-container">
+    <div className="new-client-policy-edit">
       <h2>Edit Policy</h2>
 
-      <div className="form-card">
-        <form className="form-grid">
-          
-          <div className="form-left-column">
+      <div className="form-card-policy-edit">
+        <form className="form-grid-policy-edit">
+
+          {/* LEFT COLUMN */}
+          <div className="form-left-column-policy-edit">
 
             {/* Client */}
-            <div className="form-group">
+            <div className="form-group-policy-edit">
               <label>Client</label>
               <select
                 value={selectedClient?.uid || ""}
@@ -62,10 +62,10 @@ export default function PolicyEditForm({
                   const client = clients.find(c => c.uid === e.target.value);
                   setSelectedClient(client);
                 }}
-                required
+                disabled
               >
                 <option value="">-- Select Client --</option>
-                {clients.map((c) => (
+                {clients.map(c => (
                   <option key={c.uid} value={c.uid}>
                     {c.first_Name} {c.middle_Name || ""} {c.family_Name}
                   </option>
@@ -74,170 +74,116 @@ export default function PolicyEditForm({
             </div>
 
             {/* Vehicle Maker */}
-            <div className="form-group">
+            <div className="form-group-policy-edit">
               <label>Vehicle Maker</label>
-              <input 
-                type="text" 
-                value={vehicleMaker}
-                onChange={(e) => setVehicleMaker(e.target.value)} 
-              />
+              <input type="text" value={vehicleMaker} disabled />
+              <input type="text" value={vehicleMaker} onChange={(e) => setVehicleMaker(e.target.value)} />
             </div>
 
             {/* Vehicle Name */}
-            <div className="form-group">
-              <label>Vehicle Name</label>
-              <input 
-                type="text" 
-                value={vehicleName}
-                onChange={(e) => setVehicleName(e.target.value)} 
-              />
+            <div className="form-group-policy-edit">
+              <label>Previous Vehicle Name</label>
+              <input type="text" value={vehicleName} disabled />
+              <input type="text" value={vehicleName} onChange={(e) => setVehicleName(e.target.value)} />
             </div>
 
             {/* Vehicle VIN */}
-            <div className="form-group">
+            <div className="form-group-policy-edit">
               <label>Vehicle VIN Number</label>
-              <input 
-                type="text"
-                value={vehicleVinNumber || ""}
-                maxLength={17} 
-                onChange={(e) => setVinNumber(e.target.value)}
-              />
+              <input type="text" value={vehicleVinNumber || ""} maxLength={17} disabled />
+              <input type="text" value={vehicleVinNumber || ""} maxLength={17} onChange={(e) => setVinNumber(e.target.value)} />
               <small style={{ color: vehicleVinNumber?.length >= 17 ? "red" : "gray" }}>
                 {vehicleVinNumber?.length || 0}/17 characters
               </small>
             </div>
 
             {/* Vehicle Plate */}
-            <div className="form-group">
+            <div className="form-group-policy-edit">
               <label>Vehicle Plate Number</label>
-              <input 
-                type="text"
-                value={vehiclePlateNumber || ""}
-                onChange={(e) => setPlateNumber(e.target.value)}
-              />
+              <input type="text" value={vehiclePlateNumber || ""} disabled />
+              <input type="text" value={vehiclePlateNumber || ""} onChange={(e) => setPlateNumber(e.target.value)} />
             </div>
 
             {/* Vehicle Color */}
-            <div className="form-group">
+            <div className="form-group-policy-edit">
               <label>Vehicle Color</label>
-              <input 
-                type="text"
-                value={vehicleColor || ""}
-                onChange={(e) => setVehicleColor(e.target.value)}
-              />
+              <input type="text" value={vehicleColor || ""} disabled />
+              <input type="text" value={vehicleColor || ""} onChange={(e) => setVehicleColor(e.target.value)} />
             </div>
 
             {/* Vehicle Year */}
-            <div className="form-group">
+            <div className="form-group-policy-edit">
               <label>Vehicle Year</label>
-              <input 
-                type="number"
-                value={yearInput || ""}
-                onChange={(e) => setYearInput(Number(e.target.value))}
-              />
+              <input type="text" value={yearInput || ""} disabled />
+              <input type="number" value={yearInput || ""} onChange={(e) => setYearInput(Number(e.target.value))} />
             </div>
 
             {/* Partner */}
-            <div className="form-group">
+            <div className="form-group-policy-edit">
               <label>Partner</label>
-              <select
-                value={selectedPartner || ""}
-                onChange={(e) => setSelectedPartner(e.target.value)} 
-              >
+              <select value={selectedPartner || ""} onChange={(e) => setSelectedPartner(e.target.value)}>
                 <option value="">-- Select a Partner --</option>
-                {Array.isArray(partners) &&
-                  partners.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.insurance_Name}
-                    </option>
-                  ))}
-              </select>
-            </div>
-
-            {/* Vehicle Type */}
-            <div className="form-group">
-              <label>Vehicle Type</label>
-              <select
-                value={selected || ""}
-                onChange={(e) => setSelected(e.target.value)}
-              >
-                <option value="">-- Select Vehicle Type --</option>
-                {(vehicleTypes || []).map((v) => (
-                  <option key={v.id} value={v.vehicle_type}>
-                    {v.vehicle_type}
-                  </option>
+                {Array.isArray(partners) && partners.map(p => (
+                  <option key={p.id} value={p.id}>{p.insurance_Name}</option>
                 ))}
               </select>
             </div>
 
-            {/* Vehicle Cost */}
-            <div className="form-group">
+            {/* Vehicle Type */}
+            <div className="form-group-policy-edit">
+              <label>Vehicle Type</label>
+              <select value={selected || ""} onChange={(e) => setSelected(e.target.value)}>
+                <option value="">-- Select Vehicle Type --</option>
+                {vehicleTypes.map(v => (
+                  <option key={v.id} value={v.vehicle_type}>{v.vehicle_type}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Vehicle Original Cost */}
+            <div className="form-group-policy-edit">
               <label>Original Value of Vehicle</label>
-           <div className="form-group">
+              <input type="text" value={vehicleOriginalValueFromDB} disabled />
               <input
                 type="number"
-                value={vehicleOriginalValueFromDB}
-                onChange={(e) =>
-                  setOriginalVehicleCost(e.target.value === "" ? 0 : parseFloat(e.target.value))
-                }
+                value={originalVehicleCost}
+                onChange={(e) => setOriginalVehicleCost(e.target.value === "" ? 0 : parseFloat(e.target.value))}
               />
-            </div>
             </div>
 
             {/* Taxes & Rates */}
-            <div className="form-group">
+            <div className="form-group-policy-edit">
               <label>VAT Tax</label>
-              <input 
-                type="text" 
-                value={vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "0%"} 
-                readOnly 
-              />
+              <input type="text" value={vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "0%"} readOnly />
             </div>
 
-            <div className="form-group">
+            <div className="form-group-policy-edit">
               <label>Documentary Stamp</label>
-              <input 
-                type="text" 
-                value={vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "0%"} 
-                readOnly 
-              />
+              <input type="text" value={vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "0%"} readOnly />
             </div>
 
-            <div className="form-group">
+            <div className="form-group-policy-edit">
               <label>Local Gov Tax</label>
-              <input 
-                type="text" 
-                value={vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "0%"} 
-                readOnly 
-              />
+              <input type="text" value={vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "0%"} readOnly />
             </div>
 
             {/* AoN */}
-            <div className="form-group aon-row">
+            <div className="form-group-policy-edit">
               <label>AoN (Act of Nature)</label>
-              <input 
-                type="checkbox" 
-                checked={isAoN}
-                onChange={(e) => setIsAoN(e.target.checked)}
-              />
+              <input type="checkbox" checked={isAoN} onChange={(e) => setIsAoN(e.target.checked)} />
             </div>
 
-            <div className="form-group">
+            <div className="form-group-policy-edit">
               <label>Rate</label>
-              <input 
-                type="text" 
-                value={vehicleDetails?.vehicle_Rate ? `${vehicleDetails.vehicle_Rate}%` : "0%"} 
-                readOnly 
-              />
+              <input type="text" value={vehicleDetails?.vehicle_Rate ? `${vehicleDetails.vehicle_Rate}%` : "0%"} readOnly />
             </div>
-
           </div>
 
-          {/* RIGHT COLUMN: Calculation Summary */}
-          <div className="form-right-column">
-            <div className="calculation-card">
+          {/* RIGHT COLUMN */}
+          <div className="form-right-column-policy-edit">
+            <div className="calculation-card-policy-edit">
               <h3>Calculation Summary</h3>
-              
+
               <p>Original Vehicle Cost: <span>₱ {formatPHP(originalVehicleCost)}</span></p>
               <p>Current Vehicle Value: <span>₱ {formatPHP(currentVehicleValueCost)}</span></p>
               <p>Total Vehicle Value Rate: <span>₱ {formatPHP(totalVehicleValueRate)}</span></p>
@@ -255,19 +201,20 @@ export default function PolicyEditForm({
               </strong>
             </div>
           </div>
+
         </form>
       </div>
 
       {/* Buttons */}
-      <div className="button-container">
+      <div className="button-container-policy-edit">
         <button
-          className="cancel-btn"
+          className="cancel-btn-policy-edit"
           onClick={() => navigate("/appinsurance/MainArea/Policy")}
         >
           Cancel
         </button>
         <button
-          className="confirm-btn"
+          className="confirm-btn-policy-edit"
           type="button"
           onClick={onSaveClient}
         >
