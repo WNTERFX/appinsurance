@@ -31,6 +31,17 @@
     
 }
 
+@media (max-width: 1920px) and (min-width: 1366px) {
+    .client-table > table > thead > tr > th {
+  
+        text-align: left;
+        padding: 15px 10px; /* smaller padding */
+        font-size: 0.9rem;  /* smaller font */
+        color: #222;
+    
+    }
+}
+
 @media screen and (max-height: 1080px) {
     .Due-content {
         width: 90%;

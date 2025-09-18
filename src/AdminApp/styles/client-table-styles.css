@@ -49,6 +49,27 @@
   padding: 12px;
 }
 
+@media (max-width: 1920px) and (min-width: 1366px) {
+
+  .client-table-clickable-row {
+
+    font-size: 0.8rem;  /* smaller font */
+  }
+
+  .client-table-scroll > table > thead > tr > th {
+    padding: 20px 6px;
+    text-align: left;
+    background-color: #F2F5FA;
+    white-space: nowrap;
+    min-width: 150px;
+    font-size: 1rem;
+
+  }
+
+
+}
+
+
 .client-table-clickable-row:hover {
   background-color: #e6f7ff;
 }

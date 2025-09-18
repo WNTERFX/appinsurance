@@ -7,12 +7,7 @@
     
 }
 
-@media (min-width: 992px) {
-  .new-client-container {
-    max-width: 1200px;
-    margin-left: 200px;
-  }
-}
+
 
 @media (min-width: 1600px) {
   .new-client-container {
