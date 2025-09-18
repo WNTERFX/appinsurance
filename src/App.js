@@ -16,7 +16,6 @@ import EditClientForm from './AdminApp/EditClientForm';
 import EditVehicleDetailsForm from './AdminApp/EditVehicleDetailsForm';
 import NewPolicyController from './AdminApp/ControllerAdmin/NewPolicyController';
 import NewClientController from './AdminApp/ControllerAdmin/NewClientController';
-import EditPolicyController from './AdminApp/ControllerAdmin/EditPolicyController';
 import {Routes, Route} from "react-router-dom";
 import Profile from './AdminApp/Profile';
 
@@ -33,8 +32,11 @@ import ProfileModerator from './ModeratorApp/ProfileModerator';
 import PolicyNewClientModerator from './ModeratorApp/PolicyNewClientModerator';
 import VehicleDetailsModerator from './ModeratorApp/VehicleDetailsModerator';
 
+import ModeratorClientCreationForm from './ModeratorApp/ModeratorForms/ModeratorClientCreationForm';
+
 import ClientEditForm from "./AdminApp/AdminForms/ClientEditForm";
 
+import ModeratorNewClientController from './ModeratorApp/ControllerModerator/ModeratorNewClientController';
 
 function App() {
   return (
@@ -45,6 +47,10 @@ function App() {
       <Route path="/appinsurance/MainAreaModerator" element={<MainAreaModerator /> }>
         <Route path="/appinsurance/MainAreaModerator/DashboardModerator" element={<DashboardModerator />} />
         <Route path ="/appinsurance/MainAreaModerator/ClientModerator" element={<ClientModerator />} />
+
+         <Route path="/appinsurance/MainAreaModerator/ClientModerator/ModeratorClientCreationForm" element={<ModeratorNewClientController/>} />
+       
+
         <Route path="/appinsurance/MainAreaModerator/DueModerator" element={<DueModerator />} />
         <Route path="/appinsurance/MainAreaModerator/PolicyModerator" element={<PolicyModerator />} />
         <Route path="/appinsurance/MainAreaModerator/ClaimTableModerator" element={<ClaimTableModerator />} />
@@ -69,6 +75,7 @@ function App() {
         <Route path="/appinsurance/MainArea/Client" element={<Client />} />
         
         <Route path="/appinsurance/MainArea/Client/ClientCreationForm" element={<NewClientController/>} />
+
         <Route path="/appinsurance/MainArea/Client/ClientEditForm" element={<ClientEditForm />} />
         <Route path="/appinsurance/MainArea/Due" element={<Due />} />
         <Route path="/appinsurance/MainArea/Policy" element={<Policy />} />
@@ -80,7 +87,6 @@ function App() {
         <Route path="/appinsurance/MainArea/Profile" element={<Profile />} />
         
         <Route path="/appinsurance/MainArea/Policy/PolicyNewClient" element={<NewPolicyController />} />
-        <Route path="/appinsurance/MainArea/Policy/Edit/:policyId" element={<EditPolicyController />} />
   
         <Route path="/appinsurance/MainArea/Policy/PolicyNewClient/VehicleDetails" element={<VehicleDetails />} />
 

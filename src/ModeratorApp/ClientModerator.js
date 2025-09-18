@@ -6,9 +6,10 @@ import React, { useState, useRef, useEffect } from "react";
 import { FaUserCircle , FaMoon, FaSignOutAlt } from "react-icons/fa";
 import  DropdownAccountsModerator  from './DropDownAccountsModerator';
 import { FaPlus, FaArchive, FaUser } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 export default function ClientModerator() {
-    
+    const navigate = useNavigate();
      
           const [open, setOpen] = useState(false);
            const dropdownRef = useRef(null);
@@ -48,7 +49,11 @@ export default function ClientModerator() {
   {/* Right side: create + archive + profile */}
     <div className="left-actions-moderator">
       <button
-        className="btn btn-create-moderator">
+        className="btn btn-create-moderator" 
+        onClick={() =>
+                navigate("/appinsurance/MainAreaModerator/ClientModerator/ModeratorClientCreationForm")
+              }
+        >
         <FaPlus className="btn-icon-moderator" />
         Create
       </button>
