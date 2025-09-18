@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ClientInfo from "../ClientInfo";
 import "../styles/policy-table-styles.css";
-import { fetchPolicies, archivePolicy } from "../AdminActions/PolicyActions";
+import { fetchPolicies, archivePolicy, activatePolicy } from "../AdminActions/PolicyActions";
 
 export default function PolicyTable() {
   const [policies, setPolicies] = useState([]);
@@ -29,6 +29,28 @@ export default function PolicyTable() {
     });
   };
 
+   const handleActivateClick = async (policy) => {
+    const confirmActivate = window.confirm("Activate this policy?");
+    if (!confirmActivate) return;
+
+    try {
+      const result = await activatePolicy(policy, 1); // 1 = example paymentTypeId
+
+      if (result.success) {
+        setPolicies((prev) =>
+          prev.map((p) =>
+            p.id === policy.id ? { ...p, policy_is_active: true } : p
+          )
+        );
+        alert("Policy activated and payment schedule created.");
+      } else {
+        alert("Error: " + result.error);
+      }
+    } catch (err) {
+      console.error("Activation failed:", err);
+    }
+  };
+
   const handleArchiveClick = async (policyId) => {
     const confirmArchive = window.confirm(
       "Proceed to archive this selection?"
@@ -49,6 +71,7 @@ export default function PolicyTable() {
   return (
     <div className="policy-table-container">
       <h2>Current Policies</h2>
+      
       <div className="policy-table-wrapper">
         <div className="policy-table-scroll">
           <table>
@@ -61,7 +84,7 @@ export default function PolicyTable() {
                 <th>Inception Date</th>
                 <th>Expiry Date</th>
                 <th>Status</th>
-                <th>Computation</th>
+                <th>Premium</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -110,11 +133,16 @@ export default function PolicyTable() {
                       </td>
                       <td>
                         {computation
-                          ? `Total Premium: ${computation.total_Premium}`
+                          ? computation.total_Premium
                           : "No Computation"}
                       </td>
 
                       <td className="policy-table-actions">
+                         <button onClick={(e) => { e.stopPropagation(); 
+                          handleActivateClick(policy); 
+                          }}>
+                          Activate
+                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation(); // prevent row click

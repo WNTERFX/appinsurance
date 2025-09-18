@@ -18,47 +18,50 @@ export async function fetchPolicies() {
       insurance_Partners(
         insurance_Name,
         insurance_Rate
+      ),
+      policy_Computation_Table(
+        total_Premium
       )
     `)
     .or("is_archived.is.null,is_archived.eq.false")
-    .is("archival_date", null) 
-    .order('created_at', { ascending: false });
+    .is("archival_date", null)
+    .order("created_at", { ascending: false });
 
   if (error) throw error;
   return data || [];
 }
 
+
+
 export async function getPolicyById(policyId) {
   const { data, error } = await db
     .from("policy_Table")
-    .select(`
-      *,
-      clients_Table(
-        uid,
-        first_Name,
-        middle_Name,
-        family_Name,
-        prefix,
-        suffix,
-        address,
-        email,
-        phone_Number,
-        employee:employee_Accounts(personnel_Name)
-      ),
-      insurance_Partners(
-        insurance_Name,
-        insurance_Rate,
-        address,
-        contact
-      )
-    `)
-    .eq('id', policyId)
-    .or("(is_archived.is.null,is_archived.eq.false)and(archival_date.is.null)") 
+    .select(
+      `
+        id,
+        policy_type,
+        policy_inception,
+        policy_expiry,
+        policy_is_active,
+        clients_Table (
+          uid,
+          prefix,
+          first_Name,
+          middle_Name,
+          family_Name,
+          suffix
+        )
+      `
+    )
+    .eq("id", policyId)
+    .or("is_archived.is.null,is_archived.eq.false") // ✅ this is fine alone
+    .is("archival_date", null) // ✅ move outside
     .single();
 
   if (error) throw error;
   return data;
 }
+
 
 export async function archivePolicy(policyId) {
   const { data, error } = await db
@@ -74,10 +77,59 @@ export async function archivePolicy(policyId) {
   return data?.[0] || null;
 }
 
-export async function activatePolicy(policyId) {
-  const {data, error} = await db
-  .from("policy_Table")
-  .update({
-    
-  })
+export async function activatePolicy(policy, paymentTypeId) {
+  try {
+    const totalPremium = policy.policy_Computation_Table?.[0]?.total_Premium;
+    const months = policy.payment_type?.months_payment || 6;
+
+    if (!totalPremium) throw new Error("No premium available to split.");
+
+    // Dates for inception/expiry
+    const inceptionDate = new Date(); // today
+    const expiryDate = new Date();
+    expiryDate.setFullYear(inceptionDate.getFullYear() + 1); // +1 year
+
+    // 1. Update policy with active + dates
+    const { data: policyData, error: policyError } = await db
+      .from("policy_Table")
+      .update({
+        policy_is_active: true,
+        policy_inception: inceptionDate.toISOString().split("T")[0],
+        policy_expiry: expiryDate.toISOString().split("T")[0],
+      })
+      .eq("id", policy.id)
+      .select();
+
+    if (policyError) throw policyError;
+
+    // 2. Create payments
+    const monthlyAmount = totalPremium / months;
+    const today = new Date();
+
+    const paymentRows = Array.from({ length: months }, (_, i) => ({
+      payment_date: new Date(
+        today.getFullYear(),
+        today.getMonth() + (i + 1),
+        today.getDate()
+      ),
+      amount_to_be_paid: monthlyAmount,
+      is_paid: false,
+      created_at: new Date(),
+      policy_id: policy.id,
+      paid_amount: null,
+      payment_type_id: paymentTypeId,
+    }));
+
+    const { data: payments, error: paymentError } = await db
+      .from("payment_Table")
+      .insert(paymentRows)
+      .select();
+
+    if (paymentError) throw paymentError;
+
+    return { success: true, policy: policyData, payments };
+  } catch (error) {
+    console.error("Error activating policy:", error.message);
+    return { success: false, error: error.message };
+  }
 }
