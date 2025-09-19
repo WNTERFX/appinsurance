@@ -6,7 +6,7 @@ import "../styles/payment-table-styles.css";
 export default function PolicyWithPaymentsList() {
   const [policies, setPolicies] = useState([]);
   const [paymentsMap, setPaymentsMap] = useState({});
-  const [expanded, setExpanded] = useState({}); // 👈 track open/closed per policy
+  const [expanded, setExpanded] = useState({}); 
 
   useEffect(() => {
     async function loadData() {
