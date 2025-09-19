@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchPolicies } from "../AdminActions/PolicyActions";
-import { fetchPaymentSchedule } from "../AdminActions/PaymentDueActions";
+import { fetchPaymentSchedule, } from "../AdminActions/PaymentDueActions";
 import "../styles/payment-table-styles.css";
 
 export default function PolicyWithPaymentsList() {
@@ -60,7 +60,7 @@ export default function PolicyWithPaymentsList() {
               onClick={() => toggleExpand(policy.id)}
             >
               <p>
-                <strong>Policy:</strong> {policy.policy_type}
+                <strong>Policy ID:</strong> {policy.id}
               </p>
               <p>
                 <strong>Holder:</strong> {clientName}
@@ -80,37 +80,74 @@ export default function PolicyWithPaymentsList() {
               <span className="drawer-toggle">
                 {isOpen ? "▲ Hide" : "▼ Show"}
               </span>
-            </div>
+            </div> 
 
             {/* Collapsible Drawer */}
-            <div className={`payment-table-schedule ${isOpen ? "open" : ""}`}>
+           <div className={`payment-table-schedule ${isOpen ? "open" : ""}`}>
               <h3>Payments</h3>
-              <ul>
-                {payments.length > 0 ? (
-                  payments.map((p) => (
-                    <li key={p.id} className="payment-table-row">
-                      <span>
-                        {new Date(p.payment_date).toLocaleDateString("en-US", {
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </span>
-                      <span>
-                        {p.amount_to_be_paid?.toLocaleString(undefined, {
-                          style: "currency",
-                          currency: "PHP",
-                        })}
-                      </span>
-                    </li>
-                  ))
-                ) : (
-                  <li className="payment-table-row">No payments scheduled</li>
-                )}
-              </ul>
+              {payments.length > 0 ? (
+                <table className="payment-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Amount to be Paid</th>
+                      <th>Paid Amount</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payments.map((p) => (
+                      <tr key={p.id} className={`payment-${getPaymentStatus(p)}`}>
+                        <td>
+                          {new Date(p.payment_date).toLocaleDateString("en-US", {
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </td>
+                        <td>
+                          {p.amount_to_be_paid?.toLocaleString(undefined, {
+                            style: "currency",
+                            currency: "PHP",
+                          })}
+                        </td>
+                        <td>
+                          {p.paid_amount
+                            ? p.paid_amount.toLocaleString(undefined, {
+                                style: "currency",
+                                currency: "PHP",
+                              })
+                            : "₱0.00"}
+                        </td>
+                        <td className="status-cell">{getPaymentStatus(p)}</td>
+
+                        <td className="payment-actions">
+                          <button>Enter Payment</button>
+                          
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p>No payments scheduled</p>
+              )}
             </div>
+
           </div>
         );
       })}
     </div>
   );
+}
+
+
+function getPaymentStatus(payment) {
+  const { amount_to_be_paid, paid_amount } = payment;
+
+  if (!paid_amount || paid_amount <= 0) return "not-paid"; // Red
+  if (paid_amount < amount_to_be_paid) return "partially-paid"; // Yellow
+  if (paid_amount >= amount_to_be_paid) return "fully-paid"; // Green
+
+  return "not-paid"; // fallback
 }

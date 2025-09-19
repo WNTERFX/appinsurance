@@ -100,3 +100,62 @@
   cursor: pointer;
       
 }
+
+/* Table styling */
+.payment-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 15px;
+}
+
+.payment-table th,
+.payment-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.payment-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Status coloring applied to row */
+.payment-not-paid td {
+  background-color: #ffcccc; /* light red */
+  color: #b30000;
+}
+
+.payment-partially-paid td {
+  background-color: #fff3cd; /* light yellow */
+  color: #856404;
+}
+
+.payment-fully-paid td {
+  background-color: #d4edda; /* light green */
+  color: #155724;
+}
+
+/* Optional: format status column text */
+.status-cell {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+
+.payment-not-paid {
+  background-color: #ffcccc; /* light red */
+  color: #b30000;
+}
+
+.payment-partially-paid {
+  background-color: #fff3cd; /* light yellow */
+  color: #856404;
+}
+
+.payment-fully-paid {
+  background-color: #d4edda; /* light green */
+  color: #155724;
+}

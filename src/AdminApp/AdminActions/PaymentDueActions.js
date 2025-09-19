@@ -17,3 +17,9 @@ export async function fetchPaymentSchedule(policyId) {
   if (error) throw error;
   return data || [];
 }
+
+export async function paymentEdit(policyId) {
+  const { data, error } = await db
+    .from("payment_Table")
+    .update("paid_amount")
+}
