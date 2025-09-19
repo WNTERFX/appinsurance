@@ -3,8 +3,11 @@ import { useEffect, useState } from "react";
 import "./moderator-styles/client-table-styles.css";
 import ClientInfo from "../AdminApp/ClientInfo";
 import { fetchModeratorClients, getCurrentUser } from "./ModeratorActions/ModeratorClientActions";
+import { FaEdit } from "react-icons/fa"; 
+import { useNavigate } from "react-router-dom";
 
 export default function ClientTableModerator({ agentId }) {
+  const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [selectedClientID, setSelectedClientID] = useState(null);
 
@@ -21,6 +24,11 @@ export default function ClientTableModerator({ agentId }) {
     }
     loadClients();
   }, [agentId]);
+
+
+  const handleEditClick = (client) => {
+    navigate("/appinsurance/MainAreaModerator/ClientModerator/ModeratorClientEditForm", { state: { client } });
+  };
 
   const handleRowClick = (id) => setSelectedClientID(id);
 
@@ -60,11 +68,24 @@ export default function ClientTableModerator({ agentId }) {
                       <td>{client.address}</td>
                       <td>{client.phone_Number}</td>
                       <td>{client.email}</td>
+                      
+                      <td className="client-table-actions-moderator">
+                          <button
+                          className="edit-btn-client-moderator"
+                          title="Edit this client"
+                          onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditClick(client);
+                          }}>
+                          <FaEdit /> Edit
+                          </button>
+
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="6">No clients found</td>
+                    <td colSpan="8">No clients found</td>
                   </tr>
                 )}
               </tbody>
