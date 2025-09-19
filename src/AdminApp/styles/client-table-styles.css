@@ -103,3 +103,97 @@
 .client-table-actions button:hover {
   background-color: #f0f0f0;
 }
+
+.pagination-controls {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  align-items: center;
+}
+
+.pagination-controls select {
+  padding: 5px 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+
+.pagination-controls button {
+  padding: 5px 12px;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.pagination-controls button:disabled {
+  background: #e0e0e0;
+  cursor: not-allowed;
+}
+
+.client-table-header {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  margin: 0 10px 12px 10px; 
+}
+
+.client-table-header h2 {
+  margin: 0; 
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.rows-per-page-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rows-per-page-inline label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.rows-per-page-inline select {
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.rows-per-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.rows-per-page label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.rows-per-page select {
+  padding: 5px 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.client-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.client-search-input {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 180px;
+}

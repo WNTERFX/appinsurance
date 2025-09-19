@@ -2,12 +2,25 @@
   margin-left: 10px;
 }
 
+
+
 .policy-table-wrapper {
   width: 100%;
-  max-width: fit-content;
-  margin: 0 auto;
-  padding: 15px 0 0 0;
-  border-radius: 10px;
+  overflow-x: auto; 
+}
+
+
+.policy-table-wrapper table {
+  width: 100%;
+  border-collapse: collapse; 
+}
+
+
+.policy-table-wrapper th,
+.policy-table-wrapper td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 
 
@@ -50,8 +63,8 @@
 @media (max-width: 1920px) and (min-width: 1366px) {
   .policy-table-scroll > table > thead > tr > th,
   .policy-table-scroll > table > tbody > tr > td {
-    padding: 15px 10px; /* smaller padding */
-    font-size: 0.9rem;  /* smaller font */
+    
+    font-size: 0.8rem;  /* smaller font */
   }
 }
 

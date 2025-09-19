@@ -3,13 +3,23 @@ import { fetchClients, archiveClient } from "../AdminActions/ClientActions";
 import ClientInfo from "../ClientInfo"; 
 import { FaEdit } from "react-icons/fa"; 
 import { useNavigate } from "react-router-dom";
+import ScrollToTopButton from "../../ReusableComponents/ScrollToTop";
 import "../styles/client-table-styles.css";
+
 
 export default function ClientTable() {
   const navigate = useNavigate();
 
   const [clients, setClients] = useState([]);
   const [selectedClientID, setSelectedClientID] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(15); 
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredClients = clients.filter((client) =>
+  client.uid.toString().includes(searchTerm)
+  );
+
 
   useEffect(() => {
     async function loadClients() {
@@ -19,32 +29,66 @@ export default function ClientTable() {
     loadClients();
   }, []);
 
-  const handleRowClick = (id) => {
-    setSelectedClientID(id); 
-  };
+  const handleRowClick = (id) => setSelectedClientID(id);
 
   const handleEditClick = (client) => {
     navigate("/appinsurance/MainArea/Client/ClientEditForm", { state: { client } });
   };
 
   const handleArchiveClick = async (clientId) => {
-    const confirmArchive = window.confirm(
-      "Proceed to archive this client?"
-    );
+    const confirmArchive = window.confirm("Proceed to archive this client?");
     if (!confirmArchive) return;
 
     try {
-      await archiveClient(clientId); 
-      setClients((prev) => prev.filter((c) => c.uid !== clientId)); // update list
+      await archiveClient(clientId);
+      setClients((prev) => prev.filter((c) => c.uid !== clientId));
     } catch (error) {
       console.error("Error archiving client:", error);
     }
   };
 
+  // 🔹 Pagination logic
+  const indexOfLast = currentPage * rowsPerPage;
+  const indexOfFirst = indexOfLast - rowsPerPage;
+  const currentClients = filteredClients.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredClients.length / rowsPerPage);
+
+  const handleRowsPerPageChange = (e) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1); // reset to first page
+  };
+
   return (
     <>
       <div className="client-table-container">
-        <h2>Active Clients</h2>
+       <div className="client-table-header">
+          <h2>Active Clients</h2>
+
+          <div className="client-header-controls">
+            <input
+              type="text"
+              placeholder="Search by ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="client-search-input"
+            />
+
+            <div className="rows-per-page-inline">
+              <label htmlFor="rowsPerPage">Results:</label>
+              <select
+                id="rowsPerPage"
+                value={rowsPerPage}
+                onChange={handleRowsPerPageChange}
+              >
+                <option value={15}>15</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         <div className="client-table-wrapper">
           <div className="client-table-scroll">
             <table>
@@ -60,8 +104,8 @@ export default function ClientTable() {
                 </tr>
               </thead>
               <tbody>
-                {clients.length > 0 ? (
-                  clients.map((client) => (
+                {currentClients.length > 0 ? (
+                  currentClients.map((client) => (
                     <tr
                       key={client.uid}
                       className="client-table-clickable-row"
@@ -83,7 +127,6 @@ export default function ClientTable() {
                       <td>{client.address}</td>
                       <td>{client.phone_Number}</td>
                       <td>{client.email}</td>
-
                       <td className="client-table-actions">
                         <button
                           className="edit-btn-client"
@@ -95,7 +138,6 @@ export default function ClientTable() {
                         >
                           <FaEdit /> Edit
                         </button>
-
                         <button
                           className="archive-btn-client"
                           onClick={(e) => {
@@ -116,15 +158,41 @@ export default function ClientTable() {
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
 
+          {/* 🔹 Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="pagination-controls">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+              >
+                Previous
+              </button>
+
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+              >
+                Next
+              </button>
+
+              
+            </div>
+          )}
+        </div>
+         
+      </div>
+         
       {/* Client Info Modal */}
       <ClientInfo
         clientID={selectedClientID}
         onClose={() => setSelectedClientID(null)}
       />
+      <ScrollToTopButton/>
     </>
   );
-
 }

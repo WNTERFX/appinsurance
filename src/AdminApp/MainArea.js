@@ -4,6 +4,7 @@ import "./styles/policy-styles.css"
 import "./styles/dashboard-styles.css"
 import "./styles/client-styles.css"
 import "./styles/due-styles.css"
+
 import { useState, useEffect } from "react";
 import { Outlet } from 'react-router-dom';
 
@@ -38,12 +39,15 @@ export default function MainArea() {
         <div
           className="content-wrapper"
           style={{ 
-            zoom: scale,  // Use zoom instead of transform
+            zoom: scale,  
           }}
         >
           <Outlet />
+         
         </div>
+         
       </div>
+      
     </div>
   );
 }
