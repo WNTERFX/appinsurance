@@ -40,6 +40,16 @@ import ClientEditForm from "./AdminApp/AdminForms/ClientEditForm";
 import ModeratorNewClientController from './ModeratorApp/ControllerModerator/ModeratorNewClientController';
 import PolicyEditForm from './AdminApp/AdminForms/PolicyEditForm';
 
+
+import ModeratorClientEditForm from "./ModeratorApp/ModeratorForms/ModeratorClientEditForm";
+
+
+import ModeratorPolicyNewClientForm from "./ModeratorApp/ModeratorForms/ModeratorPolicyNewClientForm";
+
+
+import ModeratorNewPolicyController from './ModeratorApp/ControllerModerator/ModeratorNewPolicyController';
+
+
 function App() {
   return (
     
@@ -64,6 +74,19 @@ function App() {
 
         <Route path="/appinsurance/MainAreaModerator/PolicyModerator/NewClientModerator" element={<PolicyNewClientModerator />} />
         <Route path="/appinsurance/MainAreaModerator/PolicyModerator/NewClientModerator/VehicleDetailsModerator" element={<VehicleDetailsModerator />} />
+
+
+  
+        <Route path="/appinsurance/MainAreaModerator/PolicyModerator/ModeratorPolicyNewClientForm" element={<ModeratorPolicyNewClientForm />} />
+
+    
+        <Route path="/appinsurance/MainAreaModerator/PolicyModerator/ModeratorPolicyNewClienForm"element={<ModeratorNewPolicyController />} />
+       
+      
+       <Route path="/appinsurance/MainAreaModerator/ClientModerator/ModeratorClientEditForm" element={<ModeratorClientEditForm />} />
+
+
+
 
         <Route path="*" element={<div>Page not found</div>} />  
       </Route>

@@ -1,13 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import ClientTableModerator from "./ClientTableModerator";
-import FilterModerator from "./FilterModerator";
 import './moderator-styles/policy-styles-moderator.css';
 import DropdownAccountsModerator from "./DropDownAccountsModerator";
 import { FaPlus, FaArchive, FaUserCircle } from "react-icons/fa";
 import { useEffect, useState, useRef } from "react";
+import PolicyTableModerator from "./ModeratorTables/PolicyTableModerator";
+import ClientModal from "../AdminApp/ClientInfo";
 export default function PolicyModerator() {
 
     const navigate = useNavigate();
+     const [selectedClient, setSelectedClient] = useState(null);
 
     const [open, setOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -43,12 +45,14 @@ export default function PolicyModerator() {
 
             <div className="left-actions-moderator">
                       <button
-                        className="btn btn-create-moderator" >
+                        className="btn btn-create-moderator"  onClick={() =>
+                         navigate("/appinsurance/MainAreaModerator/PolicyModerator/ModeratorPolicyNewClienForm")
+            }>
                         <FaPlus className="btn-icon-moderator" /> Create
                       </button>
             
                       <button
-                        className="btn btn-archive-moderator" > 
+                        className="btn btn-archive-moderator"> 
                         <FaArchive className="btn-icon-moderator" />View Archive
                       </button>
             
@@ -80,16 +84,13 @@ export default function PolicyModerator() {
                    
                     <button className="print-btn-policy-moderator">Print</button>
                 </div>
-                 <ClientTableModerator/>
+                 <PolicyTableModerator/>
             </div>
-           
-          {/**<div className="Policy-content-moderator">
-               
-             {/** <div className="button-container-moderator">
-                    <button className="policy-btn-moderator" onClick={() => navigate("/appinsurance/MainAreaModerator/PolicyModerator/NewClientModerator")}>Create new</button>
-                   
-                </div>                  
-            </div> */}  
+           <ClientModal
+            client={selectedClient}
+            onClose={() => setSelectedClient(null)}
+            />
+         
         </div>
     );
 }

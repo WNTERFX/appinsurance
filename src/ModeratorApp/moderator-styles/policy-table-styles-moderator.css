@@ -1,0 +1,109 @@
+.policy-table-container-moderator h2 {
+  margin-left: 10px;
+}
+
+.policy-table-wrapper-moderator {
+  width: 100%;
+  max-width: fit-content;
+  margin: 0 auto;
+  padding: 15px 0 0 0;
+  border-radius: 10px;
+}
+
+
+
+.policy-table-scroll-moderator {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  scroll-behavior: smooth;
+  
+}
+
+.policy-table-scroll-moderator > table {
+   width: max-content;
+  min-width: 1200px;
+  padding: 20px 5px 10px 5px;
+  border-collapse: collapse;
+}
+
+
+
+.policy-table-scroll-moderator > table > thead > tr > th {
+  padding: 20px 15px;
+  text-align: left;
+  background-color: #F2F5FA;
+  white-space: nowrap;
+  min-width: 150px;
+}
+
+.policy-table-scroll-moderator > table > tbody > tr > td {
+  width: 100%;
+  text-align: left;
+  padding: 25px 15px 40px;
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+@media (max-width: 1920px) and (min-width: 1366px) {
+  .policy-table-scroll-moderator > table > thead > tr > th,
+  .policy-table-scroll-moderator > table > tbody > tr > td {
+    padding: 15px 10px; /* smaller padding */
+    font-size: 0.9rem;  /* smaller font */
+  }
+}
+
+tr:hover {
+  background-color: #f0f0f0;
+}
+
+.policy-table-clickable-row-moderator {
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.policy-table-clickable-row-moderator > td {
+  padding: 12px;
+}
+
+.policy-table-clickable-row-moderator:hover {
+  background-color: #e6f7ff;
+}
+
+.policy-table-scroll-moderator::-webkit-scrollbar {
+  height: 8px;
+}
+
+.policy-table-scroll-moderator::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.policy-table-scroll-moderator::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.policy-table-scroll-moderator::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.policy-status-active-moderator,
+.policy-status-inactive-moderator {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.policy-status-active-moderator {
+  color: #065f46;
+  background-color: #d1fae5;
+}
+
+.policy-status-inactive-moderator {
+  color: #991b1b;
+  background-color: #fee2e2;
+}
