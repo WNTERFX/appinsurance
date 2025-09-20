@@ -34,6 +34,8 @@ export default function PolicyNewClient({
       setVinNumber,
       vehiclePlateNumber,
       setPlateNumber,
+      vehicleEngineNumber,
+      setEngineNumber,
       
 
       clients,
@@ -51,7 +53,7 @@ export default function PolicyNewClient({
 
   return (
     <div className="new-client-container">
-      <h2>New Policy Form</h2>
+      <h2>Policy Creation Form</h2>
 
       <div className="form-card">
         <form className="form-grid">
@@ -107,6 +109,15 @@ export default function PolicyNewClient({
               <small style={{ color: vehicleVinNumber?.length >= 17 ? "red" : "gray" }}>
                 {vehicleVinNumber?.length || 0}/17 characters
               </small>
+            </div>
+
+            <div className="form-group">
+              <label>Vehicle Engine Serial</label>
+              <input 
+                type="text"
+                value={vehicleEngineNumber || ""}
+                onChange={(e) => setEngineNumber(e.target.value)}
+              />
             </div>
 
 
@@ -207,6 +218,15 @@ export default function PolicyNewClient({
               </div>
 
 
+
+            <div className="form-group">
+              <label>Rate</label>
+              <input type="text" 
+              value={vehicleDetails?.vehicle_Rate ?`${vehicleDetails.vehicle_Rate}%` : "0%" } 
+              readOnly />
+            </div>
+
+            
            <div className="form-group aon-row">
               <label>AoN (Act of Nature)</label>
               <input 
@@ -215,13 +235,6 @@ export default function PolicyNewClient({
                 onChange={(e) => setIsAoN(e.target.checked)}
                 
               />
-            </div>
-
-            <div className="form-group">
-              <label>Rate</label>
-              <input type="text" 
-              value={vehicleDetails?.vehicle_Rate ?`${vehicleDetails.vehicle_Rate}%` : "0%" } 
-              readOnly />
             </div>
 
           </div>

@@ -79,6 +79,7 @@ export default function NewPolicyController() {
   const [vehicleColor, setVehicleColor] = useState("");
   const [vehicleVinNumber, setVinNumber] = useState("");
   const [vehiclePlateNumber, setPlatnumber] = useState(0);
+  const [vehicleEngineNumber, setEngineNumber] = useState("");
   const [vehicleYear, setVehicleYear] = useState(0)
 
 
@@ -214,6 +215,7 @@ export default function NewPolicyController() {
       plate_num: vehiclePlateNumber,
       vehicle_year: yearInput,  
       vin_num: vehicleVinNumber,
+      engine_serial_no: vehicleEngineNumber,
       policy_id: policyId,
       vehicle_type_id: selectedVehicleType?.id 
     }
@@ -300,6 +302,8 @@ export default function NewPolicyController() {
     setVinNumber={setVinNumber}
     vehiclePlateNumber={vehiclePlateNumber}
     setPlateNumber={setPlatnumber}
+    vehicleEngineNumber = {vehicleEngineNumber}
+    setEngineNumber = {setEngineNumber}
     vehicleYear={vehicleYear}
     setVehicleYear={setVehicleYear}
 

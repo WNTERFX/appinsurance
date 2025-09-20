@@ -29,6 +29,9 @@ export default function PolicyEditForm({
   setVinNumber,
   vehiclePlateNumber,
   setPlateNumber,
+  vehicleEngineNumber,
+  setEngineNumber,
+      
   clients,
   selectedClient,
   setSelectedClient,
@@ -102,6 +105,13 @@ export default function PolicyEditForm({
               <label>Vehicle Plate Number</label>
               <input type="text" value={vehiclePlateNumber || ""} disabled />
               <input type="text" value={vehiclePlateNumber || ""} onChange={(e) => setPlateNumber(e.target.value)} />
+            </div>
+
+            {/* Vehicle Engine Number */}
+            <div className="form-group-policy-edit">
+              <label>Vehicle Engine Serial</label>
+              <input type="text" value={vehicleEngineNumber || ""} disabled />
+              <input type="text" value={vehicleEngineNumber || ""} onChange={(e) => setEngineNumber(e.target.value)} />
             </div>
 
             {/* Vehicle Color */}

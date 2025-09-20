@@ -136,6 +136,7 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
                       <InfoRow label="Year" value={v.vehicle_year || 'N/A'} />
                       <InfoRow label="Color" value={v.vehicle_color || 'N/A'} />
                       <InfoRow label="Plate Number" value={v.plate_num || 'N/A'} />
+                      <InfoRow label="Engine Serial No" value={v.engine_serial_no || 'N/A'} />
                       <InfoRow label="VIN" value={v.vin_num || 'N/A'} />
                     </Card>
                   ))}
