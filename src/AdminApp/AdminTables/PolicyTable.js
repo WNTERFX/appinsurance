@@ -189,7 +189,8 @@ export default function PolicyTable() {
                           : "No Computation"}
                       </td>
                       <td className="policy-table-actions">
-                        <button
+                       <button
+                          disabled={policy.policy_is_active} // 👈 disable if already active
                           onClick={(e) => {
                             e.stopPropagation();
                             handleActivateClick(policy);
@@ -197,7 +198,7 @@ export default function PolicyTable() {
                         >
                           Activate
                         </button>
-                        <button
+                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(

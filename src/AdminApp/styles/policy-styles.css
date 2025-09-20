@@ -3,13 +3,21 @@
 }
 
 .Policy-container{
-background-color: #F2F5FA;
-font-family: 'Inter', sans-serif;
-height: auto;
-max-width: 100%;         
-overflow-x: hidden; 
-margin-left: 100px;
+    background-color: #F2F5FA;
+    font-family: 'Inter', sans-serif;
+    height: 100%;
+    max-width: 100%;         
+    overflow-x: hidden; 
+    margin-left: 100px;
 }
+
+.policy-data-field {
+  flex: 1; /* take up remaining space */
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* allow child to shrink & scroll */
+}
+
 
 @media screen and (max-width: 1920px) {
   .Policy-container {

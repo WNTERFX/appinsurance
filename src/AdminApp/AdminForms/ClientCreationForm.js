@@ -4,40 +4,43 @@ import { useNavigate } from "react-router-dom";
 
 export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
   const navigate = useNavigate();
-  const [errors, setErrors] = useState({ phoneNumber: "", email: "", firstName: "", homeAddress: "" });
-
- const handlePhoneChange = (e) => {
-  let input = e.target.value;
-
-  // Allow only digits
-  if (!/^\d*$/.test(input)) return;
-
-  // Limit to 11 digits
-  if (input.length > 11) input = input.slice(0, 11);
-
-  // Update state directly
-  onChange({ target: { name: "phoneNumber", value: input } });
-
-  // Update errors
-  setErrors({
-    ...errors,
-    phoneNumber: input.length === 0
-      ? "Phone number is required"
-      : input.length !== 11
-      ? "Phone number must be 11 digits"
-      : ""
+  const [errors, setErrors] = useState({
+    phoneNumber: "",
+    email: "",
+    firstName: "",
+    homeAddress: "",
   });
-};
 
-// Add 0 on blur if missing
-const handlePhoneBlur = () => {
-  if (!clientData?.phoneNumber) return;
+  const handlePhoneChange = (e) => {
+    let input = e.target.value;
 
-  let input = clientData.phoneNumber;
-  if (input[0] !== "0") input = "0" + input;
+    // Only digits allowed
+    if (!/^\d*$/.test(input)) return;
 
-  onChange({ target: { name: "phoneNumber", value: input } });
-};
+    // Limit to 11 digits
+    if (input.length > 11) input = input.slice(0, 11);
+
+    onChange({ target: { name: "phoneNumber", value: input } });
+
+    setErrors({
+      ...errors,
+      phoneNumber:
+        input.length === 0
+          ? "Phone number is required"
+          : input.length !== 11
+          ? "Phone number must be 11 digits"
+          : "",
+    });
+  };
+
+  const handlePhoneBlur = () => {
+    if (!clientData?.phoneNumber) return;
+
+    let input = clientData.phoneNumber;
+    if (input[0] !== "0") input = "0" + input;
+
+    onChange({ target: { name: "phoneNumber", value: input } });
+  };
 
   const handleEmailChange = (e) => {
     const value = e.target.value;
@@ -55,26 +58,43 @@ const handlePhoneBlur = () => {
   const handleFirstNameChange = (e) => {
     const value = e.target.value;
     onChange(e);
-    setErrors({ ...errors, firstName: !value.trim() ? "First Name is required" : "" });
+    setErrors({
+      ...errors,
+      firstName: !value.trim() ? "First Name is required" : "",
+    });
   };
 
   const handleHomeAddressChange = (e) => {
     const value = e.target.value;
     onChange(e);
-    setErrors({ ...errors, homeAddress: !value.trim() ? "Home Address is required" : "" });
+    setErrors({
+      ...errors,
+      homeAddress: !value.trim() ? "Home Address is required" : "",
+    });
   };
 
   const handleSubmit = () => {
     const newErrors = { ...errors };
 
-    if (!clientData?.firstName?.trim()) newErrors.firstName = "First Name is required";
+    if (!clientData?.firstName?.trim())
+      newErrors.firstName = "First Name is required";
     if (!clientData?.email?.trim()) newErrors.email = "Email is required";
-    if (!clientData?.phoneNumber?.trim() || clientData.phoneNumber.length !== 11) newErrors.phoneNumber = "Phone number must be 11 digits";
-    if (!clientData?.homeAddress?.trim()) newErrors.homeAddress = "Home Address is required";
+    if (
+      !clientData?.phoneNumber?.trim() ||
+      clientData.phoneNumber.length !== 11
+    )
+      newErrors.phoneNumber = "Phone number must be 11 digits";
+    if (!clientData?.homeAddress?.trim())
+      newErrors.homeAddress = "Home Address is required";
 
     setErrors(newErrors);
 
-    if (!newErrors.firstName && !newErrors.email && !newErrors.phoneNumber && !newErrors.homeAddress) {
+    if (
+      !newErrors.firstName &&
+      !newErrors.email &&
+      !newErrors.phoneNumber &&
+      !newErrors.homeAddress
+    ) {
       onSubmit();
     } else {
       alert("Please fix validation errors before submitting.");
@@ -86,67 +106,105 @@ const handlePhoneBlur = () => {
       <h2>Client Creation Form</h2>
       <div className="form-card-client-creation">
         <div className="form-grid-client-creation">
-          <div className="form-left-column-client-creation">
+          <div className="form-group-client-creation">
+            <label>Prefix</label>
+            <input
+              type="text"
+              name="prefix"
+              value={clientData?.prefix || ""}
+              onChange={onChange}
+            />
+          </div>
 
-            <div className="form-group-client-creation">
-              <label>Prefix</label>
-              <input type="text" name="prefix" value={clientData?.prefix || ""} onChange={onChange} />
-            </div>
+          <div className="form-group-client-creation">
+            <label>First Name *</label>
+            <input
+              type="text"
+              name="firstName"
+              value={clientData?.firstName || ""}
+              onChange={handleFirstNameChange}
+            />
+            {errors.firstName && <p>{errors.firstName}</p>}
+          </div>
 
-            <div className="form-group-client-creation">
-              <label>First Name *</label>
-              <input type="text" name="firstName" value={clientData?.firstName || ""} onChange={handleFirstNameChange} />
-              {errors.firstName && <p style={{ color: "red" }}>{errors.firstName}</p>}
-            </div>
+          <div className="form-group-client-creation">
+            <label>Middle Name</label>
+            <input
+              type="text"
+              name="middleName"
+              value={clientData?.middleName || ""}
+              onChange={onChange}
+            />
+          </div>
 
-            <div className="form-group-client-creation">
-              <label>Middle Name</label>
-              <input type="text" name="middleName" value={clientData?.middleName || ""} onChange={onChange} />
-            </div>
+          <div className="form-group-client-creation">
+            <label>Last/Family Name</label>
+            <input
+              type="text"
+              name="lastName"
+              value={clientData?.lastName || ""}
+              onChange={onChange}
+            />
+          </div>
 
-            <div className="form-group-client-creation">
-              <label>Last/Family Name</label>
-              <input type="text" name="lastName" value={clientData?.lastName || ""} onChange={onChange} />
-            </div>
+          <div className="form-group-client-creation">
+            <label>Suffix</label>
+            <input
+              type="text"
+              name="suffix"
+              value={clientData?.suffix || ""}
+              onChange={onChange}
+            />
+          </div>
 
-            <div className="form-group-client-creation">
-              <label>Suffix</label>
-              <input type="text" name="suffix" value={clientData?.suffix || ""} onChange={onChange} />
-            </div>
+          <div className="form-group-client-creation">
+            <label>Home Address *</label>
+            <input
+              type="text"
+              name="homeAddress"
+              value={clientData?.homeAddress || ""}
+              onChange={handleHomeAddressChange}
+            />
+            {errors.homeAddress && <p>{errors.homeAddress}</p>}
+          </div>
 
-            <div className="form-group-client-creation">
-              <label>Home Address *</label>
-              <input type="text" name="homeAddress" value={clientData?.homeAddress || ""} onChange={handleHomeAddressChange} />
-              {errors.homeAddress && <p style={{ color: "red" }}>{errors.homeAddress}</p>}
-            </div>
+          <div className="form-group-client-creation">
+            <label>Phone Number *</label>
+            <input
+              type="text"
+              name="phoneNumber"
+              value={clientData?.phoneNumber || ""}
+              onChange={handlePhoneChange}
+              onBlur={handlePhoneBlur}
+              placeholder="0xxxxxxxxxx"
+            />
+            {errors.phoneNumber && <p>{errors.phoneNumber}</p>}
+          </div>
 
-            <div className="form-group-client-creation">
-              <label>Phone Number *</label>
-                          <input
-                type="text"
-                name="phoneNumber"
-                value={clientData?.phoneNumber || ""}
-                onChange={handlePhoneChange}
-                onBlur={handlePhoneBlur}
-                placeholder="0xxxxxxxxxx"
-              />
-
-              {errors.phoneNumber && <p style={{ color: "red" }}>{errors.phoneNumber}</p>}
-            </div>
-
-            <div className="form-group-client-creation">
-              <label>Email Address *</label>
-              <input type="email" name="email" value={clientData?.email || ""} onChange={handleEmailChange} placeholder="example@email.com" />
-              {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
-            </div>
-
+          <div className="form-group-client-creation">
+            <label>Email Address *</label>
+            <input
+              type="email"
+              name="email"
+              value={clientData?.email || ""}
+              onChange={handleEmailChange}
+              placeholder="example@email.com"
+            />
+            {errors.email && <p>{errors.email}</p>}
           </div>
         </div>
       </div>
 
       <div className="client-creation-controls">
-        <button type="button" onClick={handleSubmit}>Submit</button>
-        <button className="cancel-btn" onClick={() => navigate("/appinsurance/MainArea/Client")}>Cancel</button>
+        <button type="button" onClick={handleSubmit}>
+          Submit
+        </button>
+        <button
+          className="cancel-btn"
+          onClick={() => navigate("/appinsurance/MainArea/Client")}
+        >
+          Cancel
+        </button>
       </div>
     </div>
   );
