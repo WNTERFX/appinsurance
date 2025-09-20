@@ -197,3 +197,16 @@
   font-size: 14px;
   min-width: 180px;
 }
+
+.reset-btn-client {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  font-size: 14px;
+}
+
+.reset-btn-client:hover {
+  background-color: #f0f0f0;
+}

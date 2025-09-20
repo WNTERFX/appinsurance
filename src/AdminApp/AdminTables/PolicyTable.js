@@ -2,23 +2,32 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ClientInfo from "../ClientInfo";
 import "../styles/policy-table-styles.css";
-import { fetchPolicies, archivePolicy, activatePolicy } from "../AdminActions/PolicyActions";
+import {
+  fetchPolicies,
+  archivePolicy,
+  activatePolicy,
+} from "../AdminActions/PolicyActions";
 
 export default function PolicyTable() {
   const [policies, setPolicies] = useState([]);
   const [selectedPolicy, setSelectedPolicy] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    async function loadPolicies() {
-      try {
-        const data = await fetchPolicies();
-        setPolicies(data);
-      } catch (error) {
-        console.error("Error loading policies:", error);
-        setPolicies([]);
-      }
+  // Fetch from Supabase
+  const loadPolicies = async () => {
+    try {
+      const data = await fetchPolicies();
+      setPolicies(data);
+    } catch (error) {
+      console.error("Error loading policies:", error);
+      setPolicies([]);
     }
+  };
+
+  useEffect(() => {
     loadPolicies();
   }, []);
 
@@ -29,13 +38,12 @@ export default function PolicyTable() {
     });
   };
 
-   const handleActivateClick = async (policy) => {
+  const handleActivateClick = async (policy) => {
     const confirmActivate = window.confirm("Activate this policy?");
     if (!confirmActivate) return;
 
     try {
       const result = await activatePolicy(policy, 1); // 1 = example paymentTypeId
-
       if (result.success) {
         setPolicies((prev) =>
           prev.map((p) =>
@@ -52,26 +60,67 @@ export default function PolicyTable() {
   };
 
   const handleArchiveClick = async (policyId) => {
-    const confirmArchive = window.confirm(
-      "Proceed to archive this selection?"
-    );
+    const confirmArchive = window.confirm("Proceed to archive this policy?");
     if (!confirmArchive) return;
 
     try {
-      await archivePolicy(policyId); 
-      setPolicies((prev) =>
-        prev.filter((p) => p.id !== policyId) // remove from list immediately
-      );
+      await archivePolicy(policyId);
+      setPolicies((prev) => prev.filter((p) => p.id !== policyId));
     } catch (error) {
       console.error("Error archiving policy:", error);
     }
   };
 
+  // 🔹 Filtering by Policy ID
+  const filteredPolicies = policies.filter((policy) =>
+    policy.id.toString().includes(searchTerm.trim())
+  );
+
+  // 🔹 Pagination logic
+  const indexOfLast = currentPage * rowsPerPage;
+  const indexOfFirst = indexOfLast - rowsPerPage;
+  const currentPolicies = filteredPolicies.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredPolicies.length / rowsPerPage);
+
+  const handleRowsPerPageChange = (e) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
 
   return (
     <div className="policy-table-container">
-      <h2>Current Policies</h2>
-      
+      <div className="policy-table-header">
+        <h2>Current Policies</h2>
+
+        <div className="policy-header-controls">
+          <input
+            type="text"
+            placeholder="Search by Policy ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="policy-search-input"
+          />
+
+          <div className="rows-per-page-inline">
+            <label htmlFor="rowsPerPage">Results:</label>
+            <select
+              id="rowsPerPage"
+              value={rowsPerPage}
+              onChange={handleRowsPerPageChange}
+            >
+              <option value={15}>15</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+
+          <button onClick={loadPolicies} className="reset-btn-policy">
+            Refresh
+          </button>
+        </div>
+      </div>
+
       <div className="policy-table-wrapper">
         <div className="policy-table-scroll">
           <table>
@@ -89,8 +138,8 @@ export default function PolicyTable() {
               </tr>
             </thead>
             <tbody>
-              {policies.length > 0 ? (
-                policies.map((policy) => {
+              {currentPolicies.length > 0 ? (
+                currentPolicies.map((policy) => {
                   const client = policy.clients_Table;
                   const partner = policy.insurance_Partners;
                   const computation = policy.policy_Computation_Table?.[0];
@@ -131,28 +180,33 @@ export default function PolicyTable() {
                           {policy.policy_is_active ? "Active" : "Inactive"}
                         </span>
                       </td>
-                      <td>
+                      <td className="premium-cell"> 
                         {computation
-                          ? computation.total_Premium
+                          ? new Intl.NumberFormat("en-PH", {
+                              style: "currency",
+                              currency: "PHP",
+                            }).format(computation.total_Premium)
                           : "No Computation"}
                       </td>
-
                       <td className="policy-table-actions">
-                         <button onClick={(e) => { e.stopPropagation(); 
-                          handleActivateClick(policy); 
-                          }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleActivateClick(policy);
+                          }}
+                        >
                           Activate
                         </button>
                         <button
                           onClick={(e) => {
-                            e.stopPropagation(); // prevent row click
-                            // Navigate to edit page with policy ID
-                            navigate(`/appinsurance/MainArea/Policy/Edit/${policy.id}`);
+                            e.stopPropagation();
+                            navigate(
+                              `/appinsurance/MainArea/Policy/Edit/${policy.id}`
+                            );
                           }}
                         >
                           Edit
                         </button>
-                        
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -167,13 +221,37 @@ export default function PolicyTable() {
                 })
               ) : (
                 <tr>
-                  <td colSpan="8">No policies found</td>
+                  <td colSpan="9">No policies found</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+
+        {/* 🔹 Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="pagination-controls">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+            >
+              Previous
+            </button>
+
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
+
       <ClientInfo
         selectedPolicy={selectedPolicy}
         onClose={() => setSelectedPolicy(null)}

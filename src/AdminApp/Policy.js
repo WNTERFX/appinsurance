@@ -91,10 +91,7 @@ export default function Policy() {
       </div>
 
      <div className="policy-data-field">
-        <div className="control-options">
-          {!showArchive && <button className="approve-btn-policy">Approve</button>}
-          <button className="print-btn-policy">Print</button>
-        </div>
+
 
         {/* Show one table at a time */}
         {showArchive ? (

@@ -1,24 +1,72 @@
-.policy-table-container h2 {
-  margin-left: 10px;
-}
-
-.policy-table-wrapper {
+/* --------------------------- */
+/* Container + Header          */
+/* --------------------------- */
+.archive-table-container {
   width: 100%;
   margin: 0 auto;
-  padding: 15px 0 0 0;
-  border-radius: 10px;
+  font-family: sans-serif;
 }
 
-.policy-id-column {
-  max-width: 40px;        /* smaller width for Policy ID */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 0.9rem;       /* slightly smaller font */
+.archive-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
+.archive-table-container h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
 
-.policy-table-scroll {
+/* --------------------------- */
+/* Controls (search, refresh)  */
+/* --------------------------- */
+.archive-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.archive-search-input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.rows-per-page-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.archive-header-controls button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.archive-header-controls button:hover {
+  background-color: #d1d5db;
+}
+
+/* --------------------------- */
+/* Table Wrapper + Scroll      */
+/* --------------------------- */
+.archive-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.archive-table-scroll {
   overflow-x: auto;
   overflow-y: hidden;
   width: 100%;
@@ -27,75 +75,168 @@
   scroll-behavior: smooth;
 }
 
-.policy-table-scroll > table {
-  width: 100%;
+.archive-table-scroll > table {
+  width: max-content;
   min-width: 1200px;
-  padding: 20px 5px 10px 5px;
   border-collapse: collapse;
 }
 
-.policy-table-scroll > table > thead > tr > th {
-  padding: 20px 15px;
+/* --------------------------- */
+/* Table Headings + Cells      */
+/* --------------------------- */
+.archive-table-scroll > table > thead > tr > th {
+  padding: 16px 15px;
   text-align: left;
-  background-color: #F2F5FA;
+  background-color: #f2f5fa;
   white-space: nowrap;
-  min-width: 120px;
+  min-width: 150px;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
-.policy-table-scroll > table > tbody > tr > td {
-  width: 100%;
+.archive-table-scroll > table > tbody > tr > td {
+  padding: 14px 15px;
   text-align: left;
-  padding: 25px 15px 40px;
   white-space: nowrap;
-  min-width: 120px;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
 }
 
+.archive-table-scroll > table th:first-child,
+.archive-table-scroll > table td:first-child {
+  min-width: 40px;
+  max-width: 80px;
+  width: 40px;
+  text-align: center;
+}
 
-.policy-table-clickable-row {
+/* Responsive scaling */
+@media (max-width: 1920px) and (min-width: 1366px) {
+  .archive-table-scroll > table > thead > tr > th,
+  .archive-table-scroll > table > tbody > tr > td {
+    font-size: 0.8rem;
+  }
+}
+
+/* --------------------------- */
+/* Row Hover + Clickable       */
+/* --------------------------- */
+.archive-table-clickable-row {
   cursor: pointer;
-  font-size: 20px;
 }
 
-.policy-table-clickable-row > td {
-  padding: 12px;
-}
-
-.policy-table-clickable-row:hover {
+.archive-table-clickable-row:hover {
   background-color: #e6f7ff;
 }
 
-.policy-table-scroll::-webkit-scrollbar {
-  height: 8px;
-}
-
-.policy-table-scroll::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.policy-table-scroll::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-}
-
-.policy-table-scroll::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-.policy-status-active,
-.policy-status-inactive {
+/* --------------------------- */
+/* Status Badges               */
+/* --------------------------- */
+.archive-status-active,
+.archive-status-inactive {
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
-.policy-status-active {
+.archive-status-active {
   color: #065f46;
   background-color: #d1fae5;
 }
 
-.policy-status-inactive {
+.archive-status-inactive {
   color: #991b1b;
   background-color: #fee2e2;
 }
+
+/* --------------------------- */
+/* Actions                     */
+/* --------------------------- */
+.archive-table-actions button {
+  padding: 5px 10px;
+  margin: 0 3px;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #f3f4f6;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.archive-table-actions button:hover {
+  background-color: #e5e7eb;
+}
+
+/* --------------------------- */
+/* Pagination                  */
+/* --------------------------- */
+.pagination-controls {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.pagination-controls button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background-color: #d1d5db;
+}
+
+.pagination-controls button:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+/* --------------------------- */
+/* Scrollbar Styling           */
+/* --------------------------- */
+.archive-table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.archive-table-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.archive-table-scroll::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.archive-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* --------------------------- */
+/* Reset Button                */
+/* --------------------------- */
+.reset-btn-archive {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  font-size: 14px;
+}
+
+.reset-btn-archive:hover {
+  background-color: #f0f0f0;
+}
+
+.premium-cell-archive {
+  white-space: nowrap;  
+  text-align: right;    
+  width: 40px;   
+  max-width: 100px; 
+}         

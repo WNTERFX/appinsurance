@@ -60,3 +60,28 @@ export async function getPolicyById(policyId) {
   if (error) throw error;
   return data;
 }
+
+export async function unArchivePolicy(policyId) {
+  const { data, error } = await db
+    .from("policy_Table")
+    .update({
+      is_archived: false,
+      archival_date: null
+    })
+    .eq("id", policyId)
+    .select(); 
+
+  if (error) throw error;
+  return data?.[0] || null;
+}
+
+// only archived 
+export async function deletePolicy(policyId) {
+  const { error } = await db
+    .from("policy_Table")
+    .delete()
+    .eq("id", policyId);
+
+  if (error) throw error;
+  return true;
+}

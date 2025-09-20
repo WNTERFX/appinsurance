@@ -1,29 +1,70 @@
-.policy-table-container h2 {
-  margin-left: 10px;
+/* --------------------------- */
+/* Container + Header          */
+/* --------------------------- */
+.policy-table-container {
+  width: 100%;
+  margin: 0 auto;
+  font-family: sans-serif;
 }
 
+.policy-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
 
+.policy-table-container h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
 
+/* --------------------------- */
+/* Controls (search, refresh)  */
+/* --------------------------- */
+.policy-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.policy-search-input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.rows-per-page-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.policy-header-controls button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.policy-header-controls button:hover {
+  background-color: #d1d5db;
+}
+
+/* --------------------------- */
+/* Table Wrapper + Scroll      */
+/* --------------------------- */
 .policy-table-wrapper {
   width: 100%;
-  overflow-x: auto; 
+  overflow-x: auto;
 }
-
-
-.policy-table-wrapper table {
-  width: 100%;
-  border-collapse: collapse; 
-}
-
-
-.policy-table-wrapper th,
-.policy-table-wrapper td {
-  padding: 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-
 
 .policy-table-scroll {
   overflow-x: auto;
@@ -32,59 +73,137 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   scroll-behavior: smooth;
-  
 }
 
 .policy-table-scroll > table {
-   width: max-content;
+  width: max-content;
   min-width: 1200px;
-  padding: 20px 5px 10px 5px;
   border-collapse: collapse;
 }
 
-
-
+/* --------------------------- */
+/* Table Headings + Cells      */
+/* --------------------------- */
 .policy-table-scroll > table > thead > tr > th {
-  padding: 20px 15px;
+  padding: 16px 15px;
   text-align: left;
-  background-color: #F2F5FA;
+  background-color: #f2f5fa;
   white-space: nowrap;
   min-width: 150px;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .policy-table-scroll > table > tbody > tr > td {
-  width: 100%;
+  padding: 14px 15px;
   text-align: left;
-  padding: 25px 15px 40px;
   white-space: nowrap;
-  min-width: 120px;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
 }
 
+.policy-table-scroll > table th:first-child,
+.policy-table-scroll > table td:first-child {
+  min-width: 80px;   /* adjust as needed */
+  max-width: 100px;  /* optional cap */
+  width: 80px;
+  text-align: center; /* optional: center IDs */
+}
+
+/* Responsive scaling */
 @media (max-width: 1920px) and (min-width: 1366px) {
   .policy-table-scroll > table > thead > tr > th,
   .policy-table-scroll > table > tbody > tr > td {
-    
-    font-size: 0.8rem;  /* smaller font */
+    font-size: 0.8rem;
   }
 }
 
+/* --------------------------- */
+/* Row Hover + Clickable       */
+/* --------------------------- */
 tr:hover {
-  background-color: #f0f0f0;
+  background-color: #f9fafb;
 }
 
 .policy-table-clickable-row {
   cursor: pointer;
-  font-size: 20px;
-}
-
-.policy-table-clickable-row > td {
-  padding: 12px;
 }
 
 .policy-table-clickable-row:hover {
   background-color: #e6f7ff;
 }
 
+/* --------------------------- */
+/* Status Badges               */
+/* --------------------------- */
+.policy-status-active,
+.policy-status-inactive {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.policy-status-active {
+  color: #065f46;
+  background-color: #d1fae5;
+}
+
+.policy-status-inactive {
+  color: #991b1b;
+  background-color: #fee2e2;
+}
+
+/* --------------------------- */
+/* Actions                     */
+/* --------------------------- */
+.policy-table-actions button {
+  padding: 5px 10px;
+  margin: 0 3px;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #f3f4f6;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.policy-table-actions button:hover {
+  background-color: #e5e7eb;
+}
+
+/* --------------------------- */
+/* Pagination                  */
+/* --------------------------- */
+.pagination-controls {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.pagination-controls button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background-color: #d1d5db;
+}
+
+.pagination-controls button:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+/* --------------------------- */
+/* Scrollbar Styling           */
+/* --------------------------- */
 .policy-table-scroll::-webkit-scrollbar {
   height: 8px;
 }
@@ -103,20 +222,21 @@ tr:hover {
   background: #a8a8a8;
 }
 
-.policy-status-active,
-.policy-status-inactive {
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  font-weight: 500;
+.reset-btn-policy {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  font-size: 14px;
 }
 
-.policy-status-active {
-  color: #065f46;
-  background-color: #d1fae5;
+.reset-btn-policy:hover {
+  background-color: #f0f0f0;
 }
 
-.policy-status-inactive {
-  color: #991b1b;
-  background-color: #fee2e2;
+.premium-cell-policy {
+  white-space: nowrap;   
+  text-align: right;     
+  width: 1%;             
 }

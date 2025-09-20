@@ -47,6 +47,21 @@ export default function ClientTable() {
     }
   };
 
+    const loadClients = async () => {
+      const data = await fetchClients();
+      setClients(data);
+    };
+
+    useEffect(() => {
+      loadClients();
+    }, []);
+
+    const handleReset = async () => {
+      setSearchTerm("");
+      setCurrentPage(1);
+      await loadClients(); // re-fetch from Supabase
+    };
+
   // 🔹 Pagination logic
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
@@ -64,7 +79,7 @@ export default function ClientTable() {
        <div className="client-table-header">
           <h2>Active Clients</h2>
 
-          <div className="client-header-controls">
+      <div className="client-header-controls">
             <input
               type="text"
               placeholder="Search by ID..."
@@ -86,6 +101,11 @@ export default function ClientTable() {
                 <option value={100}>100</option>
               </select>
             </div>
+
+            {/* 🔹 Reset Button */}
+            <button onClick={handleReset} className="reset-btn-client">
+              Refresh
+            </button>
           </div>
         </div>
 

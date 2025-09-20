@@ -175,8 +175,6 @@ overflow-x: hidden;
     overflow-y: visible;
     background-color: white;
     border-radius: 10px;
-    padding: 10px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 @media screen and (max-height: 1080px) {

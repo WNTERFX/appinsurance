@@ -61,3 +61,13 @@ export async function unarchiveClient(clientUid) {
 
   return data?.[0] || null;
 }
+
+export async function deleteClient(clientUid) {
+  const { error } = await db
+    .from("clients_Table")
+    .delete()
+    .eq("uid", clientUid);
+
+  if (error) throw error;
+  return true;
+}
