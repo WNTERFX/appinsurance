@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ModeratorClientCreationForm from "../ModeratorForms/ModeratorClientCreationForm";
 import { createModeratorClient, getCurrentUser } from "../ModeratorActions/ModeratorClientActions";
 
-export default function ModeratorNewClientController() {
+export default function ModeratorNewClientController({ onCancel, refreshClients }) {
   const [clientData, setClientData] = useState({
     prefix: "",
     firstName: "",
@@ -36,7 +36,12 @@ export default function ModeratorNewClientController() {
     const success = await createModeratorClient(payload);
     if (success) {
       alert("Client created successfully!");
-      navigate("/appinsurance/MainAreaModerator/ClientModerator");
+      if (refreshClients) await refreshClients();   // ✅ reload parent table
+      if (onCancel) {
+        onCancel(); // ✅ close modal
+      } else {
+        navigate("/appinsurance/MainAreaModerator/ClientModerator");
+      }
     } else {
       alert("Error creating client.");
     }
@@ -47,6 +52,7 @@ export default function ModeratorNewClientController() {
       clientData={clientData}
       onChange={handleChange}
       onSubmit={handleSubmit}
+      onCancel={onCancel || (() => navigate("/appinsurance/MainAreaModerator/ClientModerator"))}
     />
   );
 }

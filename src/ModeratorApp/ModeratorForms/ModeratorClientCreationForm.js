@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../moderator-styles/client-creation-moderator-styles.css";
 
-export default function ModeratorClientCreationForm({ clientData, onChange, onSubmit }) {
+export default function ModeratorClientCreationForm({ clientData, onChange, onSubmit, onCancel }) {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
 
@@ -50,8 +50,9 @@ export default function ModeratorClientCreationForm({ clientData, onChange, onSu
 
   return (
     <div className="client-creation-moderator-container">
-      <h2>Client Creation Form</h2>
+      
       <div className="form-card-client-moderator-creation">
+        <h2>Client Creation Form</h2>
         <div className="form-grid-client-moderator-creation">
           <div className="form-left-column-client-moderator-creation">
             {/* Prefix */}
@@ -105,17 +106,6 @@ export default function ModeratorClientCreationForm({ clientData, onChange, onSu
               />
             </div>
 
-            {/* Home Address */}
-            <div className="form-group-client-moderator-creation">
-              <label>Home Address *</label>
-              <input
-                type="text"
-                value={clientData.homeAddress}
-                onChange={(e) => updateField("homeAddress", e.target.value)}
-              />
-              {errors.homeAddress && <p style={{ color: "red" }}>{errors.homeAddress}</p>}
-            </div>
-
             {/* Phone Number */}
             <div className="form-group-client-moderator-creation">
               <label>Phone Number *</label>
@@ -126,6 +116,17 @@ export default function ModeratorClientCreationForm({ clientData, onChange, onSu
                 placeholder="0xxxxxxxxxx"
               />
               {errors.phoneNumber && <p style={{ color: "red" }}>{errors.phoneNumber}</p>}
+            </div>
+
+            {/* Home Address */}
+            <div className="form-group-client-moderator-creation">
+              <label>Home Address *</label>
+              <input
+                type="text"
+                value={clientData.homeAddress}
+                onChange={(e) => updateField("homeAddress", e.target.value)}
+              />
+              {errors.homeAddress && <p style={{ color: "red" }}>{errors.homeAddress}</p>}
             </div>
 
             {/* Email Address */}
@@ -140,17 +141,19 @@ export default function ModeratorClientCreationForm({ clientData, onChange, onSu
             </div>
           </div>
         </div>
-      </div>
+             <div className="client-creation-moderator-controls">
 
-      <div className="client-creation-moderator-controls">
-        <button type="button" onClick={handleSubmit}>Submit</button>
-        <button
-          className="cancel-btn"
-          onClick={() => navigate("/appinsurance/MainAreaModerator/ClientModerator")}
-        >
+          <button
+          className="cancel-btn-Moderatorclientform"
+          type="button" onClick={onCancel}>
           Cancel
         </button>
+        <button className="submit-btn-Moderatorclientform"type="button" onClick={handleSubmit}>Submit</button>
+       
       </div>
+      </div>
+
+ 
     </div>
   );
 }

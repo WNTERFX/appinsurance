@@ -2,23 +2,32 @@ import { useEffect, useState } from "react";
 import { db } from "../../dbServer";
 import { fetchModeratorPolicies } from "../ModeratorActions/ModeratorPolicyActions";
 import ClientInfo from "../../AdminApp/ClientInfo";
+import { useNavigate } from "react-router-dom";
+import { archivePolicy } from "../../AdminApp/AdminActions/PolicyActions";
 import "../moderator-styles/policy-table-styles-moderator.css";
 
 export default function PolicyTableModerator() {
+  const navigate = useNavigate();
   const [policies, setPolicies] = useState([]);
   const [selectedPolicy, setSelectedPolicy] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
 
-  useEffect(() => {
+  // ✅ Load policies (always respect current moderator)
   const loadPolicies = async () => {
-      //  Get the currently logged-in moderator
+    try {
       const { data: { user } } = await db.auth.getUser();
       if (!user) return;
-
-      //  Fetch policies where the linked client belongs to this moderator
       const data = await fetchModeratorPolicies(user.id);
-      setPolicies(data);
-    };
+      setPolicies(data || []);
+    } catch (err) {
+      console.error("Error loading policies:", err);
+    }
+  };
 
+  // ✅ Run once on mount
+  useEffect(() => {
     loadPolicies();
   }, []);
 
@@ -29,9 +38,75 @@ export default function PolicyTableModerator() {
     });
   };
 
+  const handleArchiveClick = async (policyId) => {
+    const confirmArchive = window.confirm("Proceed to archive this policy?");
+    if (!confirmArchive) return;
+
+    try {
+      await archivePolicy(policyId);
+      setPolicies((prev) => prev.filter((p) => p.id !== policyId));
+    } catch (error) {
+      console.error("Error archiving policy:", error);
+    }
+  };
+
+  // 🔹 Filtering by Policy ID
+  const filteredPolicies = policies.filter((policy) =>
+    policy.id.toString().includes(searchTerm.trim())
+  );
+
+  // 🔹 Pagination logic
+  const indexOfLast = currentPage * rowsPerPage;
+  const indexOfFirst = indexOfLast - rowsPerPage;
+  const currentPolicies = filteredPolicies.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredPolicies.length / rowsPerPage);
+
+  const handleRowsPerPageChange = (e) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  const handleReset = async () => {
+    setSearchTerm("");
+    setCurrentPage(1);
+    await loadPolicies(); // ✅ proper reload
+  };
+
   return (
     <div className="policy-table-container-moderator">
-      <h2>Current Policies</h2>
+      <div className="policy-table-header-moderator">
+        <h2>Current Policies</h2>
+
+        <div className="policy-header-controls">
+          <input
+            type="text"
+            placeholder="Search by Policy ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="policy-search-input-moderator"
+          />
+
+          <div className="rows-per-page-inline-moderator">
+            <label htmlFor="rowsPerPage">Results:</label>
+            <select
+              id="rowsPerPage"
+              value={rowsPerPage}
+              onChange={handleRowsPerPageChange}
+            >
+              <option value={15}>15</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+
+          {/* 🔹 Refresh button */}
+          <button onClick={handleReset} className="reset-btn-policy-moderator">
+            Refresh
+          </button>
+        </div>
+      </div>
+
       <div className="policy-table-wrapper-moderator">
         <div className="policy-table-scroll-moderator">
           <table>
@@ -49,8 +124,8 @@ export default function PolicyTableModerator() {
               </tr>
             </thead>
             <tbody>
-              {policies.length > 0 ? (
-                policies.map((policy) => {
+              {currentPolicies.length > 0 ? (
+                currentPolicies.map((policy) => {
                   const client = policy.clients_Table;
                   const partner = policy.insurance_Partners;
                   const computation = policy.policy_Computation_Table?.[0];
@@ -92,21 +167,66 @@ export default function PolicyTableModerator() {
                       </td>
                       <td>
                         {computation
-                          ? `${computation.total_Premium}`
+                          ? new Intl.NumberFormat("en-PH", {
+                              style: "currency",
+                              currency: "PHP",
+                            }).format(computation.total_Premium)
                           : "No Computation"}
+                      </td>
+                      <td className="policy-table-actions-moderator">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/appinsurance/MainAreaModerator/PolicyModerator/Edit/${policy.id}`);
+                          }}
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleArchiveClick(policy.id);
+                          }}
+                        >
+                          Archive
+                        </button>
                       </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan="8">No policies found</td>
+                  <td colSpan="9">No policies found</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* 🔹 Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="pagination-controls-moderator">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Previous
+          </button>
+
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       <ClientInfo
         selectedPolicy={selectedPolicy}

@@ -1,131 +1,201 @@
-/* Container */
-.client-update-container-moderator {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0 1rem;
-  font-family: sans-serif;
-}
+/* === Outer Container === */
+/*.client-creation-moderator-container {
+  background-color: #f2f2f2;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  font-family: 'Inter', sans-serif;
 
-@media (max-width: 1920px) and (min-width: 1366px) {
-  .client-update-container-moderator {
-    max-width: 1200px;
-    margin-left: 30px;
+} */
 
-    transform: scale(0.9);
-    transform-origin: top center;
-  }
-}
-
-
-
-@media (min-width: 1600px) {
-  .client-update-container-moderator {
-    max-width: 1300px;
-    margin: 1rem auto;
-  }
-}
-
-@media (min-width: 2000px) {
-  .client-update-container-moderator {
-    max-width: 1800px;
-  }
-}
-
-/* Headings */
-.client-update-container-moderator h2 {
-  margin-bottom: 1rem;
-}
-
-/* Card wrapper */
+/* === Card === */
 .form-card-client-update-moderator {
-  background-color: #dcdcdc;
-  padding: 2rem;
-  border-radius: 8px;
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 1100px;
+  border-radius: 25px;
+  padding: 40px 50px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 
-/* Grid wrapper */
+.form-card-client-update-moderator h2 {
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 35px;
+  color: #000;
+}
+
+/* === Grid === */
 .form-grid-client-update-moderator {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  gap: 22px 24px; /* row-gap column-gap */
 }
 
-/* Left column */
-.form-left-column-client-update-moderator {
-  display: flex;
-  flex-direction: column;
-  max-width: 600px;
+.form-left-column-client-update-moderator{
+  display: contents; /* Let child groups fill the grid */
 }
 
-/* Form groups */
 .form-group-client-update-moderator {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1rem;
 }
 
 .form-group-client-update-moderator label {
-  margin-bottom: 0.4rem;
+  margin-bottom: 6px;
+  font-size: 14px;
   font-weight: 500;
+  color: #000;
 }
 
-.form-group-client-update-moderator input,
-.form-group-client-update-moderator select {
-  padding: 0.5rem;
-  font-size: 1rem;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+/* === Inputs === */
+.form-group-client-update-moderator input {
+  padding: 14px;
+  border: 2px solid #d0d0d0;      
+  border-radius: 12px;             
+  background-color: #ffffff;
+  font-size: 15px;
   outline: none;
-  background: white;
-  margin-bottom: 0.4rem;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-/* Original value style */
-.form-group-client-update-moderator .original-value-moderator {
-  background-color: #f5f5f5;
-  color: #555;
-  pointer-events: none;
-  border: 1px dashed #aaa;
+.form-group-client-update-moderator input:focus {
+  border-color: #4b1f60;        
+
 }
 
-/* Controls */
+/* === Wide Fields (Home Address + Email) === */
+.form-group-client-update-moderator:nth-child(7),
+.form-group-client-update-moderator:nth-child(8) {
+  grid-column: span 3; /* full width row */
+}
+
+/* === Controls === */
 .client-update-controls-moderator {
-  margin-top: 1.5rem;
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+  margin-top: 40px;
 }
 
-.client-update-controls-moderator button {
-  padding: 0.6rem 1.5rem;
-  margin: 5px;
-  background-color: #ccc;
+/*  Shared style for BOTH buttons 
+.client-creation-moderator-controls button {
+  background-color: #6c757d;      
+  color: rgb(0, 0, 0);
+  padding: 12px 0;               
+  width: 160px;                 
+  text-align: center;
   border: none;
-  border-radius: 20px;
-  font-size: 1rem;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s ease;
+}
+*/
+
+.client-update-controls-moderator .cancel-btn-Moderatorclientform{
+  background-color: #F86B6B;      
+  color: white;
+  padding: 12px 0;               
+  width: 160px;                 
+  text-align: center;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.client-update-controls-moderator button:hover {
-  background-color: #aaa;
+.client-update-controls-moderator .submit-btn-Moderatorclientform{
+  background-color: #007BFF;      
+  color: white;
+  padding: 12px 0;               
+  width: 160px;                 
+  text-align: center;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-/* Responsive tweaks */
-@media (min-width: 1600px) {
-  .form-left-column-client-update-moderator {
-    max-width: 700px;
+
+/* === Hover Effect === */
+.submit-btn-Moderatorclientform:hover {
+  transform: scale(1.05);               /* slight grow */
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  background-color: #0056B3;
+  color: white;
+}
+
+.cancel-btn-Moderatorclientform:hover{
+  transform: scale(1.05);               /* slight grow */
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  background-color: #F25353;
+  color: white;
+}
+
+/* === Active (Click) Effect === */
+.cancel-btn-Moderatorclientform:active,
+.submit-btn-Moderatorclientform:active {
+  transform: scale(0.97);               /* slight press */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2) inset;
+
+}
+
+
+
+
+/* === Responsive Tweaks === */
+@media (max-width: 1024px) {
+  .form-grid-client-update-moderator {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (min-width: 2000px) {
-  .form-left-column-client-update-moderator {
-    max-width: 900px;
+@media (max-width: 700px) {
+  .form-grid-client-update-moderator {
+    grid-template-columns: 1fr;
   }
 }
 
-@media (min-width: 1200px) and (max-width: 1440px) {
-  .form-group-client-update-moderator input,
-  .form-group-client-update-moderator select {
-    padding: 0.4rem;
-    font-size: 0.9rem;
-  }
+
+.modal-overlay-moderator {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.modal-content-moderator {
+
+  
+  padding: 0;
+  width: 100%;
+  max-width: 1100px;
+  border-radius: 25px;
+
+  
+}
+
+.close-btn {
+  margin-top: 20px;
+  background: #4b1f60;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+}
+.close-btn:hover {
+  background: #5d2977;
 }
