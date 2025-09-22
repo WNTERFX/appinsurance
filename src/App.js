@@ -4,7 +4,7 @@ import Dashboard from './AdminApp/Dashboard';
 import Due from './AdminApp/Due';
 import Policy from './AdminApp/Policy';
 import ClaimTable from './AdminApp/ClaimTable';
-import DeliveryTable from './AdminApp/DeliveryTable';
+import Delivery from './AdminApp/Delivery';
 import Client from './AdminApp/Client'; 
 import MonthlyDataController from './AdminApp/ControllerAdmin/MonthlyDataController';
 import ClientArchiveTable from './AdminApp/AdminTables/ClientArchiveTable';
@@ -117,7 +117,7 @@ function App() {
         <Route path="/appinsurance/MainArea/Policy" element={<Policy />} />
         <Route path="/appinsurance/MainArea/ClaimTable" element={<ClaimTable />} />
        
-        <Route path="/appinsurance/MainArea/DeliveryTable" element={<DeliveryTable />} />
+        <Route path="/appinsurance/MainArea/Delivery" element={<Delivery />} />
         <Route path="/appinsurance/MainArea/MonthlyData" element={<MonthlyDataController />}/>
         <Route path="/appinsurance/MainArea/PaymentRecords" element={<PaymentRecords />}/>
         <Route path="/appinsurance/MainArea/Profile" element={<Profile />} />

@@ -96,7 +96,7 @@ export default function NavBar( {onMinimizeChange}) {
           )}
         </Link>
 
-      <Link to="/appinsurance/MainArea/DeliveryTable" className={"side-bar-item" + (isActive("/appinsurance/MainArea/DeliveryTable") ? " active" : "")}>
+      <Link to="/appinsurance/MainArea/Delivery" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Delivery") ? " active" : "")}>
         {isMinimize ? <LuMail /> : (
           <div className="side-bar-label">
             <LuMail  className="side-bar-icon" />

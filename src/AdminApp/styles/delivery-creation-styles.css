@@ -1,0 +1,94 @@
+/* Container */
+.delivery-creation-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
+  font-family: sans-serif;
+}
+
+@media (min-width: 992px) {
+  .delivery-creation-container {
+    max-width: 1200px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .delivery-creation-container {
+    max-width: 1300px;
+    margin: 1rem auto;
+  }
+}
+
+@media (min-width: 2000px) {
+  .delivery-creation-container {
+    max-width: 1800px;
+  }
+}
+
+/* Headings */
+.delivery-creation-container h2 {
+  margin-bottom: 1rem;
+}
+
+/* Card wrapper */
+.form-card-delivery-creation {
+  background-color: #dcdcdc;
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+/* Grid wrapper */
+.form-grid-delivery-creation {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem 2rem;
+}
+
+/* Form groups */
+.form-group-delivery-creation {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group-delivery-creation label {
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+}
+
+.form-group-delivery-creation input,
+.form-group-delivery-creation select {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 11px;
+  border: 1px solid #ccc;
+  outline: none;
+  background: white;
+}
+
+/* Error text */
+.form-group-delivery-creation p {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+  color: red;
+}
+
+/* Controls */
+.delivery-creation-controls {
+  margin-top: 2rem;
+  text-align: right;
+}
+
+.delivery-creation-controls button {
+  padding: 0.6rem 1.5rem;
+  margin: 5px;
+  background-color: #ccc;
+  border: none;
+  border-radius: 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.delivery-creation-controls button:hover {
+  background-color: #aaa;
+}
