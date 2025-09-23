@@ -53,7 +53,7 @@
 /* === Inputs === */
 .form-group-client-update-moderator input {
   padding: 14px;
-  border: 2px solid #d0d0d0;      
+  border: 1px solid #d0d0d0;      
   border-radius: 12px;             
   background-color: #ffffff;
   font-size: 15px;
@@ -62,7 +62,7 @@
 }
 
 .form-group-client-update-moderator input:focus {
-  border-color: #4b1f60;        
+  border-color: #000;        
 
 }
 

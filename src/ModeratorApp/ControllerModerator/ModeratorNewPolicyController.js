@@ -42,6 +42,7 @@ export default function ModeratorNewPolicyController() {
   const [vehicleMaker, setVehicleMaker] = useState("");
   const [vehicleColor, setVehicleColor] = useState("");
   const [vehicleVinNumber, setVinNumber] = useState("");
+  const [vehicleEngineNumber, setEngineNumber] = useState("");
   const [vehiclePlateNumber, setPlateNumber] = useState("");
   const [vehicleYear, setVehicleYear] = useState(0);
   const [vehicleCost, setVehicleCost] = useState(0);
@@ -125,6 +126,7 @@ export default function ModeratorNewPolicyController() {
       vehicle_maker: vehicleMaker,
       vehicle_color: vehicleColor,
       plate_num: vehiclePlateNumber,
+      engine_serial_no: vehicleEngineNumber,
       vehicle_year: yearInput,
       vin_num: vehicleVinNumber,
       policy_id: policyId
@@ -159,6 +161,7 @@ export default function ModeratorNewPolicyController() {
       vehicleMaker={vehicleMaker} setVehicleMaker={setVehicleMaker}
       vehicleColor={vehicleColor} setVehicleColor={setVehicleColor}
       vehicleVinNumber={vehicleVinNumber} setVinNumber={setVinNumber}
+      vehicleEngineNumber={vehicleEngineNumber}setEngineNumber={setEngineNumber}
       vehiclePlateNumber={vehiclePlateNumber} setPlateNumber={setPlateNumber}
       vehicleYear={vehicleYear} setVehicleYear={setVehicleYear}
       vehicleCost={vehicleCost} setVehicleCost={setVehicleCost}

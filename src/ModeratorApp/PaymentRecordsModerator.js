@@ -1,6 +1,7 @@
 
 import './moderator-styles/payment-records-styles-moderator.css';
 import FilterModerator from './FilterModerator';
+
 export default function PaymentRecordsModerator() {
 
     return (

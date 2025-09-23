@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./moderator-styles/client-table-styles.css";
 import ClientInfo from "../AdminApp/ClientInfo";
-import { fetchModeratorClients, getCurrentUser } from "./ModeratorActions/ModeratorClientActions";
+import { fetchModeratorClients, getCurrentUser ,archiveClient} from "./ModeratorActions/ModeratorClientActions";
 import { FaEdit } from "react-icons/fa"; 
 import { useNavigate } from "react-router-dom";
 import ScrollToTopButton from "../ReusableComponents/ScrollToTop";
@@ -53,6 +53,20 @@ export default function ClientTableModerator({ agentId , onEditClient }) {
     setRowsPerPage(Number(e.target.value));
     setCurrentPage(1);
   };
+
+    const handleArchiveClick = async (clientId) => {
+      const confirmArchive = window.confirm("Proceed to archive this client?");
+      if (!confirmArchive) return;
+  
+      try {
+        await archiveClient(clientId);
+        setClients((prev) => prev.filter((c) => c.uid !== clientId));
+      } catch (error) {
+        console.error("Error archiving client:", error);
+      }
+    };
+
+
 
   return (
     <>
@@ -139,7 +153,16 @@ export default function ClientTableModerator({ agentId , onEditClient }) {
                         >
                           <FaEdit /> Edit
                         </button>
-                      </td>
+                           <button
+                          className="archive-btn-client"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleArchiveClick(client.uid);
+                          }}
+                        >
+                          Archive
+                        </button>
+                      </td>                     
                     </tr>
                   ))
                 ) : (

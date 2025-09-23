@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { db } from "../../dbServer";
-import { fetchModeratorPolicies } from "../ModeratorActions/ModeratorPolicyActions";
+import { fetchModeratorPolicies ,archivePolicy  } from "../ModeratorActions/ModeratorPolicyActions";
 import ClientInfo from "../../AdminApp/ClientInfo";
 import { useNavigate } from "react-router-dom";
-import { archivePolicy } from "../../AdminApp/AdminActions/PolicyActions";
 import "../moderator-styles/policy-table-styles-moderator.css";
 
 export default function PolicyTableModerator() {

@@ -144,7 +144,6 @@ export default function PolicyNewClient({
               <input type="text" 
               value= {yearInput || ""}
               onChange={(e) => setYearInput(Number(e.target.value))} />
-              
             </div>
 
             
