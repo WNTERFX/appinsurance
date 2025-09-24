@@ -13,6 +13,7 @@ import PaymentRecords from './AdminApp/PaymentRecords';
 import VehicleDetails from './AdminApp/VehicleDetails';
 import ListClient from './AdminApp/ListClient';
 import EditClientForm from './AdminApp/EditClientForm';
+import DeliveryCreationForm from './AdminApp/AdminForms/DeliveryCreationForm';
 import EditVehicleDetailsForm from './AdminApp/EditVehicleDetailsForm';
 import NewPolicyController from './AdminApp/ControllerAdmin/NewPolicyController';
 import NewClientController from './AdminApp/ControllerAdmin/NewClientController';
@@ -118,6 +119,7 @@ function App() {
         <Route path="/appinsurance/MainArea/ClaimTable" element={<ClaimTable />} />
        
         <Route path="/appinsurance/MainArea/Delivery" element={<Delivery />} />
+        <Route path="/appinsurance/MainArea/Delivery/NewDeliveryForm" element={<DeliveryCreationForm />} />
         <Route path="/appinsurance/MainArea/MonthlyData" element={<MonthlyDataController />}/>
         <Route path="/appinsurance/MainArea/PaymentRecords" element={<PaymentRecords />}/>
         <Route path="/appinsurance/MainArea/Profile" element={<Profile />} />

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaEdit } from "react-icons/fa"; 
 import ScrollToTopButton from "../../ReusableComponents/ScrollToTop";
-import { fetchDeliveries, archiveDelivery } from "../AdminActions/DeliveryActions";
+import { fetchDeliveries, archiveDelivery, markDeliveryAsDelivered } from "../AdminActions/DeliveryActions";
 import "../styles/delivery-table-styles.css";
 
 export default function DeliveryTable() {
@@ -49,12 +49,25 @@ export default function DeliveryTable() {
     }
   };
 
+  const handleMarkAsDelivered = async (deliveryId) => {
+    const confirmMark = window.confirm("Mark this delivery as delivered?");
+    if (!confirmMark) return;
+
+    try {
+      await markDeliveryAsDelivered(deliveryId);
+      // Refresh the deliveries to show updated status
+      await loadDeliveries();
+    } catch (error) {
+      console.error("Error marking delivery as delivered:", error);
+      alert("Failed to mark delivery as delivered: " + error.message);
+    }
+  };
+
   const handleReset = async () => {
     setSearchTerm("");
     setCurrentPage(1);
     await loadDeliveries(); 
   };
-
 
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
@@ -110,9 +123,8 @@ export default function DeliveryTable() {
                   <th>Policy ID</th>
                   <th>Policy Holder</th>
                   <th>Address</th>
-                  <th>Delivery Creation</th>
-                  <th>Estimated Delivery Date</th>
-                  
+                  <th>Date Created</th>
+                  <th>Est. Delivery / Delivered Date</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -121,7 +133,9 @@ export default function DeliveryTable() {
                   currentDeliveries.map((delivery) => (
                     <tr
                       key={delivery.uid}
-                      className="delivery-table-clickable-row"
+                      className={`delivery-table-clickable-row ${
+                        delivery.delivered_at ? 'delivered' : 'not-delivered'
+                      }`}
                       onClick={() => handleRowClick(delivery.uid)}
                     >
                       <td>{delivery.uid}</td>
@@ -129,8 +143,15 @@ export default function DeliveryTable() {
                       <td>{delivery.policy_Holder || "Unknown"}</td>
                       <td>{delivery.address}</td>
                       <td>{delivery.created_At}</td>
-                      <td>{delivery.estimated_Delivery_Date}</td>
-                    
+                      <td>
+                        {delivery.delivered_at ? (
+                          <span style={{ fontWeight: "bold", color: "#2d9d4d" }}>
+                            Delivered: {delivery.displayDate}
+                          </span>
+                        ) : (
+                          <span>Est: {delivery.displayDate}</span>
+                        )}
+                      </td>
                       <td className="delivery-table-actions">
                         <button
                           className="edit-btn-delivery"
@@ -142,6 +163,20 @@ export default function DeliveryTable() {
                         >
                           <FaEdit /> Edit
                         </button>
+                        
+                        {!delivery.delivered_at && (
+                          <button
+                            className="delivered-btn-delivery"
+                            title="Mark this delivery as delivered"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMarkAsDelivered(delivery.uid);
+                            }}
+                          >
+                            Mark As Delivered
+                          </button>
+                        )}
+                        
                         <button
                           className="archive-btn-delivery"
                           onClick={(e) => {

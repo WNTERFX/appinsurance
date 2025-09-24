@@ -1,63 +1,60 @@
 import { db } from "../../dbServer";
 
-// ✅ Fetch all deliveries (with employee name + policy details)
+// ✅ Fetch all deliveries (with employee + policy + client)
 export async function fetchDeliveries() {
   const { data, error } = await db
     .from("delivery_Table")
     .select(`
       *,
       employee:employee_Accounts(personnel_Name),
-      policy:policy_Table(policy_Number, policy_Type)
+      policy:policy_Table(
+        id,
+        policy_type,
+        policy_inception,
+        policy_expiry,
+        client:clients_Table(
+          uid,
+          first_Name,
+          middle_Name,
+          family_Name,
+          address
+        )
+      )
     `)
-    .or("is_archived.is.null,is_archived.eq.false"); // only active deliveries
-
+    .or("is_archived.is.null,is_archived.eq.false");
+  
   if (error) {
     console.error("Error fetching deliveries:", error.message);
     return [];
   }
+  
+  // Transform the data to match what the UI expects
+  return data.map(delivery => {
+    const delivered = delivery.delivered_at
+      ? new Date(delivery.delivered_at).toLocaleDateString()
+      : null;
 
-  console.log("DELIVERIES DATA:", data);
-  return data;
+    const estimated = delivery.estimated_delivery_date
+      ? new Date(delivery.estimated_delivery_date).toLocaleDateString()
+      : "Not set";
+
+    return {
+      ...delivery,
+      uid: delivery.id, // Map id to uid for compatibility
+      policy_Id: delivery.policy_id,
+      delivered_at: delivery.delivered_at, 
+      policy_Holder: delivery.policy?.client 
+        ? `${delivery.policy.client.first_Name || ''} ${delivery.policy.client.middle_Name || ''} ${delivery.policy.client.family_Name || ''}`.trim()
+        : "Unknown",
+      address: delivery.policy?.client?.address || "No address",
+      created_At: new Date(delivery.created_at).toLocaleDateString(),
+
+      // ✅ Single field: if delivered, show delivered date, else show estimate
+      displayDate: delivered || estimated,
+    };
+  });
 }
-
-// ✅ Fetch employees (reusable for assigning deliveries)
-export async function fetchEmployees() {
-  const { data, error } = await db
-    .from("employee_Accounts")
-    .select("id, personnel_Name");
-
-  if (error) {
-    console.error("Error fetching employees:", error.message);
-    return [];
-  }
-
-  return data;
-}
-
-// ✅ Create a new delivery
-export async function createDelivery({ agentId, policyId, deliveryDate, remarks }) {
-  const { data, error } = await db
-    .from("delivery_Table")
-    .insert([
-      {
-        agent_id: agentId || null,
-        policy_id: policyId,
-        delivery_date: deliveryDate,
-        remarks: remarks || null,
-      },
-    ])
-    .select()
-    .single();
-
-  if (error) {
-    console.error("Error creating delivery:", error.message);
-    throw error;
-  }
-
-  return data;
-}
-
-// ✅ Mark a delivery as archived
+// ✅ Archive
 export async function archiveDelivery(deliveryId) {
   const { data, error } = await db
     .from("delivery_Table")
@@ -68,16 +65,15 @@ export async function archiveDelivery(deliveryId) {
     .eq("id", deliveryId)
     .select()
     .single();
-
+  
   if (error) {
     console.error("Error archiving delivery:", error.message);
     throw error;
   }
-
   return data;
 }
 
-// ✅ Mark a delivery as completed (set delivered_at date)
+// ✅ Mark Delivered
 export async function markDeliveryAsDelivered(deliveryId) {
   const { data, error } = await db
     .from("delivery_Table")
@@ -87,11 +83,10 @@ export async function markDeliveryAsDelivered(deliveryId) {
     .eq("id", deliveryId)
     .select()
     .single();
-
+  
   if (error) {
     console.error("Error marking delivery as delivered:", error.message);
     throw error;
   }
-
   return data;
 }

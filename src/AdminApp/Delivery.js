@@ -1,6 +1,7 @@
+// Delivery.jsx
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { FaPlus, FaArchive, FaUserCircle, FaTruck } from "react-icons/fa";
+import { useNavigate, Outlet } from "react-router-dom";
+import { FaPlus, FaArchive, FaUserCircle } from "react-icons/fa";
 import DropdownAccounts from "./DropDownAccounts";
 
 import DeliveryTable from "./AdminTables/DeliveryTable";
@@ -11,11 +12,10 @@ export default function Delivery() {
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
-  const [showArchive, setShowArchive] = useState(false); // toggle archive
+  const [showArchive, setShowArchive] = useState(false);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
 
-  // close profile dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
       if (
@@ -41,14 +41,12 @@ export default function Delivery() {
           </p>
         </div>
 
-        {/* Right side: create + archive + profile */}
+        {/* Right side */}
         <div className="left-actions">
           {!showArchive && (
             <button
               className="btn btn-create"
-              onClick={() =>
-                navigate("/appinsurance/MainArea/Delivery/DeliveryCreationForm")
-              }
+              onClick={() => navigate("/appinsurance/MainArea/Delivery/NewDeliveryForm")}
             >
               <FaPlus className="btn-icon" />
               Create
@@ -57,7 +55,7 @@ export default function Delivery() {
 
           <button
             className="btn btn-archive"
-            onClick={() => setShowArchive((prev) => !prev)} // toggle archive
+            onClick={() => setShowArchive((prev) => !prev)}
           >
             <FaArchive className="btn-icon" />{" "}
             {showArchive ? "Back to Deliveries" : "View Archive"}
@@ -68,13 +66,10 @@ export default function Delivery() {
               ref={buttonRef}
               className="profile-button"
               onClick={() => setOpen((s) => !s)}
-              aria-haspopup="true"
-              aria-expanded={open}
             >
               <span className="profile-name">Admin</span>
               <FaUserCircle className="profile-icon" />
             </button>
-
             <div ref={dropdownRef}>
               <DropdownAccounts
                 open={open}
@@ -90,6 +85,9 @@ export default function Delivery() {
       <div className="delivery-table-container">
         {showArchive ? <DeliveryArchiveTable /> : <DeliveryTable />}
       </div>
+
+      {/* Outlet for nested routes (Creation Form) */}
+      <Outlet />
     </div>
   );
 }

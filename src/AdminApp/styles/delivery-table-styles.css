@@ -203,3 +203,55 @@
 .reset-btn-delivery:hover {
   background-color: #f0f0f0;
 }
+
+.delivery-table-clickable-row.not-delivered {
+  background-color: #ffe6e6;
+  border-left: 4px solid #ff4d4f;
+}
+
+.delivery-table-clickable-row.not-delivered:hover {
+  background-color: #ffd6d6;
+}
+
+/* Optional: Add a subtle text color change for not delivered rows */
+.delivery-table-clickable-row.not-delivered td {
+  color: #cc0000;
+}
+
+/* Keep delivered rows with normal styling */
+.delivery-table-clickable-row:not(.not-delivered):hover {
+  background-color: #e6f7ff;
+}
+
+.delivery-table-clickable-row.delivered {
+  background-color: #e6f7e6;
+  border-left: 4px solid #2d9d4d;
+}
+
+.delivery-table-clickable-row.delivered:hover {
+  background-color: #d6f0d6;
+}
+
+.delivery-table-clickable-row.delivered td {
+  color: #2d9d4d;
+}
+
+/* Style for the Mark As Delivered button */
+.delivered-btn-delivery {
+  background-color: #2d9d4d;
+  color: white;
+  border: 1px solid #2d9d4d;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.delivered-btn-delivery:hover {
+  background-color: #238a3a;
+  border-color: #238a3a;
+}
+
+/* Override the default button hover for the green button */
+.delivery-table-actions .delivered-btn-delivery:hover {
+  background-color: #238a3a;
+  color: white;
+}
