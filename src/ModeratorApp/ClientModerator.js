@@ -2,7 +2,7 @@
 import ClientTableModerator from "./ClientTableModerator";
 import './moderator-styles/client-styles-moderator.css';
 import React, { useState, useRef, useEffect } from "react";
-import ClientArchiveTable from "../AdminApp/AdminTables/ClientArchiveTable"; //reuse
+import ModeratorClientArchiveTable from "./ModeratorTables/ModeratorClientArchiveTable";
 import { FaUserCircle , FaMoon, FaSignOutAlt } from "react-icons/fa";
 import  DropdownAccountsModerator  from './DropDownAccountsModerator';
 import { FaPlus, FaArchive, FaUser } from "react-icons/fa";
@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchModeratorClients, getCurrentUser } from "./ModeratorActions/ModeratorClientActions";
 import ModeratorNewClientController from "./ControllerModerator/ModeratorNewClientController";
 import ModeratorEditNewClientController from "./ControllerModerator/ModeratorEditNewClientController";
+import { useModeratorProfile } from "../ModeratorApp/useModeratorProfile";
 
 export default function ClientModerator() {
     const navigate = useNavigate();
@@ -21,6 +22,7 @@ export default function ClientModerator() {
     const [editClient, setEditClient] = useState(null);
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
+    const profile = useModeratorProfile();
 
   useEffect(() => {
     loadClients();
@@ -91,7 +93,7 @@ export default function ClientModerator() {
           aria-haspopup="true"
           aria-expanded={open}
         >
-            <span className="profile-name-moderator">Agent:?</span>
+            <span className="profile-name-moderator">{profile?.fullName || "?"}</span>
           <FaUserCircle className="profile-icon-moderator" />
           
         </button>
@@ -119,7 +121,7 @@ export default function ClientModerator() {
             {/* Table toggle */}
            <div className="client-table-container-moderator">
         {showArchive ? (
-          <ClientArchiveTable />
+          <ModeratorClientArchiveTable />
         ) : (
           <ClientTableModerator
             clients={clients}

@@ -57,6 +57,16 @@ export async function fetchModeratorClients(moderatorId) {
   return data || [];
 }
 
-{/** policy_Computation_Table(  ///// show Computation
-        total_Premium
-      ) */}
+export async function archivePolicy(policyId) {
+  const { data, error } = await db
+    .from("policy_Table")
+    .update({
+      is_archived: true,
+      archival_date: new Date().toISOString().split("T")[0], 
+    })
+    .eq("id", policyId)
+    .select(); 
+
+  if (error) throw error;
+  return data?.[0] || null;
+}

@@ -34,6 +34,8 @@ export default function ModeratorPolicyNewClientForm({
       setVinNumber,
       vehiclePlateNumber,
       setPlateNumber,
+      vehicleEngineNumber,
+      setEngineNumber,
       
 
       clients,
@@ -51,14 +53,15 @@ export default function ModeratorPolicyNewClientForm({
 
   return (
     <div className="new-client-container-moderator">
-      <h2>New Policy Form</h2>
+ 
 
-      <div className="form-card-moderator">
-        <form className="form-grid-moderator">
+      <div className="policy-form-card-moderator">
+             <h2>New Policy Form</h2>
+        <form className="policy-form-grid-moderator">
           
-          <div className="form-left-column-moderator">
+          <div className="form-left-column">
 
-            <div className="form-group-moderator">
+            <div className="form-group">
               <label>Client</label>
              <select
                 value={selectedClient?.uid || ""}
@@ -78,7 +81,7 @@ export default function ModeratorPolicyNewClientForm({
             </div>
                     
 
-             <div className="form-group-moderator">
+             <div className="form-group">
               <label>Vehicle Maker</label>
               <input 
                 type="text" 
@@ -87,7 +90,7 @@ export default function ModeratorPolicyNewClientForm({
               />
             </div>
 
-             <div className="form-group-moderator">
+             <div className="form-group">
               <label>Vehicle Name</label>
               <input 
                 type="text" 
@@ -96,7 +99,7 @@ export default function ModeratorPolicyNewClientForm({
               />
             </div>
 
-            <div className="form-group-moderator">
+            <div className="form-group">
               <label>Vehicle VIN Number</label>
               <input 
                 type="text"
@@ -109,8 +112,13 @@ export default function ModeratorPolicyNewClientForm({
               </small>
             </div>
 
+            <div className="form-group">
+              <label>Vehicle Engine Serial</label>
+              <input type="text" value={vehicleEngineNumber || ""} onChange={(e) => setEngineNumber(e.target.value)} />
+            </div>
 
-            <div className="form-group-moderator">
+
+            <div className="form-group">
               <label>Vehicle Plate Number</label>
               <input 
                 type="text"
@@ -119,7 +127,7 @@ export default function ModeratorPolicyNewClientForm({
               />
             </div>
 
-            <div className="form-group-moderator">
+            <div className="form-group">
               <label>Vehicle Color</label>
               <input 
                 type="text"
@@ -128,7 +136,7 @@ export default function ModeratorPolicyNewClientForm({
               />
             </div>          
 
-            <div className="form-group-moderator">
+            <div className="form-group">
               <label>Vehicle Year</label>
               <input type="text" 
               value= {yearInput || ""}
@@ -138,7 +146,7 @@ export default function ModeratorPolicyNewClientForm({
 
             
 
-              <div className="form-group-moderator">
+              <div className="form-group">
              <label>Partners</label>
               <select
                 id="company-select"
@@ -156,7 +164,7 @@ export default function ModeratorPolicyNewClientForm({
             </div>
 
 
-            <div className="form-group-moderator">
+            <div className="form-group">
               <label>Vehicle Type</label>
              <select
                   id="vehicle-type-select"
@@ -172,14 +180,14 @@ export default function ModeratorPolicyNewClientForm({
                 </select>
             </div>
 
-            <div className="form-group-moderator">
+            <div className="form-group">
               <label>Original Value of Vehicle</label>
               <input type="text" 
               value={vehicleCost || ""}
               onChange={(e) => setVehicleCost(Number(e.target.value))}/>
             </div>
 
-            <div className="form-group-moderator">
+            <div className="form-group">
                 <label>VAT Tax</label>
                 <input 
                   type="text" 
@@ -188,7 +196,7 @@ export default function ModeratorPolicyNewClientForm({
                 />
             </div>
 
-              <div className="form-group-moderator">
+              <div className="form-group">
                 <label>Documentary Stamp</label>
                 <input 
                   type="text" 
@@ -197,7 +205,7 @@ export default function ModeratorPolicyNewClientForm({
                 />
               </div>
 
-              <div className="form-group-moderator">
+              <div className="form-group">
                 <label>Local Gov Tax</label>
                 <input 
                   type="text" 
@@ -207,7 +215,7 @@ export default function ModeratorPolicyNewClientForm({
               </div>
 
 
-           <div className="form-group aon-row-moderator">
+           <div className="form-group aon-row">
               <label>AoN (Act of Nature)</label>
               <input 
                 type="checkbox" 
@@ -217,7 +225,7 @@ export default function ModeratorPolicyNewClientForm({
               />
             </div>
 
-            <div className="form-group-moderator">
+            <div className="form-group">
               <label>Rate</label>
               <input type="text" 
               value={vehicleDetails?.vehicle_Rate ?`${vehicleDetails.vehicle_Rate}%` : "0%" } 
@@ -227,7 +235,7 @@ export default function ModeratorPolicyNewClientForm({
           </div>
 
         
-          <div className="form-right-column-moderator">
+          <div className="form-right-column">
                   <div className="calculation-card-moderator">
                     <h3>Calculation Summary</h3>
                     <p>Original Vehicle Cost: 
@@ -295,14 +303,11 @@ export default function ModeratorPolicyNewClientForm({
                         <span>₱ {totalPremiumCost.toLocaleString("en-PH")}</span>
                       </p>
                     </strong>
+
+                    
                   </div>
 
-
-          </div>
-        </form>
-      </div>
-
-      <div className="button-container-moderatoir">
+        <div className="button-container-moderator">
         <button
           className="cancel-btn-moderator"
           onClick={() => navigate("/appinsurance/MainAreaModerator/PolicyModerator")}
@@ -317,6 +322,15 @@ export default function ModeratorPolicyNewClientForm({
             Confirm
       </button>
       </div>
+
+
+          </div>
+          
+
+        </form>
+        
+      </div>
+
     </div>
   );
 }

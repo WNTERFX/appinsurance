@@ -3,11 +3,13 @@ import FilterModerator from './FilterModerator';
 import DropdownAccountsModerator from "./DropDownAccountsModerator";
 import { FaPlus, FaArchive, FaUserCircle } from "react-icons/fa";
 import { useEffect, useState, useRef } from "react";
-export default function DeliveryTableModerator() {
+import { useModeratorProfile } from "../ModeratorApp/useModeratorProfile";
+export default function DeliverTableModerator() {
 
       const [open, setOpen] = useState(false);
         const dropdownRef = useRef(null);
         const buttonRef = useRef(null);
+        const profile = useModeratorProfile();
     
         // dropdown close
           useEffect(() => {
@@ -45,7 +47,7 @@ export default function DeliveryTableModerator() {
                      aria-haspopup="true"
                      aria-expanded={open}
                      >
-                      <span className="profile-name-moderator">Agent:?</span>
+                      <span className="profile-name-moderator">{profile?.fullName || "?"}</span>
                       <FaUserCircle className="profile-icon-moderator" />
                     </button>
                                           

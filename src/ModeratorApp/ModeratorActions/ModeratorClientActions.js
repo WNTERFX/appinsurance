@@ -44,3 +44,22 @@ export async function createModeratorClient(clientData) {
   return data?.[0] || null;
 }
 
+export async function archiveClient(clientUid) {
+  const { data, error } = await db
+    .from("clients_Table")
+    .update({
+      is_archived: true,
+      archival_date: new Date().toISOString().split("T")[0],
+    })
+    .eq("uid", clientUid) 
+    .select();
+
+  if (error) {
+    console.error("Error archiving client:", error.message);
+    throw error;
+  }
+
+  return data?.[0] || null;
+}
+
+
