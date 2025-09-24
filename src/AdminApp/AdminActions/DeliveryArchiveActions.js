@@ -4,23 +4,52 @@ import { db } from "../../dbServer";
  * Fetch all archived deliveries
  */
 export async function fetchArchivedDeliveries() {
-  const { data, error } = await db
+   const { data, error } = await db
     .from("delivery_Table")
     .select(`
       *,
-      agent:employee_Accounts(personnel_Name),
-      policy:policy_Table(policy_Number)
+      employee:employee_Accounts(personnel_Name),
+      policy:policy_Table(
+        id,
+        policy_type,
+        policy_inception,
+        policy_expiry,
+        client:clients_Table(
+          uid,
+          first_Name,
+          middle_Name,
+          family_Name,
+          address
+        )
+      )
     `)
-    .eq("is_archived", true)          // must be archived
-    .not("archival_date", "is", null) // must have archival date
-    .order("delivery_date", { ascending: false });
+    .eq("is_archived", true);  // ✅ correct boolean filter
 
   if (error) {
     console.error("Error fetching archived deliveries:", error.message);
     return [];
   }
 
-  return data || [];
+  return data.map((delivery) => ({
+    ...delivery,
+    uid: delivery.id,
+    policy_Id: delivery.policy_id,
+    policy_Holder: delivery.policy?.client
+      ? `${delivery.policy.client.first_Name || ""} ${delivery.policy.client.middle_Name || ""} ${delivery.policy.client.family_Name || ""}`.trim()
+      : "Unknown",
+    address: delivery.policy?.client?.address || "No address",
+    created_at: delivery.created_at
+      ? new Date(delivery.created_at).toLocaleDateString()
+      : "N/A",
+    delivery_date: delivery.delivered_at
+      ? new Date(delivery.delivered_at).toLocaleDateString()
+      : (delivery.estimated_delivery_date
+          ? new Date(delivery.estimated_delivery_date).toLocaleDateString()
+          : "Not set"),
+    archival_date: delivery.archival_date
+      ? new Date(delivery.archival_date).toLocaleDateString()
+      : "N/A",
+  }));
 }
 
 /**
