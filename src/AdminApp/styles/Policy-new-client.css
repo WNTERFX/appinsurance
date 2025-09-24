@@ -190,3 +190,8 @@
     margin-top: 0; /* remove stacked spacing */
   }
 }
+
+.client-select__control {
+  min-width: 350px; /* adjust to how wide you want */
+  max-width: 100%; /* prevents it from overflowing */
+}

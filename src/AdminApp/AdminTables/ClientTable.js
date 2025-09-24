@@ -16,9 +16,9 @@ export default function ClientTable() {
   const [rowsPerPage, setRowsPerPage] = useState(15); 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredClients = clients.filter((client) =>
-  client.uid.toString().includes(searchTerm)
-  );
+ const filteredClients = clients.filter((client) =>
+  (client.internal_id || "").toLowerCase().includes(searchTerm.toLowerCase())
+);
 
 
   useEffect(() => {
@@ -131,7 +131,7 @@ export default function ClientTable() {
                       className="client-table-clickable-row"
                       onClick={() => handleRowClick(client.uid)}
                     >
-                      <td>{client.uid}</td>
+                      <td>{client.internal_id || "N/A"}</td>
                       <td>
                         {[
                           client.prefix,

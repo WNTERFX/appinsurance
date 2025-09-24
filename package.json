@@ -14,6 +14,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "@types/react-select": "^5.0.0",
     "gh-pages": "^6.3.0",
     "isomorphic-git": "^1.30.1",
     "jest-md-dashboard": "^0.8.0",

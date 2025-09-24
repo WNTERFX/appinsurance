@@ -8,7 +8,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
     phoneNumber: "",
     email: "",
     firstName: "",
-    homeAddress: "",
+    address: "",
   });
 
   const handlePhoneChange = (e) => {
@@ -69,7 +69,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
     onChange(e);
     setErrors({
       ...errors,
-      homeAddress: !value.trim() ? "Home Address is required" : "",
+      address: !value.trim() ? "Home Address is required" : "",
     });
   };
 
@@ -84,8 +84,8 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
       clientData.phoneNumber.length !== 11
     )
       newErrors.phoneNumber = "Phone number must be 11 digits";
-    if (!clientData?.homeAddress?.trim())
-      newErrors.homeAddress = "Home Address is required";
+    if (!clientData?.address?.trim())
+      newErrors.address = "Home Address is required";
 
     setErrors(newErrors);
 
@@ -93,7 +93,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
       !newErrors.firstName &&
       !newErrors.email &&
       !newErrors.phoneNumber &&
-      !newErrors.homeAddress
+      !newErrors.address
     ) {
       onSubmit();
     } else {
@@ -161,11 +161,11 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
             <label>Home Address *</label>
             <input
               type="text"
-              name="homeAddress"
-              value={clientData?.homeAddress || ""}
+              name="address"
+              value={clientData?.address || ""}
               onChange={handleHomeAddressChange}
             />
-            {errors.homeAddress && <p>{errors.homeAddress}</p>}
+            {errors.address && <p>{errors.address}</p>}
           </div>
 
           <div className="form-group-client-creation">

@@ -1,4 +1,5 @@
 import '../styles/Policy-new-client.css';
+import Select from 'react-select';
 
 export default function PolicyNewClient({
   // Total Premium Calculation
@@ -62,22 +63,35 @@ export default function PolicyNewClient({
 
             <div className="form-group">
               <label>Client</label>
-             <select
-                value={selectedClient?.uid || ""}
-                onChange={(e) => {
-                  const client = clients.find(c => c.uid === e.target.value);
-                  setSelectedClient(client);
-                }}
-                required
-              >
-                <option value="">-- Select Client --</option>
-                {clients.map((c) => (
-                  <option key={c.uid} value={c.uid}>
-                    {c.first_Name} {c.middle_Name || ""} {c.family_Name}
-                  </option>
-                ))}
-              </select>
+             <Select
+                  className="client-select"
+                  classNamePrefix="client-select"
+                  options={clients.map(c => ({
+                    value: c.uid, // still use uid for lookups
+                    label: `${c.internal_id} | ${c.first_Name || ""} ${c.middle_Name || ""} ${c.family_Name || ""}`,
+                  }))}
+                  value={
+                    selectedClient
+                      ? {
+                          value: selectedClient.uid,
+                          label: `${selectedClient.internal_id} | ${selectedClient.first_Name || ""} ${selectedClient.middle_Name || ""} ${selectedClient.family_Name || ""}`,
+                        }
+                      : null
+                  }
+                  onChange={(option) => {
+                    if (option) {
+                      const client = clients.find(c => c.uid === option.value);
+                      setSelectedClient(client);
+                    } else {
+                      setSelectedClient(null);
+                    }
+                  }}
+                  placeholder="Search for ID..."
+                  isClearable
+                />
+
             </div>
+
                     
 
              <div className="form-group">
