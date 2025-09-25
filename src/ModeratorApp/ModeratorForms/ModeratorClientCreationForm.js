@@ -26,28 +26,32 @@ export default function ModeratorClientCreationForm({ clientData, onChange, onSu
   };
 
   const handleSubmit = () => {
-    const newErrors = {};
+    const newErrors = { ...errors };
 
-    if (!clientData.firstName.trim()) newErrors.firstName = "First Name is required";
-    if (!clientData.homeAddress.trim()) newErrors.homeAddress = "Home Address is required";
-    if (!clientData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientData.email)) {
-      newErrors.email = "Invalid email format";
-    }
-    if (!clientData.phoneNumber.trim() || clientData.phoneNumber.length !== 11) {
+    if (!clientData?.firstName?.trim())
+      newErrors.firstName = "First Name is required";
+    if (!clientData?.email?.trim()) newErrors.email = "Email is required";
+    if (
+      !clientData?.phoneNumber?.trim() ||
+      clientData.phoneNumber.length !== 11
+    )
       newErrors.phoneNumber = "Phone number must be 11 digits";
-    }
+    if (!clientData?.address?.trim())
+      newErrors.address = "Home Address is required";
 
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length === 0) {
-      onSubmit(clientData); //  send validated data to controller
+    if (
+      !newErrors.firstName &&
+      !newErrors.email &&
+      !newErrors.phoneNumber &&
+      !newErrors.address
+    ) {
+      onSubmit(clientData);
     } else {
-      alert(" Please fix validation errors.");
+      alert("Please fix validation errors before submitting.");
     }
   };
-
   return (
     <div className="client-creation-moderator-container">
       
@@ -56,6 +60,7 @@ export default function ModeratorClientCreationForm({ clientData, onChange, onSu
         <div className="form-grid-client-moderator-creation">
           <div className="form-left-column-client-moderator-creation">
             {/* Prefix */}
+
             <div className="form-group-client-moderator-creation">
               <label>Prefix</label>
               <input
@@ -88,11 +93,11 @@ export default function ModeratorClientCreationForm({ clientData, onChange, onSu
 
             {/* Last/Family Name */}
             <div className="form-group-client-moderator-creation">
-              <label>Last/Family Name</label>
+              <label>Last Name</label>
               <input
                 type="text"
-                value={clientData.lastName}
-                onChange={(e) => updateField("lastName", e.target.value)}
+                value={clientData.familyName}
+                onChange={(e) => updateField("familyName", e.target.value)}
               />
             </div>
 
@@ -123,10 +128,10 @@ export default function ModeratorClientCreationForm({ clientData, onChange, onSu
               <label>Home Address *</label>
               <input
                 type="text"
-                value={clientData.homeAddress}
-                onChange={(e) => updateField("homeAddress", e.target.value)}
+                value={clientData.address}
+                onChange={(e) => updateField("address", e.target.value)}
               />
-              {errors.homeAddress && <p style={{ color: "red" }}>{errors.homeAddress}</p>}
+              {errors.address && <p style={{ color: "red" }}>{errors.address}</p>}
             </div>
 
             {/* Email Address */}

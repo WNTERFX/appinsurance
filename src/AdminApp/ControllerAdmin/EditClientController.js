@@ -33,7 +33,42 @@ export default function EditClientController({ client, onClose, onUpdateSuccess 
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+   const validate = () => {
+    const newErrors = {};
+
+    if (!formData.first_Name?.trim()) {
+      newErrors.first_Name = "First Name is required";
+    }
+
+    if (!formData.email?.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Invalid email format";
+    }
+
+    if (!formData.phone_Number?.trim()) {
+      newErrors.phone_Number = "Phone number is required";
+    } else if (!/^\d+$/.test(formData.phone_Number)) {
+      newErrors.phone_Number = "Phone number must contain only digits";
+    } else if (formData.phone_Number.length !== 11) {
+      newErrors.phone_Number = "Phone number must be exactly 11 digits";
+    }
+
+    if (!formData.address?.trim()) {
+      newErrors.address = "Home Address is required";
+    }
+
+    return newErrors;
+  };
+
   const handleSubmit = async () => {
+
+    const validationErrors = validate();
+    if(Object.keys(validationErrors).length > 0){
+      setErrors(validationErrors);
+      alert("Please fix validation errors before submitting.");
+      return; // stop submission if invalid
+    }
     console.log("Submitting UID:", formData.uid);
 
     try {

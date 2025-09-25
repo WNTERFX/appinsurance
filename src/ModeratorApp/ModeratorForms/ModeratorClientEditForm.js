@@ -114,12 +114,17 @@ export default function ModeratorClientEditForm({originalData,formData,errors,on
                 type="text"
                 name="phone_Number"
                 value={formData.phone_Number}
-                onChange={onChange}
-                placeholder="0xxxxxxxxxx"
-              />
-              {errors.phone_Number && (
+                onChange={(e) => {
+                  let input = e.target.value;
+                  if (!/^\d*$/.test(input)) return;
+                  if (input.length > 11) input = input.slice(0, 11);
+                  onChange({ target: { name: "phone_Number", value: input } });
+                }}
+                 placeholder="0xxxxxxxxxx"
+                />
+                {errors.phone_Number && (
                 <p style={{ color: "red" }}>{errors.phone_Number}</p>
-              )}
+                )}
             </div>
 
             {/* Address */}

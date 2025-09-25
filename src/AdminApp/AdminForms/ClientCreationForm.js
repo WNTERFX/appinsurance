@@ -113,7 +113,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
             <input
               type="text"
               name="prefix"
-              value={clientData?.prefix || ""}
+              value={clientData?.prefix}
               onChange={onChange}
             />
           </div>
@@ -123,7 +123,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
             <input
               type="text"
               name="firstName"
-              value={clientData?.firstName || ""}
+              value={clientData?.firstName}
               onChange={handleFirstNameChange}
             />
              {errors.firstName && <p style={{ color: "red" }}>{errors.firstName}</p>}
@@ -134,17 +134,17 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
             <input
               type="text"
               name="middleName"
-              value={clientData?.middleName || ""}
+              value={clientData?.middleName}
               onChange={onChange}
             />
           </div>
 
           <div className="form-group-client-creation">
-            <label>Last/Family Name</label>
+            <label>Last Name</label>
             <input
               type="text"
-              name="lastName"
-              value={clientData?.lastName || ""}
+              name="familyName"
+              value={clientData?.familyName}
               onChange={onChange}
             />
           </div>
@@ -154,7 +154,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
             <input
               type="text"
               name="suffix"
-              value={clientData?.suffix || ""}
+              value={clientData?.suffix}
               onChange={onChange}
             />
           </div>
@@ -163,7 +163,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
             <input
               type="text"
               name="phoneNumber"
-              value={clientData?.phoneNumber || ""}
+              value={clientData?.phoneNumber}
               onChange={handlePhoneChange}
               onBlur={handlePhoneBlur}
               placeholder="0xxxxxxxxxx"
@@ -176,7 +176,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
             <input
               type="text"
               name="address"
-              value={clientData?.address || ""}
+              value={clientData?.address}
               onChange={handleHomeAddressChange}
             />
               {errors.address && <p style={{ color: "red" }}>{errors.address}</p>}
@@ -187,7 +187,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
             <input
               type="email"
               name="email"
-              value={clientData?.email || ""}
+              value={clientData?.email}
               onChange={handleEmailChange}
               placeholder="example@email.com"
             />

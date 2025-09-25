@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ClientCreationForm from "../AdminForms/ClientCreationForm";
 import { NewClientCreation, getCurrentUser } from "../AdminActions/NewClientActions";
 
-export default function NewClientController({onCancel}) {
+export default function NewClientController({ onCancel }) {
   const [clientData, setClientData] = useState({
     prefix: "",
     firstName: "",
@@ -15,7 +15,7 @@ export default function NewClientController({onCancel}) {
     email: "",
   });
 
-   const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,25 +28,24 @@ export default function NewClientController({onCancel}) {
   const handleSubmit = async () => {
     console.log("Submitting (camelCase):", clientData);
 
-   const user = await getCurrentUser();
+    const user = await getCurrentUser();
     if (!user) {
       alert("No logged-in user. Please sign in again.");
       return;
     }
 
-  
     const dbPayload = {
       prefix: clientData.prefix,
-      "first_Name": clientData.firstName,
-      "middle_Name": clientData.middleName,
-      "family_Name": clientData.familyName,
+      first_Name: clientData.firstName,
+      middle_Name: clientData.middleName,
+      family_Name: clientData.familyName,
       suffix: clientData.suffix,
+      phone_Number: clientData.phoneNumber,
       address: clientData.address,
-      "phone_Number": clientData.phoneNumber,
       email: clientData.email,
-      client_active: true, 
-      client_Registered: new Date().toISOString().split("T")[0], 
-      "agent_Id": user.id, 
+      client_active: true,
+      client_Registered: new Date().toISOString().split("T")[0],
+      agent_Id: user.id,
     };
 
     const { success, error } = await NewClientCreation(dbPayload);
@@ -54,23 +53,21 @@ export default function NewClientController({onCancel}) {
       alert("Error saving client: " + error);
     } else {
       alert("Client successfully created!");
-      if(onCancel){
+      if (onCancel) {
         onCancel();
       } else {
-      navigate("/appinsurance/MainArea/Client");
-      setClientData({
-        prefix: "",
-        firstName: "",
-        middleName: "",
-        familyName: "",
-        suffix: "",
-        address: "",
-        phoneNumber: "",
-        email: "",
-      });
-
+        navigate("/appinsurance/MainArea/Client");
+        setClientData({
+          prefix: "",
+          firstName: "",
+          middleName: "",
+          familyName: "",
+          suffix: "",
+          address: "",
+          phoneNumber: "",
+          email: "",
+        });
       }
- 
     }
   };
 
@@ -80,7 +77,7 @@ export default function NewClientController({onCancel}) {
       onChange={handleChange}
       onSubmit={async () => {
         const success = await handleSubmit();
-        if (success) navigate(-1); 
+        if (success) navigate(-1);
       }}
       onCancel={onCancel || (() => navigate("/appinsurance/MainArea/Client"))}
     />

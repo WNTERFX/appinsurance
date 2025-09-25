@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FaUserCircle} from "react-icons/fa";
 import  DropdownAccountsModerator  from './DropDownAccountsModerator';
 import React, { useState, useRef, useEffect } from "react";
+import { useModeratorProfile } from './useModeratorProfile';
 
 
 export default function DashboardModerator() {
@@ -13,6 +14,7 @@ export default function DashboardModerator() {
           const [open, setOpen] = useState(false);
           const dropdownRef = useRef(null);
           const buttonRef = useRef(null);
+          const profile = useModeratorProfile();
 
           // close when clicking outside
             useEffect(() => {
@@ -50,7 +52,7 @@ export default function DashboardModerator() {
                   aria-haspopup="true"
                   aria-expanded={open}
                 >
-                    <span className="profile-name-moderator">Agent:?</span>
+                    <span className="profile-name-moderator">{profile?.fullName || "?"}</span>
                   <FaUserCircle className="profile-icon-moderator" />
                   
                 </button>

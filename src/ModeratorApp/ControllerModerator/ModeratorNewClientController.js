@@ -7,7 +7,10 @@ export default function ModeratorNewClientController({ onCancel, refreshClients 
   const [clientData, setClientData] = useState({
     prefix: "",
     firstName: "",
-    homeAddress: "",
+    middleName: "",
+    familyName: "",
+    suffix: "",
+    address: "",
     phoneNumber: "",
     email: "",
   });
@@ -25,8 +28,11 @@ export default function ModeratorNewClientController({ onCancel, refreshClients 
     const payload = {
       prefix: validatedData.prefix,
       first_Name: validatedData.firstName,
-      address: validatedData.homeAddress,
+      middle_Name: validatedData.middleName,
+      family_Name: validatedData.familyName,
+      suffix: validatedData.suffix,
       phone_Number: validatedData.phoneNumber,
+      address: validatedData.address,
       email: validatedData.email,
       client_active: true,
       client_Registered: new Date().toISOString().split("T")[0],
@@ -36,9 +42,9 @@ export default function ModeratorNewClientController({ onCancel, refreshClients 
     const success = await createModeratorClient(payload);
     if (success) {
       alert("Client created successfully!");
-      if (refreshClients) await refreshClients();   // ✅ reload parent table
+      if (refreshClients) await refreshClients();
       if (onCancel) {
-        onCancel(); // ✅ close modal
+        onCancel();
       } else {
         navigate("/appinsurance/MainAreaModerator/ClientModerator");
       }

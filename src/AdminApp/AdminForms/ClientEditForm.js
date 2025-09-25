@@ -69,7 +69,7 @@ export default function ClientEditForm({originalData,formData,errors,onChange,on
 
             {/* Family Name */}
             <div className="form-group-client-update">
-              <label>Family Name</label>
+              <label>Last Name</label>
               <input
                 type="text"
                 value={originalData.family_Name}
@@ -115,7 +115,12 @@ export default function ClientEditForm({originalData,formData,errors,onChange,on
                 type="text"
                 name="phone_Number"
                 value={formData.phone_Number}
-                onChange={onChange}
+                onChange={(e) => {
+                  let input = e.target.value;
+                  if (!/^\d*$/.test(input)) return;
+                  if (input.length > 11) input = input.slice(0, 11);
+                  onChange({ target: { name: "phone_Number", value: input } });
+                }}
                 placeholder="0xxxxxxxxxx"
               />
               {errors.phone_Number && (

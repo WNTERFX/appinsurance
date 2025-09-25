@@ -14,7 +14,7 @@ export default function ClientTableModerator({ agentId , onEditClient }) {
   const [rowsPerPage, setRowsPerPage] = useState(15); 
   const [searchTerm, setSearchTerm] = useState("");
 
-  // ✅ Load clients (always respect agentId)
+  //  Load clients (always respect agentId)
   const loadClients = async () => {
     let id = agentId;
     if (!id) {
@@ -26,7 +26,7 @@ export default function ClientTableModerator({ agentId , onEditClient }) {
     setClients(data || []);
   };
 
-  // ✅ Run once on mount & when agentId changes
+  //  Run once on mount & when agentId changes
   useEffect(() => {
     loadClients();
   }, [agentId]);
@@ -36,13 +36,13 @@ export default function ClientTableModerator({ agentId , onEditClient }) {
   const handleReset = async () => {
     setSearchTerm("");
     setCurrentPage(1);
-    await loadClients(); // ✅ proper reload with agentId
+    await loadClients(); //  proper reload with agentId
   };
 
   // 🔹 Pagination logic
-  const filteredClients = clients.filter((client) =>
-    client.uid.toString().includes(searchTerm)
-  );
+ const filteredClients = clients.filter((client) =>
+  (client.internal_id || "").toLowerCase().includes(searchTerm.toLowerCase())
+);
 
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
@@ -126,7 +126,7 @@ export default function ClientTableModerator({ agentId , onEditClient }) {
                       className="client-table-clickable-row-moderator"
                       onClick={() => handleRowClick(client.uid)}
                     >
-                      <td>{client.uid}</td>
+                      <td>{client.internal_id || "N/A"}</td>
                       <td>
                         {[
                           client.prefix,

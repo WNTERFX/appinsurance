@@ -48,9 +48,9 @@ export default function PolicyEditForm({
 
   return (
     <div className="new-client-policy-edit">
-      <h2>Edit Policy</h2>
 
       <div className="form-card-policy-edit">
+        <h2>Edit Policy</h2>
         <form className="form-grid-policy-edit">
 
           {/* LEFT COLUMN */}
@@ -177,17 +177,17 @@ export default function PolicyEditForm({
               <input type="text" value={vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "0%"} readOnly />
             </div>
 
-            {/* AoN */}
-            <div className="form-group-policy-edit">
-              <label>AoN (Act of Nature)</label>
-              <input type="checkbox" checked={isAoN} onChange={(e) => setIsAoN(e.target.checked)} />
-            </div>
-
             <div className="form-group-policy-edit">
               <label>Rate</label>
               <input type="text" value={vehicleDetails?.vehicle_Rate ? `${vehicleDetails.vehicle_Rate}%` : "0%"} readOnly />
             </div>
           </div>
+
+           {/* AoN */}
+            <div className="form-group-policy-edit">
+              <label>AoN (Act of Nature)</label>
+              <input type="checkbox" checked={isAoN} onChange={(e) => setIsAoN(e.target.checked)} />
+            </div>
 
           {/* RIGHT COLUMN */}
           <div className="form-right-column-policy-edit">
@@ -210,12 +210,8 @@ export default function PolicyEditForm({
                 <p>Total Premium: <span>₱ {formatPHP(totalPremiumCost)}</span></p>
               </strong>
             </div>
-          </div>
 
-        </form>
-      </div>
-
-      {/* Buttons */}
+       {/* Buttons */}
       <div className="button-container-policy-edit">
         <button
           className="cancel-btn-policy-edit"
@@ -231,6 +227,11 @@ export default function PolicyEditForm({
           Confirm
         </button>
       </div>
+          </div>
+
+        </form>
+      </div>
+
     </div>
   );
 }
