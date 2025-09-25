@@ -29,6 +29,9 @@ export default function ModeratorPolicyEditForm({
   setVinNumber,
   vehiclePlateNumber,
   setPlateNumber,
+  vehicleEngineNumber,
+  setEngineNumber,
+
   clients,
   selectedClient,
   setSelectedClient,
@@ -45,9 +48,10 @@ export default function ModeratorPolicyEditForm({
 
   return (
     <div className="new-client-policy-edit-moderator">
-      <h2>Edit Policy</h2>
+     
 
       <div className="form-card-policy-edit-moderator">
+         <h2>Edit Policy</h2>
         <form className="form-grid-policy-edit-moderator">
 
           {/* LEFT COLUMN */}
@@ -102,6 +106,13 @@ export default function ModeratorPolicyEditForm({
               <label>Vehicle Plate Number</label>
               <input type="text" value={vehiclePlateNumber || ""} disabled />
               <input type="text" value={vehiclePlateNumber || ""} onChange={(e) => setPlateNumber(e.target.value)} />
+            </div>
+
+             {/* Vehicle Engine Number */}
+            <div className="form-group-policy-edit-moderator">
+              <label>Vehicle Engine Serial</label>
+              <input type="text" value={vehicleEngineNumber || ""} disabled />
+              <input type="text" value={vehicleEngineNumber || ""} onChange={(e) => setEngineNumber(e.target.value)} />
             </div>
 
             {/* Vehicle Color */}
@@ -167,16 +178,16 @@ export default function ModeratorPolicyEditForm({
               <input type="text" value={vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "0%"} readOnly />
             </div>
 
-            {/* AoN */}
-            <div className="form-group-policy-edit-moderator">
-              <label>AoN (Act of Nature)</label>
-              <input type="checkbox" checked={isAoN} onChange={(e) => setIsAoN(e.target.checked)} />
-            </div>
-
             <div className="form-group-policy-edit-moderator">
               <label>Rate</label>
               <input type="text" value={vehicleDetails?.vehicle_Rate ? `${vehicleDetails.vehicle_Rate}%` : "0%"} readOnly />
             </div>
+          </div>
+                     
+          {/* AoN */}
+            <div className="form-group-policy-edit-moderator aon-row">
+            <label>AoN (Act of Nature)</label>
+            <input type="checkbox" checked={isAoN} onChange={(e) => setIsAoN(e.target.checked)} />
           </div>
 
           {/* RIGHT COLUMN */}
@@ -200,13 +211,8 @@ export default function ModeratorPolicyEditForm({
                 <p>Total Premium: <span>₱ {formatPHP(totalPremiumCost)}</span></p>
               </strong>
             </div>
-          </div>
-
-        </form>
-      </div>
-
-      {/* Buttons */}
-      <div className="button-container-policy-edit-moderator">
+                  {/* Buttons */}
+        <div className="button-container-policy-edit-moderator">
         <button
           className="cancel-btn-policy-edit-moderator"
           onClick={() => navigate("/appinsurance/MainAreaModerator/PolicyModerator")}
@@ -221,7 +227,12 @@ export default function ModeratorPolicyEditForm({
           Confirm
         </button>
       </div>
+          </div>
+
+        </form>
+      </div>
+
+
     </div>
   );
 }
-

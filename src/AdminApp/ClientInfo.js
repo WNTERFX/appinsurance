@@ -130,15 +130,15 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
               {policyVehicles.length > 0 ? (
                 <div style={{ maxHeight: "300px", overflowY: "auto" }}>
                   {policyVehicles.map((v) => (
-                    <Card key={v.id} className="vehicle-card">
-                      <InfoRow label="Vehicle Name" value={v.vehicle_maker || 'N/A'} />
+                    <div key={v.id} className="vehicle-card">
+                      <InfoRow label="Vehicle Maker" value={v.vehicle_maker || 'N/A'} />
                       <InfoRow label="Vehicle Name" value={v.vehicle_name || 'N/A'} />
                       <InfoRow label="Year" value={v.vehicle_year || 'N/A'} />
                       <InfoRow label="Color" value={v.vehicle_color || 'N/A'} />
                       <InfoRow label="Plate Number" value={v.plate_num || 'N/A'} />
                       <InfoRow label="Engine Serial No" value={v.engine_serial_no || 'N/A'} />
                       <InfoRow label="VIN" value={v.vin_num || 'N/A'} />
-                    </Card>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -150,11 +150,11 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
           {/* Right Column */}
           <div style={{ flex: 1 }}>
             <Card className="computation-card">
-              <h3>Computations for This Policy ({policyComputations.length})</h3>
+             <h3>Computations for This Policy ({policyComputations.length})</h3>
               {policyComputations.length > 0 ? (
                 <div style={{ maxHeight: "600px", overflowY: "auto" }}>
                   {policyComputations.map((c, i) => (
-                    <Card key={c.id} className="computation-card">
+                    <div key={c.id} className="computation-card-info">
                       <h4>Computation #{i + 1}</h4>
                       <InfoRow label="Original Value" value={formatCurrency(c.original_Value)} />
                       <InfoRow label="Current Value" value={formatCurrency(c.current_Value)} />
@@ -162,7 +162,7 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
                       <InfoRow label="Vehicle Rate Value" value={formatCurrency(c.vehicle_Rate_Value)} />
                       <hr />
                       <InfoRow label="Total Premium" value={formatCurrency(c.total_Premium)} color="#059669" />
-                    </Card>
+                    </div>
                   ))}
                 </div>
               ) : (

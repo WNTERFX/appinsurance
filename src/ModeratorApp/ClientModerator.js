@@ -1,19 +1,16 @@
-
 import ClientTableModerator from "./ClientTableModerator";
 import './moderator-styles/client-styles-moderator.css';
 import React, { useState, useRef, useEffect } from "react";
 import ModeratorClientArchiveTable from "./ModeratorTables/ModeratorClientArchiveTable";
-import { FaUserCircle , FaMoon, FaSignOutAlt } from "react-icons/fa";
+import { FaUserCircle} from "react-icons/fa";
 import  DropdownAccountsModerator  from './DropDownAccountsModerator';
-import { FaPlus, FaArchive, FaUser } from "react-icons/fa";
-import { useNavigate } from "react-router-dom"; 
+import { FaPlus, FaArchive } from "react-icons/fa";
 import { fetchModeratorClients, getCurrentUser } from "./ModeratorActions/ModeratorClientActions";
 import ModeratorNewClientController from "./ControllerModerator/ModeratorNewClientController";
 import ModeratorEditNewClientController from "./ControllerModerator/ModeratorEditNewClientController";
 import { useModeratorProfile } from "../ModeratorApp/useModeratorProfile";
 
 export default function ClientModerator() {
-    const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const [showArchive, setShowArchive] = useState(false); // toggle archive
     const dropdownRef = useRef(null);
@@ -58,7 +55,7 @@ export default function ClientModerator() {
         <div className="Client-container-moderator">          
             <div className="Client-header-moderator">
                {/* Left side: title + search */}
-             <div className="right-actions-moderator">
+             <div className="right-actions-client-moderator">
              <p className="client-title-moderator">
                 {showArchive ? "Client Archive" : "Client"}
              </p>
@@ -66,7 +63,7 @@ export default function ClientModerator() {
         </div>
 
   {/* Right side: create + archive + profile */}
-    <div className="left-actions-moderator">
+    <div className="left-actions-client-moderator">
       {!showArchive && ( 
       <button
         className="btn btn-create-moderator" 
@@ -119,7 +116,7 @@ export default function ClientModerator() {
        
             )}
             {/* Table toggle */}
-           <div className="client-table-container-moderator">
+           <div className="client-data-field-moderator">
         {showArchive ? (
           <ModeratorClientArchiveTable />
         ) : (

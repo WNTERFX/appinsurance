@@ -7,7 +7,7 @@ import ScrollToTopButton from "../../ReusableComponents/ScrollToTop";
 import "../styles/client-table-styles.css";
 
 
-export default function ClientTable() {
+export default function ClientTable({onEditClient}) {
   const navigate = useNavigate();
 
   const [clients, setClients] = useState([]);
@@ -31,9 +31,6 @@ export default function ClientTable() {
 
   const handleRowClick = (id) => setSelectedClientID(id);
 
-  const handleEditClick = (client) => {
-    navigate("/appinsurance/MainArea/Client/ClientEditForm", { state: { client } });
-  };
 
   const handleArchiveClick = async (clientId) => {
     const confirmArchive = window.confirm("Proceed to archive this client?");
@@ -153,7 +150,10 @@ export default function ClientTable() {
                           title="Edit this client"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleEditClick(client);
+                            if(client){
+                              onEditClient(client);
+                            }
+                            
                           }}
                         >
                           <FaEdit /> Edit

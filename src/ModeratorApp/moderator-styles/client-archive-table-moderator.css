@@ -10,6 +10,10 @@
   margin: 0 10px 12px 10px; 
 }
 
+.client-archive-table-header-moderator label{
+  font-size: medium;
+}
+
 .client-archive-table-header-moderator h2 {
   margin: 0;
   font-size: 20px;

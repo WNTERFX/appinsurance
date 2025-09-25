@@ -3,7 +3,7 @@
   display: flex;
   gap: 2rem;
   min-height: 500px;
-  max-height: 80vh; /* container height limit */
+  max-height: 85vh; /* container height limit */
   padding: 1rem;
   box-sizing: border-box;
   flex-wrap: wrap;
@@ -15,12 +15,12 @@
   flex-direction: column;
   gap: 1rem;
   min-width: 300px; /* ensures columns don't collapse too small */
-  max-height: 90vh; /* restrict each column's height */
+  max-height: 82vh; /* restrict each column's height */
 }
 
 /* Card scroll behavior */
 .client-info-card {
-  padding: 1.5rem;
+  padding: 0.5rem 1.5rem 1.5rem 1.5rem; 
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background-color: #fff;

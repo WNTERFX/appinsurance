@@ -47,12 +47,12 @@ export default function PolicyModerator() {
   return (
     <div className="Policy-container-moderator">
       <div className="Policy-header-moderator">
-        <div className="right-actions-moderator">
+        <div className="right-actions-policy-moderator">
           <p className="policy-title-moderator">
             {showArchive ? "Policy Archive" : "Policy"}
           </p>
         </div>
-        <div className="left-actions-moderator">
+        <div className="left-actions-policy-moderator">
           <button
             className="btn btn-create-moderator"
             onClick={() =>

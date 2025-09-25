@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import { 
   getComputationValue, 
-  fetchVehicleDetails } 
-from "../../AdminApp/AdminActions/VehicleTypeActions"; //reuse 
+  fetchVehicleDetails 
+} from "../../AdminApp/AdminActions/VehicleTypeActions"; 
 
 import {
   ComputationActionsVehicleValue,
@@ -12,23 +12,23 @@ import {
   ComputationActionsBasicPre,
   ComputationActionsTax,
   ComputationActionsAoN
-} from "../../AdminApp/AdminActions/ComputationActions"; // reuse
+} from "../../AdminApp/AdminActions/ComputationActions"; 
 
 import {
   fetchPartners,
   NewPolicyCreation,
   NewVehicleCreation,
   NewComputationCreation
-} from "../../AdminApp/AdminActions/NewPolicyActions"; // reuse admin partner/policy actions
+} from "../../AdminApp/AdminActions/NewPolicyActions"; 
 
-import { fetchModeratorClients } from "../ModeratorActions/ModeratorClientActions"; //  new filtered client fetch
-import { db } from "../../dbServer"; //  to get logged-in moderator
+import { fetchModeratorClients } from "../ModeratorActions/ModeratorClientActions"; 
+import { db } from "../../dbServer"; 
 import ModeratorPolicyNewClientForm from "../ModeratorForms/ModeratorPolicyNewClientForm";
 
 export default function ModeratorNewPolicyController() {
   const navigate = useNavigate();
 
-  // --- State for client/partners/vehicle ---
+  // --- State ---
   const [clients, setClients] = useState([]);
   const [partners, setPartners] = useState([]);
   const [vehicleTypes, setVehicleTypes] = useState([]);
@@ -49,14 +49,13 @@ export default function ModeratorNewPolicyController() {
   const [yearInput, setYearInput] = useState(0);
   const [isAoN, setIsAoN] = useState(false);
 
-  // --- Fetch reference data (FILTERED by moderator) ---
+  // --- Load Data ---
   useEffect(() => {
     const loadData = async () => {
       try {
         const { data: { user } } = await db.auth.getUser();
         if (!user) return;
 
-        //  Only clients created by this moderator
         const moderatorClients = await fetchModeratorClients(user.id);
         setClients(moderatorClients);
 
@@ -72,82 +71,119 @@ export default function ModeratorNewPolicyController() {
     loadData();
   }, []);
 
-  // --- Fetch vehicle details when a type is selected ---
   useEffect(() => {
     if (selectedType) {
       fetchVehicleDetails(selectedType).then(setVehicleDetails);
     }
   }, [selectedType]);
 
+  // --- Helpers ---
+  const safeNumber = (v) => {
+    const num = Number(v);
+    return isNaN(num) ? 0 : num;
+  };
+
   // --- Calculations ---
-  const safe = (v) => Number(v) || 0;
   const vehicleValue = ComputationActionsVehicleValue(
-    safe(vehicleCost),
-    safe(yearInput),
-    safe(vehicleDetails?.vehicle_Rate)
+    safeNumber(vehicleCost),
+    safeNumber(yearInput),
+    safeNumber(vehicleDetails?.vehicle_Rate)
   );
   const vehicleValueRate = ComputatationRate(
-    safe(vehicleDetails?.vehicle_Rate),
+    safeNumber(vehicleDetails?.vehicle_Rate),
     vehicleValue
   );
   const basicPremiumValue =
     ComputationActionsBasicPre(
-      safe(vehicleDetails?.bodily_Injury),
-      safe(vehicleDetails?.property_Damage),
-      safe(vehicleDetails?.personal_Accident)
+      safeNumber(vehicleDetails?.bodily_Injury),
+      safeNumber(vehicleDetails?.property_Damage),
+      safeNumber(vehicleDetails?.personal_Accident)
     ) + vehicleValueRate;
+
   const totalPremium = ComputationActionsTax(
     basicPremiumValue,
-    safe(vehicleDetails?.vat_Tax),
-    safe(vehicleDetails?.docu_Stamp),
-    safe(vehicleDetails?.local_Gov_Tax)
+    safeNumber(vehicleDetails?.vat_Tax),
+    safeNumber(vehicleDetails?.docu_Stamp),
+    safeNumber(vehicleDetails?.local_Gov_Tax)
   );
+
   const actOfNatureCost = isAoN
-    ? ComputationActionsAoN(vehicleValue, safe(vehicleDetails?.aon))
+    ? ComputationActionsAoN(vehicleValue, safeNumber(vehicleDetails?.aon))
     : 0;
+
   const totalPremiumCost = totalPremium + actOfNatureCost;
 
-  // --- Save Handler ---
+  // --- Save ---
   const handleSave = async () => {
     if (!selectedClient || !selectedPartner)
       return alert("Select client & partner");
 
-    const { data: policyData } = await NewPolicyCreation({
-      policy_type: "Comprehensive",
-      policy_is_active: false,
-      client_id: selectedClient.uid, //  policy links to this client
-      partner_id: selectedPartner
-    });
+    try {
+      // Save policy
+      const { success: policySuccess, data: policyData, error: policyError } =
+        await NewPolicyCreation({
+          policy_type: "Comprehensive",
+          policy_is_active: false,
+          client_id: selectedClient.uid,
+          partner_id: selectedPartner
+        });
 
-    const policyId = policyData[0].id;
+      if (!policySuccess) {
+        return alert("Error saving policy: " + policyError);
+      }
 
-    await NewVehicleCreation({
-      vehicle_name: vehicleName,
-      vehicle_maker: vehicleMaker,
-      vehicle_color: vehicleColor,
-      plate_num: vehiclePlateNumber,
-      engine_serial_no: vehicleEngineNumber,
-      vehicle_year: yearInput,
-      vin_num: vehicleVinNumber,
-      policy_id: policyId
-    });
+      const policyId = policyData[0].id;
 
-    await NewComputationCreation({
-      policy_id: policyId,
-      original_Value: safe(vehicleCost),
-      current_Value: vehicleValue,
-      total_Premium: totalPremiumCost,
-      vehicle_Rate_Value: vehicleValueRate,
-      aon_Cost: actOfNatureCost
-    });
+      // Save vehicle
+      const selectedVehicleType = vehicleTypes.find(
+        (v) => v.vehicle_type === selectedType
+      );
 
-    alert("Policy created successfully");
-    navigate("/appinsurance/MainAreaModerator/PolicyModerator");
+      const newVehicleDataResult = await NewVehicleCreation({
+        vehicle_name: vehicleName,
+        vehicle_maker: vehicleMaker,
+        vehicle_color: vehicleColor,
+        plate_num: vehiclePlateNumber,
+        engine_serial_no: vehicleEngineNumber,
+        vehicle_year: yearInput,
+        vin_num: vehicleVinNumber,
+        policy_id: policyId,
+        vehicle_type_id: selectedVehicleType?.id
+      });
+
+      if (!newVehicleDataResult.success) {
+        return console.error(
+          "Error Saving Vehicle Details " + newVehicleDataResult.error
+        );
+      }
+
+      // Save computation
+      const clientComputationData = {
+        policy_id: policyId,
+        original_Value: safeNumber(vehicleCost),
+        current_Value: vehicleValue,
+        total_Premium: totalPremiumCost,
+        vehicle_Rate_Value: vehicleValueRate,
+        aon_Cost: actOfNatureCost
+      };
+
+      const newComputationResult = await NewComputationCreation(clientComputationData);
+
+      if (newComputationResult.success) {
+        alert("Client and computation saved successfully!");
+        navigate("/appinsurance/MainAreaModerator/PolicyModerator");
+      } else {
+        alert("Error saving computation: " + newComputationResult.error);
+      }
+    } catch (err) {
+      console.error("Save error:", err);
+      alert("Unexpected error occurred while saving.");
+    }
   };
 
   return (
     <ModeratorPolicyNewClientForm
-      clients={clients}                           // filtered clients only
+      clients={clients}
       selectedClient={selectedClient}
       setSelectedClient={setSelectedClient}
       partners={partners}
@@ -161,11 +197,11 @@ export default function ModeratorNewPolicyController() {
       vehicleMaker={vehicleMaker} setVehicleMaker={setVehicleMaker}
       vehicleColor={vehicleColor} setVehicleColor={setVehicleColor}
       vehicleVinNumber={vehicleVinNumber} setVinNumber={setVinNumber}
-      vehicleEngineNumber={vehicleEngineNumber}setEngineNumber={setEngineNumber}
+      vehicleEngineNumber={vehicleEngineNumber} setEngineNumber={setEngineNumber}
       vehiclePlateNumber={vehiclePlateNumber} setPlateNumber={setPlateNumber}
       vehicleYear={vehicleYear} setVehicleYear={setVehicleYear}
-      vehicleCost={vehicleCost} setVehicleCost={setVehicleCost}
-      yearInput={yearInput} setYearInput={setYearInput}
+      vehicleCost={vehicleCost} setVehicleCost={(v) => setVehicleCost(v === "" ? 0 : safeNumber(v))}
+      yearInput={yearInput} setYearInput={(v) => setYearInput(v === "" ? 0 : safeNumber(v))}
       isAoN={isAoN} setIsAoN={setIsAoN}
       basicPremiumValue={basicPremiumValue}
       orginalVehicleCost={vehicleCost}
@@ -178,3 +214,4 @@ export default function ModeratorNewPolicyController() {
     />
   );
 }
+

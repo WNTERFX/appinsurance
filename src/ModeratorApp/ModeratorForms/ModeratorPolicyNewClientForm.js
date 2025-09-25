@@ -214,6 +214,12 @@ export default function ModeratorPolicyNewClientForm({
                 />
               </div>
 
+             <div className="form-group">
+              <label>Rate</label>
+              <input type="text" 
+              value={vehicleDetails?.vehicle_Rate ?`${vehicleDetails.vehicle_Rate}%` : "0%" } 
+              readOnly />
+            </div>
 
            <div className="form-group aon-row">
               <label>AoN (Act of Nature)</label>
@@ -225,12 +231,7 @@ export default function ModeratorPolicyNewClientForm({
               />
             </div>
 
-            <div className="form-group">
-              <label>Rate</label>
-              <input type="text" 
-              value={vehicleDetails?.vehicle_Rate ?`${vehicleDetails.vehicle_Rate}%` : "0%" } 
-              readOnly />
-            </div>
+
 
           </div>
 

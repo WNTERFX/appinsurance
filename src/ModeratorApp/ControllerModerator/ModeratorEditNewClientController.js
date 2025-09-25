@@ -13,6 +13,7 @@ export default function ModeratorEditNewClientController({ client, onClose, onUp
     first_Name: client?.first_Name || "",
     middle_Name: client?.middle_Name || "",
     family_Name: client?.family_Name || "",
+    suffix: client?.suffix || "",
     address: client?.address || "",
     phone_Number: client?.phone_Number || "",
     email: client?.email || "",
@@ -34,6 +35,7 @@ export default function ModeratorEditNewClientController({ client, onClose, onUp
         formData.first_Name,
         formData.middle_Name,
         formData.family_Name,
+        formData.suffix,
         formData.address,
         formData.phone_Number,
         formData.email
@@ -41,7 +43,7 @@ export default function ModeratorEditNewClientController({ client, onClose, onUp
 
       alert("Client updated successfully!");
       
-      // ✅ Refresh table + close modal
+      //  Refresh table + close modal
       if (onUpdateSuccess) {
         onUpdateSuccess();
       } else if (onClose) {

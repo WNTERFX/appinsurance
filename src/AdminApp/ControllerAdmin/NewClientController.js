@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ClientCreationForm from "../AdminForms/ClientCreationForm";
 import { NewClientCreation, getCurrentUser } from "../AdminActions/NewClientActions";
 
-export default function NewPolicyController() {
+export default function NewClientController({onCancel}) {
   const [clientData, setClientData] = useState({
     prefix: "",
     firstName: "",
@@ -54,6 +54,9 @@ export default function NewPolicyController() {
       alert("Error saving client: " + error);
     } else {
       alert("Client successfully created!");
+      if(onCancel){
+        onCancel();
+      } else {
       navigate("/appinsurance/MainArea/Client");
       setClientData({
         prefix: "",
@@ -65,6 +68,9 @@ export default function NewPolicyController() {
         phoneNumber: "",
         email: "",
       });
+
+      }
+ 
     }
   };
 
@@ -76,6 +82,7 @@ export default function NewPolicyController() {
         const success = await handleSubmit();
         if (success) navigate(-1); 
       }}
+      onCancel={onCancel || (() => navigate("/appinsurance/MainArea/Client"))}
     />
   );
 }

@@ -1,6 +1,6 @@
 import { db } from "../../dbServer";
 
-export async function editClientModerator (clientId, updatePrefix, updateFirst, updateMiddle, updateFamily, updateAddress, updatePhoneNum, updateEmail) {
+export async function editClientModerator (clientId, updatePrefix, updateFirst, updateMiddle, updateFamily,updateSuffix, updateAddress, updatePhoneNum, updateEmail) {
 
     const {data, error} = await db 
     .from("clients_Table")
@@ -9,6 +9,7 @@ export async function editClientModerator (clientId, updatePrefix, updateFirst, 
       first_Name: updateFirst,
       middle_Name: updateMiddle,
       family_Name: updateFamily,
+      suffix: updateSuffix,
       address: updateAddress,
       phone_Number: updatePhoneNum,
       email: updateEmail

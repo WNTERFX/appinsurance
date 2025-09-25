@@ -1,13 +1,83 @@
-.client-table-container-moderator h2 {
-  margin-left: 10px;
-}
-
-/* none wrapper*/
-.client-table-wrapper-moderator {
+/* --------------------------- */
+/* Container + Header          */
+/* --------------------------- */
+.client-table-container-moderator {
   width: 100%;
   margin: 0 auto;
-  padding: 15px 0 0 0;
-  border-radius: 10px;
+  font-family: sans-serif;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.client-table-header-moderator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.client-table-container-moderator label{
+  margin: 0;
+  font-size: medium;
+
+}
+
+.client-table-container-moderator h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+/* --------------------------- */
+/* Controls (search, refresh)  */
+/* --------------------------- */
+
+.client-header-controls-moderator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.client-search-input-moderator {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.rows-per-page-inline-moderator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.client-header-controls-moderator button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.client-header-controls-moderator button:hover {
+  background-color: #d1d5db;
+}
+
+/* --------------------------- */
+/* Table Wrapper + Scroll      */
+/* --------------------------- */
+
+.client-table-wrapper-moderator {
+   flex: 1;
+  overflow-y: auto; /* so rows scroll instead of shrinking */
+  min-height: 0;
 }
 
 .client-table-scroll-moderator {
@@ -22,59 +92,104 @@
 .client-table-scroll-moderator > table {
   width: 100%;
   min-width: 1200px;
-  padding: 20px 5px 10px 5px;
   border-collapse: collapse;
 }
 
+/* --------------------------- */
+/* Table Headings + Cells      */
+/* --------------------------- */
+
 .client-table-scroll-moderator > table > thead > tr > th {
-  padding: 20px 15px;
+  padding: 16px 15px;
   text-align: left;
-  background-color: #F2F5FA;
+  background-color: #f2f5fa;
   white-space: nowrap;
   min-width: 150px;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .client-table-scroll-moderator > table > tbody > tr > td {
+  padding: 14px 15px;
   text-align: left;
-  padding: 25px 15px 40px;
   white-space: nowrap;
-  min-width: 120px;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+/* Responsive scaling */
+@media (max-width: 1920px) and (min-width: 1366px) {
+  .client-table-scroll-moderator > table > thead > tr > th,
+  .client-table-scroll-moderator > table > tbody > tr > td {
+    font-size: 0.8rem;
+  }
+}
+
+/* --------------------------- */
+/* Row Hover + Clickable       */
+/* --------------------------- */
+tr:hover {
+  background-color: #f9fafb;
 }
 
 .client-table-clickable-row-moderator {
   cursor: pointer;
-  font-size: 20px;
 }
-
-.client-table-clickable-row-moderator > td {
-  padding: 12px;
-}
-
-@media (max-width: 1920px) and (min-width: 1366px) {
-
-  .client-table-clickable-row-moderator {
-
-    font-size: 0.8rem;  /* smaller font */
-  }
-
-  .client-table-scroll-moderator > table > thead > tr > th {
-    padding: 20px 6px;
-    text-align: left;
-    background-color: #F2F5FA;
-    white-space: nowrap;
-    min-width: 150px;
-    font-size: 1rem;
-
-  }
-
-
-}
-
 
 .client-table-clickable-row-moderator:hover {
   background-color: #e6f7ff;
 }
 
+/* --------------------------- */
+/* Actions                     */
+/* --------------------------- */
+.client-table-actions-moderator button {
+  padding: 5px 10px;
+  margin: 0 3px;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #f3f4f6;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.client-table-actions-moderator button:hover {
+  background-color: #e5e7eb;
+}
+
+/* --------------------------- */
+/* Pagination                  */
+/* --------------------------- */
+.pagination-controls-moderator {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.pagination-controls-moderator button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.pagination-controls-moderator button:hover:not(:disabled) {
+  background-color: #d1d5db;
+}
+
+.pagination-controls-moderator button:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+/* --------------------------- */
+/* Scrollbar Styling           */
+/* --------------------------- */
 .client-table-scroll-moderator::-webkit-scrollbar {
   height: 8px;
 }
@@ -91,112 +206,6 @@
 
 .client-table-scroll-moderator::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
-}
-
-.client-table-actions-moderator button {
-  margin-right: 8px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  cursor: pointer;
-}
-
-.client-table-actions-moderator button:hover {
-  background-color: #f0f0f0;
-}
-
-.pagination-controls-moderator {
-  margin-top: 10px;
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  align-items: center;
-}
-
-.pagination-controls-moderator select {
-  padding: 5px 8px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-
-.pagination-controls-moderator button {
-  padding: 5px 12px;
-  border: 1px solid #ccc;
-  background: #f8f8f8;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-.pagination-controls-moderator button:disabled {
-  background: #e0e0e0;
-  cursor: not-allowed;
-}
-
-.client-table-header-moderator {
-  display: flex;
-  justify-content: space-between; 
-  align-items: center;
-  margin: 0 10px 12px 10px; 
-}
-
-.client-table-header-moderator h2 {
-  margin: 0; 
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.rows-per-page-inline-moderator {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.rows-per-page-inline-moderator label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-}
-
-.rows-per-page-inline-moderator select {
-  padding: 4px 6px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
-.rows-per-page-moderator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.rows-per-page-moderator label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-}
-
-.rows-per-page-moderator select {
-  padding: 5px 8px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-
-.client-header-controls-moderator {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.client-search-input-moderator {
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
-  min-width: 180px;
 }
 
 .reset-btn-client-moderator {

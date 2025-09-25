@@ -83,6 +83,24 @@ export default function ModeratorClientEditForm({originalData,formData,errors,on
               />
             </div>
 
+            {/* Suffix */}
+            <div className="form-group-client-update-moderator">
+              <label>Suffix</label>
+              <input
+                type="text"
+                value={originalData.suffix}
+                readOnly
+                className="original-value-moderator" disabled
+              />
+              <input
+                type="text"
+                name="suffix"
+                value={formData.suffix}
+                onChange={onChange}
+              />
+
+            </div>
+
             {/* Phone Number */}
             <div className="form-group-client-update-moderator">
               <label>Phone Number *</label>

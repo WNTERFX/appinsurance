@@ -2,7 +2,7 @@ import "../styles/client-creation-styles.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
+export default function ClientCreationForm({ clientData, onChange, onSubmit , onCancel}) {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({
     phoneNumber: "",
@@ -103,9 +103,11 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
 
   return (
     <div className="client-creation-container">
-      <h2>Client Creation Form</h2>
+
       <div className="form-card-client-creation">
+        <h2>Client Creation Form</h2>
         <div className="form-grid-client-creation">
+         <div className="form-left-column-creation">
           <div className="form-group-client-creation">
             <label>Prefix</label>
             <input
@@ -124,7 +126,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
               value={clientData?.firstName || ""}
               onChange={handleFirstNameChange}
             />
-            {errors.firstName && <p>{errors.firstName}</p>}
+             {errors.firstName && <p style={{ color: "red" }}>{errors.firstName}</p>}
           </div>
 
           <div className="form-group-client-creation">
@@ -156,18 +158,6 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
               onChange={onChange}
             />
           </div>
-
-          <div className="form-group-client-creation">
-            <label>Home Address *</label>
-            <input
-              type="text"
-              name="address"
-              value={clientData?.address || ""}
-              onChange={handleHomeAddressChange}
-            />
-            {errors.address && <p>{errors.address}</p>}
-          </div>
-
           <div className="form-group-client-creation">
             <label>Phone Number *</label>
             <input
@@ -178,7 +168,18 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
               onBlur={handlePhoneBlur}
               placeholder="0xxxxxxxxxx"
             />
-            {errors.phoneNumber && <p>{errors.phoneNumber}</p>}
+             {errors.phoneNumber && <p style={{ color: "red" }}>{errors.phoneNumber}</p>}
+          </div>
+
+          <div className="form-group-client-creation">
+            <label>Home Address *</label>
+            <input
+              type="text"
+              name="address"
+              value={clientData?.address || ""}
+              onChange={handleHomeAddressChange}
+            />
+              {errors.address && <p style={{ color: "red" }}>{errors.address}</p>}
           </div>
 
           <div className="form-group-client-creation">
@@ -190,22 +191,24 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit }) {
               onChange={handleEmailChange}
               placeholder="example@email.com"
             />
-            {errors.email && <p>{errors.email}</p>}
+             {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
           </div>
         </div>
-      </div>
-
+        </div>
       <div className="client-creation-controls">
-        <button type="button" onClick={handleSubmit}>
-          Submit
-        </button>
         <button
-          className="cancel-btn"
-          onClick={() => navigate("/appinsurance/MainArea/Client")}
+          className="client-creation-cancel-btn"
+          type="button" onClick={onCancel}
         >
           Cancel
         </button>
+        <button className="client-creation-submit-btn" type="button" onClick={handleSubmit}>
+          Submit
+        </button>
       </div>
+      </div>
+
+
     </div>
   );
 }

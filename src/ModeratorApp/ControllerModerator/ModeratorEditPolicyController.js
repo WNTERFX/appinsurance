@@ -51,6 +51,7 @@ export default function ModeratorEditPolicyController() {
   const [vehicleColor, setVehicleColor] = useState("");
   const [vehicleVinNumber, setVinNumber] = useState("");
   const [vehiclePlateNumber, setPlateNumber] = useState("");
+  const [vehicleEngineNumber, setEngineNumber] = useState("");
   const [vehicleYear, setVehicleYear] = useState(0);
   const [yearInput, setYearInput] = useState(0);
   const [originalVehicleCost, setOriginalVehicleCost] = useState(0);
@@ -153,6 +154,7 @@ export default function ModeratorEditPolicyController() {
           setVehicleColor(vehicle.vehicle_color || "");
           setVinNumber(vehicle.vin_num || "");
           setPlateNumber(vehicle.plate_num || "");
+          setEngineNumber(vehicle.engine_serial_no || "");
           setVehicleYear(vehicle.vehicle_year || 0);
           setYearInput(vehicle.vehicle_year || 0);
           setOriginalVehicleCost(vehicle.original_value || 0);
@@ -318,6 +320,7 @@ export default function ModeratorEditPolicyController() {
         vehicle_color: vehicleColor,
         vin_num: vehicleVinNumber,
         plate_num: vehiclePlateNumber,
+        engine_serial_no: vehicleEngineNumber,
         vehicle_year: yearInput,
         vehicle_type_id: vehicleTypeId,
       });
@@ -383,6 +386,9 @@ export default function ModeratorEditPolicyController() {
       setVinNumber={setVinNumber}
       vehiclePlateNumber={vehiclePlateNumber}
       setPlateNumber={setPlateNumber}
+
+      vehicleEngineNumber = {vehicleEngineNumber}
+      setEngineNumber = {setEngineNumber}
       selectedClient={selectedClient}
       setSelectedClient={setSelectedClient}
       selectedPartner={selectedPartner}

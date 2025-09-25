@@ -4,6 +4,9 @@ import ClientArchiveTable from "./AdminTables/ClientArchiveTable"; // import arc
 import { FaPlus, FaArchive, FaUser, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import DropdownAccounts from "./DropDownAccounts";
+import { fetchClients, getCurrentUser } from "./AdminActions/ClientActions";
+import NewClientController from "./ControllerAdmin/NewClientController";
+import EditClientController from "./ControllerAdmin/EditClientController";
 
 export default function Client() {
   const navigate = useNavigate();
@@ -12,6 +15,23 @@ export default function Client() {
   const [showArchive, setShowArchive] = useState(false); // toggle archive
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editClient, setEditClient] = useState(null);
+  const [clients, setClients] = useState([]);
+ const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      loadClients();
+    }, []);
+
+     const loadClients = async () => {
+        setLoading(true);
+        const data = await fetchClients();
+        setClients(data || []);
+        setLoading(false);
+      };
+
+
 
   // close when clicking outside
   useEffect(() => {
@@ -45,8 +65,7 @@ export default function Client() {
           {!showArchive && (
             <button
               className="btn btn-create"
-              onClick={() =>
-                navigate("/appinsurance/MainArea/Client/ClientCreationForm")
+                onClick={() => setShowCreateModal(true)
               }
             >
               <FaPlus className="btn-icon" />
@@ -118,9 +137,41 @@ export default function Client() {
       )}
 
       {/* Table toggle */}
-      <div className="client-table-container">
-        {showArchive ? <ClientArchiveTable /> : <ClientTable />}
+      <div className="client-data-field">
+        {showArchive ? ( <ClientArchiveTable /> 
+        ) : (
+        <ClientTable 
+          clients={clients}
+          loading={loading}
+          onEditClient={(client) => setEditClient(client)}
+        />
+      )}
       </div>
+      {showCreateModal && (
+        <div className="client-creation-modal-overlay-moderator">
+          <div className="client-creation-modal-content-moderator">
+            <NewClientController
+              onCancel={() => setShowCreateModal(false)}
+            />
+          </div>
+        </div>
+      )}
+      {/* === EDIT MODAL === */}
+      {editClient && (
+        <div className="client-creation-modal-overlay-moderator">
+          <div className="client-creation-modal-content-moderator">
+            <EditClientController
+              client={editClient}
+              onClose={() => setEditClient(null)}
+              onUpdateSuccess={async () => {
+                await loadClients();
+                setEditClient(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

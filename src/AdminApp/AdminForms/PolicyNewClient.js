@@ -54,9 +54,9 @@ export default function PolicyNewClient({
 
   return (
     <div className="new-client-container">
-      <h2>Policy Creation Form</h2>
 
       <div className="form-card">
+      <h2>Policy Creation Form</h2>
         <form className="form-grid">
           
           <div className="form-left-column">
@@ -322,27 +322,28 @@ export default function PolicyNewClient({
                       </p>
                     </strong>
                   </div>
-
-
-          </div>
-        </form>
-      </div>
-
-      <div className="button-container">
+        <div className="button-container-new-policy">
         <button
-          className="cancel-btn"
+          className="cancel-btn-new-policy"
           onClick={() => navigate("/appinsurance/MainArea/Policy")}
         >
           Cancel
         </button>
        <button
-            className="confirm-btn"
+            className="confirm-btn-new-policy"
             type="button"
             onClick={onSaveClient}
             >
             Confirm
       </button>
       </div>
+
+
+          </div>
+        </form>
+      </div>
+
+
     </div>
   );
 }
