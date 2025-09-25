@@ -163,7 +163,7 @@ export default function PolicyTable() {
                       className="policy-table-clickable-row"
                       onClick={() => handleRowClick(policy)}
                     >
-                      <td>{policy.id}</td>
+                      <td>{policy.internal_id}</td>
                       <td>{policy.policy_type}</td>
                       <td>{clientName}</td>
                       <td>{partner?.insurance_Name || "No Partner"}</td>

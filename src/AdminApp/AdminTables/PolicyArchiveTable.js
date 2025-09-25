@@ -127,7 +127,7 @@ export default function PolicyArchiveTable() {
                     className="archive-table-clickable-row"
                     onClick={() => handleRowClick(policy)}
                   >
-                    <td className="archive-id-column">{policy.id}</td>
+                    <td className="archive-id-column">{policy.internal_id}</td>
                     <td>{policy.policy_type}</td>
                     <td>{clientName}</td>
                     <td>{partner?.insurance_Name || "No Partner"}</td>
