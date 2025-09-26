@@ -1,103 +1,257 @@
-.delivery-records-container-moderator{
-  background-color: #F2F5FA;
-font-family: 'Inter', sans-serif;
-height: auto;
-max-width: 100%;         
-overflow-x: hidden; 
-
+.delivery-table-container-moderator h2 {
+  margin-left: 10px;
 }
-.deliveries-title-moderator{
-  margin: 0;
-  font-size: 24px;
+
+.delivery-table-wrapper-moderator {
+  width: 100%;
+  margin: 0 auto;
+  padding: 15px 0 0 0;
+  border-radius: 10px;
+}
+
+.delivery-table-scroll-moderator {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  scroll-behavior: smooth;
+}
+
+.delivery-table-scroll-moderator > table {
+  width: 100%;
+  min-width: 1200px;
+  padding: 20px 5px 10px 5px;
+  border-collapse: collapse;
+}
+
+.delivery-table-scroll-moderator > table > thead > tr > th {
+  padding: 20px 15px;
+  text-align: left;
+  background-color: #F2F5FA;
+  white-space: nowrap;
+  min-width: 150px;
+}
+
+.delivery-table-scroll-moderator > table > tbody > tr > td {
+  text-align: left;
+  padding: 25px 15px 40px;
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+.delivery-table-clickable-row-moderator {
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.delivery-table-clickable-row-moderator > td {
+  padding: 12px;
+}
+
+@media (max-width: 1920px) and (min-width: 1366px) {
+  .delivery-table-clickable-row-moderator {
+    font-size: 0.8rem;  /* smaller font */
+  }
+
+  .delivery-table-scroll-moderator > table > thead > tr > th {
+    padding: 20px 6px;
+    text-align: left;
+    background-color: #F2F5FA;
+    white-space: nowrap;
+    min-width: 150px;
+    font-size: 1rem;
+  }
+}
+
+.delivery-table-clickable-row-moderator:hover {
+  background-color: #e6f7ff;
+}
+
+.delivery-table-scroll-moderator::-webkit-scrollbar {
+  height: 8px;
+}
+
+.delivery-table-scroll-moderator::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.delivery-table-scroll-moderator::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.delivery-table-scroll-moderator::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.delivery-table-actions-moderator button {
+  margin-right: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.delivery-table-actions-moderator button:hover {
+  background-color: #f0f0f0;
+}
+
+.pagination-controls-moderator {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  align-items: center;
+}
+
+.pagination-controls-moderator select {
+  padding: 5px 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.pagination-controls-moderator button {
+  padding: 5px 12px;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.pagination-controls-moderator button:disabled {
+  background: #e0e0e0;
+  cursor: not-allowed;
+}
+
+.delivery-table-header-moderator {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  margin: 0 10px 12px 10px; 
+}
+
+.delivery-table-header-moderator h2 {
+  margin: 0; 
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.rows-per-page-inline-moderator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rows-per-page-inline-moderator label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.rows-per-page-inline-moderator select {
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.rows-per-page-moderator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.rows-per-page-moderator label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.rows-per-page-moderator select {
+  padding: 5px 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.delivery-header-controls-moderator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.delivery-search-input-moderator {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 180px;
+}
+
+.reset-btn-delivery-moderator {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  font-size: 14px;
+}
+
+.reset-btn-delivery-moderator:hover {
+  background-color: #f0f0f0;
+}
+
+.delivery-table-clickable-row-moderator.not-delivered {
+  background-color: #ffe6e6;
+  border-left: 4px solid #ff4d4f;
+}
+
+.delivery-table-clickable-row-moderator.not-delivered:hover {
+  background-color: #ffd6d6;
+}
+
+/* Optional: Add a subtle text color change for not delivered rows */
+.delivery-table-clickable-row-moderator.not-delivered td {
+  color: #cc0000;
+}
+
+/* Keep delivered rows with normal styling */
+.delivery-table-clickable-row-moderator:not(.not-delivered):hover {
+  background-color: #e6f7ff;
+}
+
+.delivery-table-clickable-row-moderator.delivered {
+  background-color: #e6f7e6;
+  border-left: 4px solid #2d9d4d;
+}
+
+.delivery-table-clickable-row-moderator.delivered:hover {
+  background-color: #d6f0d6;
+}
+
+.delivery-table-clickable-row-moderator.delivered td {
+  color: #2d9d4d;
+}
+
+/* Style for the Mark As Delivered button */
+.delivered-btn-delivery-moderator {
+  background-color: #2d9d4d;
+  color: white;
+  border: 1px solid #2d9d4d;
+  font-size: 12px;
   font-weight: 600;
 }
 
-
-.delivery-records-container-moderator > div.delivery-record-header-moderator {
-    
-  color: #222;
-    font-size: 30px;
-    margin-bottom: 33px;
-    padding: 30px 5px 0;
-
-    
+.delivered-btn-delivery-moderator:hover {
+  background-color: #238a3a;
+  border-color: #238a3a;
 }
 
-
-.delivery-records-content-moderator > div.delivery-data-field-moderator{  
-    background-color: white;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    padding: 20px 5px 10px 5px;
-     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.delivery-record-header-moderator{
-    display: flex;
-  justify-content: space-between; 
-  align-items: center;
-  padding: 10px;
-  position: relative;
-
-
-}
-
-
-.delivery-record-search-moderator {
-    padding: 10px 15px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    width: 250px;
-}
-
-.delivery-data-field-moderator {
-    padding: 20px 5px 10px 5px;
-    background-color: white;;
-}
-.delivery-table-moderator {
-    width: 100%;
-    margin: 0 auto;
-    padding: 5px 0 0 0;
-    border-radius: 10px;
-}
-
-.delivery-table-moderator > table {
-    width: 100%;
-    padding: 20px 5px 10px 5px;
-    
-}
-
-
-
-.delivery-table-moderator > table > thead > tr > th {
-    padding: 10px;
-    text-align: left;
-    font-size: 20px;
-    background-color: #F2F5FA;
-  
-   
-}
-
-.delivery-table-moderator > table > tbody > tr > td {
-    background-color: white;
-    text-align: left;
-    padding: 20px 5px 10px 5px;
-  
-    
-}   
-
-.control-options-delivery-moderator {
-    display: flex;
-    gap: 20px;
-    margin-left: 10px;
-}
-
-.control-options-delivery-moderator > button {
-    padding: 10px 20px;
-    background-color: #ddd;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    
+/* Override the default button hover for the green button */
+.delivery-table-actions-moderator .delivered-btn-delivery-moderator:hover {
+  background-color: #238a3a;
+  color: white;
 }

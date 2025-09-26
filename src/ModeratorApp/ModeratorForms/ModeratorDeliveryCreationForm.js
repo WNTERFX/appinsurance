@@ -1,15 +1,21 @@
-import "../styles/delivery-creation-styles.css";
+import "../moderator-styles/delivery-creation-styles-moderator.css";
 
-export default function DeliveryCreationForm({formData,policies,loading,onChange,onSubmit,onCancel}) {
- 
-
+export default function ModeratorDeliveryCreationForm({
+  formData,
+  policies,
+  loading,
+  onChange,
+  onSubmit,
+  onCancel,
+}) {
   return (
-    <div className="delivery-creation-container">
-      <form className="form-card-delivery-creation" onSubmit={onSubmit}>
-        <h2>Delivery Creation Form</h2>
-        <div className="form-grid-delivery-creation">
+    <div className="delivery-creation-container-moderator">
+      <form className="form-card-delivery-creation-moderator" onSubmit={onSubmit}>
+        <h2>Moderator Delivery Creation</h2>
+        <div className="form-grid-delivery-creation-moderator">
+          
           {/* Policy ID Dropdown */}
-          <div className="form-group-delivery-creation">
+          <div className="form-group-delivery-creation-moderator">
             <label>Policy *</label>
             <select
               name="policyId"
@@ -27,7 +33,7 @@ export default function DeliveryCreationForm({formData,policies,loading,onChange
           </div>
 
           {/* Delivery Date (today, readonly) */}
-          <div className="form-group-delivery-creation">
+          <div className="form-group-delivery-creation-moderator">
             <label>Delivery Date</label>
             <input
               type="date"
@@ -38,7 +44,7 @@ export default function DeliveryCreationForm({formData,policies,loading,onChange
           </div>
 
           {/* Estimated Delivery Date */}
-          <div className="form-group-delivery-creation">
+          <div className="form-group-delivery-creation-moderator">
             <label>Est. Delivery Date</label>
             <input
               type="date"
@@ -49,7 +55,7 @@ export default function DeliveryCreationForm({formData,policies,loading,onChange
           </div>
 
           {/* Remarks */}
-          <div className="form-group-delivery-creation">
+          <div className="form-group-delivery-creation-moderator">
             <label>Remarks</label>
             <textarea
               name="remarks"
@@ -58,16 +64,24 @@ export default function DeliveryCreationForm({formData,policies,loading,onChange
               placeholder="Optional notes..."
             />
           </div>
-
         </div>
-          <div className="delivery-creation-controls">
-            <button type="button" className="delivery-creation-cancel-btn" onClick={onCancel} >Cancel</button>
-          <button type="submit" className="delivery-creation-submit-btn" disabled={loading}>
+
+        <div className="delivery-creation-controls-moderator">
+          <button
+            type="button"
+            className="delivery-creation-cancel-btn-moderator"
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="delivery-creation-submit-btn-moderator"
+            disabled={loading}
+          >
             {loading ? "Saving..." : "Submit"}
           </button>
         </div>
-
-
       </form>
     </div>
   );

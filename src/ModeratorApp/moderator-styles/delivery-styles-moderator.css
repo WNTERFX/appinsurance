@@ -1,0 +1,179 @@
+* {
+  box-sizing: border-box;
+}
+
+.delivery-container-moderator {
+  background-color: #F2F5FA;
+  font-family: 'Inter', sans-serif;
+  height: auto;
+  max-width: 100%;         
+  overflow-x: hidden; 
+}
+
+@media (min-width: 3440px) {
+  .delivery-container-moderator {
+    padding-left: 100px;
+  }
+}
+
+.delivery-title-moderator {
+  margin: 10;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.delivery-container-moderator > div.delivery-header-moderator {
+  color: #222;
+  font-size: 30px;
+  margin-bottom: 20px;
+  padding: 10px 5px 0;
+}
+
+.delivery-search-moderator {
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 250px;
+}
+
+.delivery-header-moderator {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 10px;
+  position: relative;
+}
+
+/* Create button */
+.btn-create-moderator {
+  background-color: #2196f3;
+  color: white;
+}
+
+.btn-create-moderator:hover {
+  background-color: #1976d2;
+}
+
+/* Archive button */
+.btn-archive-moderator {
+  background-color: #e0e0e0;
+  color: black;
+}
+
+.btn-archive-moderator:hover {
+  background-color: #bdbdbd;
+}
+
+/* Icon style */
+.btn-icon-moderator {
+  font-size: 14px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Right side actions (buttons + profile) */
+.right-actions-moderator {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.left-actions-moderator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.delivery-content-moderator {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 1400px;
+  height: 200px;
+}
+
+/* Container for delivery cards */
+.deliveries-container-moderator {
+  display: flex;
+  gap: 20px;         /* space between cards */
+  justify-content: flex-start; 
+  flex-wrap: wrap;   /* responsive, wraps to next line */
+  margin: 20px 0;
+}
+
+/* Each card */
+.delivery-card-moderator {
+  flex: 1 1 250px;  
+  padding: 20px;
+  background-color: white;
+  font-size: 16px;
+  border-radius: 12px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+/* Card header: icon + title */
+.delivery-card-header-moderator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+}
+
+.delivery-card-icon-moderator {
+  font-size: 24px;
+  color: #222;
+}
+
+.delivery-card-moderator > p {
+  font-size: 16px;
+  margin: 15px 0;
+}
+
+.view-all-deliveries-moderator-button {
+  background-color: #F2F5FA;
+  color: #222;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-all-deliveries-moderator-button:hover {
+  background-color: #e0e0e0;
+}
+
+.delivery-table-container-moderator {
+  margin-top: 20px;
+  font-size: 20px;
+  margin-right: 10px;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  background-color: white;
+  border-radius: 10px;
+}
+
+@media screen and (max-height: 1080px) {
+  .delivery-content-moderator {
+    width: 90%;
+    height: 200px;
+  }
+}

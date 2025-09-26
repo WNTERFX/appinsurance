@@ -3,9 +3,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { FaPlus, FaArchive, FaUserCircle } from "react-icons/fa";
 import DropdownAccounts from "./DropDownAccounts";
-
 import DeliveryTable from "./AdminTables/DeliveryTable";
 import DeliveryArchiveTable from "./AdminTables/DeliveryArchiveTable";
+import DeliveryCreationController from "./ControllerAdmin/DeliveryCreationController";
 import "./styles/delivery-styles.css";
 
 export default function Delivery() {
@@ -15,6 +15,7 @@ export default function Delivery() {
   const [showArchive, setShowArchive] = useState(false);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -46,7 +47,7 @@ export default function Delivery() {
           {!showArchive && (
             <button
               className="btn btn-create"
-              onClick={() => navigate("/appinsurance/MainArea/Delivery/NewDeliveryForm")}
+              onClick={() => setShowCreateModal(true)}
             >
               <FaPlus className="btn-icon" />
               Create
@@ -87,7 +88,19 @@ export default function Delivery() {
       </div>
 
       {/* Outlet for nested routes (Creation Form) */}
-      <Outlet />
+      {/*<Outlet />*/}
+      
+             {/* === CREATE MODAL === */}
+            {showCreateModal && (
+              <div className="delivery-creation-modal-overlay">
+                <div className="delivery-creation-modal-content">
+                  <DeliveryCreationController
+                    onCancel={() => setShowCreateModal(false)}
+                  />
+                </div>
+              </div>
+            )}
+
     </div>
   );
 }

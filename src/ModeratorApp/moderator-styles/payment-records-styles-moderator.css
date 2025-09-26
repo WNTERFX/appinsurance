@@ -12,8 +12,11 @@ overflow-x: hidden;
 }
 
 .payment-record-header-moderator {
-    display: flex;
-    gap: 30px;
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 10px;
+  position: relative;
 }
 
 .payment-records-container-moderator > .payment-record-header-moderator{
@@ -69,3 +72,15 @@ overflow-x: hidden;
   
     
 }   
+
+.actions-right-moderator {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.left-actions-moderator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

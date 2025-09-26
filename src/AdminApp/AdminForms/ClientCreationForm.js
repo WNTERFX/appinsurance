@@ -103,7 +103,6 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
 
   return (
     <div className="client-creation-container">
-
       <div className="form-card-client-creation">
         <h2>Client Creation Form</h2>
         <div className="form-grid-client-creation">
