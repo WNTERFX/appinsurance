@@ -152,7 +152,9 @@ export default function DeliveryTable() {
                           <span>Est: {delivery.displayDate}</span>
                         )}
                       </td>
+                    
                       <td className="delivery-table-actions">
+                        {!delivery.delivered_at && (
                         <button
                           className="edit-btn-delivery"
                           title="Edit this delivery"
@@ -163,7 +165,7 @@ export default function DeliveryTable() {
                         >
                           <FaEdit /> Edit
                         </button>
-                        
+                        )}
                         {!delivery.delivered_at && (
                           <button
                             className="delivered-btn-delivery"
@@ -177,6 +179,7 @@ export default function DeliveryTable() {
                           </button>
                         )}
                         
+                        {delivery.delivered_at && (
                         <button
                           className="archive-btn-delivery"
                           onClick={(e) => {
@@ -186,6 +189,7 @@ export default function DeliveryTable() {
                         >
                           Archive
                         </button>
+                        )}
                       </td>
                     </tr>
                   ))

@@ -25,7 +25,7 @@ export async function fetchPolicies() {
     `)
     .or("is_archived.is.null,is_archived.eq.false")
     .is("archival_date", null)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
 
   if (error) throw error;
   return data || [];
