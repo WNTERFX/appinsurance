@@ -167,6 +167,7 @@ const loadDeliveries = async () => {
                         )}
                       </td>
                       <td className="delivery-table-actions-moderator">
+                        {!delivery.delivered_at && (
                         <button
                           className="edit-btn-delivery-moderator"
                           title="Edit this delivery"
@@ -177,7 +178,7 @@ const loadDeliveries = async () => {
                         >
                           <FaEdit /> Edit
                         </button>
-
+                        )}
                         {!delivery.delivered_at && (
                           <button
                             className="delivered-btn-delivery-moderator"
@@ -190,7 +191,7 @@ const loadDeliveries = async () => {
                             Mark As Delivered
                           </button>
                         )}
-
+                        {delivery.delivered_at && (     
                         <button
                           className="archive-btn-delivery-moderator"
                           onClick={(e) => {
@@ -200,6 +201,7 @@ const loadDeliveries = async () => {
                         >
                           Archive
                         </button>
+                        )}
                       </td>
                     </tr>
                   ))
