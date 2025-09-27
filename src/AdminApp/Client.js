@@ -147,6 +147,7 @@ export default function Client() {
         />
       )}
       </div>
+       {/* === CREATE MODAL === */}
       {showCreateModal && (
         <div className="client-creation-modal-overlay-moderator">
           <div className="client-creation-modal-content-moderator">

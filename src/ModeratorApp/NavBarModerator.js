@@ -97,7 +97,7 @@ export default function NavBarModerator( {onMinimizeChange}) {
           )}
         </Link>
 
-      <Link to="/appinsurance/MainAreaModerator/DeliveryTableModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/DeliveryTableModerator") ? " active" : "")}>
+      <Link to="/appinsurance/MainAreaModerator/DeliveryModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/DeliveryTableModerator") ? " active" : "")}>
         {isMinimize ? <LuMail /> : (
           <div className="side-bar-label-moderator">
             <LuMail  className="side-bar-icon-moderator" />
