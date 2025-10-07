@@ -46,13 +46,7 @@ export default function MonthlyData({
             <div className="monthly-data-header">
                 <div className="right-actions">
                 <p className="reports-title">Reports</p>
-                    
-             
-                <input
-                    type="text"
-                    className="monthly-data-search"
-                    placeholder="Search clients..."
-                />
+
             </div>    
             <div className="left-actions">
 
@@ -83,8 +77,11 @@ export default function MonthlyData({
 
           
 
-              <p className="due-title">Due</p> <div className="client-table-container"> <ClientTableDue/> </div>
+              <p className="due-title"> Due </p> <div className="client-table-container"> <ClientTableDue/> </div>
 
+              <p className="renewals-title"> Renewals </p> <div className="renewal-table-container">  </div>
+
+             
 
               
         </div>

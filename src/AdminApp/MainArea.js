@@ -4,6 +4,7 @@ import "./styles/policy-styles.css"
 import "./styles/dashboard-styles.css"
 import "./styles/client-styles.css"
 import "./styles/due-styles.css"
+import SessionMonitor from "../ReusableComponents/SessionMonitor";
 
 import { useState, useEffect } from "react";
 import { Outlet } from 'react-router-dom';
@@ -32,6 +33,7 @@ export default function MainArea() {
   
   return (
     <div className="main-area">
+       <SessionMonitor />
       <div className={`nav-area ${isMinimized ? "minimized" : ""}`}>
         <NavBar onMinimizeChange={handleMinimizeChange} />
       </div>

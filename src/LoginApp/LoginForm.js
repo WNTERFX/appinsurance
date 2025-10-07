@@ -4,29 +4,37 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { loginFunction } from "./LoginFormActions";
 
-export default function LoginForm() {
+export default function LoginForm({ anotherLoginDetected }) {
   let navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    const result = await loginFunction(email, password);
+  e.preventDefault();
+  const result = await loginFunction(email, password);
 
-    if (!result.success) {
-      alert("Login failed: " + result.error);
-      return;
-    }
+  if (!result.success) {
+    alert("Login failed: " + result.error);
+    return;
+  }
 
-    if (result.isAdmin) {
-      navigate("/appinsurance/MainArea/Dashboard");
-    } else {
-      navigate("/appinsurance/MainAreaModerator/DashboardModerator");
-    }
-  };
+  // ✅ Save session locally
+  localStorage.setItem("user_id", result.userId);
+  localStorage.setItem("session_token", result.accessToken);
+  localStorage.setItem("is_admin", result.isAdmin ? "true" : "false");
+
+  // ✅ Navigate after saving session
+  if (result.isAdmin) {
+    navigate("/appinsurance/MainArea/Dashboard");
+  } else {
+    navigate("/appinsurance/MainAreaModerator/DashboardModerator");
+  }
+};
 
   return (
+    
     <div className="login-container">
+
       <div className="container">
         <div className="login-card">
           <div className="logo-panel">
