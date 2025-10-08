@@ -6,8 +6,9 @@
   background-color: #F2F5FA;
   font-family: 'Inter', sans-serif;
   height: auto;
-  max-width: 100%;         
-  overflow-x: hidden; 
+  max-width: 100%;
+  overflow-x: hidden;
+  padding-bottom: 30px;
 }
 
 @media (min-width: 3440px) {
@@ -16,60 +17,43 @@
   }
 }
 
-.delivery-title {
-  margin: 10;
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.delivery-container > div.delivery-header {
-  color: #222;
-  font-size: 30px;
-  margin-bottom: 20px;
-  padding: 10px 5px 0;
-}
-
-.delivery-search {
-  padding: 10px 15px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  width: 250px;
-}
-
+/* ✅ FIXED DELIVERY HEADER — same style as Client/Policy/Claims */
 .delivery-header {
   display: flex;
-  justify-content: space-between; 
+  justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  position: relative;
+  background-color: #fff;
+  border: 2px solid #E0E0E0;
+  border-left: 6px solid #4b0082; /* purple accent */
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: 90px;
+  padding: 0 10px 0 24px; /* flush edges */
+  margin-bottom: 24px;
+  margin-top: 16px;
 }
 
-/* Create button */
-.btn-create {
-  background-color: #2196f3;
-  color: white;
+/* Title on the left */
+.delivery-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #222;
+  line-height: 1.1;
 }
 
-.btn-create:hover {
-  background-color: #1976d2;
+/* ✅ Right side group (buttons + profile) */
+.right-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-/* Archive button */
-.btn-archive {
-  background-color: #e0e0e0;
-  color: black;
-}
-
-.btn-archive:hover {
-  background-color: #bdbdbd;
-}
-
-/* Icon style */
-.btn-icon {
-  font-size: 14px;
-}
-
+/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -81,48 +65,125 @@
   font-weight: 500;
 }
 
-/* Right side actions (buttons + profile) */
-.right-actions {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+.btn-create {
+  background-color: #2196f3;
+  color: white;
+}
+.btn-create:hover {
+  background-color: #1976d2;
 }
 
-.left-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.btn-archive {
+  background-color: #e0e0e0;
+  color: black;
+}
+.btn-archive:hover {
+  background-color: #bdbdbd;
 }
 
-.delivery-content {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+/* ✅ Profile Menu — flush right */
+.profile-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.profile-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 10px;
-  width: 1400px;
-  height: 200px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-/* Container for delivery cards */
+.profile-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.profile-icon {
+  font-size: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Dropdown */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 160px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  visibility: hidden;
+  transition: opacity 160ms ease, transform 160ms ease, visibility 160ms;
+  z-index: 1000;
+}
+
+.dropdown.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  visibility: visible;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dropdown-item:hover {
+  background: #f2f2f2;
+}
+.dropdown-icon {
+  font-size: 16px;
+  color: #555;
+}
+
+/* ✅ Delivery Cards Section */
 .deliveries-container {
   display: flex;
-  gap: 20px;         /* space between cards */
-  justify-content: flex-start; 
-  flex-wrap: wrap;   /* responsive, wraps to next line */
+  gap: 20px;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   margin: 20px 0;
 }
 
-/* Each card */
 .delivery-card {
-  flex: 1 1 250px;  
+  flex: 1 1 250px;
   padding: 20px;
   background-color: white;
   font-size: 16px;
   border-radius: 12px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
   text-align: center;
+
+  /* Added accent for consistency */
+  border-left: 6px solid #7B5F97;
 }
 
-/* Card header: icon + title */
 .delivery-card-header {
   display: flex;
   align-items: center;
@@ -145,6 +206,7 @@
   margin: 15px 0;
 }
 
+/* View all deliveries button */
 .view-all-deliveries-button {
   background-color: #F2F5FA;
   color: #222;
@@ -155,11 +217,11 @@
   cursor: pointer;
   transition: all 0.2s;
 }
-
 .view-all-deliveries-button:hover {
   background-color: #e0e0e0;
 }
 
+/* ✅ Table Section */
 .delivery-table-container {
   margin-top: 20px;
   font-size: 20px;

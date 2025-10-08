@@ -42,8 +42,8 @@ export default function MonthlyData({
     return (
 
         
-        <div className="monthly-data-container">
-            <div className="monthly-data-header">
+        <div className="reports-container">
+            <div className="reports-header">
                 <div className="right-actions">
                 <p className="reports-title">Reports</p>
 

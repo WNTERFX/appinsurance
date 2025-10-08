@@ -1,73 +1,104 @@
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
+}
+/*  Dashboard Container */
+.dashboard-container {
+  background-color: #F2F5FA;
+  font-family: 'Inter', sans-serif;
+  max-width: 100%;
+  overflow-x: hidden;
+  padding-bottom: 30px;
 }
 
-
-  .dashboard-header {
+/*  Header */
+.dashboard-header {
   display: flex;
-  justify-content: space-between; 
+  justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  position: relative;
-  
-  
+  background-color: #fff;
+  border: 2px solid #E0E0E0;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin: 16px 0 24px 0;
+  border-left: 6px solid #4b0082;
+  height: 90px;
+  padding: 0 10px 0 24px; /* ✅ flush to right edge */
 }
 
-.right-actions {
+
+.dashboard-title-container {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  justify-content: center; /* centers text vertically within header */
+  height: 100%; /* fills the entire header height */
 }
 
+.dashboard-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #222;
+  line-height: 1.1;
+}
+
+.welcome-text {
+  margin: 4px 0 0 0;
+  font-size: 17px;
+  color: #6E6E6E;
+}
+
+.right-actions,
 .left-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.dashboard-title {
-  margin: 10;
-  font-size: 24px;
-  font-weight: 600;
-}
-
+/* ✅ Optional tweak: make search and profile vertically aligned */
 .Dashboard-search {
-  padding: 10px 15px;
-  font-size: 16px;
+  padding: 8px 14px;
+  font-size: 15px;
   border-radius: 8px;
   border: 1px solid #ccc;
-  width: 250px;
+  width: 230px;
+  align-self: center;
 }
 
-/* Profile dropdown */
+/* Profile Menu */
 .profile-menu {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 0;
+  margin-right: 0;
 }
 .profile-button {
-  background: transparent;
+   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 0;
-  display: flex;         /* icon + text inline */
+  display: flex;
   align-items: center;
-  gap: 8px;              /* space between icon & text */
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  margin-right: 0;
+  padding-right: 0;
 }
-
 .profile-name {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
-  
   color: #333;
 }
 .profile-icon {
-  font-size: 36px;
+   font-size: 32px;
   color: gray;
-  display: block;
-  line-height: 1;
   border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-/* Dropdown panel */
 .dropdown {
   position: absolute;
   top: calc(100% + 8px);
@@ -75,22 +106,19 @@
   width: 160px;
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
   overflow: hidden;
   opacity: 0;
   transform: translateY(-6px) scale(0.98);
-  transform-origin: top right;
   visibility: hidden;
   transition: opacity 160ms ease, transform 160ms ease, visibility 160ms;
   z-index: 1000;
 }
-
 .dropdown.open {
   opacity: 1;
   transform: translateY(0) scale(1);
   visibility: visible;
 }
-
 .dropdown-item {
   width: 100%;
   padding: 10px 14px;
@@ -99,190 +127,248 @@
   text-align: left;
   font-size: 15px;
   cursor: pointer;
-  display: flex;            /* icon + text inline */
-  align-items: center;      /* vertical center */
-  gap: 8px;                 /* spacing between icon & text */
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-
 .dropdown-item:hover {
   background: #f2f2f2;
-
-
 }
-
 .dropdown-icon {
   font-size: 16px;
   color: #555;
 }
-.dashboard-container{
-  background-color: #F2F5FA;
-  font-family: 'Inter', sans-serif;
-  height: auto;
-  max-width: 100%;         
-  overflow-x: hidden; 
-      
-      
-  }
-
-  
-
-  @media (min-width: 3440px) {
-  .dashboard-container {
-    padding-left: 100px;
-  }
-}
 
 
-
-.dashboard-container > div.dashboard-header {
-      
-      color: #222;
-    
-      font-size: 30px;
-      
-      
-      
-  }
 .dashboard-content {
-    display: grid;
-    grid-template-areas: 
-        "activeclients duesClients clients"
-        "undelieveredPolicy deliveredPolicy clients"
-        "recentPolicies recentPolicies clientChart";
-   
-    gap: 10px;     
-    
-   
-    
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 equal columns */
+  gap: 18px;
+  margin-top: 20px;
 }
 
-.dashboard-content > div {
-    
-    padding: 10px;
-    
+/* Top 4 small metric cards (outer wrapper) */
+.active-clients,
+.due-clients,
+.undelivered-policy,
+.delivered-policy {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.08);
+  border-left: 6px solid transparent; /* colored per-card below */
+  min-height:200px;                   /* gives room for top + bottom spacing */
+  display: flex;                       /* make child stretch to full height */
+  align-items: stretch;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
 
-.dashboard-content > div.active-clients {
-    background-color: white;
-    grid-area: activeclients;
-    border-radius: 8px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-
-}
-
-
-.dashboard-content > div.due-clients {
-    background-color: white;
-    grid-area: duesClients;
-    border-radius: 8px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-   
-}
-
-.dashboard-content > div.clients-list {
-    background-color: white;
-    grid-area: clients;
-    height: 100%;
-    border-radius: 8px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-    
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.dashboard-content > div.clients-list:hover {
-    transform: translateY(-3px); 
-    background-color: #f2f5fa; 
-   
-}
-
-.dashboard-content > div.recent-policy:hover {
-    transform: translateY(-3px); 
-    background-color: #f2f5fa; 
-   
-}
-
-.dashboard-content > div.undelivered-policy {
-    background-color: white;
-    grid-area: undelieveredPolicy;
-    border-radius: 8px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.dashboard-content > div.delivered-policy {
-    background-color: white;
-    grid-area: deliveredPolicy;
-    border-radius: 8px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-}
-.dashboard-content > div.recent-policy {
-    background-color: white;
-    grid-area: recentPolicies;
-    border-radius: 8px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.dashboard-content > div.monthly-data {
-    background-color: white;
-    grid-area: clientChart;
-    border-radius: 8px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-
-.dashboard-content > div.active-clients,
-.dashboard-content > div.due-clients,
-.dashboard-content > div.undelivered-policy,
-.dashboard-content > div.delivered-policy {
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer; 
-}
-
-.dashboard-content > div.active-clients p,
-.dashboard-content > div.due-clients p,
-.dashboard-content > div.undelivered-policy p,
-.dashboard-content > div.delivered-policy p {
-  font-size: 30px;
-  margin: 0; 
-}
-
-
-.dashboard-table table,
-.dashboard-table table th,
-.dashboard-table table td {
-  border: 1px solid #ddd;
-  border-collapse: collapse; 
- 
-}
-
-.dashboard-content > div.active-clients:hover,
-.dashboard-content > div.due-clients:hover,
-.dashboard-content > div.undelivered-policy:hover,
-.dashboard-content > div.delivered-policy:hover {
-  background-color: #f2f5fa; 
-  transform: translateY(-3px);
-  box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.15); 
-}
-.dashboard-table table {
-  width: 100%;
+/* Icon next to h2 text */
+.card-icon {
+  margin-right: 8px;
+  vertical-align: middle;
   font-size: 20px;
-  margin: 5px;
-  
 }
 
-.dashboard-table table th,
-.dashboard-table table td {
-  padding: 8px 12px;
-  text-align: left;
+/* inner container - where we pin header to top and value to bottom */
+.active-clients .active-clients-data,
+.due-clients .due-clients-data,
+.undelivered-policy .undelivered-policy-data,
+.delivered-policy .delivered-policy-data {
+  width: 100%;
+  padding: 18px 20px;        /* change padding safely here */
+  display: flex;
+  flex-direction: column;    /* stack h2 / p vertically */
+  justify-content: space-between; /* pushes h2 to top, p to bottom */
+  height: 100%;              /* stretch to parent's min-height */
+  box-sizing: border-box;
+}
+
+/* accent colors (left thick border) */
+.active-clients { border-left-color: #7B5F97; }     /* violet */
+.due-clients { border-left-color: #4b0082; }        /* indigo */
+.undelivered-policy { border-left-color: #f5a623; } /* orange */
+.delivered-policy { border-left-color: #28a745; }   /* green */
+
+/* headings & numbers — no margin surprises */
+.active-clients h2, .due-clients h2, .undelivered-policy h2, .delivered-policy h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.1;
+    display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.active-clients p, .due-clients p, .undelivered-policy p, .delivered-policy p {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #222;
+  /* if you want bottom-left indentation, use padding on the inner container instead */
+}
+
+/* Hover effect */
+.active-clients:hover,
+.due-clients:hover,
+.undelivered-policy:hover,
+.delivered-policy:hover {
+  transform: translateY(-3px);
+  box-shadow: 4px 6px 18px rgba(0,0,0,0.12);
+  background-color: #faf9ff;
+}
+
+/* ---------- Bottom row: Monthly Data (wider) + Pending Claims (smaller) ---------- */
+/* Ensure parent grid has 4 columns; monthly takes more columns than pending */
+.monthly-data {
+  grid-column: span 3;
+  min-height: 540px;
+  padding: 10px 22px 22px 22px; /* ⬅ Reduced top padding */
+  border-radius: 8px;
+  background: #fff;
+  border-left: 6px solid #4b0082;
+  display: flex;
+  flex-direction: column;
+}
+
+.monthly-data .monthly-data-chart {
+  flex: 1 1 auto; /* chart grows to fill the box */
+}
+
+.pending-claims {
+  grid-column: span 1;
+  min-height: 540px;
+  padding: 10px 25px 25px 25px; /* ⬅ Reduced top padding */
+  border-radius: 8px;
+  background: #fff;
+  border-left: 6px solid #f5a623;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* ⬅ align content to top */
+  align-items: flex-start;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Monthly / Pending heading styles */
+.monthly-data h2,
+.pending-claims h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+   line-height: 1.1;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 1024px) {
+  .dashboard-content {
+    grid-template-columns: 1fr; /* single column stack */
+  }
+
+  .monthly-data,
+  .pending-claims {
+    grid-column: span 1;
+    min-height: 260px;
+  }
+}
+
+/*        fgfg                      */
+
+/* ---------- Monthly Data Header ---------- */
+.monthly-data-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;                /* ⬅ remove margin gap */
+  padding-top: 0;           /* ⬅ ensure flush with top */
 }
 
 
 
-@media screen and (min-width: 1024px)  {
-  
-    .dashboard-container > div.dashboard-content {
-        
-        height: 90vh !important;
-    }
+/* Legend container styled like in the picture */
+.partner-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #dcdcdc;
+  border-radius: 4px;
+  padding: 4px 10px;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+}
 
+.partner {
+  font-size: 20px;
+  font-weight: 500;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+}
+
+.partner::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.partner.merchantile::before { background-color: #4B7BE5; }
+.partner.standard::before { background-color: #7BB1F9; }
+.partner.stronghold::before { background-color: #443C9E; }
+.partner.cocogen::before { background-color: #A58AC8; }
+
+/* ---------- Pending Claims Header ---------- */
+.pending-claims-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;               /* ⬅ remove gap */
+  width: 100%;             /* ⬅ span entire box */
+}
+
+.pending-claims-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Button styled exactly like in image */
+.view-claims-btn {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+
+.view-claims-btn:hover {
+  background-color: #f5f5f5;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .monthly-data-header,
+  .pending-claims-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .partner-container {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
 }

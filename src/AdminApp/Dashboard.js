@@ -4,6 +4,7 @@ import { BarChart } from '@mui/x-charts/BarChart';
 import { FaUserCircle , FaMoon, FaSignOutAlt } from "react-icons/fa";
 import  DropdownAccounts  from './DropDownAccounts';
 import { recentClientTable, fetchRecentPolicy ,getClientCount } from "./AdminActions/DashboardActions";
+import {FaUsers, FaFileAlt,FaTruck, FaCheckCircle, FaChartBar,FaHourglassHalf} from "react-icons/fa";
 
 
 export default function Dashboard() {
@@ -66,8 +67,10 @@ export default function Dashboard() {
     
     {/* Left side */}
     <div className="right-actions">
-      <p className="dashboard-title">Dashboard</p>
-      
+      <div className="dashboard-title-container">
+      <h4 className="dashboard-title">Dashboard</h4>
+      <p className="welcome-text">Welcome back, Admin! </p>
+      </div>
     </div>
 
     {/* Right side */}
@@ -103,7 +106,7 @@ export default function Dashboard() {
                 <div className ="active-clients">
                     
                     <div className="active-clients-data">
-                        <h2>Active Clients</h2>
+                        <h2><FaUsers className="card-icon" />Active Clients</h2>
                         
                          <p>{clientCount}</p>
                     </div>
@@ -112,12 +115,12 @@ export default function Dashboard() {
                 <div className ="due-clients">
                     
                     <div className="due-clients-data">
-                        <h2>Due Clients</h2>
+                        <h2><FaFileAlt className="card-icon" />Active Policy</h2>
                         <p>50</p>
                     </div>
                 </div>
 
-                <div className="clients-list" 
+            {/*    <div className="clients-list" 
                     onClick={() =>  navigate("/appinsurance/MainArea/Client")} 
                     style={{ cursor: "pointer" }}>  
      
@@ -156,12 +159,12 @@ export default function Dashboard() {
                       
                          
                     </div>
-                </div>
+                </div> */}
 
                 <div className="undelivered-policy">
                     
                     <div className="undelivered-policy-data">
-                        <h2>Undelivered Policy</h2>
+                        <h2><FaTruck className="card-icon" />Undelivered Policy</h2>
                         <p>10</p>
                     </div>
                 </div>
@@ -169,12 +172,12 @@ export default function Dashboard() {
                 <div className="delivered-policy">
                     
                     <div className="delivered-policy-data">
-                        <h2>Delivered Policy</h2>
+                        <h2><FaCheckCircle className="card-icon" />Delivered Policy</h2>
                         <p>140</p>
                     </div>
                 </div>
 
-                <div className="recent-policy"
+              {/*  <div className="recent-policy"
                     onClick={() =>  navigate("/appinsurance/MainArea/Policy")} 
                     style={{ cursor: "pointer" }}>  
      
@@ -211,21 +214,43 @@ export default function Dashboard() {
                         </table>
                         </div>
                      </div>
-                </div>
+                </div> */}
 
-                <div className="monthly-data">
-                    <div className="monthly-data-chart">
-                        <h2>Monthly Data</h2>
-                        <BarChart
-                           xAxis={[{ scaleType: 'band', data: ['group A', 'group B', 'group C'] }]}
-                           series={[{ data: [4, 3, 5] }, { data: [1, 6, 3] }, { data: [2, 5, 6] }]}
-                           height={200}
-                           width={1000}
-                        />    
+               <div className="monthly-data">
+                <div className="monthly-data-header">
+                 <h2><FaChartBar className="card-icon" /> Monthly Client Data</h2>
+                    <div className="partner-container">
+                       <span className="partner merchantile">Merchantile</span>
+                    <span className="partner standard">Standard</span>
+                     <span className="partner stronghold">Stronghold</span>
+                    <span className="partner cocogen">Cocogen</span>
                     </div>
-                </div>
+                        </div>
 
-            </div>
-        </div>
+                      <div className="monthly-data-chart">
+                      <BarChart
+                      xAxis={[{ scaleType: 'band', data: ['group A', 'group B', 'group C'] }]}
+                       series={[
+                      { data: [4, 3, 5] },
+                     { data: [1, 6, 3] },
+                    { data: [2, 5, 6] },
+                        ]}
+                    height={200}
+                     width={1000}
+                          />
+                          </div>
+                         </div>
+
+                   <div className="pending-claims">
+                      <div className="pending-claims-header">
+                        <h2><FaHourglassHalf className="card-icon" /> Pending Claims</h2>
+                       <button className="view-claims-btn">View all claims</button>
+                        </div>
+                         {/* your pending claims content here */}
+                         </div>
+                            </div>
+
+                           </div>
+
     );
 }

@@ -6,7 +6,7 @@ body, html {
 
 .nav-bar {
    position: fixed;
-   background-color: #DADADA;
+   background-color: #FFFFFF;
  
    height: 100%;
    width: 300px; 
@@ -23,6 +23,56 @@ body, html {
 
 
 }
+/*****************************************************************************************************************/
+.logo-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* align everything to the left */
+  padding: 20px 0 15px 15px; /* space from top and left edges */
+}
+
+.logo-container {
+  display: flex;
+  align-items: center; /* centers image + text vertically */
+  gap: 1px; /* space between image and text */
+  margin-top: 25px;
+}
+
+.nav-logo-img {
+  width: 78px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: 25%;
+  border: 2px solid #402158; /* purple border */
+  background-color: #402158;
+  padding: 3px; /* inner spacing inside border */
+  margin-left: 10px;
+}
+
+.logo {
+  display: flex;
+  flex-direction: column; /* stack Silverstar / Insurance */
+  justify-content: center;
+  line-height: 1.1;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  color: #000;
+  font-size: 20px;
+  margin: 0; /* remove default text margin */
+}
+
+/* Divider line between logo and links */
+.nav-divider {
+  border: none;
+  border-top: 2px solid #B5B5B5;
+  margin: 25px 25px 15px 25px;
+  opacity: 0.5;
+}
+
+
+
+/*****************************************************************************************************************/
 
 .side-bar-container {
   display: flex;
@@ -83,22 +133,23 @@ body, html {
    font-size: 30px;
    text-decoration: none;
    display: block;
-   background-color: #DADADA;
+   background-color: #ffffff;
    text-align:left;
    font-family: 'Inter', sans-serif;
    transition: padding 0.3s ease;
-   border-radius: 8px;
+   border-radius: 5px;
+     font-weight: 600;
    
 
 }
 
 .side-bar .side-bar-item:hover {
-   background-color: #8F71B1;
-   color: #ffffff;
+   background-color: #f0f0f0;
+
 }
 .side-bar .side-bar-item.active {
-   background-color: #8F71B1;
-   color: #ffffff;
+
+   color: #7B5F97;
 }
 
 .nav-bar.minimize {           /* little side bar*/
@@ -185,8 +236,3 @@ body, html {
    
  }
 
- .side-bar-item.active {
-   background-color: #F6F4FE;
-   color: #F6F4FE;
-   
- }
