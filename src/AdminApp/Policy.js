@@ -53,7 +53,7 @@ export default function Policy() {
           <button
             className="btn btn-create"
             onClick={() =>
-              navigate("/appinsurance/MainArea/Policy/PolicyNewClient")
+              navigate("/appinsurance/main-app/policy/policy-new-client")
             }
           >
             <FaPlus className="btn-icon" /> Create

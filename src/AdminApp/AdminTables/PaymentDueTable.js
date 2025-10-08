@@ -60,7 +60,7 @@ export default function PolicyWithPaymentsList() {
               onClick={() => toggleExpand(policy.id)}
             >
               <p>
-                <strong>Policy ID:</strong> {policy.id}
+                <strong>Policy ID:</strong> {policy.internal_id}
               </p>
               <p>
                 <strong>Holder:</strong> {clientName}

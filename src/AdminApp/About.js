@@ -2,11 +2,11 @@ import "./styles/Profile-styles.css"
 import "./images/user-icon.png"
 import { useNavigate } from "react-router-dom";
 
-export default function Profile() {
+export default function About() {
      const navigate = useNavigate();
   return (
      
-    <p>Manage Account</p>
+    <p>Software Information</p>
    
    
     /*<div className="profile-page">

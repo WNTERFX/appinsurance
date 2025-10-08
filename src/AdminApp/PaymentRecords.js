@@ -33,11 +33,8 @@ export default function PaymentRecords() {
       <div className="payment-record-header">
         <div className="right-actions">
           <p className="Payment-title">Payment Records</p>
-          <input
-            type="text"
-            className="record-search"
-            placeholder="Search clients..."
-          />
+        
+          
         </div>
 
         <div className="left-actions">
@@ -67,11 +64,6 @@ export default function PaymentRecords() {
       {/* Content */}
       <div className="payment-records-content">
         <div className="policy-data-field">
-          <div className="control-options">
-            <button className="approve-btn-policy">Approve</button>
-            <button className="disapprove-btn-policy">Edit</button>
-            <button className="print-btn-policy">Print</button>
-          </div>
 
           {/* Payments Table */}
           <div className="client-payment-table">

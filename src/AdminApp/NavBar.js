@@ -22,14 +22,14 @@ export default function NavBar() {
       <div className="side-bar-container">
         {/* --- TOP LINKS --- */}
         <div className="side-bar top-links">
-          <Link to="/appinsurance/MainArea/Dashboard" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Dashboard") ? " active" : "")}>
+          <Link to="/appinsurance/main-app/Dashboard" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Dashboard") ? " active" : "")}>
             <div className="side-bar-label">
               <LuLayoutDashboard className="side-bar-icon" />
               <span>Dashboard</span>
             </div>
           </Link>
 
-          <Link to="/appinsurance/MainArea/Client" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Client") ? " active" : "")}>
+          <Link to="/appinsurance/main-app/Client" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Client") ? " active" : "")}>
             <div className="side-bar-label">
               <LuUser className="side-bar-icon" />
               <span>Clients</span>
@@ -48,35 +48,35 @@ export default function NavBar() {
       </Link>*/}
 
 
-          <Link to="/appinsurance/MainArea/Policy" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Policy") ? " active" : "")}>
+          <Link to="/appinsurance/main-app/policy" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Policy") ? " active" : "")}>
             <div className="side-bar-label">
               <LuFolder className="side-bar-icon" />
               <span>Policy</span>
             </div>
           </Link>
 
-          <Link to="/appinsurance/MainArea/ClaimTable" className={"side-bar-item" + (isActive("/appinsurance/MainArea/ClaimTable") ? " active" : "")}>
+          <Link to="/appinsurance/main-app/claim" className={"side-bar-item" + (isActive("/appinsurance/MainArea/ClaimTable") ? " active" : "")}>
             <div className="side-bar-label">
               <LuClipboard className="side-bar-icon" />
               <span>Claims</span>
             </div>
           </Link>
 
-          <Link to="/appinsurance/MainArea/Delivery" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Delivery") ? " active" : "")}>
+          <Link to="/appinsurance/main-app/delivery" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Delivery") ? " active" : "")}>
             <div className="side-bar-label">
               <LuMail className="side-bar-icon" />
               <span>Deliveries</span>
             </div>
           </Link>
 
-          <Link to="/appinsurance/MainArea/MonthlyData" className={"side-bar-item" + (isActive("/appinsurance/MainArea/MonthlyData") ? " active" : "")}>
+          <Link to="/appinsurance/main-app/records" className={"side-bar-item" + (isActive("/appinsurance/MainArea/MonthlyData") ? " active" : "")}>
             <div className="side-bar-label">
               <LuActivity className="side-bar-icon" />
               <span>Reports</span>
             </div>
           </Link>
 
-          <Link to="/appinsurance/MainArea/PaymentRecords" className={"side-bar-item" + (isActive("/appinsurance/MainArea/PaymentRecords") ? " active" : "")}>
+          <Link to="/appinsurance/main-app/payment-records" className={"side-bar-item" + (isActive("/appinsurance/MainArea/PaymentRecords") ? " active" : "")}>
             <div className="side-bar-label">
               <LuCreditCard className="side-bar-icon" />
               <span>Payments</span>
@@ -96,7 +96,7 @@ export default function NavBar() {
          */}
 
 
-          <Link to="/appinsurance/MainArea/AccountManagement" className={"side-bar-item" + (isActive("/appinsurance/MainArea/AccountManagement") ? " active" : "")}>
+          <Link to="/appinsurance/main-app/account-management" className={"side-bar-item" + (isActive("/appinsurance/MainArea/AccountManagement") ? " active" : "")}>
             <div className="side-bar-label">
               <LuSettings className="side-bar-icon" />
               <span>Manage Users</span>
@@ -106,7 +106,7 @@ export default function NavBar() {
 
         {/* --- BOTTOM LINKS --- */}
         <div className="side-bar bottom-links">
-          <Link to="/appinsurance/MainArea/Profile" className="side-bar-item">
+          <Link to="/appinsurance/main-app/About" className="side-bar-item">
             <div className="side-bar-label">
               <LuInfo className="side-bar-icon" />
               <span>About</span>

@@ -75,12 +75,31 @@ export default function MonthlyData({
 
             </div>
 
-          
+            
+              <div className="client-record-container header-with-button">
+                <p className="client-title">Client</p>
+                <button className="btn btn-create">Print</button>
+              </div>
 
-              <p className="due-title"> Due </p> <div className="client-table-container"> <ClientTableDue/> </div>
+              <div className="policy-record-container header-with-button">
+                <p className="policy-title">Policy</p>
+                <button className="btn btn-create">Print</button>
+              </div>
 
-              <p className="renewals-title"> Renewals </p> <div className="renewal-table-container">  </div>
+              <div className="policy-record-container header-with-button">
+                <p className="policy-title">Deliveries</p>
+                <button className="btn btn-create">Print</button>
+              </div>
+                       
+              <div className="due-record-container header-with-button">
+                <p className="due-title">Due</p>
+                <button className="btn btn-create">Print</button>
+              </div>
 
+              <div className="renewal-record-container header-with-button">
+                <p className="renewals-title">Renewals</p>
+                <button className="btn btn-create">Print</button>
+              </div>
              
 
               

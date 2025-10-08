@@ -25,7 +25,7 @@ import EditVehicleDetailsForm from "./AdminApp/EditVehicleDetailsForm";
 import NewPolicyController from "./AdminApp/ControllerAdmin/NewPolicyController";
 import NewClientController from "./AdminApp/ControllerAdmin/NewClientController";
 import EditPolicyController from "./AdminApp/ControllerAdmin/EditPolicyController";
-import Profile from "./AdminApp/Profile";
+import About from "./AdminApp/About";
 import AccountManagement from "./AdminApp/AdminAccountManagement/AccountManagement";
 
 // Moderator Components
@@ -69,27 +69,27 @@ function App() {
         {/* Protected routes */}
         <Route element={<AuthChecker />}>
           {/* Admin routes */}
-          <Route path="/appinsurance/MainArea" element={<MainArea />}>
+          <Route path="/appinsurance/main-app" element={<MainArea />}>
             <Route index element={<Dashboard />} />
-            <Route path="Dashboard" element={<Dashboard />} />
-            <Route path="Client" element={<Client />} />
-            <Route path="Client/ClientCreationForm" element={<NewClientController />} />
-            <Route path="Client/ClientEditForm" element={<EditClientForm />} />
-            <Route path="Due" element={<Due />} />
-            <Route path="Policy" element={<Policy />} />
-            <Route path="Policy/PolicyNewClient" element={<NewPolicyController />} />
-            <Route path="Policy/Edit/:policyId" element={<EditPolicyController />} />
-            <Route path="Policy/PolicyNewClient/VehicleDetails" element={<VehicleDetails />} />
-            <Route path="Policy/ListClient" element={<ListClient />} />
-            <Route path="Policy/ListClient/EditClientForm" element={<EditClientForm />} />
-            <Route path="Policy/ListClient/EditClientForm/EditVehicleDetailsForm" element={<EditVehicleDetailsForm />} />
-            <Route path="ClaimTable" element={<ClaimTable />} />
-            <Route path="Delivery" element={<Delivery />} />
-            <Route path="Delivery/NewDeliveryForm" element={<DeliveryCreationForm />} />
-            <Route path="MonthlyData" element={<MonthlyDataController />} />
-            <Route path="PaymentRecords" element={<PaymentRecords />} />
-            <Route path="AccountManagement" element={<AccountManagement />} />
-            <Route path="Profile" element={<Profile />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="client" element={<Client />} />
+            <Route path="client/clientCreationForm" element={<NewClientController />} />
+            <Route path="client/clientEditForm" element={<EditClientForm />} />
+            <Route path="due" element={<Due />} />
+            <Route path="policy" element={<Policy />} />
+            <Route path="policy/policy-new-client" element={<NewPolicyController />} />
+            <Route path="policy/edit/:policyId" element={<EditPolicyController />} />
+            <Route path="policy/policyNewClient/vehicle-details" element={<VehicleDetails />} />
+            <Route path="policy/listClient" element={<ListClient />} />
+            <Route path="policy/listClient/edit-client-form" element={<EditClientForm />} />
+            <Route path="policy/listClient/edit-client-form/edit-vehicle-details-form" element={<EditVehicleDetailsForm />} />
+            <Route path="claim" element={<ClaimTable />} />
+            <Route path="delivery" element={<Delivery />} />
+            <Route path="delivery/new-delivery-form" element={<DeliveryCreationForm />} />
+            <Route path="records" element={<MonthlyDataController />} />
+            <Route path="payment-records" element={<PaymentRecords />} />
+            <Route path="account-management" element={<AccountManagement />} />
+            <Route path="about" element={<About />} />
             <Route path="*" element={<div>Page not found</div>} />
           </Route>
 
