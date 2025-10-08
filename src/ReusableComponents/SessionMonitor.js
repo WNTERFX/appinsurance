@@ -22,10 +22,6 @@ export default function SessionMonitor({ session }) {
           return;
         }
 
-        // If token mismatch, show global alert
-        if (data?.current_session_token !== storedToken) {
-          showGlobalAlert("Another login has been detected!");
-        }
       } catch (err) {
         console.error(err);
       }
