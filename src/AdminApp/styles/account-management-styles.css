@@ -2,13 +2,18 @@
   box-sizing: border-box;
 }
 
-/* MAIN CONTAINER */
+/* --------------------------- */
+/* Container + Header          */
+/* --------------------------- */
 .Account-container {
-  background-color: #f2f5fa;
+  width: 100%;
+  margin: 0 auto;
   font-family: 'Inter', sans-serif;
-  height: auto;
-  max-width: 100%;
-  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background-color: #f2f5fa;
   padding: 10px;
 }
 
@@ -18,87 +23,101 @@
   }
 }
 
-/* HEADER SECTION */
+/* Header */
 .Account-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background-color: #fff;
+  border: 2px solid #E0E0E0;
+  border-left: 6px solid #4b0082; /* purple accent */
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  height: 90px;
+  padding: 0 10px 0 24px;
+  margin-bottom: 24px;
+  margin-top: 16px;
+}
+
+/* Header title */
+.client-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
   color: #222;
-  font-size: 28px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  padding: 10px;
+  line-height: 1.1;
 }
 
-.account-title {
-  font-size: 24px;
-  font-weight: 600;
+/* Right side buttons */
+.right-actions-client {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-/* BUTTONS */
-.btn-account {
+/* Buttons */
+.btn-create, .btn-archive {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
-/* Add Button */
-.btn-add-account {
+.btn-create {
   background-color: #2196f3;
   color: white;
 }
 
-.btn-add-account:hover {
+.btn-create:hover {
   background-color: #1976d2;
+  transform: translateY(-1px);
 }
 
-/* Edit Button */
-.btn-edit-account {
+.btn-archive {
   background-color: #e0e0e0;
-  color: black;
+  color: #111;
 }
 
-.btn-edit-account:hover {
+.btn-archive:hover {
   background-color: #bdbdbd;
+  transform: translateY(-1px);
 }
 
-/* Right-side group */
-.actions-right-account {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+/* Active button highlight */
 
-/* Left-side group */
-.left-actions-account {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 
-/* DATA FIELD SECTION */
-.account-data-field {
-  background-color: white;
+/* --------------------------- */
+/* Back Button                 */
+/* --------------------------- */
+.btn-back-account {
+  display: inline-block;
+  width: 120px;
+  padding: 10px 20px;
+  margin-bottom: 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  border: none;
   border-radius: 8px;
-  margin-top: 20px;
-  padding: 20px 10px 20px 10px;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  background-color: #2563eb; /* same as submit */
+  color: white;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
-/* CONTENT AREA */
-.Account-content {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  padding: 10px;
+.btn-back-account:hover {
+  background-color: #1e40af;
+  transform: translateY(-2px);
 }
 
+/* --------------------------- */
+/* Add/Edit Form Styling        */
+/* --------------------------- */
 .add-account-form {
   display: flex;
   flex-direction: column;
@@ -110,16 +129,42 @@
   display: flex;
   flex-direction: column;
   font-weight: 500;
-  font-size: 15px;
+  font-size: 0.9rem;
 }
 
-.add-account-form input {
+.add-account-form input,
+.add-account-form select {
   margin-top: 5px;
   padding: 8px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
+  font-size: 0.9rem;
 }
 
+.add-account-form > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.add-account-form > div > label {
+  flex: 0 0 150px;
+  margin: 0;
+}
+
+.add-account-form > div > input,
+.add-account-form > div > select {
+  flex: 1;
+}
+
+/* Checkbox adjustment */
+.add-account-form > div > input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: auto;
+  margin: 0;
+}
+
+/* Submit Button */
 .btn-add-account-submit {
   margin-top: 10px;
   background-color: #2563eb;
@@ -128,9 +173,86 @@
   padding: 10px;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .btn-add-account-submit:hover {
   background-color: #1e40af;
+  transform: translateY(-1px);
 }
+
+/* --------------------------- */
+/* Account Table Styling        */
+/* --------------------------- */
+.account-table-scroll {
+  overflow-x: auto;
+  width: 100%;
+  border: 1px solid #ddd;
+  background-color: white;
+  border-radius: 8px;
+}
+
+.account-table-scroll > table {
+  width: 100%;
+  min-width: 800px;
+  background-color: white;
+  border-collapse: collapse;
+}
+
+.account-table-scroll > table > thead > tr > th {
+  padding: 16px 15px;
+  text-align: left;
+  background-color: #f2f5fa;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.account-table-scroll > table > tbody > tr > td {
+  padding: 14px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+/* Hover effect for rows */
+.account-table-scroll tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.account-table-actions button {
+  padding: 5px 10px;
+  margin: 0 3px;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #f3f4f6;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.account-table-actions button:hover {
+  background-color: #e5e7eb;
+}
+
+/* --------------------------- */
+/* Status Badges               */
+/* --------------------------- */
+.account-status-active,
+.account-status-inactive {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.account-status-active {
+  color: #065f46;
+  background-color: #d1fae5;
+}
+
+.account-status-inactive {
+  color: #991b1b;
+  background-color: #fee2e2;
+}
+
