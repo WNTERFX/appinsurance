@@ -11,7 +11,8 @@ export default function PolicyNewClient({
       setYearInput,   
       vehicleCost,
       setVehicleCost,  
-      basicPremiumValue,         
+      basicPremiumValue, 
+      basicPremiumWithCommissionValue,        
    
       isAoN,
       setIsAoN,
@@ -22,6 +23,9 @@ export default function PolicyNewClient({
       totalVehicleValueRate,
       totalPremiumCost,
       actOfNatureCost,
+      commissionFee,
+      setCommissionFee,
+      commissionValue, 
 
       
       setSelectedPartner,
@@ -239,6 +243,16 @@ export default function PolicyNewClient({
               readOnly />
             </div>
 
+            <div className="form-group">
+              {/* Commission Fee */}
+            <label>Commission Fee (%)</label>
+            <input
+              type="text"
+              value={commissionFee}
+              onChange={(e) => setCommissionFee(e.target.value)}
+            />
+            </div>
+
             
            <div className="form-group aon-row">
               <label>AoN (Act of Nature)</label>
@@ -298,6 +312,12 @@ export default function PolicyNewClient({
                       </span>
                     </p>
 
+                   <p>Basic Premium (with Commission): 
+                    <span>
+                      ₱ {basicPremiumWithCommissionValue ? basicPremiumWithCommissionValue.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
+                    </span>
+                  </p>
+
                      <p>Local Government Tax: 
                         <span>{vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "—"}</span>
                       </p>
@@ -309,6 +329,12 @@ export default function PolicyNewClient({
                       <p>Documentary Stamp: 
                         <span>{vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "—"}</span>
                       </p>
+
+                      <p>Commission Amount: 
+                      <span>
+                        ₱ {commissionValue ? commissionValue.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
+                      </span>
+                    </p>
 
                      {isAoN && (
                         <p>AoN (Act of Nature): 
@@ -325,7 +351,7 @@ export default function PolicyNewClient({
         <div className="button-container-new-policy">
         <button
           className="cancel-btn-new-policy"
-          onClick={() => navigate("/appinsurance/MainArea/Policy")}
+          onClick={() => navigate("/appinsurance/main-app/policy")}
         >
           Cancel
         </button>

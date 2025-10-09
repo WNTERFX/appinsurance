@@ -139,6 +139,25 @@ export async function fetchComputationByPolicyId(policyId) {
       return null;
     }
 
+    if (!computation) {
+      console.log("No computation found for policy_id:", policyId);
+      return null;
+    }
+
+    // Log the raw computation data to debug
+    console.log("Raw computation data:", computation);
+
+    // Normalize the computation data to match expected format
+    const normalizedComputation = {
+      ...computation,
+      original_Value: computation.original_Value,
+      current_Value: computation.current_Value,
+      total_Premium: computation.total_Premium,
+      aon_Cost: computation.aon_Cost,
+      vehicle_Rate_Value: computation.vehicle_Rate_Value,
+      commission_fee: computation.commission_fee
+    };
+
     // Try Method 1: If there's a direct calculation_id reference
     if (computation && computation.calculation_id) {
       const { data: calculation, error: calcError } = await db
@@ -150,7 +169,7 @@ export async function fetchComputationByPolicyId(policyId) {
       if (!calcError && calculation) {
         console.log("Method 1: Found vehicle_type via calculation_id:", calculation.vehicle_type);
         return {
-          ...computation,
+          ...normalizedComputation,
           vehicle_type: calculation.vehicle_type,
           // Include all calculation fields for reference
           vat_Tax: calculation.vat_Tax,
@@ -183,7 +202,7 @@ export async function fetchComputationByPolicyId(policyId) {
       if (!calcError && calculation) {
         console.log("Method 2: Found vehicle_type via vehicle_type_id:", calculation.vehicle_type);
         return {
-          ...computation,
+          ...normalizedComputation,
           vehicle_type: calculation.vehicle_type,
           // Include calculation fields
           vat_Tax: calculation.vat_Tax,
@@ -213,7 +232,7 @@ export async function fetchComputationByPolicyId(policyId) {
       if (matchingCalc) {
         console.log("Method 3: Found vehicle_type by matching rates:", matchingCalc.vehicle_type);
         return {
-          ...computation,
+          ...normalizedComputation,
           vehicle_type: matchingCalc.vehicle_type,
           vat_Tax: matchingCalc.vat_Tax,
           bodily_Injury: matchingCalc.bodily_Injury,
@@ -228,7 +247,7 @@ export async function fetchComputationByPolicyId(policyId) {
     }
 
     console.log("All methods failed - returning computation without vehicle_type");
-    return computation;
+    return normalizedComputation;
 
   } catch (err) {
     console.error("Error in fetchComputationByPolicyId:", err.message);

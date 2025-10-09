@@ -39,7 +39,11 @@ export function ComputationActionsAoN(vehicleTotalValue, AoNRate) {
    
 
     return  vehicleValueWithAoN;
-       
-      
-    
+     
+}
+
+export function ComputationActionsCommission(totalAmount, commissionRate) {
+    const commission = totalAmount * (commissionRate / 100);
+    const totalWithCommission = totalAmount + commission;
+    return totalWithCommission;
 }
