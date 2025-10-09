@@ -7,12 +7,7 @@ export async function fetchModeratorDeliveries(agentId) {
   const { data, error } = await db
     .from("delivery_Table")
     .select(`
-      id,
-      policy_id,
-      created_at,
-      delivered_at,
-      estimated_delivery_date,
-      is_archived,
+      *, 
       employee:employee_Accounts(personnel_Name),
       policy:policy_Table!inner(
         id,
@@ -55,9 +50,11 @@ function formatDeliveries(data) {
       : "Not set";
 
     return {
+      ...delivery,
       uid: delivery.id,
       policy_Id: delivery.policy_id,
       delivered_at: delivery.delivered_at,
+      remarks: delivery.remarks || "" , 
       policy_Holder: delivery.policy?.client
         ? `${delivery.policy.client.first_Name || ""} ${delivery.policy.client.middle_Name || ""} ${delivery.policy.client.family_Name || ""}`.trim()
         : "Unknown",

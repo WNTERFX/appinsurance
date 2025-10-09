@@ -4,11 +4,14 @@ import PaymentDueTableModerator from './ModeratorTables/PaymentDueTableModerator
 import  DropdownAccountsModerator  from './DropDownAccountsModerator';
 import { useEffect, useState, useRef } from "react";
 import { FaUserCircle } from "react-icons/fa";
+import { useModeratorProfile } from "../ModeratorApp/useModeratorProfile";
+
 export default function PaymentRecordsModerator() {
 
       const [open, setOpen] = useState(false);
       const dropdownRef = useRef(null);
       const buttonRef = useRef(null);
+        const profile = useModeratorProfile();
     
       // close dropdown when clicking outside
       useEffect(() => {
@@ -47,7 +50,7 @@ export default function PaymentRecordsModerator() {
                         aria-haspopup="true"
                         aria-expanded={open}
                       >
-                        <span className="profile-name">Admin</span>
+                        <span className="profile-name">{profile?.fullName || "?"}</span>
                         <FaUserCircle className="profile-icon" />
                       </button>
           

@@ -125,21 +125,7 @@
 }
 
 
-/* Policy ID column */
-.delivery-table-scroll > table th:first-child,
-.delivery-table-scroll > table td:first-child {
-  min-width: 80px;
-  max-width: 100px;
-  width: 80px;
-  text-align: center;
-}
 
-.delivery-table-wrapper table th:nth-child(7),
-.delivery-table-wrapper table td:nth-child(7) {
-  width: 100px;
-  text-align: center;
-  white-space: nowrap;
-}
 
 @media (max-width: 1920px) and (min-width: 1366px) {
   .delivery-table-scroll > table > thead > tr > th,
@@ -287,6 +273,7 @@
   word-break: break-word;           /* break long words if necessary */
   vertical-align: top;
   padding: 12px 15px;               /* spacing like other tds */
+   vertical-align: middle; 
 }
 
 
@@ -298,6 +285,7 @@ td.remarks .remarks-content {
   word-break: break-word;
   display: block;
   max-width: 100%;
+ text-align: center;
 }
 
 /* responsive tweaks */

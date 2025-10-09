@@ -10,7 +10,7 @@ import {
 } from "../ModeratorActions/ModeratorDeliveryActions";
 import "../moderator-styles/delivery-table-styles-moderator.css";
 
-export default function ModeratorDeliveryTable({ currentUser }) {
+export default function ModeratorDeliveryTable({ currentUser,onEditDelivery }) {
   const navigate = useNavigate();
 
   const [deliveries, setDeliveries] = useState([]);
@@ -46,11 +46,6 @@ const loadDeliveries = async () => {
       delivery.policy_Holder?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleEditClick = (delivery) => {
-    navigate("/appinsurance/ModeratorArea/Delivery/EditDeliveryForm", {
-      state: { delivery },
-    });
-  };
 
   const handleArchiveClick = async (deliveryId) => {
     if (!window.confirm("Proceed to archive this delivery?")) return;
@@ -139,6 +134,7 @@ const loadDeliveries = async () => {
                   <th>Address</th>
                   <th>Date Created</th>
                   <th>Est. Delivery / Delivered Date</th>
+                  <th>Remarks</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -166,6 +162,10 @@ const loadDeliveries = async () => {
                           <span>Est: {delivery.displayDate}</span>
                         )}
                       </td>
+                      <td className="remarks-moderator">
+                        {delivery.remarks ? delivery.remarks : "No remarks"}
+                      </td>
+
                       <td className="delivery-table-actions-moderator">
                         {!delivery.delivered_at && (
                         <button
@@ -173,7 +173,7 @@ const loadDeliveries = async () => {
                           title="Edit this delivery"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleEditClick(delivery);
+                            onEditDelivery(delivery);
                           }}
                         >
                           <FaEdit /> Edit

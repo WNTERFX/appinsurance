@@ -5,7 +5,7 @@ import ClientInfo from "../../AdminApp/ClientInfo";
 import { useNavigate } from "react-router-dom";
 import "../moderator-styles/policy-table-styles-moderator.css";
 
-export default function PolicyTableModerator() {
+export default function PolicyTableModerator({onEditDelivery}) {
   const navigate = useNavigate();
   const [policies, setPolicies] = useState([]);
   const [selectedPolicy, setSelectedPolicy] = useState(null);

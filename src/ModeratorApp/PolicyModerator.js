@@ -56,7 +56,7 @@ export default function PolicyModerator() {
           <button
             className="btn btn-create-moderator"
             onClick={() =>
-              navigate("/appinsurance/MainAreaModerator/PolicyModerator/ModeratorPolicyNewClienForm")
+              navigate("/appinsurance/MainAreaModerator/PolicyModerator/ModeratorPolicyNewClientForm")
             }
           >
             <FaPlus className="btn-icon-moderator" /> Create

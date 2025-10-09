@@ -24,31 +24,54 @@ export async function getCurrentModerator() {
 export async function fetchModeratorPolicies(agentId) {
   if (!agentId) return [];
 
-  const { data, error } = await db
-    .from("policy_Table")
-    .select(`
-      id,
-      policy_type,
-      policy_inception,
-      policy_expiry,
-      policy_is_active,
-      client:clients_Table!inner(
-        uid,
-        first_Name,
-        middle_Name,
-        family_Name,
-        agent_Id
-      )
-    `)
-    .eq("client.agent_Id", agentId) // 🔹 filter only moderator’s clients
-    .eq("policy_is_active", true)
-    .or("is_archived.is.null,is_archived.eq.false");
+  try {
+    // 1️⃣ Fetch active, non-archived policies for moderator's clients
+    const { data: policies, error: policyError } = await db
+      .from("policy_Table")
+      .select(`
+        id,
+        internal_id,
+        policy_type,
+        policy_inception,
+        policy_expiry,
+        policy_is_active,
+        is_archived,
+        client:clients_Table!inner(
+          uid,
+          first_Name,
+          middle_Name,
+          family_Name,
+          agent_Id
+        )
+      `)
+      .eq("client.agent_Id", agentId)
+      .eq("policy_is_active", true)
+      .or("is_archived.is.null,is_archived.eq.false");
 
-  if (error) {
-    console.error("❌ Error fetching moderator policies:", error.message);
+    if (policyError) throw policyError;
+    if (!policies?.length) return [];
+
+    // 2️⃣ Get all deliveries linked to these policies
+    const policyIds = policies.map((p) => p.id);
+    const { data: deliveries, error: deliveryError } = await db
+      .from("delivery_Table")
+      .select("policy_id, is_archived")
+      .in("policy_id", policyIds)
+      .or("is_archived.is.null,is_archived.eq.false");
+
+    if (deliveryError) throw deliveryError;
+
+    // 3️⃣ Mark which policies already have deliveries
+    const deliveredIds = new Set(deliveries.map((d) => String(d.policy_id)));
+
+    return policies.map((p) => ({
+      ...p,
+      hasDelivery: deliveredIds.has(String(p.id)), // 🔹 Add this flag
+    }));
+  } catch (err) {
+    console.error("❌ Error fetching moderator policies:", err.message);
     return [];
   }
-  return data;
 }
 
 // ✅ Create a new delivery

@@ -36,6 +36,7 @@ import DueModerator from "./ModeratorApp/DueModerator";
 import PolicyModerator from "./ModeratorApp/PolicyModerator";
 import ClaimTableModerator from "./ModeratorApp/ClaimTableModerator";
 import DeliveryModerator from "./ModeratorApp/DeliveryModerator";
+import ModeratorClientArchiveTable from "./ModeratorApp/ModeratorTables/ModeratorClientArchiveTable";
 import MonthlyDataModerator from "./ModeratorApp/MonthlyDataModerator";
 import PaymentRecordsModerator from "./ModeratorApp/PaymentRecordsModerator";
 import ProfileModerator from "./ModeratorApp/ProfileModerator";
@@ -102,7 +103,7 @@ function App() {
             <Route path="ClientModerator/ModeratorClientEditForm" element={<ModeratorClientEditForm />} />
             <Route path="DueModerator" element={<DueModerator />} />
             <Route path="PolicyModerator" element={<PolicyModerator />} />
-            <Route path="PolicyModerator/ModeratorPolicyNewClientForm" element={<ModeratorPolicyNewClientForm />} />
+            <Route path="PolicyModerator/ModeratorPolicyNewClientForm" element={<ModeratorNewPolicyController />} />
             <Route path="PolicyModerator/Edit/:policyId" element={<ModeratorEditPolicyController />} />
             <Route path="PolicyModerator/ModeratorNewPolicyController" element={<ModeratorNewPolicyController />} />
             <Route path="ClaimTableModerator" element={<ClaimTableModerator />} />

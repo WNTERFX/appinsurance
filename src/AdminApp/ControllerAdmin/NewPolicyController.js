@@ -217,7 +217,7 @@ export default function NewPolicyController() {
     const computationResult = await NewComputationCreation(computationData);
     if (computationResult.success) {
       alert("Client and computation saved successfully!");
-      navigate("/appinsurance/MainArea/Policy");
+      navigate("/appinsurance/main-app/policy");
     } else {
       alert("Error saving computation: " + computationResult.error);
     }

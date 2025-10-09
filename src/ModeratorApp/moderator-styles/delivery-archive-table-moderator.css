@@ -1,0 +1,94 @@
+.delivery-archive-table-container-mod {
+  padding: 10px;
+}
+
+.delivery-archive-table-header-mod {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.delivery-archive-table-header-mod h2 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.delivery-archive-header-controls-mod {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.delivery-archive-table-wrapper-mod {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.delivery-archive-table-scroll-mod {
+  overflow-x: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.delivery-archive-table-scroll-mod table {
+  width: 100%;
+  min-width: 1000px;
+  border-collapse: collapse;
+}
+
+.delivery-archive-table-scroll-mod th {
+  background-color: #f2f5fa;
+  padding: 12px;
+  text-align: left;
+}
+
+.delivery-archive-table-scroll-mod td {
+  padding: 10px;
+  text-align: left;
+}
+
+.delivery-archive-table-scroll-mod tr:hover {
+  background-color: #e6f7ff;
+}
+
+.delivery-archive-table-actions-mod button {
+  margin-right: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.delivery-archive-table-actions-mod button:hover {
+  background-color: #f0f0f0;
+}
+
+.delivery-archive-search-input-mod {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.reset-btn-archive-mod {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background-color: #f9f9f9;
+}
+
+.rows-per-page-inline-mod {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-controls-mod {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  align-items: center;
+}
