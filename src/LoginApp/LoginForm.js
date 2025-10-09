@@ -32,7 +32,7 @@ export default function LoginForm({ anotherLoginDetected }) {
 
   // ✅ Navigate after saving session
   if (result.isAdmin) {
-    navigate("/appinsurance/MainArea/Dashboard");
+    navigate("/appinsurance/main-app/dashboard");
   } else {
     navigate("/appinsurance/MainAreaModerator/DashboardModerator");
   }

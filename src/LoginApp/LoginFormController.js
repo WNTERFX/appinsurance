@@ -23,7 +23,7 @@ export default function useLoginFormController(setSession) {
 
     // Redirect based on role
     if (result.isAdmin) {
-      navigate("/appinsurance/main-app/Dashboard");
+      navigate("/appinsurance/main-app/dashboard");
     } else {
       navigate("/appinsurance/MainAreaModerator/DashboardModerator");
     }
