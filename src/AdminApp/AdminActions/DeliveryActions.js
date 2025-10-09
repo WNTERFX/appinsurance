@@ -43,6 +43,7 @@ export async function fetchDeliveries() {
       uid: delivery.id, // Map id to uid for compatibility
       policy_Id: delivery.policy_id,
       delivered_at: delivery.delivered_at, 
+      remarks: delivery.remarks || "" , 
       policy_Holder: delivery.policy?.client 
         ? `${delivery.policy.client.first_Name || ''} ${delivery.policy.client.middle_Name || ''} ${delivery.policy.client.family_Name || ''}`.trim()
         : "Unknown",

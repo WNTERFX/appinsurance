@@ -5,7 +5,7 @@ import ScrollToTopButton from "../../ReusableComponents/ScrollToTop";
 import { fetchDeliveries, archiveDelivery, markDeliveryAsDelivered } from "../AdminActions/DeliveryActions";
 import "../styles/delivery-table-styles.css";
 
-export default function DeliveryTable() {
+export default function   ({onEditDelivery}) {
   const navigate = useNavigate();
 
   const [deliveries, setDeliveries] = useState([]);
@@ -31,11 +31,11 @@ export default function DeliveryTable() {
 
   const handleRowClick = (id) => setSelectedDeliveryID(id);
 
-  const handleEditClick = (delivery) => {
+  {/*const handleEditClick = (delivery) => {
     navigate("/appinsurance/MainArea/Delivery/EditDeliveryForm", {
       state: { delivery },
     });
-  };
+  };*/}
 
   const handleArchiveClick = async (deliveryId) => {
     const confirmArchive = window.confirm("Proceed to archive this delivery?");
@@ -125,6 +125,7 @@ export default function DeliveryTable() {
                   <th>Address</th>
                   <th>Date Created</th>
                   <th>Est. Delivery / Delivered Date</th>
+                  <th>Remarks</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -152,6 +153,10 @@ export default function DeliveryTable() {
                           <span>Est: {delivery.displayDate}</span>
                         )}
                       </td>
+                      <td className="remarks">
+                        {delivery.remarks ? delivery.remarks : "No remarks"}
+                      </td>
+
                     
                       <td className="delivery-table-actions">
                         {!delivery.delivered_at && (
@@ -160,7 +165,7 @@ export default function DeliveryTable() {
                           title="Edit this delivery"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleEditClick(delivery);
+                            onEditDelivery(delivery);
                           }}
                         >
                           <FaEdit /> Edit
