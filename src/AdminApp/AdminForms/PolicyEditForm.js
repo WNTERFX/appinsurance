@@ -215,7 +215,7 @@ export default function PolicyEditForm({
       <div className="button-container-policy-edit">
         <button
           className="cancel-btn-policy-edit"
-          onClick={() => navigate("/appinsurance/MainArea/Policy")}
+          onClick={() => navigate("/appinsurance/main-app/policy")}
         >
           Cancel
         </button>

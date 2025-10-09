@@ -202,7 +202,7 @@ export default function PolicyTable() {
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(
-                              `/appinsurance/MainArea/Policy/Edit/${policy.id}`
+                              `/appinsurance/main-app/policy/Edit/${policy.id}`
                             );
                           }}
                         >
