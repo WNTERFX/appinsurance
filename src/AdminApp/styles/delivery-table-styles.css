@@ -1,12 +1,70 @@
+.delivery-table-container{
+  width: 100%;
+  margin: 0 auto;
+  font-family: sans-serif;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.delivery-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .delivery-table-container h2 {
-  margin-left: 10px;
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.delivery-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.delivery-search-input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.rows-per-page-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rows-per-page-inline label{
+  font-size: medium;
+}
+
+.delivery-header-controls button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.delivery-header-control button:hover {
+  background-color: #d1d5db;
 }
 
 .delivery-table-wrapper {
-  width: 100%;
-  margin: 0 auto;
-  padding: 15px 0 0 0;
-  border-radius: 10px;
+   flex: 1;
+  overflow-y: auto; /* so rows scroll instead of shrinking */
+  min-height: 0;
 }
 
 .delivery-table-scroll {
@@ -21,23 +79,25 @@
 .delivery-table-scroll > table {
   width: 100%;
   min-width: 1200px;
-  padding: 20px 5px 10px 5px;
   border-collapse: collapse;
 }
 
 .delivery-table-scroll > table > thead > tr > th {
-  padding: 20px 15px;
+  padding: 16px 15px;
   text-align: left;
-  background-color: #F2F5FA;
+  background-color: #f2f5fa;
   white-space: nowrap;
   min-width: 150px;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .delivery-table-scroll > table > tbody > tr > td {
+  padding: 14px 15px;
   text-align: left;
-  padding: 25px 15px 40px;
   white-space: nowrap;
-  min-width: 120px;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
 }
 
 .delivery-table-clickable-row {
@@ -61,6 +121,30 @@
     white-space: nowrap;
     min-width: 150px;
     font-size: 1rem;
+  }
+}
+
+
+/* Policy ID column */
+.delivery-table-scroll > table th:first-child,
+.delivery-table-scroll > table td:first-child {
+  min-width: 80px;
+  max-width: 100px;
+  width: 80px;
+  text-align: center;
+}
+
+.delivery-table-wrapper table th:nth-child(7),
+.delivery-table-wrapper table td:nth-child(7) {
+  width: 100px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 1920px) and (min-width: 1366px) {
+  .delivery-table-scroll > table > thead > tr > th,
+  .delivery-table-scroll > table > tbody > tr > td {
+    font-size: 0.8rem;
   }
 }
 
@@ -125,71 +209,7 @@
   cursor: not-allowed;
 }
 
-.delivery-table-header {
-  display: flex;
-  justify-content: space-between; 
-  align-items: center;
-  margin: 0 10px 12px 10px; 
-}
 
-.delivery-table-header h2 {
-  margin: 0; 
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.rows-per-page-inline {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.rows-per-page-inline label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-}
-
-.rows-per-page-inline select {
-  padding: 4px 6px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
-.rows-per-page {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.rows-per-page label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-}
-
-.rows-per-page select {
-  padding: 5px 8px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-
-.delivery-header-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.delivery-search-input {
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 14px;
-  min-width: 180px;
-}
 
 .reset-btn-delivery {
   padding: 6px 10px;
@@ -255,3 +275,44 @@
   background-color: #238a3a;
   color: white;
 }
+
+.delivery-table-scroll > table > tbody > tr > td.remarks,
+.delivery-table-scroll > table > thead > tr > th.remarks {
+  /* allow wrapping (override previous 'white-space: nowrap') */
+  white-space: normal !important;
+  /* let the column shrink if needed */
+  min-width: 0 !important;
+  max-width: 300px;                 /* adjust width as you like */
+  overflow-wrap: anywhere;          /* modern, robust break for long words */
+  word-break: break-word;           /* break long words if necessary */
+  vertical-align: top;
+  padding: 12px 15px;               /* spacing like other tds */
+}
+
+
+/* inner content (keeps manual line breaks and wraps) */
+.remarks .remarks-content,
+td.remarks .remarks-content {
+  white-space: pre-wrap;   /* preserve user line breaks, still wrap lines */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  display: block;
+  max-width: 100%;
+}
+
+/* responsive tweaks */
+@media (max-width: 1366px) {
+  .delivery-table-scroll > table > tbody > tr > td.remarks {
+    max-width: 220px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .delivery-table-scroll > table > tbody > tr > td.remarks {
+    max-width: 160px;
+    font-size: 0.85rem;
+  }
+}
+
+

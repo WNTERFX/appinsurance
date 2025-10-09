@@ -1,6 +1,6 @@
 
 /***card ****/
-.form-card-delivery-creation{
+.form-card-delivery-update{
   background-color: #ffffff;
   width: 100%;
   max-width: 1100px;
@@ -9,33 +9,33 @@
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 
-.form-card-delivery-creation h2{
+.form-card-delivery-update h2{
   font-size: 26px;
   font-weight: 600;
   margin-bottom: 35px;
   color: #000;
 }
 
-.form-grid-delivery-creation{
+.form-grid-delivery-update{
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* 3 columns */
   gap: 22px 24px; /* row-gap column-gap */
 }
 
 
-.form-group-delivery-creation {
+.form-group-delivery-update {
   display:flex;
   flex-direction: column;
 }
 
-.form-group-delivery-creation label{
+.form-group-delivery-update label{
   margin-bottom: 6px;
   font-size: 14px;
   font-weight: 500;
   color: #000;
 }
 
-.form-group-delivery-creation input{
+.form-group-delivery-update input{
   padding: 14px;
   border: 1px solid #d0d0d0;      
   border-radius: 12px;             
@@ -45,23 +45,23 @@
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.form-group-delivery-creation input:focus {
+.form-group-delivery-update input:focus {
   border-color: #000;
 }
 
-.form-group-delivery-creation:nth-child(7),
-.form-group-delivery-creation:nth-child(8){
+.form-group-delivery-update:nth-child(7),
+.form-group-delivery-update:nth-child(8){
   grid-column: span 3;
 }
 
-.delivery-creation-controls {
+.delivery-update-controls {
   display: flex;
   justify-content: flex-end;
   gap: 20px;
   margin-top: 40px;
 }
 
-.delivery-creation-controls .delivery-creation-cancel-btn {
+.delivery-update-controls .delivery-update-cancel-btn {
   background-color: #F86B6B;      
   color: white;
   padding: 12px 0;               
@@ -75,7 +75,7 @@
   transition: background-color 0.2s ease;
 }
 
-.delivery-creation-controls .delivery-creation-submit-btn {
+.delivery-update-controls .delivery-update-submit-btn {
   background-color: #007BFF;      
   color: white;
   padding: 12px 0;               
@@ -89,40 +89,40 @@
   transition: background-color 0.2s ease;
 }
 
-.delivery-creation-submit-btn:hover{
+.delivery-update-submit-btn:hover{
   transform: scale(1.05);               /* slight grow */
   box-shadow: 0 6px 12px rgba(0,0,0,0.15);
   background-color: #0056B3;
   color: white;
 }
 
-.delivery-creation-cancel-btn:hover{
+.delivery-update-cancel-btn:hover{
   transform: scale(1.05);               /* slight grow */
   box-shadow: 0 6px 12px rgba(0,0,0,0.15);
   background-color: #F25353;
   color: white;
 }
 
-.delivery-creation-cancel-btn:active,
-.delivery-creation-submit-btn:active{
+.delivery-update-cancel-btn:active,
+.delivery-update-submit-btn:active{
   transform: scale(0.97);               /* slight press */
   box-shadow: 0 4px 8px rgba(0,0,0,0.2) inset;
 }
 
 @media (max-width :1024px){
-  .form-grid-delivery-creation {
+  .form-grid-update-creation {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 700px){
-  .form-grid-delivery-creation{
+  .form-grid-update-creation{
     grid-template-columns: 1fr;
   }
 }
 
-.form-group-delivery-creation select,
-.form-group-delivery-creation textarea{
+.form-group-delivery-update select,
+.form-group-delivery-update textarea{
   padding: 14px;
   border: 1px solid #d0d0d0;      
   border-radius: 12px;             
@@ -132,7 +132,7 @@
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.delivery-creation-modal-overlay {
+.delivery-update-modal-overlay {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
@@ -143,7 +143,7 @@
   z-index: 2000;
 }
 
-.delivery-creation-modal-content {
+.delivery-update-modal-content {
 
   
   padding: 0;
@@ -152,37 +152,4 @@
   border-radius: 25px;
 
   
-}
-
-/* Improved Remarks cell styling */
-.remarks {
-  max-width: 300px;
-  white-space: pre-wrap;       /* preserve line breaks and allow wrapping */
-  word-wrap: break-word;       /* break long continuous words */
-  overflow-wrap: anywhere;     /* ensure breaks even for long strings */
-  font-size: 0.95rem;
-  line-height: 1.4;
-  color: #333;
-  vertical-align: top;         /* align long text nicely with other rows */
-  padding: 6px 8px;
-}
-
-.remarks em {
-  color: #777;
-  font-style: italic;
-}
-
-/*  Responsive adjustment for smaller screens */
-@media (max-width: 1366px) {
-  .remarks{
-    max-width: 220px;
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .remarks{
-    max-width: 160px;
-    font-size: 0.8rem;
-  }
 }

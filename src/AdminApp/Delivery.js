@@ -1,22 +1,36 @@
-// Delivery.jsx
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
 import { FaPlus, FaArchive, FaUserCircle } from "react-icons/fa";
 import DropdownAccounts from "./DropDownAccounts";
 import DeliveryTable from "./AdminTables/DeliveryTable";
 import DeliveryArchiveTable from "./AdminTables/DeliveryArchiveTable";
 import DeliveryCreationController from "./ControllerAdmin/DeliveryCreationController";
+import EditDeliveryController from "./ControllerAdmin/EditDeliveryController";
+import { fetchDeliveries } from "./AdminActions/DeliveryActions";
 import "./styles/delivery-styles.css";
 
 export default function Delivery() {
-  const navigate = useNavigate();
-
   const [open, setOpen] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editDelivery, setEditDelivery] = useState(null); // ✅ For edit modal
+  const [deliveries, setDeliveries] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // Load deliveries
+  useEffect(() => {
+    loadDeliveries();
+  }, []);
+
+  const loadDeliveries = async () => {
+    setLoading(true);
+    const data = await fetchDeliveries();
+    setDeliveries(data || []);
+    setLoading(false);
+  };
+
+  // close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e) {
       if (
@@ -42,7 +56,7 @@ export default function Delivery() {
           </p>
         </div>
 
-        {/* Right side */}
+        {/* Right side buttons */}
         <div className="left-actions">
           {!showArchive && (
             <button
@@ -62,6 +76,7 @@ export default function Delivery() {
             {showArchive ? "Back to Deliveries" : "View Archive"}
           </button>
 
+          {/* Profile menu */}
           <div className="profile-menu">
             <button
               ref={buttonRef}
@@ -82,25 +97,49 @@ export default function Delivery() {
         </div>
       </div>
 
-      {/* Table toggle */}
+      {/* Table Section */}
       <div className="delivery-table-container">
-        {showArchive ? <DeliveryArchiveTable /> : <DeliveryTable />}
+        {showArchive ? (
+          <DeliveryArchiveTable />
+        ) : (
+          <DeliveryTable
+            deliveries={deliveries}
+            loading={loading}
+            onEditDelivery={(delivery) => setEditDelivery(delivery)} // ✅ handle edit click
+          />
+        )}
       </div>
 
-      {/* Outlet for nested routes (Creation Form) */}
-      {/*<Outlet />*/}
-      
-             {/* === CREATE MODAL === */}
-            {showCreateModal && (
-              <div className="delivery-creation-modal-overlay">
-                <div className="delivery-creation-modal-content">
-                  <DeliveryCreationController
-                    onCancel={() => setShowCreateModal(false)}
-                  />
-                </div>
-              </div>
-            )}
+      {/* === CREATE MODAL === */}
+      {showCreateModal && (
+        <div className="delivery-creation-modal-overlay">
+          <div className="delivery-creation-modal-content">
+            <DeliveryCreationController
+              onCancel={() => setShowCreateModal(false)}
+              onCreateSuccess={async () => {
+                await loadDeliveries();
+                setShowCreateModal(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
 
+      {/* === EDIT MODAL === */}
+      {editDelivery && (
+        <div className="delivery-update-modal-overlay">
+          <div className="delivery-update-modal-content">
+            <EditDeliveryController
+              delivery={editDelivery}
+              onClose={() => setEditDelivery(null)}
+              onUpdateSuccess={async () => {
+                await loadDeliveries();
+                setEditDelivery(null);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
