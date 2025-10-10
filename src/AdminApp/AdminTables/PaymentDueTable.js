@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
 import { fetchPolicies } from "../AdminActions/PolicyActions";
-import { fetchPaymentSchedule, updatePayment } from "../AdminActions/PaymentDueActions";
+import { fetchPaymentSchedule, updatePayment, generatePayments } from "../AdminActions/PaymentDueActions";
+import PaymentGenerationModal from "../PaymentGenerationModal";
 import "../styles/payment-table-styles.css"; 
+
 export default function PolicyWithPaymentsList() {
   const [policies, setPolicies] = useState([]);
   const [paymentsMap, setPaymentsMap] = useState({});
   const [expanded, setExpanded] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
   const [currentPayment, setCurrentPayment] = useState(null);
-
   const [paymentInput, setPaymentInput] = useState(""); 
+
+  // New state for payment generation
+  const [generateModalOpen, setGenerateModalOpen] = useState(false);
+  const [selectedPolicy, setSelectedPolicy] = useState(null);
 
   // Header state
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,7 +54,6 @@ export default function PolicyWithPaymentsList() {
     if (!currentPayment || !currentPayment.id) return;
 
     try {
-      // Ensure the input can handle commas if present, then parse
       const cleanedInput = parseFloat(paymentInput.replace(/,/g, ""));
       if (isNaN(cleanedInput)) {
         alert("Please enter a valid number");
@@ -77,9 +81,32 @@ export default function PolicyWithPaymentsList() {
     }
   };
 
-  // ------------------------
+  // New function to handle payment generation
+  const handleGeneratePayments = async (policyId, payments) => {
+    try {
+      const newPayments = await generatePayments(policyId, payments);
+      
+      // Update the payments map with new payments
+      setPaymentsMap(prev => ({
+        ...prev,
+        [policyId]: [...(prev[policyId] || []), ...newPayments].sort(
+          (a, b) => new Date(a.payment_date) - new Date(b.payment_date)
+        )
+      }));
+
+      alert("Payments generated successfully!");
+    } catch (error) {
+      console.error("Error generating payments:", error);
+      throw error;
+    }
+  };
+
+  const handleOpenGenerateModal = (policy) => {
+    setSelectedPolicy(policy);
+    setGenerateModalOpen(true);
+  };
+
   // Filter and Pagination
-  // ------------------------
   const filteredPolicies = policies.filter(policy => {
     const client = policy.clients_Table;
     const clientName = client
@@ -93,7 +120,7 @@ export default function PolicyWithPaymentsList() {
     return policyId.includes(search) || clientName.includes(search);
   });
 
-  const totalPoliciesCount = filteredPolicies.length; // Keep this for the heading
+  const totalPoliciesCount = filteredPolicies.length;
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
   const currentPolicies = filteredPolicies.slice(indexOfFirst, indexOfLast);
@@ -102,12 +129,12 @@ export default function PolicyWithPaymentsList() {
   if (!policies.length) return <p>Loading policies...</p>;
 
   return (
-    <div className="payments-overview-section"> {/* Main content area */}
+    <div className="payments-overview-section">
 
       {/* Payments Overview Header with search/filter controls */}
       <div className="payments-overview-header">
-        <h2>Payments Overview ({totalPoliciesCount})</h2> {/* Display filtered count */}
-        <div className="search-filter-refresh-bar"> {/* This div now holds the right-aligned controls */}
+        <h2>Payments Overview ({totalPoliciesCount})</h2>
+        <div className="search-filter-refresh-bar">
           <input
             type="text"
             placeholder="Search by Policy ID or Client Name..."
@@ -163,7 +190,27 @@ export default function PolicyWithPaymentsList() {
               </div>
 
               <div className={`payment-details-table-wrapper ${isOpen ? "show" : ""}`}>
-                <h3 className="payment-details-title">Payments</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                  <h3 className="payment-details-title">Payments</h3>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenGenerateModal(policy);
+                    }}
+                    style={{
+                      padding: '8px 16px',
+                      background: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    + Generate Payments
+                  </button>
+                </div>
                 {payments.length > 0 ? (
                   <table className="payments-table">
                     <thead>
@@ -205,7 +252,7 @@ export default function PolicyWithPaymentsList() {
         </div>
       )}
 
-      {/* Payment Modal */}
+      {/* Payment Edit Modal */}
       {modalOpen && (
         <div className="payment-modal-backdrop">
           <div className="payment-modal">
@@ -229,6 +276,18 @@ export default function PolicyWithPaymentsList() {
           </div>
         </div>
       )}
+
+      {/* Payment Generation Modal */}
+      {generateModalOpen && selectedPolicy && (
+        <PaymentGenerationModal
+          policy={selectedPolicy}
+          onClose={() => {
+            setGenerateModalOpen(false);
+            setSelectedPolicy(null);
+          }}
+          onGenerate={handleGeneratePayments}
+        />
+      )}
     </div>
   );
 }
@@ -241,5 +300,5 @@ function getPaymentStatus(payment) {
   if (paid <= 0) return "not-paid";
   if (paid < due) return "partially-paid";
   if (paid >= due) return "fully-paid";
-  return "not-paid"; // Default
+  return "not-paid";
 }

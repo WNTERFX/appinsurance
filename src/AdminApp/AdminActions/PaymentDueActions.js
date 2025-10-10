@@ -94,3 +94,36 @@ export async function deletePayment(paymentId) {
   if (error) throw error;
   return true;
 }
+
+export async function generatePayments(policyId, payments) {
+  if (!policyId) throw new Error("Policy ID is required");
+  if (!payments || payments.length === 0) throw new Error("Payments array is required");
+
+  // Validate policy exists
+  const { data: policy, error: policyError } = await db
+    .from("policy_Table")
+    .select("id")
+    .eq("id", policyId)
+    .single();
+
+  if (policyError) throw policyError;
+
+  // Prepare payment records with policy_id
+  const paymentRecords = payments.map(payment => ({
+    policy_id: policyId,
+    payment_date: payment.payment_date,
+    amount_to_be_paid: payment.amount_to_be_paid,
+    paid_amount: payment.paid_amount || 0,
+    is_paid: payment.is_paid || false,
+    is_archived: false
+  }));
+
+  // Insert all payments
+  const { data, error } = await db
+    .from("payment_Table")
+    .insert(paymentRecords)
+    .select();
+
+  if (error) throw error;
+  return data;
+}

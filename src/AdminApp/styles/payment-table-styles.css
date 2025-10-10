@@ -447,3 +447,119 @@ body {
         margin-bottom: 10px;
     }
 }
+
+
+/* Additional styles for Payment Generation Feature */
+
+/* Payment Header with Generate Button */
+.payment-header-with-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.generate-payment-btn {
+    padding: 8px 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.generate-payment-btn:hover {
+    background-color: #218838;
+}
+
+/* Payment Generation Modal Specific Styles */
+.payment-generation-modal {
+    width: 400px;
+    max-width: 90%;
+}
+
+.modal-policy-info {
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+.modal-form-group {
+    margin-bottom: 20px;
+}
+
+.modal-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+}
+
+.modal-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+}
+
+.monthly-preview {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Adjust modal actions buttons order for payment generation */
+.payment-generation-modal .modal-actions button:first-child {
+    order: 2; /* Generate button on right */
+    background-color: #007bff !important;
+    color: white !important;
+}
+
+.payment-generation-modal .modal-actions button:first-child:hover {
+    background-color: #0056b3 !important;
+}
+
+.payment-generation-modal .modal-actions button:last-child {
+    order: 1; /* Cancel button on left */
+    background-color: #6c757d !important;
+    color: white !important;
+    border: 1px solid #6c757d;
+}
+
+.payment-generation-modal .modal-actions button:last-child:hover {
+    background-color: #5a6268 !important;
+    border-color: #5a6268;
+}
+
+.payment-generation-modal .modal-actions button:disabled {
+    background-color: #cccccc !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Responsive adjustments for payment generation */
+@media (max-width: 768px) {
+    .payment-header-with-button {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .generate-payment-btn {
+        width: 100%;
+    }
+    
+    .payment-generation-modal {
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
