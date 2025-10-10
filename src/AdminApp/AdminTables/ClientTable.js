@@ -1,36 +1,39 @@
+// src/AdminApp/AdminTables/ClientTable.js
 import { useEffect, useState } from "react";
 import { fetchClients, archiveClient } from "../AdminActions/ClientActions";
-import ClientInfo from "../ClientInfo"; 
-import { FaEdit } from "react-icons/fa"; 
+import ClientInfo from "../ClientInfo";
+import { FaEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import ScrollToTopButton from "../../ReusableComponents/ScrollToTop";
 import "../styles/client-table-styles.css";
 
 
-export default function ClientTable({onEditClient}) {
+export default function ClientTable({ agentId, allClientsCount, agentsWithClientCounts, onViewAllClients, onEditClient }) {
   const navigate = useNavigate();
 
   const [clients, setClients] = useState([]);
   const [selectedClientID, setSelectedClientID] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(15); 
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const [searchTerm, setSearchTerm] = useState("");
 
- const filteredClients = clients.filter((client) =>
-  (client.internal_id || "").toLowerCase().includes(searchTerm.toLowerCase())
-);
 
+  const filteredClients = clients.filter((client) =>
+    (client.internal_id || "").toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const loadClientsData = async () => {
+    const data = await fetchClients(agentId, false);
+    setClients(data || []);
+    setCurrentPage(1);
+  };
 
   useEffect(() => {
-    async function loadClients() {
-      const data = await fetchClients();
-      setClients(data);
-    }
-    loadClients();
-  }, []);
+    loadClientsData();
+  }, [agentId]); // Reload clients when agentId changes
+
 
   const handleRowClick = (id) => setSelectedClientID(id);
-
 
   const handleArchiveClick = async (clientId) => {
     const confirmArchive = window.confirm("Proceed to archive this client?");
@@ -38,26 +41,33 @@ export default function ClientTable({onEditClient}) {
 
     try {
       await archiveClient(clientId);
-      setClients((prev) => prev.filter((c) => c.uid !== clientId));
+      await loadClientsData(); // Reload data to reflect the change
     } catch (error) {
       console.error("Error archiving client:", error);
     }
   };
 
-    const loadClients = async () => {
-      const data = await fetchClients();
-      setClients(data);
-    };
-
-    useEffect(() => {
-      loadClients();
-    }, []);
-
-    const handleReset = async () => {
+  const handleRefreshOrViewAll = () => {
+    if (agentId) {
+      onViewAllClients();
+    } else {
       setSearchTerm("");
-      setCurrentPage(1);
-      await loadClients(); // re-fetch from Supabase
-    };
+      loadClientsData();
+    }
+    setCurrentPage(1);
+  };
+
+  // Determine the count to show in the header
+  const getHeaderCount = () => {
+    if (agentId) {
+      // Find the selected agent's client count
+      const selectedAgent = agentsWithClientCounts.find(agent => agent.id === agentId);
+      return selectedAgent ? `(${selectedAgent.clientCount})` : `(${filteredClients.length})`;
+    }
+    // If no agentId, show the total count of all active clients
+    return `(${allClientsCount})`;
+  };
+
 
   // 🔹 Pagination logic
   const indexOfLast = currentPage * rowsPerPage;
@@ -67,16 +77,18 @@ export default function ClientTable({onEditClient}) {
 
   const handleRowsPerPageChange = (e) => {
     setRowsPerPage(Number(e.target.value));
-    setCurrentPage(1); // reset to first page
+    setCurrentPage(1);
   };
 
   return (
     <>
       <div className="client-table-container">
-       <div className="client-table-header">
-          <h2>Active Clients</h2>
+        <div className="client-table-header">
+          <h2>
+            Active Clients {getHeaderCount()} {/* Updated to use getHeaderCount() */}
+          </h2>
 
-      <div className="client-header-controls">
+          <div className="client-header-controls">
             <input
               type="text"
               placeholder="Search by ID..."
@@ -99,9 +111,8 @@ export default function ClientTable({onEditClient}) {
               </select>
             </div>
 
-            {/* 🔹 Reset Button */}
-            <button onClick={handleReset} className="reset-btn-client">
-              Refresh
+            <button onClick={handleRefreshOrViewAll} className="reset-btn-client">
+              {agentId ? "View All" : "Refresh"}
             </button>
           </div>
         </div>
@@ -153,7 +164,6 @@ export default function ClientTable({onEditClient}) {
                             if(client){
                               onEditClient(client);
                             }
-                            
                           }}
                         >
                           <FaEdit /> Edit
@@ -179,7 +189,6 @@ export default function ClientTable({onEditClient}) {
             </table>
           </div>
 
-          {/* 🔹 Pagination Controls */}
           {totalPages > 1 && (
             <div className="pagination-controls">
               <button
@@ -199,15 +208,12 @@ export default function ClientTable({onEditClient}) {
               >
                 Next
               </button>
-
-              
             </div>
           )}
         </div>
-         
+
       </div>
-         
-      {/* Client Info Modal */}
+
       <ClientInfo
         clientID={selectedClientID}
         onClose={() => setSelectedClientID(null)}

@@ -3,7 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { BarChart } from '@mui/x-charts/BarChart';
 import { FaUserCircle , FaMoon, FaSignOutAlt } from "react-icons/fa";
 import  DropdownAccounts  from './DropDownAccounts';
-import { recentClientTable, fetchRecentPolicy ,getClientCount } from "./AdminActions/DashboardActions";
+import { 
+  recentClientTable, 
+  fetchRecentPolicy ,
+  getClientCount ,  
+  getActivePolicyCount,
+  getDeliveredAndUndeliveredCounts} from "./AdminActions/DashboardActions";
 import {FaUsers, FaFileAlt,FaTruck, FaCheckCircle, FaChartBar,FaHourglassHalf} from "react-icons/fa";
 
 
@@ -15,6 +20,9 @@ export default function Dashboard() {
     const dropdownRef = useRef(null);
     const buttonRef = useRef(null);
     const [clientCount, setClientCount] = useState(0);
+    const [policyCount, setPolicyCount] = useState(0);
+    const [undeliveredCount, setUndeliveredCount] = useState(0);
+    const [deliveredCount, setDeliveredCount] = useState(0);
     const [recentClients, setRecentClients] = useState([]);
     const [recentPolicies, setRecentPolicies] = useState([]);
 
@@ -53,13 +61,24 @@ export default function Dashboard() {
   }, [])
 
   
-  useEffect(() => {
-    async function fetchCount() {
-      const count = await getClientCount();
-      setClientCount(count);
+useEffect(() => {
+  async function fetchAllCounts() {
+    try {
+      const [clients, policies, deliveredInfo] = await Promise.all([
+        getClientCount(),
+        getActivePolicyCount(),
+        getDeliveredAndUndeliveredCounts()
+      ]);
+      setClientCount(clients || 0);
+      setPolicyCount(policies || 0);
+      setDeliveredCount(deliveredInfo?.deliveredCount ?? 0);
+      setUndeliveredCount(deliveredInfo?.undeliveredCount ?? 0);
+    } catch (err) {
+      console.error("Error fetching dashboard counts:", err);
     }
-    fetchCount();
-  }, []);
+  }
+  fetchAllCounts();
+}, []);
  
     return (
         <div className="dashboard-container">
@@ -69,7 +88,7 @@ export default function Dashboard() {
     <div className="right-actions">
       <div className="dashboard-title-container">
       <h4 className="dashboard-title">Dashboard</h4>
-      <p className="welcome-text">Welcome back, Admin! </p>
+      <p className="welcome-text">Welcome back, ADMIN! Here's  your Silverstar agency overview. </p>
       </div>
     </div>
 
@@ -105,18 +124,20 @@ export default function Dashboard() {
 
                 <div className ="active-clients">
                     
-                    <div className="active-clients-data">
+                    <div className="active-clients-data"
+                    onClick={() =>  navigate("/appinsurance/main-app/Client")} >
                         <h2><FaUsers className="card-icon" />Active Clients</h2>
                         
                          <p>{clientCount}</p>
                     </div>
                 </div>
 
-                <div className ="due-clients">
+                <div className ="active-policy">
                     
-                    <div className="due-clients-data">
+                    <div className="active-policy-data"
+                    onClick={() =>  navigate("/appinsurance/main-app/policy")} >
                         <h2><FaFileAlt className="card-icon" />Active Policy</h2>
-                        <p>50</p>
+                        <p>{policyCount}</p>
                     </div>
                 </div>
 
@@ -163,17 +184,21 @@ export default function Dashboard() {
 
                 <div className="undelivered-policy">
                     
-                    <div className="undelivered-policy-data">
+                    <div className="undelivered-policy-data"
+                    onClick={() =>  navigate("/appinsurance/main-app/delivery")} 
+                    >
                         <h2><FaTruck className="card-icon" />Undelivered Policy</h2>
-                        <p>10</p>
+                        <p>{undeliveredCount}</p>
                     </div>
                 </div>
 
-                <div className="delivered-policy">
-                    
+                <div className="delivered-policy"
+                 onClick={() =>  navigate("/appinsurance/main-app/delivery")} 
+                   >
                     <div className="delivered-policy-data">
+                      
                         <h2><FaCheckCircle className="card-icon" />Delivered Policy</h2>
-                        <p>140</p>
+                        <p>{deliveredCount}</p>
                     </div>
                 </div>
 

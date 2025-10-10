@@ -17,26 +17,19 @@
   }
 }
 
-/* ✅ FIXED DELIVERY HEADER — same style as Client/Policy/Claims */
+/*  FIXED DELIVERY HEADER — same style as Client/Policy/Claims */
 .delivery-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #fff;
-  border: 2px solid #E0E0E0;
-  border-left: 6px solid #4b0082; /* purple accent */
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  height: 90px;
-  padding: 0 10px 0 24px; /* flush edges */
-  margin-bottom: 24px;
-  margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 90px;
+    padding: 20px 10px 10px 10px; 
 }
 
 /* Title on the left */
 .delivery-title {
-  margin: 0;
-  font-size: 26px;
+    margin: 0;
+  font-size: 30px;
   font-weight: 700;
   color: #222;
   line-height: 1.1;

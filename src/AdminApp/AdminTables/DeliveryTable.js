@@ -1,27 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaEdit } from "react-icons/fa"; 
+import { FaEdit } from "react-icons/fa";
 import ScrollToTopButton from "../../ReusableComponents/ScrollToTop";
 import { fetchDeliveries, archiveDelivery, markDeliveryAsDelivered } from "../AdminActions/DeliveryActions";
 import "../styles/delivery-table-styles.css";
 
-export default function   ({onEditDelivery}) {
+export default function DeliveryTable({ onEditDelivery }) {
   const navigate = useNavigate();
 
   const [deliveries, setDeliveries] = useState([]);
   const [selectedDeliveryID, setSelectedDeliveryID] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(15); 
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const [searchTerm, setSearchTerm] = useState("");
-
-  // 🔹 Filter logic
-  const filteredDeliveries = deliveries.filter((delivery) =>
-    delivery.uid.toString().includes(searchTerm)
-  );
+  const [deliveryFilter, setDeliveryFilter] = useState("All"); // New state for filter
 
   // 🔹 Load deliveries
   const loadDeliveries = async () => {
     const data = await fetchDeliveries();
+    // Assuming data from fetchDeliveries already has client info for policy_Holder
     setDeliveries(data);
   };
 
@@ -31,12 +28,6 @@ export default function   ({onEditDelivery}) {
 
   const handleRowClick = (id) => setSelectedDeliveryID(id);
 
-  {/*const handleEditClick = (delivery) => {
-    navigate("/appinsurance/MainArea/Delivery/EditDeliveryForm", {
-      state: { delivery },
-    });
-  };*/}
-
   const handleArchiveClick = async (deliveryId) => {
     const confirmArchive = window.confirm("Proceed to archive this delivery?");
     if (!confirmArchive) return;
@@ -44,6 +35,8 @@ export default function   ({onEditDelivery}) {
     try {
       await archiveDelivery(deliveryId);
       setDeliveries((prev) => prev.filter((d) => d.uid !== deliveryId));
+      // Reload deliveries to ensure the count is accurate after archiving a filtered item
+      await loadDeliveries();
     } catch (error) {
       console.error("Error archiving delivery:", error);
     }
@@ -65,17 +58,52 @@ export default function   ({onEditDelivery}) {
 
   const handleReset = async () => {
     setSearchTerm("");
+    setDeliveryFilter("All"); // Reset filter as well
     setCurrentPage(1);
-    await loadDeliveries(); 
+    await loadDeliveries();
   };
+
+  // 🔹 Filter and Search Logic
+  const filteredAndSearchedDeliveries = useMemo(() => {
+    let tempDeliveries = deliveries;
+
+    // Apply Delivery Status Filter
+    if (deliveryFilter === "Delivered") {
+      tempDeliveries = tempDeliveries.filter((delivery) => delivery.delivered_at !== null);
+    } else if (deliveryFilter === "Undelivered") {
+      tempDeliveries = tempDeliveries.filter((delivery) => delivery.delivered_at === null);
+    }
+
+    // Apply Search Term
+    if (searchTerm.trim()) {
+      const lowerCaseSearchTerm = searchTerm.trim().toLowerCase();
+      tempDeliveries = tempDeliveries.filter((delivery) => {
+        // Search by Delivery ID (uid)
+        const deliveryIdMatch = delivery.uid?.toString().includes(lowerCaseSearchTerm);
+
+        // Search by Policy Holder (assuming delivery object has a policy_Holder property from the join)
+        const policyHolderName = delivery.policy_Holder ? delivery.policy_Holder.toLowerCase() : "";
+        const policyHolderMatch = policyHolderName.includes(lowerCaseSearchTerm);
+
+        return deliveryIdMatch || policyHolderMatch;
+      });
+    }
+
+    return tempDeliveries;
+  }, [deliveries, searchTerm, deliveryFilter]);
 
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
-  const currentDeliveries = filteredDeliveries.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(filteredDeliveries.length / rowsPerPage);
+  const currentDeliveries = filteredAndSearchedDeliveries.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredAndSearchedDeliveries.length / rowsPerPage);
 
   const handleRowsPerPageChange = (e) => {
     setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  const handleDeliveryFilterChange = (e) => {
+    setDeliveryFilter(e.target.value);
     setCurrentPage(1);
   };
 
@@ -83,16 +111,36 @@ export default function   ({onEditDelivery}) {
     <>
       <div className="delivery-table-container">
         <div className="delivery-table-header">
-          <h2>Active Deliveries</h2>
+          <h2>
+            Active Deliveries{" "}
+            <span className="delivery-count">({filteredAndSearchedDeliveries.length})</span>
+          </h2>
 
           <div className="delivery-header-controls">
             <input
               type="text"
-              placeholder="Search by Delivery ID..."
+              placeholder="Search by ID or Policy Holder..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1); // Reset page on search
+              }}
               className="delivery-search-input"
             />
+
+            {/* New Filter Dropdown */}
+            <div className="delivery-status-filter-dropdown">
+              <label htmlFor="deliveryFilter">Status:</label>
+              <select
+                id="deliveryFilter"
+                value={deliveryFilter}
+                onChange={handleDeliveryFilterChange}
+              >
+                <option value="All">All</option>
+                <option value="Delivered">Delivered</option>
+                <option value="Undelivered">Undelivered</option>
+              </select>
+            </div>
 
             <div className="rows-per-page-inline">
               <label htmlFor="rowsPerPage">Results:</label>
@@ -141,6 +189,7 @@ export default function   ({onEditDelivery}) {
                     >
                       <td>{delivery.uid}</td>
                       <td>{delivery.policy_Id}</td>
+                      {/* Assuming policy_Holder is available directly on the delivery object */}
                       <td>{delivery.policy_Holder || "Unknown"}</td>
                       <td>{delivery.address}</td>
                       <td>{delivery.created_At}</td>
@@ -157,19 +206,19 @@ export default function   ({onEditDelivery}) {
                         {delivery.remarks ? delivery.remarks : "No remarks"}
                       </td>
 
-                    
+
                       <td className="delivery-table-actions">
                         {!delivery.delivered_at && (
-                        <button
-                          className="edit-btn-delivery"
-                          title="Edit this delivery"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEditDelivery(delivery);
-                          }}
-                        >
-                          <FaEdit /> Edit
-                        </button>
+                          <button
+                            className="edit-btn-delivery"
+                            title="Edit this delivery"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEditDelivery(delivery);
+                            }}
+                          >
+                            <FaEdit /> Edit
+                          </button>
                         )}
                         {!delivery.delivered_at && (
                           <button
@@ -183,24 +232,24 @@ export default function   ({onEditDelivery}) {
                             Mark As Delivered
                           </button>
                         )}
-                        
+
                         {delivery.delivered_at && (
-                        <button
-                          className="archive-btn-delivery"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleArchiveClick(delivery.uid);
-                          }}
-                        >
-                          Archive
-                        </button>
+                          <button
+                            className="archive-btn-delivery"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleArchiveClick(delivery.uid);
+                            }}
+                          >
+                            Archive
+                          </button>
                         )}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7">No deliveries found</td>
+                    <td colSpan="8">No deliveries found</td>
                   </tr>
                 )}
               </tbody>

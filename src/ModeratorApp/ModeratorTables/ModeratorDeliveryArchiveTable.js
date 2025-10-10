@@ -4,11 +4,12 @@ import {
   unarchiveModeratorDelivery,
   deleteModeratorDelivery,
 } from "../ModeratorActions/ModeratorDeliveryArchiveActions";
-import "../ModeratorStyles/delivery-archive-table-moderator.css";
+import "../moderator-styles/delivery-archive-table-moderator.css";
 
 export default function ModeratorDeliveryArchiveTable() {
   const [deliveries, setDeliveries] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDeliveryID, setSelectedDeliveryID] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
 
@@ -40,6 +41,10 @@ export default function ModeratorDeliveryArchiveTable() {
   const indexOfFirst = indexOfLast - rowsPerPage;
   const currentDeliveries = filteredDeliveries.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredDeliveries.length / rowsPerPage);
+
+    const handleRowClick = (delivery) => {
+    setSelectedDeliveryID(delivery.uid);
+  };
 
   const handleUnarchive = async (deliveryId) => {
     if (!window.confirm("Unarchive this delivery?")) return;
@@ -76,9 +81,6 @@ export default function ModeratorDeliveryArchiveTable() {
               setCurrentPage(1);
             }}
           />
-          <button onClick={loadDeliveries} className="reset-btn-archive-mod">
-            Refresh
-          </button>
           <div className="rows-per-page-inline-mod">
             <label>Rows per page:</label>
             <select
@@ -93,6 +95,9 @@ export default function ModeratorDeliveryArchiveTable() {
               <option value={50}>50</option>
             </select>
           </div>
+           <button onClick={loadDeliveries} className="reset-btn-archive-mod">
+            Refresh
+          </button>
         </div>
       </div>
 
@@ -114,7 +119,11 @@ export default function ModeratorDeliveryArchiveTable() {
             <tbody>
               {currentDeliveries.length > 0 ? (
                 currentDeliveries.map((delivery) => (
-                  <tr key={delivery.uid}>
+                  <tr 
+                      key={delivery.uid}
+                      className="delivery-archive-table-clickable-row-mod"
+                      onClick={() => handleRowClick(delivery)}
+                     >
                     <td>{delivery.uid}</td>
                     <td>{delivery.policy_Id}</td>
                     <td>{delivery.policy_Holder}</td>

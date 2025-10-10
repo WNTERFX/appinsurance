@@ -1,46 +1,44 @@
 import { db } from "../../dbServer";
 import { getCurrentUser } from "../ModeratorActions/ModeratorClientActions";
 
-/**
- * Fetch archived deliveries for the current moderator's clients only
- */
 export async function fetchModeratorArchivedDeliveries() {
   try {
-    // Get the logged-in moderator
     const currentUser = await getCurrentUser();
     if (!currentUser || !currentUser.id) {
       console.error("Moderator not found or not logged in.");
       return [];
     }
 
-    // Fetch only archived deliveries assigned to this moderator
+    // ✅ Fetch archived deliveries from this moderator's clients only
     const { data, error } = await db
       .from("delivery_Table")
-      .select(
-        `
+      .select(`
         *,
-        policy:policy_Table(
+        policy:policy_Table!inner(
           id,
           policy_type,
           policy_inception,
           policy_expiry,
-          client:clients_Table(
+          client:clients_Table!inner(
             uid,
             first_Name,
             middle_Name,
             family_Name,
-            address
+            address,
+            agent_Id
           )
         )
-      `
-      )
+      `)
+      .eq("policy.client.agent_Id", currentUser.id) // ✅ only their clients
       .eq("is_archived", true)
-      .eq("agent", currentUser.id);
+      .order("archival_date", { ascending: false });
 
     if (error) {
       console.error("Error fetching moderator archived deliveries:", error.message);
       return [];
     }
+
+    console.log("Archived deliveries fetched:", data);
 
     return data.map((delivery) => ({
       ...delivery,
@@ -53,8 +51,8 @@ export async function fetchModeratorArchivedDeliveries() {
       created_at: delivery.created_at
         ? new Date(delivery.created_at).toLocaleDateString()
         : "N/A",
-      delivery_date: delivery.delivery_at
-        ? new Date(delivery.delivery_at).toLocaleDateString()
+      delivery_date: delivery.delivery_date
+        ? new Date(delivery.delivery_date).toLocaleDateString()
         : (delivery.estimated_delivery_date
             ? new Date(delivery.estimated_delivery_date).toLocaleDateString()
             : "Not set"),
@@ -73,27 +71,85 @@ export async function fetchModeratorArchivedDeliveries() {
  */
 export async function unarchiveModeratorDelivery(deliveryId) {
   const currentUser = await getCurrentUser();
-  const { error } = await db
+  if (!currentUser || !currentUser.id) throw new Error("Not logged in");
+
+  // fetch delivery + policy.client.agent_Id to verify ownership
+  const { data: delivery, error: fetchErr } = await db
+    .from("delivery_Table")
+    .select(`
+      id,
+      policy:policy_Table!inner(
+        client:clients_Table!inner(agent_Id)
+      )
+    `)
+    .eq("id", deliveryId)
+    .single();
+
+  if (fetchErr) {
+    console.error("Error fetching delivery before unarchive:", fetchErr.message);
+    throw fetchErr;
+  }
+  if (!delivery) throw new Error("Delivery not found");
+
+  const agentId = delivery?.policy?.client?.agent_Id;
+  if (String(agentId) !== String(currentUser.id)) {
+    throw new Error("Not authorized to unarchive this delivery");
+  }
+
+  const { data, error } = await db
     .from("delivery_Table")
     .update({ is_archived: false, archival_date: null })
     .eq("id", deliveryId)
-    .eq("agent", currentUser.id); // ✅ Only their deliveries
+    .select()
+    .single();
 
-  if (error) throw error;
-  return true;
+  if (error) {
+    console.error("Error unarchiving delivery:", error.message);
+    throw error;
+  }
+
+  return data;
 }
 
 /**
- * Permanently delete a delivery (moderator can only delete their own deliveries)
+ * Permanently delete a delivery (only if this moderator owns the client on the delivery's policy)
  */
 export async function deleteModeratorDelivery(deliveryId) {
   const currentUser = await getCurrentUser();
+  if (!currentUser || !currentUser.id) throw new Error("Not logged in");
+
+  // fetch delivery + policy.client.agent_Id to verify ownership
+  const { data: delivery, error: fetchErr } = await db
+    .from("delivery_Table")
+    .select(`
+      id,
+      policy:policy_Table!inner(
+        client:clients_Table!inner(agent_Id)
+      )
+    `)
+    .eq("id", deliveryId)
+    .single();
+
+  if (fetchErr) {
+    console.error("Error fetching delivery before delete:", fetchErr.message);
+    throw fetchErr;
+  }
+  if (!delivery) throw new Error("Delivery not found");
+
+  const agentId = delivery?.policy?.client?.agent_Id;
+  if (String(agentId) !== String(currentUser.id)) {
+    throw new Error("Not authorized to delete this delivery");
+  }
+
   const { error } = await db
     .from("delivery_Table")
     .delete()
-    .eq("id", deliveryId)
-    .eq("agent", currentUser.id); // ✅ Only their deliveries
+    .eq("id", deliveryId);
 
-  if (error) throw error;
+  if (error) {
+    console.error("Error deleting delivery:", error.message);
+    throw error;
+  }
+
   return true;
 }

@@ -1,20 +1,35 @@
 import { db } from "../../dbServer";
 
-export async function fetchClients() {
-  const { data, error } = await db
+// Modified fetchClients to accept optional agentId and isArchived filter
+export async function fetchClients(agentId = null, isArchived = false) {
+  let query = db
     .from("clients_Table")
-    .select(`
+    .select(
+      `
       *,
       employee:employee_Accounts(personnel_Name)
-    `)
-     .or("is_archived.is.null,is_archived.eq.false"); // allow false or null
-  
-  
+    `
+    );
+
+  // Apply agent_Id filter if provided
+  if (agentId) {
+    query = query.eq("agent_Id", agentId); // Use agent_Id (capital 'I')
+  }
+
+  // Apply archive filter
+  if (isArchived) {
+    query = query.eq("is_archived", true);
+  } else {
+    query = query.or("is_archived.is.null,is_archived.eq.false");
+  }
+
+  const { data, error } = await query;
+
   if (error) {
     console.error("Error fetching clients:", error.message);
     return [];
   }
-  
+
   console.log("CLIENTS DATA:", data);
   return data;
 }
@@ -23,12 +38,12 @@ export async function fetchEmployees() {
   const { data, error } = await db
     .from("employee_Accounts")
     .select("id, personnel_Name");
-  
+
   if (error) {
     console.error("Error fetching employees:", error);
     return [];
   }
- 
+
   return data;
 }
 
@@ -40,7 +55,7 @@ export async function archiveClient(clientUid) {
       is_archived: true,
       archival_date: new Date().toISOString().split("T")[0],
     })
-    .eq("uid", clientUid) 
+    .eq("uid", clientUid)
     .select();
 
   if (error) {
@@ -50,4 +65,3 @@ export async function archiveClient(clientUid) {
 
   return data?.[0] || null;
 }
-

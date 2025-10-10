@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react";
 import { fetchPolicies } from "../AdminActions/PolicyActions";
 import { fetchPaymentSchedule, updatePayment } from "../AdminActions/PaymentDueActions";
-import "../styles/payment-table-styles.css";
-
+import "../styles/payment-table-styles.css"; 
 export default function PolicyWithPaymentsList() {
   const [policies, setPolicies] = useState([]);
   const [paymentsMap, setPaymentsMap] = useState({});
   const [expanded, setExpanded] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
   const [currentPayment, setCurrentPayment] = useState(null);
-  const [paymentInput, setPaymentInput] = useState("");
+
+  const [paymentInput, setPaymentInput] = useState(""); 
 
   // Header state
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     loadPolicies();
@@ -48,6 +49,7 @@ export default function PolicyWithPaymentsList() {
     if (!currentPayment || !currentPayment.id) return;
 
     try {
+      // Ensure the input can handle commas if present, then parse
       const cleanedInput = parseFloat(paymentInput.replace(/,/g, ""));
       if (isNaN(cleanedInput)) {
         alert("Please enter a valid number");
@@ -91,6 +93,7 @@ export default function PolicyWithPaymentsList() {
     return policyId.includes(search) || clientName.includes(search);
   });
 
+  const totalPoliciesCount = filteredPolicies.length; // Keep this for the heading
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
   const currentPolicies = filteredPolicies.slice(indexOfFirst, indexOfLast);
@@ -99,90 +102,99 @@ export default function PolicyWithPaymentsList() {
   if (!policies.length) return <p>Loading policies...</p>;
 
   return (
-    <div className="payment-table-list">
-      {/* Header controls */}
-      <div className="payment-table-header" style={{ cursor: "default" }}>
-        <h2>Policy Payments</h2>
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+    <div className="payments-overview-section"> {/* Main content area */}
+
+      {/* Payments Overview Header with search/filter controls */}
+      <div className="payments-overview-header">
+        <h2>Payments Overview ({totalPoliciesCount})</h2> {/* Display filtered count */}
+        <div className="search-filter-refresh-bar"> {/* This div now holds the right-aligned controls */}
           <input
             type="text"
-            placeholder="Search by Policy ID or Client..."
+            placeholder="Search by Policy ID or Client Name..."
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-            style={{ padding: "6px 10px", borderRadius: "6px", border: "1px solid #ccc", fontSize: "0.9rem" }}
+            className="search-input"
           />
-          <label>Results:</label>
-          <select
-            value={rowsPerPage}
-            onChange={(e) => { setRowsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-            style={{ padding: "6px", borderRadius: "6px", border: "1px solid #ccc" }}
-          >
-            <option value={15}>15</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
-          <button className="reset-btn-payment" onClick={loadPolicies}>Refresh</button>
+          <div className="result-select-wrapper">
+            <span>Result</span>
+            <select
+              value={rowsPerPage}
+              onChange={(e) => { setRowsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+              className="result-select"
+            >
+              <option value={15}>15</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+          <button className="refresh-btn" onClick={loadPolicies}>Refresh</button>
         </div>
       </div>
 
-      {/* Policies */}
-      {currentPolicies.map(policy => {
-        const client = policy.clients_Table;
-        const clientName = client
-          ? [client.prefix, client.first_Name, client.middle_Name ? client.middle_Name.charAt(0) + "." : "", client.family_Name, client.suffix]
-            .filter(Boolean)
-            .join(" ")
-          : "Unknown Client";
+      {/* Policies List */}
+      <div className="policies-list">
+        {currentPolicies.map(policy => {
+          const client = policy.clients_Table;
+          const clientName = client
+            ? [client.prefix, client.first_Name, client.middle_Name ? client.middle_Name.charAt(0) + "." : "", client.family_Name, client.suffix]
+              .filter(Boolean)
+              .join(" ")
+            : "Unknown Client";
 
-        const payments = paymentsMap[policy.id] || [];
-        const isOpen = expanded[policy.id];
+          const payments = paymentsMap[policy.id] || [];
+          const isOpen = expanded[policy.id];
 
-        return (
-          <div key={policy.id} className="payment-table-card">
-            <div className="payment-table-header" onClick={() => toggleExpand(policy.id)}>
-              <p><strong>Policy ID:</strong> {policy.internal_id}</p>
-              <p><strong>Holder:</strong> {clientName}</p>
-              <p><strong>Status:</strong> 
-                <span className={policy.policy_is_active ? "payment-status-active" : "payment-status-inactive"}>
-                  {policy.policy_is_active ? "Active" : "Inactive"}
-                </span>
-              </p>
-              <span className="drawer-toggle">{isOpen ? "▲ Hide" : "▼ Show"}</span>
-            </div>
+          return (
+            <div key={policy.id} className="policy-item-card">
+              <div className="policy-summary" onClick={() => toggleExpand(policy.id)}>
+                <div className="policy-info-left">
+                  <span className="policy-id">Policy ID: {policy.internal_id}</span>
+                  <span className="policy-holder">Policy Holder: {clientName}</span>
+                </div>
+                <div className="policy-info-right">
+                  <span className={`status ${policy.policy_is_active ? "active" : "inactive"}`}>
+                    Status: {policy.policy_is_active ? "Active" : "Inactive"}
+                  </span>
+                  <button className={`expand-toggle ${isOpen ? "expanded" : ""}`}>
+                    <span className="arrow">⌄</span>
+                  </button>
+                </div>
+              </div>
 
-            <div className={`payment-table-schedule ${isOpen ? "open" : ""}`}>
-              <h3>Payments</h3>
-              {payments.length > 0 ? (
-                <table className="payment-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Amount to be Paid</th>
-                      <th>Paid Amount</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {payments.map(p => (
-                      <tr key={p.id} className={`payment-${getPaymentStatus(p)}`}>
-                        <td>{new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</td>
-                        <td>{p.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
-                        <td>{p.paid_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" }) || "₱0.00"}</td>
-                        <td className="status-cell">{getPaymentStatus(p)}</td>
-                        <td className="payment-actions">
-                          <button onClick={() => handlePaymentClick({ ...p, policy_id: policy.id })}>Edit Payment</button>
-                        </td>
+              <div className={`payment-details-table-wrapper ${isOpen ? "show" : ""}`}>
+                <h3 className="payment-details-title">Payments</h3>
+                {payments.length > 0 ? (
+                  <table className="payments-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Amount to be Paid</th>
+                        <th>Paid Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : <p>No payments scheduled</p>}
+                    </thead>
+                    <tbody>
+                      {payments.map(p => (
+                        <tr key={p.id} className={`payment-${getPaymentStatus(p)}`}>
+                          <td>{new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</td>
+                          <td>{p.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
+                          <td>{p.paid_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" }) || "₱0.00"}</td>
+                          <td className="payment-status-cell">{getPaymentStatus(p)}</td>
+                          <td className="payment-actions">
+                            <button onClick={() => handlePaymentClick({ ...p, policy_id: policy.id })}>Edit Payment</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : <p className="no-payments-message">No payments scheduled</p>}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
@@ -204,7 +216,9 @@ export default function PolicyWithPaymentsList() {
                 value={paymentInput}
                 onChange={(e) => {
                   const value = e.target.value;
-                  if (/^[\d,]*\.?\d*$/.test(value)) setPaymentInput(value);
+                  if (value === '' || /^\d*(\,\d{3})*(\.\d*)?$/.test(value)) {
+                    setPaymentInput(value);
+                  }
                 }}
                 placeholder="Enter amount"
             />
@@ -221,8 +235,11 @@ export default function PolicyWithPaymentsList() {
 
 function getPaymentStatus(payment) {
   const { amount_to_be_paid, paid_amount } = payment;
-  if (!paid_amount || paid_amount <= 0) return "not-paid";
-  if (paid_amount < amount_to_be_paid) return "partially-paid";
-  if (paid_amount >= amount_to_be_paid) return "fully-paid";
-  return "not-paid";
+  const paid = parseFloat(paid_amount || 0);
+  const due = parseFloat(amount_to_be_paid || 0);
+
+  if (paid <= 0) return "not-paid";
+  if (paid < due) return "partially-paid";
+  if (paid >= due) return "fully-paid";
+  return "not-paid"; // Default
 }

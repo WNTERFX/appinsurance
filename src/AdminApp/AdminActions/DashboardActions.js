@@ -75,3 +75,55 @@ export async function getClientCount() {
 
   return count;
 }
+
+//  Count all active (non-archived) policies
+export async function getActivePolicyCount() {
+  try {
+    const { count, error } = await db
+      .from("policy_Table")
+      .select("id", { count: "exact", head: true })
+      // ensure "not archived" first then filter active => (is_archived IS NULL OR is_archived = false) AND policy_is_active = true
+      .or("is_archived.is.null,is_archived.eq.false")
+      .eq("policy_is_active", true);
+
+    if (error) throw error;
+    return count || 0;
+  } catch (err) {
+    console.error("Error counting active policies:", err.message);
+    return 0;
+  }
+}
+
+export async function getDeliveredAndUndeliveredCounts() {
+  try {
+    const { data, error } = await db
+      .from("delivery_Table")
+      .select("delivered_at") // Only select the column needed for the check
+      .or("is_archived.is.null,is_archived.eq.false"); // Filter out archived deliveries
+
+    if (error) {
+      console.error("Error fetching delivery rows for counts:", error.message);
+      return { deliveredCount: 0, undeliveredCount: 0 };
+    }
+
+    if (!data || !Array.isArray(data)) {
+      return { deliveredCount: 0, undeliveredCount: 0 };
+    }
+
+    let delivered = 0;
+    let undelivered = 0;
+
+    for (const record of data) {
+      if (record.delivered_at !== null) {
+        delivered++;
+      } else {
+        undelivered++;
+      }
+    }
+
+    return { deliveredCount: delivered, undeliveredCount: undelivered };
+  } catch (err) {
+    console.error("Unexpected error counting delivered/undelivered:", err);
+    return { deliveredCount: 0, undeliveredCount: 0 };
+  }
+}

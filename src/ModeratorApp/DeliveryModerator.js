@@ -1,5 +1,4 @@
 import './moderator-styles/delivery-styles-moderator.css';
-import FilterModerator from './FilterModerator';
 import DropdownAccountsModerator from "./DropDownAccountsModerator";
 import { FaPlus, FaArchive, FaUserCircle } from "react-icons/fa";
 import { useEffect, useState, useRef } from "react";
@@ -7,7 +6,7 @@ import { useModeratorProfile } from "./useModeratorProfile";
 import ModeratorDeliveryTable from './ModeratorTables/ModeratorDeliveryTable';
 import ModeratorDeliveryCreationController from './ControllerModerator/ModeratorDeliveryCreationController';
 import ModeratorEditDeliveryController from './ControllerModerator/ModeratorEditDeliveryController';
-import ModeratorClientArchiveTable  from './ModeratorTables/ModeratorClientArchiveTable';
+import ModeratorDeliveryArchiveTable from './ModeratorTables/ModeratorDeliveryArchiveTable';
 import { fetchModeratorDeliveries } from './ModeratorActions/ModeratorDeliveryActions';
 
 export default function DeliveryModerator() {
@@ -103,7 +102,7 @@ export default function DeliveryModerator() {
       {/* Table Section */}
       <div className="delivery-table-container-moderator">
         {showArchive ? (
-          <ModeratorClientArchiveTable />
+          <ModeratorDeliveryArchiveTable />
         ) : (
           <ModeratorDeliveryTable
             currentUser={profile}

@@ -22,14 +22,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #fff;
-  border: 2px solid #E0E0E0;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin: 16px 0 24px 0;
-  border-left: 6px solid #4b0082;
   height: 90px;
-  padding: 0 10px 0 24px; /* ✅ flush to right edge */
+  padding: 20px 10px 10px 10px; 
 }
 
 
@@ -42,7 +36,7 @@
 
 .dashboard-title {
   margin: 0;
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 700;
   color: #222;
   line-height: 1.1;
@@ -156,7 +150,7 @@
 
 /* Top 4 small metric cards (outer wrapper) */
 .active-clients,
-.due-clients,
+.active-policy,
 .undelivered-policy,
 .delivered-policy {
   background: #fff;
@@ -179,7 +173,7 @@
 
 /* inner container - where we pin header to top and value to bottom */
 .active-clients .active-clients-data,
-.due-clients .due-clients-data,
+.active-policy .active-policy-data,
 .undelivered-policy .undelivered-policy-data,
 .delivered-policy .delivered-policy-data {
   width: 100%;
@@ -193,12 +187,12 @@
 
 /* accent colors (left thick border) */
 .active-clients { border-left-color: #7B5F97; }     /* violet */
-.due-clients { border-left-color: #4b0082; }        /* indigo */
+.active-policy { border-left-color: #4b0082; }        /* indigo */
 .undelivered-policy { border-left-color: #f5a623; } /* orange */
 .delivered-policy { border-left-color: #28a745; }   /* green */
 
 /* headings & numbers — no margin surprises */
-.active-clients h2, .due-clients h2, .undelivered-policy h2, .delivered-policy h2 {
+.active-clients h2, .active-policy h2, .undelivered-policy h2, .delivered-policy h2 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
@@ -209,7 +203,7 @@
   gap: 8px;
 }
 
-.active-clients p, .due-clients p, .undelivered-policy p, .delivered-policy p {
+.active-clients p, .active-policy p, .undelivered-policy p, .delivered-policy p {
   margin: 0;
   font-size: 28px;
   font-weight: 700;
@@ -219,12 +213,12 @@
 
 /* Hover effect */
 .active-clients:hover,
-.due-clients:hover,
+.active-policy:hover,
 .undelivered-policy:hover,
 .delivered-policy:hover {
   transform: translateY(-3px);
   box-shadow: 4px 6px 18px rgba(0,0,0,0.12);
-  background-color: #faf9ff;
+  background-color: #EFF6FF;
 }
 
 /* ---------- Bottom row: Monthly Data (wider) + Pending Claims (smaller) ---------- */
