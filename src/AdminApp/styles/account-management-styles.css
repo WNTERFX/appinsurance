@@ -256,3 +256,35 @@
   background-color: #fee2e2;
 }
 
+/* Row Action Buttons with gray bg and shadow */
+.payment-actions button {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  background-color: #e0e0e0; /* light gray background */
+  color: #222; /* dark text for contrast */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15); /* subtle shadow */
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+/* Hover effect */
+.payment-actions button:hover {
+  background-color: #d5d5d5;
+  transform: translateY(-1px); /* subtle lift */
+}
+
+/* Optional: status-based text color */
+.payment-not-paid .payment-actions button {
+  color: #ff4d4f; /* red text for not paid */
+}
+
+.payment-partially-paid .payment-actions button {
+  color: #856404; /* yellow text for partially paid */
+}
+
+.payment-fully-paid .payment-actions button {
+  color: #155724; /* green text for fully paid */
+}

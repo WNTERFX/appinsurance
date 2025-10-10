@@ -2,12 +2,14 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import DropdownAccounts from "./DropDownAccounts";
 import PaymentDueTable from "./AdminTables/PaymentDueTable";
-import { FaUserCircle } from "react-icons/fa";
+import PaymentDueArchive from "./AdminTables/PaymentDueArchive";
+import { FaUserCircle, FaArchive } from "react-icons/fa";
 import "./styles/payment-records-styles.css";
 
 export default function PaymentRecords() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [showArchive, setShowArchive] = useState(false); // toggle archive
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
 
@@ -32,12 +34,20 @@ export default function PaymentRecords() {
       {/* Header */}
       <div className="payment-record-header">
         <div className="right-actions">
-          <p className="Payment-title">Payment Records</p>
-        
-          
+          <p className="Payment-title">
+            {showArchive ? "Archived Payments" : "Payment Records"}
+          </p>
         </div>
 
         <div className="left-actions">
+          <button
+            className="btn btn-archive"
+            onClick={() => setShowArchive((prev) => !prev)}
+          >
+            <FaArchive className="btn-icon" />
+            {showArchive ? "Back to Records" : "View Archive"}
+          </button>
+
           <div className="profile-menu">
             <button
               ref={buttonRef}
@@ -64,10 +74,8 @@ export default function PaymentRecords() {
       {/* Content */}
       <div className="payment-records-content">
         <div className="policy-data-field">
-
-          {/* Payments Table */}
           <div className="client-payment-table">
-            <PaymentDueTable />
+            {showArchive ? <PaymentDueArchive /> : <PaymentDueTable />}
           </div>
         </div>
       </div>

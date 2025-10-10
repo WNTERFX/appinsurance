@@ -1,13 +1,13 @@
 /* --------------------------- */
 /* Container + Card            */
 /* --------------------------- */
-.payment-table-list {
+.payment-due-archive-list {
   padding: 20px;
   background-color: #F2F5FA;
   font-family: 'Inter', sans-serif;
 }
 
-.payment-table-card {
+.payment-due-archive-card {
   background-color: #fff;
   border-radius: 10px;
   margin-bottom: 20px;
@@ -18,7 +18,8 @@
 /* --------------------------- */
 /* Card Header                 */
 /* --------------------------- */
-.payment-table-header {
+
+.payment-due-archive-header {
   margin-bottom: 15px;
   padding: 12px;
   border-radius: 6px;
@@ -32,22 +33,23 @@
 
 
 
-.payment-table-header p {
+
+.payment-due-archive-header p {
   margin: 4px 0;
   font-size: 15px;
 }
 
-.payment-table-header strong {
+.payment-due-archive-header strong {
   font-weight: 600;
 }
 
 /* Status Badges */
-.payment-status-active {
+.payment-due-archive-status-active {
   color: #2d9d4d;
   font-weight: 600;
 }
 
-.payment-status-inactive {
+.payment-due-archive-status-inactive {
   color: #d9534f;
   font-weight: 600;
 }
@@ -55,7 +57,7 @@
 /* --------------------------- */
 /* Payments Area               */
 /* --------------------------- */
-.payment-table-schedule {
+.payment-due-archive-schedule {
   margin-top: 10px;
   max-height: 0;
   overflow: hidden;
@@ -63,12 +65,12 @@
   opacity: 0;
 }
 
-.payment-table-schedule.open {
-  max-height: 500px; /* enough for content */
+.payment-due-archive-schedule.open {
+  max-height: 500px;
   opacity: 1;
 }
 
-.payment-table-schedule h3 {
+.payment-due-archive-schedule h3 {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 10px;
@@ -78,43 +80,43 @@
 /* --------------------------- */
 /* Table Styling               */
 /* --------------------------- */
-.payment-table {
+.payment-due-archive-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
   font-size: 15px;
 }
 
-.payment-table th,
-.payment-table td {
+.payment-due-archive-table th,
+.payment-due-archive-table td {
   padding: 10px 12px;
   text-align: left;
   border-bottom: 1px solid #eee;
 }
 
-.payment-table th {
+.payment-due-archive-table th {
   background-color: #f9fafb;
   font-weight: 600;
   color: #333;
 }
 
 /* Payment Row Status Colors */
-.payment-not-paid td {
-  background-color: #ffcccc; /* light red */
+.payment-due-archive-not-paid td {
+  background-color: #ffcccc;
   color: #b30000;
 }
 
-.payment-partially-paid td {
-  background-color: #fff3cd; /* light yellow */
+.payment-due-archive-partially-paid td {
+  background-color: #fff3cd;
   color: #856404;
 }
 
-.payment-fully-paid td {
-  background-color: #d4edda; /* light green */
+.payment-due-archive-fully-paid td {
+  background-color: #d4edda;
   color: #155724;
 }
 
-.status-cell {
+.payment-due-archive-status-cell {
   text-transform: capitalize;
   font-weight: 600;
 }
@@ -122,7 +124,7 @@
 /* --------------------------- */
 /* Modal                        */
 /* --------------------------- */
-.payment-modal-backdrop {
+.payment-due-archive-modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
@@ -135,7 +137,7 @@
   z-index: 1000;
 }
 
-.payment-modal {
+.payment-due-archive-modal {
   background: #fff;
   padding: 20px 25px;
   border-radius: 8px;
@@ -147,20 +149,20 @@
   gap: 10px;
 }
 
-.payment-modal input {
+.payment-due-archive-modal input {
   padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 1rem;
 }
 
-.modal-actions {
+.payment-due-archive-modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 }
 
-.modal-actions button {
+.payment-due-archive-modal-actions button {
   padding: 6px 12px;
   border-radius: 6px;
   border: none;
@@ -169,31 +171,31 @@
   transition: background 0.2s ease;
 }
 
-.modal-actions button:hover {
+.payment-due-archive-modal-actions button:hover {
   background-color: #e5e7eb;
 }
 
 /* --------------------------- */
-/* Add Payment Button          */
+/* Payment Edit Button         */
 /* --------------------------- */
-.new-payment-btn {
+.payment-due-archive-btn {
   margin-bottom: 10px;
   padding: 6px 12px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  background-color: #e0f7fa; /* subtle blue */
+  background-color: #e0f7fa;
   transition: background 0.2s ease;
 }
 
-.new-payment-btn:hover {
+.payment-due-archive-btn:hover {
   background-color: #b2ebf2;
 }
 
 /* --------------------------- */
 /* Drawer Toggle Arrow         */
 /* --------------------------- */
-.drawer-toggle {
+.payment-due-archive-drawer-toggle {
   display: block;          
   text-align: center;     
   font-size: 13px;
@@ -206,22 +208,23 @@
 /* Responsive                  */
 /* --------------------------- */
 @media (max-width: 768px) {
-  .payment-table-header {
+  .payment-due-archive-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
   }
 
-  .drawer-toggle {
+  .payment-due-archive-drawer-toggle {
     align-self: flex-end;
   }
 
-  .payment-table th, .payment-table td {
+  .payment-due-archive-table th, 
+  .payment-due-archive-table td {
     font-size: 0.85rem;
     padding: 8px 10px;
   }
 
-  .payment-modal {
+  .payment-due-archive-modal {
     width: 90%;
   }
 }
