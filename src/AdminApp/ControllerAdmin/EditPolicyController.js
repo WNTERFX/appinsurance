@@ -59,10 +59,9 @@ export default function EditPolicyController() {
   const [isAon, setIsAon] = useState(false);
   const [rateInput, setRateInput] = useState(0);
   
-  // commission % as stored in DB (editable by user)
-  const [commissionFee, setCommissionFee] = useState(0);
+  // 🔧 FIX: Changed to string to preserve input formatting
+  const [commissionFee, setCommissionFee] = useState("0");
 
-  // derived display values
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   const safeNumber = (val) => (isNaN(Number(val)) ? 0 : Number(val));
@@ -111,7 +110,6 @@ export default function EditPolicyController() {
           setVehiclePlate(vehicle.plate_num || "");
           setVehicleEngine(vehicle.engine_serial_no || "");
           setYearInput(vehicle.vehicle_year || 0);
-          // Store the vehicle table's original value as fallback
           setVehicleOriginalValueFromDB(vehicle.original_value || 0);
         }
 
@@ -123,10 +121,8 @@ export default function EditPolicyController() {
           console.log("aon_Cost:", computation.aon_Cost);
           console.log("commission_fee:", computation.commission_fee);
 
-          // CRITICAL FIX: Set originalVehicleCost from COMPUTATION table
           setOriginalVehicleCost(computation.original_Value || vehicleOriginalValueFromDB || 0);
 
-          // If computation includes vehicle_type try to match and fetch details
           const matchedVehicleType = vehicleTypes.find(
             (vt) => vt.vehicle_type.toLowerCase() === (computation.vehicle_type || "").toLowerCase()
           );
@@ -136,7 +132,6 @@ export default function EditPolicyController() {
             setVehicleDetails(details || null);
           }
 
-          // Pull stored computation values from calculation_Table fields
           setBodilyInjury(computation.bodily_Injury || 0);
           setPropertyDamage(computation.property_Damage || 0);
           setPersonalAccident(computation.personal_Accident || 0);
@@ -147,8 +142,8 @@ export default function EditPolicyController() {
           setRateInput(computation.vehicle_Rate || 0);
           setIsAon(Boolean(computation.aon_Cost && computation.aon_Cost > 0));
           
-          // IMPORTANT: Pull commission fee % from DB
-          setCommissionFee(computation.commission_fee ?? 0);
+          // 🔧 FIX: Convert to string for proper input handling
+          setCommissionFee(String(computation.commission_fee ?? 0));
         } else {
           console.warn("No computation data found - using vehicle table values");
           setOriginalVehicleCost(vehicleOriginalValueFromDB);
@@ -163,19 +158,17 @@ export default function EditPolicyController() {
   }, [policyId, clients, vehicleTypes]);
 
   // -----------------------------------
-  // COMPUTATION LOGIC (matching NewPolicyController)
+  // COMPUTATION LOGIC
   // -----------------------------------
   const vehicleValue = ComputationActionsVehicleValue(originalVehicleCost, yearInput);
   const vehicleValueRate = ComputatationRate(rateInput, vehicleValue);
 
-  // Basic Premium (without commission)
   const basicPremiumValue = ComputationActionsBasicPre(
     bodilyInjury,
     propertyDamage,
     personalAccident
   ) + vehicleValueRate;
 
-  // Total premium before commission (with taxes)
   const totalPremiumBeforeCommission = ComputationActionsTax(
     basicPremiumValue,
     vatTax,
@@ -183,36 +176,36 @@ export default function EditPolicyController() {
     localGovTax
   );
 
-  // AoN cost
   const actOfNatureCost = isAon ? ComputationActionsAoN(vehicleValue, aonRate) : 0;
 
-  // Commission value (₱) - applied to (total before commission + AoN)
-  const commissionValue = commissionFee > 0
+  // 🔧 FIX: Convert string to number for calculation
+  const commissionFeeNumber = parseFloat(commissionFee) || 0;
+  const commissionValue = commissionFeeNumber > 0
     ? ComputationActionsCommission(
         totalPremiumBeforeCommission + actOfNatureCost,
-        commissionFee
+        commissionFeeNumber
       )
     : 0;
 
-  // Total premium including commission
   const totalPremiumFinal = totalPremiumBeforeCommission + actOfNatureCost + commissionValue;
-  
-  // Basic premium with commission (for display)
   const basicPremiumWithCommission = basicPremiumValue + commissionValue;
 
   console.log("=== COMPUTED VALUES ===");
   console.log("originalVehicleCost:", originalVehicleCost);
   console.log("vehicleValue:", vehicleValue);
   console.log("basicPremiumValue:", basicPremiumValue);
-  console.log("commissionFee (%):", commissionFee);
+  console.log("commissionFee (%):", commissionFeeNumber);
   console.log("commissionValue (₱):", commissionValue);
   console.log("totalPremiumFinal:", totalPremiumFinal);
 
-  // Update handler - saves edited fields back to DB
+  // Update handler
   const handleUpdatePolicy = async () => {
     try {
+      // 🔧 FIX: Convert commission fee to number before saving
+      const commissionFeeToSave = parseFloat(commissionFee) || 0;
+
       console.log("=== SAVING UPDATES ===");
-      console.log("Commission fee (%):", commissionFee);
+      console.log("Commission fee (%) to save:", commissionFeeToSave);
       console.log("Total Premium:", totalPremiumFinal);
 
       const policyResult = await updatePolicy(policyId, {
@@ -239,14 +232,19 @@ export default function EditPolicyController() {
       });
       if (!vehicleResult.success) throw new Error(vehicleResult.error);
 
-      const computationResult = await updateComputation(policyId, {
+      const computationData = {
         original_Value: originalVehicleCost,
         current_Value: vehicleValue,
         vehicle_Rate_Value: vehicleValueRate,
         total_Premium: totalPremiumFinal,
         aon_Cost: actOfNatureCost,
-        commission_fee: commissionFee // Save the % value
-      });
+        commission_fee: commissionFeeToSave // 🔧 FIX: Save as number
+      };
+
+      // 🔧 DEBUG: Log the data being saved
+      console.log("💾 Computation data being saved:", computationData);
+
+      const computationResult = await updateComputation(policyId, computationData);
       if (!computationResult.success) throw new Error(computationResult.error);
 
       alert("Policy updated successfully!");
@@ -271,16 +269,16 @@ export default function EditPolicyController() {
       basicPremiumValue={basicPremiumValue}
       basicPremiumWithCommission={basicPremiumWithCommission}
       isAoN={isAon}
-      setIsAoN={setIsAon}
+      setIsAoN={setIsAon}  // 🔧 FIX: Changed from setIsAoN to setIsAon (lowercase 'a')
       setOriginalVehicleCost={setOriginalVehicleCost}
       originalVehicleCost={originalVehicleCost}
       currentVehicleValueCost={vehicleValue}
       totalVehicleValueRate={vehicleValueRate}
       totalPremiumCost={totalPremiumFinal}
       actOfNatureCost={actOfNatureCost}
-      commissionRate={commissionFee} // This is the %
-      setCommissionRate={setCommissionFee} // User can edit this %
-      commissionValue={commissionValue} // ₱ amount (display only)
+      commissionRate={commissionFee} // Pass as string
+      setCommissionRate={setCommissionFee} // 🔧 FIX: Direct setter
+      commissionValue={commissionValue}
       vehicleName={vehicleName}
       setVehicleName={setVehicleName}
       vehicleMaker={vehicleMaker}

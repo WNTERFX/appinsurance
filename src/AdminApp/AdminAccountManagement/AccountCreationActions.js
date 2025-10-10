@@ -26,8 +26,8 @@ export async function createAccount({ firstName, middleName, lastName, email, pa
         last_name: lastName,
         employee_email: email,
         creation_Date: new Date().toISOString().split("T")[0],
-        status_Account: status,   // <-- include status
-        is_Admin: isAdmin,        // <-- include admin rights
+        status_Account: status === "active",  // <-- convert string to boolean
+        is_Admin: isAdmin,
       },
     ]);
 
@@ -37,6 +37,7 @@ export async function createAccount({ firstName, middleName, lastName, email, pa
     return { success: false, error: err.message };
   }
 }
+
 
 
 /**
@@ -70,7 +71,7 @@ export async function deleteAccount(id) {
 /**
  * Edit/update an account by ID using Supabase Edge Function
  */
-export async function editAccount(id, { firstName, middleName, lastName, email, password, isAdmin, status }) {
+export async function editAccount(id, { firstName, middleName, lastName, email, password, isAdmin, accountStatus }) {
   try {
     const personnel_Name = [firstName, middleName, lastName].filter(Boolean).join(" ");
 
@@ -87,7 +88,7 @@ export async function editAccount(id, { firstName, middleName, lastName, email, 
         last_name: lastName,
         employee_email: email,
         is_Admin: isAdmin,
-        status_Account: status,
+        status_Account: accountStatus === "active", // <-- convert string to boolean
       })
       .eq("id", id);
 
@@ -116,5 +117,6 @@ export async function editAccount(id, { firstName, middleName, lastName, email, 
     return { success: false, error: err?.message ?? String(err) };
   }
 }
+
 
 

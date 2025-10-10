@@ -183,6 +183,11 @@
   border-radius: 10px;
 }
 
+.claims-table > p {
+  font-size: 30px;
+  text-align: center;
+}
+
 .claims-table > table {
   width: 100%;
   padding: 20px 5px 10px 5px;

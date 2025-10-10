@@ -72,7 +72,12 @@ export default function ClaimTable() {
                 </div>
             
                 <div className="claims-table"> 
-                <table>
+
+
+                  <p>Work In Progress</p>
+
+                  {/* 
+                 <table>
                     <thead>
                         <tr>
                             <th>Claim ID</th>
@@ -111,7 +116,8 @@ export default function ClaimTable() {
                             <td>Pending</td>
                         </tr>
                     </tbody>
-                </table>
+                </table> 
+                */}
                 </div>     
             </div>
             

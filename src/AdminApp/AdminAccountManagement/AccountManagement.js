@@ -18,7 +18,7 @@ export default function AccountManagement() {
     email: "",
     password: "",
     isAdmin: false,
-    status: "active",
+    accountStatus: "active", // renamed to avoid conflict
   });
   const [accounts, setAccounts] = useState([]);
   const [editingAccount, setEditingAccount] = useState(null);
@@ -55,14 +55,20 @@ export default function AccountManagement() {
     e.preventDefault();
     if (!currentUser) return;
 
-    const { firstName, lastName, email, password } = formData;
+    const { firstName, lastName, email, password, accountStatus } = formData;
     if (!firstName || !lastName || !email || (!password && !editingAccount)) {
       showGlobalAlert("Please fill in all required fields.");
       return;
     }
 
+    // Convert accountStatus string to boolean for DB
+    const submitData = {
+      ...formData,
+      status_Account: accountStatus === "active",
+    };
+
     if (editingAccount) {
-      const result = await editAccount(editingAccount.id, formData);
+      const result = await editAccount(editingAccount.id, submitData);
       if (result.success) {
         showGlobalAlert("Account updated successfully!");
         if (result.selfChangedPassword) {
@@ -78,7 +84,7 @@ export default function AccountManagement() {
         showGlobalAlert(`Error: ${result.error}`);
       }
     } else {
-      const result = await createAccount(formData);
+      const result = await createAccount(submitData);
       if (result.success) {
         showGlobalAlert("Account created successfully!");
         handleBack(false);
@@ -100,16 +106,16 @@ export default function AccountManagement() {
     }
   };
 
-  const handleEditClick = (account) => {
-    setEditingAccount(account);
+  const handleEditClick = (acc) => {
+    setEditingAccount(acc);
     setFormData({
-      firstName: account.first_name || "",
-      middleName: account.middle_name || "",
-      lastName: account.last_name || "",
-      email: account.employee_email || "",
+      firstName: acc.first_name || "",
+      middleName: acc.middle_name || "",
+      lastName: acc.last_name || "",
+      email: acc.employee_email || "",
       password: "",
-      isAdmin: account.is_Admin || false,
-      status: account.status_Account || "active",
+      isAdmin: acc.is_Admin || false,
+      accountStatus: acc.status_Account ? "active" : "inactive", // boolean -> string
     });
     setEmailLocked(true);
     setPasswordLocked(true);
@@ -125,19 +131,15 @@ export default function AccountManagement() {
       email: "",
       password: "",
       isAdmin: false,
-      status: "active",
+      accountStatus: "active",
     });
     if (goToEditTab) setActiveTab("edit");
   };
-
-  const capitalizeStatus = (status) =>
-    status ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : "";
 
   return (
     <div className="Account-container">
       {showLockScreen && <ScreenLock message="You changed your password. Logging out..." />}
 
-      {/* === HEADER (copied from Client header) === */}
       <div className="Account-header">
         <div className="left-actions-client">
           <h2 className="client-title">Account Management</h2>
@@ -159,7 +161,6 @@ export default function AccountManagement() {
         </div>
       </div>
 
-      {/* === MAIN CONTENT === */}
       <div className="account-data-field">
         {activeTab === "edit" && !editingAccount ? (
           <div className="Account-content account-table-scroll">
@@ -182,8 +183,8 @@ export default function AccountManagement() {
                       <td>{acc.personnel_Name}</td>
                       <td>{acc.employee_email ?? "N/A"}</td>
                       <td>
-                        <span className={acc.status_Account.toLowerCase() === "active" ? "account-status-active" : "account-status-inactive"}>
-                          {capitalizeStatus(acc.status_Account)}
+                        <span className={acc.status_Account ? "account-status-active" : "account-status-inactive"}>
+                          {acc.status_Account ? "Active" : "Inactive"}
                         </span>
                       </td>
                       <td>{acc.is_Admin ? "Yes" : "No"}</td>
@@ -229,7 +230,7 @@ export default function AccountManagement() {
               </div>
               <div>
                 <label>Account Status</label>
-                <select name="status" value={formData.status} onChange={handleChange}>
+                <select name="accountStatus" value={formData.accountStatus} onChange={handleChange}>
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
                 </select>
