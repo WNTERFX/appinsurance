@@ -134,6 +134,27 @@ export default function PolicyEditForm({
               />
             </div>
 
+           {/* Taxes & Rates */}
+            <div className="form-group-policy-edit">
+              <label>VAT Tax</label>
+              <input type="text" value={vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "0%"} readOnly />
+            </div>
+
+            <div className="form-group-policy-edit">
+              <label>Documentary Stamp</label>
+              <input type="text" value={vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "0%"} readOnly />
+            </div>
+
+            <div className="form-group-policy-edit">
+              <label>Local Gov Tax</label>
+              <input type="text" value={vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "0%"} readOnly />
+            </div>
+
+            <div className="form-group-policy-edit">
+              <label>Rate</label>
+              <input type="text" value={vehicleDetails?.vehicle_Rate ? `${vehicleDetails.vehicle_Rate}%` : "0%"} readOnly />
+            </div>
+
             <div className="form-group-policy-edit">
               <label>Commission Fee (%)</label>
               <input
@@ -157,10 +178,14 @@ export default function PolicyEditForm({
               <p>Original Vehicle Cost: <span>₱ {formatPHP(originalVehicleCost)}</span></p>
               <p>Current Vehicle Value: <span>₱ {formatPHP(currentVehicleValueCost)}</span></p>
               <p>Total Vehicle Value Rate: <span>₱ {formatPHP(totalVehicleValueRate)}</span></p>
-
+               <p>Bodily Injury: <span>₱ {formatPHP(vehicleDetails?.bodily_Injury)}</span></p>
+              <p>Property Damage: <span>₱ {formatPHP(vehicleDetails?.property_Damage)}</span></p>
+              <p>Personal Accident: <span>₱ {formatPHP(vehicleDetails?.personal_Accident)}</span></p>
               <p>Basic Premium (without Commission): <span>₱ {formatPHP(basicPremiumValue)}</span></p>
               <p>Basic Premium (with Commission): <span>₱ {formatPHP(basicPremiumWithCommission)}</span></p>
-
+              <p>Local Government Tax: <span>{vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "—"}</span></p>
+              <p>VAT: <span>{vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "—"}</span></p>
+              <p>Documentary Stamp: <span>{vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "—"}</span></p>
               <p>Commission Amount: <span>₱ {formatPHP(commissionValue)}</span></p>
 
               {isAoN && <p>AoN (Act of Nature): <span>₱ {formatPHP(actOfNatureCost)}</span></p>}
