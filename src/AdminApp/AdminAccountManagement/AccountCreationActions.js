@@ -71,52 +71,98 @@ export async function deleteAccount(id) {
 /**
  * Edit/update an account by ID using Supabase Edge Function
  */
-export async function editAccount(id, { firstName, middleName, lastName, email, password, isAdmin, accountStatus }) {
+export async function editAccount(
+  id,
+  { firstName, middleName, lastName, email, password, isAdmin, accountStatus, emailLocked, passwordLocked }
+) {
   try {
+    console.log("🟢 editAccount called with:", {
+      id,
+      firstName,
+      middleName,
+      lastName,
+      email,
+      isAdmin,
+      accountStatus,
+      emailLocked,
+      passwordLocked,
+    });
+
+    // 1️⃣ Fetch existing record
+    const { data: existing, error: fetchError } = await db
+      .from("employee_Accounts")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) throw new Error("Fetch failed: " + fetchError.message);
+    if (!existing) throw new Error("Account not found for ID: " + id);
+
+    console.log("📦 Existing record:", existing);
+
+    // 2️⃣ Build name safely
     const personnel_Name = [firstName, middleName, lastName].filter(Boolean).join(" ");
 
-    const { data: sessionData, error: sessionError } = await db.auth.getSession();
-    if (sessionError) throw sessionError;
-    const accessToken = sessionData?.session?.access_token;
+    // 3️⃣ Build payload
+    const updatePayload = {
+      personnel_Name: personnel_Name || existing.personnel_Name,
+      first_name: firstName ?? existing.first_name,
+      middle_name: middleName ?? existing.middle_name,
+      last_name: lastName ?? existing.last_name,
+      employee_email: emailLocked ? existing.employee_email : email ?? existing.employee_email,
+      is_Admin: typeof isAdmin === "boolean" ? isAdmin : existing.is_Admin,
+      status_Account:
+        typeof accountStatus === "boolean"
+          ? accountStatus
+          : accountStatus === "active"
+          ? true
+          : existing.status_Account,
+    };
 
-    const { error: updateError } = await db
+    console.log("🟢 Update payload:", updatePayload);
+
+    // 4️⃣ Force Supabase to update even if same data
+    const { data: updated, error: updateError, status } = await db
       .from("employee_Accounts")
-      .update({
-        personnel_Name,
-        first_name: firstName,
-        middle_name: middleName,
-        last_name: lastName,
-        employee_email: email,
-        is_Admin: isAdmin,
-        status_Account: accountStatus === "active", // <-- convert string to boolean
-      })
-      .eq("id", id);
+      .update(updatePayload)
+      .eq("id", id)
+      .select();
 
-    if (updateError) throw updateError;
+    console.log("🟣 Update response status:", status);
+    console.log("🟣 Update response:", updated);
 
-    if (email || password) {
-      const res = await fetch("https://ezmvecxqcjnrspmjfgkk.functions.supabase.co/pass-admin-reset", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-        },
-        body: JSON.stringify({ id, email, password }),
-      });
+    if (updateError) throw new Error("Update error: " + updateError.message);
+    if (!updated || !updated.length) throw new Error("No rows updated for ID: " + id);
 
-      const text = await res.text();
-      let result;
-      try { result = JSON.parse(text); } catch { throw new Error(`Invalid JSON response: ${text}`); }
+    console.log("✅ Updated successfully:", updated[0]);
 
-      if (!res.ok) throw new Error(result.error || "Failed to update user in Supabase Auth");
+    // 5️⃣ Call edge function if email/password unlocked
+    if (!emailLocked || !passwordLocked) {
+      const { data: { session } } = await db.auth.getSession();
+
+      const response = await fetch(
+        "https://ezmvecxqcjnrspmjfgkk.functions.supabase.co/pass-admin-reset",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }),
+          },
+          body: JSON.stringify({
+            id,
+            email: emailLocked ? undefined : email,
+            password: passwordLocked ? undefined : password,
+          }),
+        }
+      );
+
+      const resText = await response.text();
+      console.log("🔹 Edge function response:", resText);
     }
 
     return { success: true };
   } catch (err) {
-    console.error("Error editing account:", err);
-    return { success: false, error: err?.message ?? String(err) };
+    console.error("❌ Edit account failed:", err);
+    return { success: false, error: err.message };
   }
 }
-
-
-

@@ -14,7 +14,7 @@ export async function ActivatePolicyAndPayment(policyId, paymentTypeId, totalPre
     if (policyError) throw policyError;
 
     // 2. Generate monthly payments
-     const monthlyAmount = Math.round((totalPremium / months) * 100) / 100;
+    const monthlyAmount = Number((totalPremium / months).toFixed(2));
     const today = new Date();
 
     const paymentRows = Array.from({ length: months }, (_, i) => ({

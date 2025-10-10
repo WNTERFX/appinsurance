@@ -6,6 +6,12 @@ import ScreenLock from "../../ReusableComponents/ScreenLock";
 import { showGlobalAlert } from "../../ReusableComponents/GlobalAlert";
 import { db } from "../../dbServer";
 
+// 🪵 Logging utility
+function logEvent(label, data = null) {
+  const timestamp = new Date().toLocaleString();
+  console.log(`[AccountManagement | ${timestamp}] ${label}`, data ?? "");
+}
+
 export default function AccountManagement() {
   const navigate = useNavigate();
 
@@ -18,7 +24,7 @@ export default function AccountManagement() {
     email: "",
     password: "",
     isAdmin: false,
-    accountStatus: "active", // renamed to avoid conflict
+    accountStatus: "active",
   });
   const [accounts, setAccounts] = useState([]);
   const [editingAccount, setEditingAccount] = useState(null);
@@ -26,20 +32,25 @@ export default function AccountManagement() {
   const [passwordLocked, setPasswordLocked] = useState(true);
   const [showLockScreen, setShowLockScreen] = useState(false);
 
+  // 🧭 Load current user
   useEffect(() => {
     const loadUser = async () => {
       const { data: { user } } = await db.auth.getUser();
       setCurrentUser(user);
+      logEvent("Current user loaded", user);
     };
     loadUser();
   }, []);
 
+  // 📋 Load accounts on tab change
   useEffect(() => {
     if (activeTab === "edit") loadAccounts();
   }, [activeTab]);
 
   const loadAccounts = async () => {
+    logEvent("Fetching accounts...");
     const data = await fetchAccounts();
+    logEvent("Accounts loaded", data);
     setAccounts(data);
   };
 
@@ -51,53 +62,64 @@ export default function AccountManagement() {
     }));
   };
 
+  // 💾 Handle create / edit submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!currentUser) return;
 
-    const { firstName, lastName, email, password, accountStatus } = formData;
-    if (!firstName || !lastName || !email || (!password && !editingAccount)) {
+    const { firstName, lastName, email, password } = formData;
+
+    logEvent("Form submit triggered", { formData, editingAccount });
+
+    if (!firstName || !lastName || !email) {
       showGlobalAlert("Please fill in all required fields.");
+      logEvent("Missing required fields");
       return;
     }
 
-    // Convert accountStatus string to boolean for DB
-    const submitData = {
-      ...formData,
-      status_Account: accountStatus === "active",
-    };
+    if (!editingAccount && !password) {
+      showGlobalAlert("Password is required for new accounts.");
+      logEvent("Missing password for new account");
+      return;
+    }
 
     if (editingAccount) {
-      const result = await editAccount(editingAccount.id, submitData);
+      logEvent("Editing existing account", editingAccount);
+
+      const result = await editAccount(editingAccount.id, formData);
+      logEvent("Edit result", result);
+
       if (result.success) {
         showGlobalAlert("Account updated successfully!");
-        if (result.selfChangedPassword) {
-          setShowLockScreen(true);
-          setTimeout(() => {
-            localStorage.clear();
-            navigate("/appinsurance");
-          }, 1000);
-        }
-        handleBack(true);
-        loadAccounts();
+        await loadAccounts();
+        setTimeout(() => handleBack(true), 100);
       } else {
         showGlobalAlert(`Error: ${result.error}`);
       }
     } else {
-      const result = await createAccount(submitData);
+      logEvent("Creating new account", formData);
+
+      const result = await createAccount(formData);
+      logEvent("Create result", result);
+
       if (result.success) {
         showGlobalAlert("Account created successfully!");
-        handleBack(false);
-        loadAccounts();
+        await loadAccounts();
+        setTimeout(() => handleBack(false), 100);
       } else {
         showGlobalAlert(`Error: ${result.error}`);
       }
     }
   };
 
+  // 🗑️ Handle account delete
   const handleDelete = async (id) => {
+    logEvent("Delete requested", id);
     if (!window.confirm("Are you sure you want to delete this account?")) return;
+
     const result = await deleteAccount(id);
+    logEvent("Delete result", result);
+
     if (result.success) {
       showGlobalAlert("Account deleted successfully.");
       loadAccounts();
@@ -106,7 +128,10 @@ export default function AccountManagement() {
     }
   };
 
+  // ✏️ Handle account edit button click
   const handleEditClick = (acc) => {
+    logEvent("Edit button clicked", acc);
+
     setEditingAccount(acc);
     setFormData({
       firstName: acc.first_name || "",
@@ -115,14 +140,19 @@ export default function AccountManagement() {
       email: acc.employee_email || "",
       password: "",
       isAdmin: acc.is_Admin || false,
-      accountStatus: acc.status_Account ? "active" : "inactive", // boolean -> string
+      accountStatus: acc.status_Account ? "active" : "inactive",
     });
+
     setEmailLocked(true);
     setPasswordLocked(true);
     setActiveTab("add");
+
+    logEvent("Editing account form populated", acc);
   };
 
+  // 🔙 Handle back button
   const handleBack = (goToEditTab = false) => {
+    logEvent("Back button clicked");
     setEditingAccount(null);
     setFormData({
       firstName: "",
@@ -136,6 +166,7 @@ export default function AccountManagement() {
     if (goToEditTab) setActiveTab("edit");
   };
 
+  // 🧩 Render
   return (
     <div className="Account-container">
       {showLockScreen && <ScreenLock message="You changed your password. Logging out..." />}
@@ -178,10 +209,16 @@ export default function AccountManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {accounts.map(acc => (
+  
+                   {accounts.map(acc => (
                     <tr key={acc.id}>
-                      <td>{acc.personnel_Name}</td>
+                      <td>
+                        {[acc.first_name, acc.middle_name, acc.last_name]
+                          .filter(Boolean)
+                          .join(" ")}
+                      </td>
                       <td>{acc.employee_email ?? "N/A"}</td>
+
                       <td>
                         <span className={acc.status_Account ? "account-status-active" : "account-status-inactive"}>
                           {acc.status_Account ? "Active" : "Inactive"}
@@ -217,15 +254,38 @@ export default function AccountManagement() {
               <div>
                 <label>Email *</label>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <input type="email" name="email" value={formData.email} onChange={handleChange} required disabled={emailLocked} style={{ flex: 1 }} />
-                  {editingAccount && <button type="button" onClick={() => setEmailLocked(!emailLocked)}>{emailLocked ? "Unlock" : "Lock"}</button>}
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    disabled={emailLocked}
+                    style={{ flex: 1 }}
+                  />
+                  {editingAccount && (
+                    <button type="button" onClick={() => setEmailLocked(!emailLocked)}>
+                      {emailLocked ? "Unlock" : "Lock"}
+                    </button>
+                  )}
                 </div>
               </div>
               <div>
                 <label>{editingAccount ? "New Password" : "Password *"}</label>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <input type={passwordLocked ? "password" : "text"} name="password" value={formData.password} onChange={handleChange} required={!editingAccount} style={{ flex: 1 }} />
-                  {editingAccount && <button type="button" onClick={() => setPasswordLocked(!passwordLocked)}>{passwordLocked ? "Unlock" : "Lock"}</button>}
+                  <input
+                    type={passwordLocked ? "password" : "text"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required={!editingAccount}
+                    style={{ flex: 1 }}
+                  />
+                  {editingAccount && (
+                    <button type="button" onClick={() => setPasswordLocked(!passwordLocked)}>
+                      {passwordLocked ? "Unlock" : "Lock"}
+                    </button>
+                  )}
                 </div>
               </div>
               <div>
@@ -239,7 +299,9 @@ export default function AccountManagement() {
                 <label>Administrative Rights</label>
                 <input type="checkbox" name="isAdmin" checked={formData.isAdmin} onChange={handleChange} />
               </div>
-              <button type="submit" className="btn-add-account-submit">{editingAccount ? "Update Account" : "Create Account"}</button>
+              <button type="submit" className="btn-add-account-submit">
+                {editingAccount ? "Update Account" : "Create Account"}
+              </button>
             </form>
           </div>
         )}
