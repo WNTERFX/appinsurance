@@ -34,7 +34,8 @@ export default function PaymentGenerationModal({ policy, onClose, onGenerate }) 
           payment_date: singlePaymentDate,
           amount_to_be_paid: amount,
           paid_amount: 0,
-          is_paid: false
+          is_paid: false,
+          payment_type_id: 1 // You may need to adjust this based on your payment_type table
         });
       } else {
         // Generate 6 monthly payments
@@ -55,7 +56,8 @@ export default function PaymentGenerationModal({ policy, onClose, onGenerate }) 
             payment_date: paymentDate.toISOString().split('T')[0],
             amount_to_be_paid: paymentAmount,
             paid_amount: 0,
-            is_paid: false
+            is_paid: false,
+            payment_type_id: 1 // You may need to adjust this based on your payment_type table
           });
         }
       }

@@ -115,7 +115,8 @@ export async function generatePayments(policyId, payments) {
     amount_to_be_paid: payment.amount_to_be_paid,
     paid_amount: payment.paid_amount || 0,
     is_paid: payment.is_paid || false,
-    is_archived: false
+    payment_type_id: payment.payment_type_id || 1, // Default to 1 if not provided
+    is_archive: false
   }));
 
   // Insert all payments
