@@ -1,0 +1,147 @@
+/* ====== Modal Overlay ====== */
+.printing-record-modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ====== Modal Box ====== */
+.printing-record-modal-content {
+  background-color: #ffffff;
+  width: 70%;
+  max-width: 900px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ====== Header ====== */
+.printing-record-modal-header {
+  background-color: #1f3c88;
+  color: #ffffff;
+  padding: 16px 24px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.printing-record-modal-header button {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* ====== Body ====== */
+.printing-record-modal-body {
+  display: flex;
+  padding: 20px;
+  gap: 20px;
+}
+
+/* ====== Left Column ====== */
+.printing-record-modal-body .left-column {
+  flex: 1;
+  border-right: 1px solid #ddd;
+  padding-right: 20px;
+}
+
+.printing-record-modal-body .left-column p {
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.printing-record-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.printing-record-selection button,
+.printing-record-selection input {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.printing-record-selection button:hover {
+  background-color: #f2f5fa;
+}
+
+/* ====== Right Column ====== */
+.printing-record-modal-body .right-column {
+  flex: 2;
+  padding-left: 20px;
+}
+
+.printing-record-output {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background-color: #fafafa;
+  padding: 10px;
+}
+
+.printing-record-output table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.printing-record-output th,
+.printing-record-output td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.printing-record-output th {
+  background-color: #f2f5fa;
+  font-weight: 600;
+}
+
+/* ====== Footer ====== */
+.printing-record-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 24px;
+  border-top: 1px solid #e0e0e0;
+  gap: 10px;
+}
+
+.printing-record-modal-footer button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.printing-record-modal-footer .btn-cancel {
+  background-color: #ccc;
+}
+
+.printing-record-modal-footer .btn-print {
+  background-color: #1f3c88;
+  color: #fff;
+}
+
+.printing-record-modal-footer .btn-print:hover {
+  background-color: #2a4fa5;
+}
