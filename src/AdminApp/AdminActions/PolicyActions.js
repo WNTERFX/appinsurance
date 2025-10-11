@@ -13,7 +13,8 @@ export async function fetchPolicies() {
         suffix,
         address,
         email,
-        phone_Number
+        phone_Number,
+        internal_id
       ),
       insurance_Partners(
         insurance_Name,
@@ -26,11 +27,9 @@ export async function fetchPolicies() {
     .or("is_archived.is.null,is_archived.eq.false")
     .is("archival_date", null)
     .order("created_at", { ascending: false })
-
   if (error) throw error;
   return data || [];
 }
-
 
 
 export async function getPolicyById(policyId) {

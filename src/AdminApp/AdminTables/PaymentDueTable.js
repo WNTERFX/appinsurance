@@ -29,6 +29,7 @@ export default function PolicyWithPaymentsList() {
   const loadPolicies = async () => {
     try {
       const allPolicies = await fetchPolicies();
+      console.log("First policy client data:", allPolicies[0]?.clients_Table);
       setPolicies(allPolicies);
 
       const paymentsByPolicy = {};
@@ -168,6 +169,7 @@ export default function PolicyWithPaymentsList() {
               .filter(Boolean)
               .join(" ")
             : "Unknown Client";
+          const clientInternalId = client?.internal_id || "N/A";
 
           const payments = paymentsMap[policy.id] || [];
           const isOpen = expanded[policy.id];
@@ -190,23 +192,27 @@ export default function PolicyWithPaymentsList() {
               </div>
 
               <div className={`payment-details-table-wrapper ${isOpen ? "show" : ""}`}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                {/* Client Information Section */}
+                <div className="client-info-section">
+                  <h4 className="client-info-title">Client Information</h4>
+                  <div className="client-info-grid">
+                    <div>
+                      <strong>Client Name:</strong> {clientName}
+                    </div>
+                    <div>
+                      <strong>Client Internal ID:</strong> {clientInternalId}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="payment-header-with-button">
                   <h3 className="payment-details-title">Payments</h3>
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
                       handleOpenGenerateModal(policy);
                     }}
-                    style={{
-                      padding: '8px 16px',
-                      background: '#28a745',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: '500'
-                    }}
+                    className="generate-payment-btn"
                   >
                     + Generate Payments
                   </button>

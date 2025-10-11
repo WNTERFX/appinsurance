@@ -17,12 +17,14 @@
 .printing-record-modal-content {
   background-color: #ffffff;
   width: 70%;
-  max-width: 900px;
+  max-width: 1400px; /* wider for ultrawide screens */
+  min-width: 700px;  /* ensures decent size on smaller desktops */
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: width 0.3s ease, max-width 0.3s ease;
 }
 
 /* ====== Header ====== */
@@ -144,4 +146,109 @@
 
 .printing-record-modal-footer .btn-print:hover {
   background-color: #2a4fa5;
+}
+
+/* ====== Font and UI Scaling for Large & Ultrawide Screens ====== */
+
+/* For large monitors (1440px and up) */
+@media (min-width: 1440px) {
+  .printing-record-modal-content {
+    font-size: 1.05rem;
+  }
+
+  .printing-record-modal-header {
+    font-size: 1.4rem;
+    padding: 20px 28px;
+  }
+
+  .printing-record-modal-body {
+    padding: 24px;
+    gap: 24px;
+  }
+
+  .printing-record-selection button,
+  .printing-record-selection input,
+  .printing-record-selection select {
+    font-size: 1rem;
+    padding: 10px 12px;
+  }
+
+  .printing-record-output th,
+  .printing-record-output td {
+    font-size: 1rem;
+    padding: 10px;
+  }
+
+  .printing-record-modal-footer button {
+    font-size: 1rem;
+    padding: 10px 18px;
+  }
+}
+
+/* For ultrawide monitors (2560px and up) */
+@media (min-width: 2560px) {
+  .printing-record-modal-content {
+    font-size: 1.15rem;
+  }
+
+  .printing-record-modal-header {
+    font-size: 1.6rem;
+    padding: 24px 32px;
+  }
+
+  .printing-record-selection button,
+  .printing-record-selection input,
+  .printing-record-selection select {
+    font-size: 1.1rem;
+    padding: 12px 14px;
+  }
+
+  .printing-record-output th,
+  .printing-record-output td {
+    font-size: 1.05rem;
+    padding: 12px;
+  }
+
+  .printing-record-modal-footer button {
+    font-size: 1.1rem;
+    padding: 12px 20px;
+  }
+}
+
+/* ====== Responsive Adjustments for Modal ====== */
+@media (min-width: 1600px) {
+  .printing-record-modal-content {
+    width: 60%;
+    max-width: 1600px; /* expand even more on ultrawide */
+  }
+}
+
+@media (min-width: 2560px) {
+  .printing-record-modal-content {
+    width: 50%;
+    max-width: 1800px; /* large but still centered */
+  }
+}
+
+@media (max-width: 1024px) {
+  .printing-record-modal-content {
+    width: 85%;
+    max-width: 800px;
+  }
+}
+
+@media (max-width: 768px) {
+  .printing-record-modal-body {
+    flex-direction: column;
+  }
+  .printing-record-modal-body .left-column {
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+    padding-right: 0;
+    padding-bottom: 15px;
+  }
+  .printing-record-modal-body .right-column {
+    padding-left: 0;
+    padding-top: 15px;
+  }
 }

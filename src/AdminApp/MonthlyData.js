@@ -80,10 +80,7 @@ export default function MonthlyData({
             </div>
 
             
-              <div className="client-record-container header-with-button">
-                <p className="client-title">Client</p>
-                <button className="btn btn-create" onClick={() => setOpenModal(true)}>Print</button>
-              </div>
+      
               <div className="client-record-container header-with-button">
                 <p className="client-title">Client</p>
                 <button

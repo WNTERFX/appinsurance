@@ -1,7 +1,7 @@
 import { db } from "../../dbServer";
 
 // Modified fetchClients to accept optional agentId and isArchived filter
-export async function fetchClients(agentId = null, isArchived = false) {
+export async function fetchClients(agentId = null, isArchived = false, from = null, to = null) {
   let query = db
     .from("clients_Table")
     .select(
@@ -21,6 +21,10 @@ export async function fetchClients(agentId = null, isArchived = false) {
     query = query.eq("is_archived", true);
   } else {
     query = query.or("is_archived.is.null,is_archived.eq.false");
+  }
+
+  if (from && to) {
+    query = query.gte("client_Registered", from).lte("client_Registered", to);
   }
 
   const { data, error } = await query;
