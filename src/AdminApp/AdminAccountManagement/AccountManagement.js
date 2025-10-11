@@ -62,6 +62,13 @@ export default function AccountManagement() {
     }));
   };
 
+  const handleAddClick = () => {
+  logEvent("Add Account button clicked");
+  handleBack(false); // Reset form
+  setActiveTab("add"); // Switch to add tab
+};
+
+
   // 💾 Handle create / edit submit
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -177,9 +184,9 @@ export default function AccountManagement() {
         </div>
 
         <div className="right-actions-client">
-          <button
+            <button
             className={`btn-create ${activeTab === "add" ? "active" : ""}`}
-            onClick={() => handleBack(false)}
+            onClick={handleAddClick}
           >
             Add Account
           </button>
