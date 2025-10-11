@@ -248,7 +248,7 @@ export default function EditPolicyController() {
       if (!computationResult.success) throw new Error(computationResult.error);
 
       alert("Policy updated successfully!");
-      navigate("/appinsurance/MainArea/Policy");
+      navigate("/appinsurance/main-app/policy");
     } catch (err) {
       console.error("Error updating policy:", err);
       alert(`Error updating policy: ${err.message}`);

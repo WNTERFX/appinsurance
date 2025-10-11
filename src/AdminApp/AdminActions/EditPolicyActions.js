@@ -24,9 +24,25 @@ export async function updatePolicy(policyId, updateData) {
 // ================================
 export async function updateComputation(policyId, updateData) {
   try {
+    // Map any lowercase keys to the correct casing
+    const normalizedData = {};
+    const keyMapping = {
+      'original_value': 'original_Value',
+      'current_value': 'current_Value',
+      'total_premium': 'total_Premium',
+      'aon_cost': 'aon_Cost',
+      'vehicle_rate_value': 'vehicle_Rate_Value',
+      'commission_fee': 'commission_fee'
+    };
+
+    Object.keys(updateData).forEach(key => {
+      const normalizedKey = keyMapping[key.toLowerCase()] || key;
+      normalizedData[normalizedKey] = updateData[key];
+    });
+
     const { data, error } = await db
       .from("policy_Computation_Table")
-      .update(updateData)
+      .update(normalizedData)
       .eq("policy_id", policyId)
       .select();
 
@@ -43,9 +59,39 @@ export async function updateComputation(policyId, updateData) {
 // ================================
 export async function updateVehicle(vehicleId, updateData) {
   try {
+    // Validate that updateData only contains vehicle table columns
+    const validVehicleColumns = [
+      'vehicle_color',
+      'vehicle_name',
+      'plate_num',
+      'vin_num',
+      'policy_id',
+      'vehicle_year',
+      'vehicle_type_id',
+      'vehicle_maker',
+      'engine_serial_no'
+    ];
+
+    // Filter out any non-vehicle columns
+    const cleanedData = {};
+    Object.keys(updateData).forEach(key => {
+      if (validVehicleColumns.includes(key)) {
+        cleanedData[key] = updateData[key];
+      } else {
+        console.warn(`Skipping invalid vehicle column: ${key}`);
+      }
+    });
+
+    if (Object.keys(cleanedData).length === 0) {
+      return { 
+        success: false, 
+        error: "No valid vehicle columns to update" 
+      };
+    }
+
     const { data, error } = await db
       .from("vehicle_table")
-      .update(updateData)
+      .update(cleanedData)
       .eq("id", vehicleId)
       .select();
 
@@ -123,7 +169,7 @@ export async function fetchVehicleByPolicyId(policyId) {
 }
 
 // ================================
-// 8. Fetch computation by policy ID - ALTERNATIVE: Try to find vehicle type from vehicle_table
+// 8. Fetch computation by policy ID
 // ================================
 export async function fetchComputationByPolicyId(policyId) {
   try {
@@ -147,17 +193,6 @@ export async function fetchComputationByPolicyId(policyId) {
     // Log the raw computation data to debug
     console.log("Raw computation data:", computation);
 
-    // Normalize the computation data to match expected format
-    const normalizedComputation = {
-      ...computation,
-      original_Value: computation.original_Value,
-      current_Value: computation.current_Value,
-      total_Premium: computation.total_Premium,
-      aon_Cost: computation.aon_Cost,
-      vehicle_Rate_Value: computation.vehicle_Rate_Value,
-      commission_fee: computation.commission_fee
-    };
-
     // Try Method 1: If there's a direct calculation_id reference
     if (computation && computation.calculation_id) {
       const { data: calculation, error: calcError } = await db
@@ -169,9 +204,8 @@ export async function fetchComputationByPolicyId(policyId) {
       if (!calcError && calculation) {
         console.log("Method 1: Found vehicle_type via calculation_id:", calculation.vehicle_type);
         return {
-          ...normalizedComputation,
+          ...computation,
           vehicle_type: calculation.vehicle_type,
-          // Include all calculation fields for reference
           vat_Tax: calculation.vat_Tax,
           bodily_Injury: calculation.bodily_Injury,
           property_Damage: calculation.property_Damage,
@@ -192,7 +226,6 @@ export async function fetchComputationByPolicyId(policyId) {
       .single();
 
     if (!vehicleError && vehicle && vehicle.vehicle_type_id) {
-      // Get the vehicle type from calculation_Table using vehicle_type_id
       const { data: calculation, error: calcError } = await db
         .from("calculation_Table")
         .select("*")
@@ -202,9 +235,8 @@ export async function fetchComputationByPolicyId(policyId) {
       if (!calcError && calculation) {
         console.log("Method 2: Found vehicle_type via vehicle_type_id:", calculation.vehicle_type);
         return {
-          ...normalizedComputation,
+          ...computation,
           vehicle_type: calculation.vehicle_type,
-          // Include calculation fields
           vat_Tax: calculation.vat_Tax,
           bodily_Injury: calculation.bodily_Injury,
           property_Damage: calculation.property_Damage,
@@ -232,7 +264,7 @@ export async function fetchComputationByPolicyId(policyId) {
       if (matchingCalc) {
         console.log("Method 3: Found vehicle_type by matching rates:", matchingCalc.vehicle_type);
         return {
-          ...normalizedComputation,
+          ...computation,
           vehicle_type: matchingCalc.vehicle_type,
           vat_Tax: matchingCalc.vat_Tax,
           bodily_Injury: matchingCalc.bodily_Injury,
@@ -247,7 +279,7 @@ export async function fetchComputationByPolicyId(policyId) {
     }
 
     console.log("All methods failed - returning computation without vehicle_type");
-    return normalizedComputation;
+    return computation;
 
   } catch (err) {
     console.error("Error in fetchComputationByPolicyId:", err.message);
@@ -272,4 +304,53 @@ export async function fetchCalculationByVehicleType(vehicleType) {
     console.error("Error fetching calculation:", err.message);
     return null;
   }
+}
+
+// ================================
+// 10. Helper: Separate update data for vehicle and computation
+// ================================
+export function separateUpdateData(updateData) {
+  const vehicleFields = [
+    'vehicle_color',
+    'vehicle_name', 
+    'plate_num',
+    'vin_num',
+    'policy_id',
+    'vehicle_year',
+    'vehicle_type_id',
+    'vehicle_maker',
+    'engine_serial_no'
+  ];
+  
+  const computationFields = [
+    'original_Value',
+    'current_Value',
+    'total_Premium',
+    'aon_Cost',
+    'vehicle_Rate_Value',
+    'commission_fee'
+  ];
+  
+  const vehicleData = {};
+  const computationData = {};
+  const unknownData = {};
+  
+  Object.keys(updateData).forEach(key => {
+    if (vehicleFields.includes(key)) {
+      vehicleData[key] = updateData[key];
+    } else if (computationFields.includes(key)) {
+      computationData[key] = updateData[key];
+    } else {
+      // Check case-insensitive
+      const lowerKey = key.toLowerCase();
+      const computationMatch = computationFields.find(f => f.toLowerCase() === lowerKey);
+      if (computationMatch) {
+        computationData[computationMatch] = updateData[key];
+      } else {
+        unknownData[key] = updateData[key];
+      }
+    }
+  });
+  
+  return { vehicleData, computationData, unknownData };
 }
