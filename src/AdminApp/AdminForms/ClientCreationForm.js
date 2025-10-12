@@ -139,7 +139,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
           </div>
 
           <div className="form-group-client-creation">
-            <label>Last Name</label>
+            <label>Last Name *</label>
             <input
               type="text"
               name="familyName"

@@ -11,7 +11,8 @@ import {
   ComputatationRate,
   ComputationActionsBasicPre,  
   ComputationActionsTax, 
-  ComputationActionsAoN  
+  ComputationActionsAoN,
+  ComputationActionsCommission // Added Commission Action
 } from "../../AdminApp/AdminActions/ComputationActions";
 
 import { 
@@ -75,6 +76,9 @@ export default function ModeratorEditPolicyController() {
   const [local_Gov_Tax, setLocal_Gov_Tax] = useState(0);
   const [AoNRate, setAoNRate] = useState(0);
   const [isAoN, setIsAoN] = useState(false);
+  
+  // 🔧 NEW: Commission Fee state
+  const [commissionFee, setCommissionFee] = useState("0");
 
   // -----------------------------
   // Computed / display values
@@ -82,6 +86,7 @@ export default function ModeratorEditPolicyController() {
   const [currentVehicleValueCost, setCurrentVehicleCost] = useState(0);
   const [totalVehicleValueRate, setTotalVehicleValueRate] = useState(0);
   const [totalPremiumCost, setTotalPremiumCost] = useState(0);
+  const [commissionValue, setCommissionValue] = useState(0); // 🔧 NEW: Commission Value
 
   // State to track if initial data is loaded
   const [isDataLoaded, setIsDataLoaded] = useState(false);
@@ -118,7 +123,7 @@ export default function ModeratorEditPolicyController() {
   // -----------------------------
   // Load existing policy (single source of truth)
   // -----------------------------
-  useEffect(() => {
+ useEffect(() => {
     if (!policyId || clients.length === 0 || vehicleTypes.length === 0) return;
 
     (async () => {
@@ -146,9 +151,8 @@ export default function ModeratorEditPolicyController() {
           console.log("👤 Found client:", foundClient);
         }
 
-        // Set vehicle info
+        // Set vehicle info (initial values from vehicle table)
         if (vehicle) {
-          // Set basic vehicle info
           setVehicleName(vehicle.vehicle_name || "");
           setVehicleMaker(vehicle.vehicle_maker || "");
           setVehicleColor(vehicle.vehicle_color || "");
@@ -157,13 +161,15 @@ export default function ModeratorEditPolicyController() {
           setEngineNumber(vehicle.engine_serial_no || "");
           setVehicleYear(vehicle.vehicle_year || 0);
           setYearInput(vehicle.vehicle_year || 0);
-          setOriginalVehicleCost(vehicle.original_value || 0);
-          setVehicleOriginalValueFromDB(vehicle.original_value || 0);
+          
+          // Set vehicle original value from the vehicle table initially
+          setOriginalVehicleCost(vehicle.original_value || 0); // keep for now 
+          setVehicleOriginalValueFromDB(vehicle.original_value || 0); //keep for now 
         }
 
-        // Set computation values and get vehicle type from calculation_Table
+        // Set computation values and override/refine vehicle values if computation exists
         if (computation) {
-          const original = computation.original_Value || 0;
+          const originalComputationValue = computation.original_Value || 0;
           
            //devLogs
           console.log("🎯 Vehicle type from computation:", computation.vehicle_type);
@@ -195,6 +201,10 @@ export default function ModeratorEditPolicyController() {
             console.log("❌ No vehicle_type found in computation data");
           }
           
+          // 🔧 FIX: Set originalVehicleCost and vehicleOriginalValueFromDB from computation here
+          setOriginalVehicleCost(originalComputationValue); 
+          setVehicleOriginalValueFromDB(originalComputationValue); // This is the value used for computation
+
           // Set the actual saved computation values
           setRateInput(computation.vehicle_Rate || 0);
           setBodily_Injury(computation.bodily_Injury || 0);
@@ -205,12 +215,16 @@ export default function ModeratorEditPolicyController() {
           setLocal_Gov_Tax(computation.local_Gov_Tax || 0);
           setAoNRate(computation.aon_Rate || 0);
           setIsAoN(computation.aon_Cost > 0);
+          
+          // 🔧 NEW: Set commission fee from computation
+          setCommissionFee(String(computation.commission_fee ?? 0));
+
           setCurrentVehicleCost(computation.current_Value || 0);
           setTotalVehicleValueRate(computation.vehicle_Rate_Value || 0);
           setTotalPremiumCost(computation.total_Premium || 0);
-          setOriginalVehicleCost(original);
-          setVehicleOriginalValueFromDB(original);
         }
+        // No else block needed here if `originalVehicleCost` is set from `vehicle` first.
+        // If `computation` exists, it will override. If not, the value from `vehicle` persists.
 
         setIsDataLoaded(true);
         console.log("✅ Data loading complete");
@@ -228,6 +242,7 @@ export default function ModeratorEditPolicyController() {
     console.log("🎯 Vehicle types available:", vehicleTypes.map(v => v.vehicle_type));
     console.log("🎯 Is data loaded:", isDataLoaded);
   }, [selectedVehicleType]);
+
   useEffect(() => {
     if (!selectedVehicleType || !isDataLoaded) return;
 
@@ -261,30 +276,47 @@ export default function ModeratorEditPolicyController() {
       rateInput
     );
     const vehicleValueRate = safeCalculate(ComputatationRate, rateInput, vehicleValue);
+    
     const basicPremium = safeCalculate(
       ComputationActionsBasicPre, 
       bodily_Injury, 
       property_Damage, 
       personal_Accident
     ) + vehicleValueRate;
-    const totalPremium = safeCalculate(
+    
+    const totalPremiumBeforeCommission = safeCalculate(
       ComputationActionsTax, 
       basicPremium, 
       vat_Tax, 
       docu_Stamp, 
       local_Gov_Tax
     );
+    
     const actOfNature = isAoN 
       ? safeCalculate(ComputationActionsAoN, vehicleValue, AoNRate)
       : 0;
 
+    // 🔧 NEW: Commission Fee Calculation
+    const commissionFeeNumber = parseFloat(commissionFee) || 0;
+    const currentCommissionValue = commissionFeeNumber > 0
+      ? ComputationActionsCommission(
+          totalPremiumBeforeCommission + actOfNature,
+          commissionFeeNumber
+        )
+      : 0;
+
+    const totalPremiumFinal = totalPremiumBeforeCommission + actOfNature + currentCommissionValue;
+
+
     setCurrentVehicleCost(vehicleValue);
     setTotalVehicleValueRate(vehicleValueRate);
-    setTotalPremiumCost(totalPremium + actOfNature);
+    setTotalPremiumCost(totalPremiumFinal);
+    setCommissionValue(currentCommissionValue); // 🔧 NEW: Set computed commission value
   }, [
     originalVehicleCost, yearInput, rateInput, 
     bodily_Injury, property_Damage, personal_Accident, 
     vat_Tax, docu_Stamp, local_Gov_Tax, isAoN, AoNRate,
+    commissionFee, // 🔧 NEW: Add commissionFee to dependencies
     isDataLoaded
   ]);
 
@@ -293,6 +325,9 @@ export default function ModeratorEditPolicyController() {
   // -----------------------------
   const handleUpdatePolicy = async () => {
     try {
+      // NEW: Convert commission fee to number before saving
+      const commissionFeeToSave = parseFloat(commissionFee) || 0;
+
       // Update policy
       const policyResult = await updatePolicy(policyId, {
         client_id: selectedClient?.uid,
@@ -323,11 +358,15 @@ export default function ModeratorEditPolicyController() {
         engine_serial_no: vehicleEngineNumber,
         vehicle_year: yearInput,
         vehicle_type_id: vehicleTypeId,
+       // original_value: originalVehicleCost, // Ensure original_value is updated in vehicle table as well
       });
 
       if (!vehicleResult.success) {
         throw new Error(vehicleResult.error);
       }
+
+      //  NEW: Recalculate actOfNatureCost to save the current computed value
+      const actOfNatureCostToSave = isAoN ? safeCalculate(ComputationActionsAoN, currentVehicleValueCost, AoNRate) : 0;
 
       // Update computation
       const computationResult = await updateComputation(policyId, {
@@ -335,7 +374,8 @@ export default function ModeratorEditPolicyController() {
         current_Value: currentVehicleValueCost,
         vehicle_Rate_Value: totalVehicleValueRate,
         total_Premium: totalPremiumCost,
-        aon_Cost: isAoN ? safeCalculate(ComputationActionsAoN, currentVehicleValueCost, AoNRate) : 0
+        aon_Cost: actOfNatureCostToSave,
+        commission_fee: commissionFeeToSave //  NEW: Save commission fee
       });
 
       if (!computationResult.success) {
@@ -358,10 +398,14 @@ export default function ModeratorEditPolicyController() {
     personal_Accident
   ) + totalVehicleValueRate;
 
-  // Calculate actOfNatureCost for display
+  // Calculate actOfNatureCost for display (re-using current computed value)
   const actOfNatureCost = isAoN 
     ? safeCalculate(ComputationActionsAoN, currentVehicleValueCost, AoNRate)
     : 0;
+
+  //  NEW: Basic Premium with Commission for display
+  // This is the basicPremiumValue plus the commission value.
+  const basicPremiumWithCommission = basicPremiumValue + commissionValue;
 
   return (
     <ModeratorPolicyEditForm
@@ -376,6 +420,7 @@ export default function ModeratorEditPolicyController() {
       setVehicleOriginalValueFromDB={setVehicleOriginalValueFromDB}
       setOriginalVehicleCost={setOriginalVehicleCost}
       basicPremiumValue={basicPremiumValue}
+      basicPremiumWithCommission={basicPremiumWithCommission} // NEW: Pass to form
       vehicleName={vehicleName}
       setVehicleName={setVehicleName}
       vehicleMaker={vehicleMaker}
@@ -411,6 +456,11 @@ export default function ModeratorEditPolicyController() {
       docu_Stamp={docu_Stamp}
       local_Gov_Tax={local_Gov_Tax}
       AoNRate={AoNRate}
+      
+      commissionRate={commissionFee} //  NEW: Pass commission fee (as string for input)
+      setCommissionRate={setCommissionFee} // 🔧 NEW: Pass setter
+      commissionValue={commissionValue} //  NEW: Pass computed commission value
+      
       onSaveClient={handleUpdatePolicy}
       navigate={navigate}
     />

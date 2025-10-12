@@ -125,8 +125,6 @@
 }
 
 
-
-
 @media (max-width: 1920px) and (min-width: 1366px) {
   .delivery-table-scroll-moderator > table > thead > tr > th,
   .delivery-table-scroll-moderator > table > tbody > tr > td {
@@ -304,3 +302,28 @@ td.remarks-moderator .remarks-content {
 }
 
 
+.delivery-status-filter-dropdown-moderator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.delivery-status-filter-dropdown-moderator label {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.delivery-status-filter-dropdown-moderator select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: white;
+  cursor: pointer;
+  appearance: none; /* Remove default browser arrow */
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.6-6.4H18.9c-5%200-9.6%202-13.6%206.4-4%204-6.4%209.6-6.4%2014.1%200%204.6%202.5%2010%206.4%2014.1l127.9%20128c4%204%209.6%206.4%2013.6%206.4s9.6-2%2013.6-6.4l127.9-128c4-4%206.4-9.5%206.4-14.1.1-4.6-2.4-10.1-6.3-14.1z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px;
+  padding-right: 25px; /* Make space for the custom arrow */
+}

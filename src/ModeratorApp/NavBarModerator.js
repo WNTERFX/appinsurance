@@ -63,12 +63,12 @@ export default function NavBarModerator() {
 
         <Link to="/appinsurance/MainAreaModerator/ClaimTableModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/ClaimTableModerator") ? " active" : "")}>
             <div className="side-bar-label-moderator">
-              <LuClipboard className="sside-bar-icon-moderator" />
+              <LuClipboard className="side-bar-icon-moderator" />
               <span>Claims</span>
             </div>
         </Link>
 
-      <Link to="/appinsurance/MainAreaModerator/DeliveryModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/DeliveryTableModerator") ? " active" : "")}>
+      <Link to="/appinsurance/MainAreaModerator/DeliveryModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/DeliveryModerator") ? " active" : "")}>
           <div className="side-bar-label-moderator">
             <LuMail  className="side-bar-icon-moderator" />
             <span>Deliveries</span>
@@ -102,12 +102,12 @@ export default function NavBarModerator() {
       </Link>
          */}
       
-      <Link to="/appinsurance/MainAreaModerator/ProfileModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/ProfileModerator") ? " active" : "")}>
+      {/*<Link to="/appinsurance/MainAreaModerator/ProfileModerator" className={"side-bar-item-moderator " + (isActive("/appinsurance/MainAreaModerator/ProfileModerator") ? " active" : "")}>
             <div className="side-bar-label-moderator">
               <LuSettings className="side-bar-icon-moderator" />
               <span>Manage Users</span>
             </div>
-        </Link>
+        </Link>*/}
       
     </div>
 

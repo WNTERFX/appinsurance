@@ -10,7 +10,7 @@ import "../moderator-styles/client-archive-table-moderator.css";
 export default function ModeratorClientArchiveTable({ agentId }) {
   const [clients, setClients] = useState([]);
   const [selectedClientID, setSelectedClientID] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
+ const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
 
@@ -30,6 +30,7 @@ export default function ModeratorClientArchiveTable({ agentId }) {
 
   // 🔍 Filter
   const filteredClients = clients.filter((client) => {
+  const lowerCaseSearchTerm = searchTerm.toLowerCase();
     const fullName = [
       client.prefix,
       client.first_Name,
@@ -42,8 +43,8 @@ export default function ModeratorClientArchiveTable({ agentId }) {
       .toLowerCase();
 
     return (
-      fullName.includes(searchQuery.toLowerCase()) ||
-      client.uid.toString().includes(searchQuery)
+      (client.internal_id || "").toLowerCase().includes(lowerCaseSearchTerm) ||
+      fullName.includes(lowerCaseSearchTerm)
     );
   });
 
@@ -87,15 +88,15 @@ export default function ModeratorClientArchiveTable({ agentId }) {
     <div className="client-archive-table-container-moderator">
       {/* Header */}
       <div className="client-archive-table-header-moderator">
-        <h2>Archived Clients</h2>
+        <h2>Archived Clients ({filteredClients.length})</h2>
         <div className="client-archive-header-controls-moderator">
           <input
             type="text"
             className="client-archive-search-input-moderator"
             placeholder="Search clients..."
-            value={searchQuery}
+            value={searchTerm}
             onChange={(e) => {
-              setSearchQuery(e.target.value);
+              setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
           />
@@ -144,7 +145,7 @@ export default function ModeratorClientArchiveTable({ agentId }) {
                     className="client-archive-table-clickable-row-moderator"
                     onClick={() => handleRowClick(client)}
                   >
-                    <td>{client.uid}</td>
+                    <td>{client.internal_id}</td>
                     <td>
                       {[client.prefix, client.first_Name, client.middle_Name ? client.middle_Name.charAt(0) + "." : "", client.family_Name, client.suffix]
                         .filter(Boolean)

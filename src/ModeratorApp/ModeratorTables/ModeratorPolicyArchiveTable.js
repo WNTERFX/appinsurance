@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState} from "react";
 import {
   fetchModeratorArchivedPolicies,
   unarchiveModeratorPolicy,
@@ -54,16 +54,23 @@ export default function ModeratorPolicyArchiveTable({ agentId }) {
           .toLowerCase()
       : "";
 
+    const lowerCaseSearchQuery = searchQuery.toLowerCase();
+
     return (
-      clientName.includes(searchQuery.toLowerCase()) ||
-      policy.id.toString().includes(searchQuery)
+      clientName.includes(lowerCaseSearchQuery) ||
+      // Search by the database primary key 'id' (usually numeric, but this handles it as string)
+      policy.id.toString().includes(lowerCaseSearchQuery) ||
+      // **ADD THIS LINE:** Search by the displayed 'internal_id' which can contain letters
+      (policy.internal_id && policy.internal_id.toLowerCase().includes(lowerCaseSearchQuery))
     );
   });
 
   return (
     <div className="policy-archive-table-container-moderator">
       <div className="policy-archive-table-header-moderator">
-        <h2>My Archived Policies</h2>
+        <h2>Archived Policies{" "}
+          <span>({filteredPolicies.length})</span>{" "}
+        </h2>
         <div className="policy-archive-header-controls-moderator">
           <input
             type="text"
@@ -84,7 +91,7 @@ export default function ModeratorPolicyArchiveTable({ agentId }) {
           <table>
             <thead>
               <tr>
-                <th>Policy ID</th>
+                <th>Policy ID</th> {/* This is your internal_id */}
                 <th>Policy Type</th>
                 <th>Client Name</th>
                 <th>Insurance Partner</th>
@@ -125,7 +132,7 @@ export default function ModeratorPolicyArchiveTable({ agentId }) {
                         })
                       }
                     >
-                      <td>{policy.internal_id}</td>
+                      <td>{policy.internal_id}</td> {/* Displaying internal_id */}
                       <td>{policy.policy_type}</td>
                       <td>{clientName}</td>
                       <td>{partner?.insurance_Name || "N/A"}</td>

@@ -265,33 +265,11 @@
   }
 
   /* Moderator modal styles (keeping as is) */
-  .client-creation-modal-overlay-moderator {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-
-  .client-creation-modal-content-moderator {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    max-width: 90%;
-    max-height: 90%;
-    overflow-y: auto;
-    position: relative;
-  }
-
 
   .agent-content.agent-selected {
     border: 2px solid #2196f3; /* Example: blue border to show selection */
     box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3); /* Optional: a glow effect */
     transform: translateY(-2px); /* Slightly lift it more */
   }
+
+

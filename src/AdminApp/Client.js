@@ -1,5 +1,4 @@
-// src/AdminApp/Client.js
-// ... (imports remain the same)
+
 import React, { useState, useRef, useEffect } from "react";
 import ClientTable from "./AdminTables/ClientTable";
 import ClientArchiveTable from "./AdminTables/ClientArchiveTable";

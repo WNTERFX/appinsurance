@@ -1,6 +1,10 @@
-/* --------------------------- */
-/* Container + Header          */
-/* --------------------------- */
+/* General Body and Page Layout */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #f4f7f6; /* Light gray background for the entire page */
+    color: #333;
+}
 .policy-table-container-moderator {
   width: 100%;
   margin: 0 auto;
@@ -14,34 +18,101 @@
 
 .policy-table-header-moderator {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Puts first child left, second child right */
   align-items: center;
   margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 0.75rem;
 }
 
 .policy-table-container-moderator h2 {
   margin: 0;
   font-size: 1.4rem;
   font-weight: 600;
+  display: flex; /* Keeps the title and count together */
+  align-items: center;
+  gap: 0.25rem; /* Reduced gap slightly for a more natural text flow */
 }
 
-/* --------------------------- */
-/* Controls (search, refresh)  */
-/* --------------------------- */
+
+
+/* ------------------------------------- */
+/* Group for all right-aligned controls */
+/* ------------------------------------- */
 .policy-header-controls-moderator {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem; /* Space between the individual controls within this group */
+  flex-wrap: wrap; /* Allow controls to wrap on smaller screens */
+  justify-content: flex-end; /* Align controls to the right within the group */
 }
 
+
+/* --------------------------- */
+/* Controls (search)           */
+/* --------------------------- */
 .policy-search-input-moderator {
   padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 0.9rem;
+  width: 250px;
+  min-width: 180px;
 }
+
+/* Status Filter Dropdown Styling */
+.policy-status-filter-dropdown-moderator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.policy-status-filter-dropdown-moderator label {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.policy-status-filter-dropdown-moderator select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.6-6.4H18.9c-5%200-9.6%202-13.6%206.4-4%204-6.4%209.6-6.4%2014.1%200%204.6%202.5%2010%206.4%2014.1l127.9%20128c4%204%209.6%206.4%2013.6%206.4s9.6-2%2013.6-6.4l127.9-128c4-4%206.4-9.5%206.4-14.1.1-4.6-2.4-10.1-6.3-14.1z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px;
+  padding-right: 25px;
+}
+
+/* Status Filter Dropdown Styling */
+.policy-partner-filter-dropdown-moderator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.policy-partner-filter-dropdown-moderator label {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.policy-partner-filter-dropdown-moderator select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.6-6.4H18.9c-5%200-9.6%202-13.6%206.4-4%204-6.4%209.6-6.4%2014.1%200%204.6%202.5%2010%206.4%2014.1l127.9%20128c4%204%209.6%206.4%2013.6%206.4s9.6-2%2013.6-6.4l127.9-128c4-4%206.4-9.5%206.4-14.1.1-4.6-2.4-10.1-6.3-14.1z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px;
+  padding-right: 25px;
+}
+
+
 
 .rows-per-page-inline-moderator {
   display: flex;
@@ -49,26 +120,28 @@
   gap: 0.5rem;
 }
 
-.policy-header-controls-moderator button {
-  padding: 6px 12px;
-  border: none;
+.rows-per-page-inline-moderator select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
   border-radius: 6px;
-  background-color: #e5e7eb;
-  cursor: pointer;
   font-size: 0.9rem;
-  transition: background 0.2s ease;
+  background-color: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.6-6.4H18.9c-5%200-9.6%202-13.6%206.4-4%204-6.4%209.6-6.4%2014.1%200%204.6%202.5%2010%206.4%2014.1l127.9%20128c4%204%209.6%206.4%2013.6%206.4s9.6-2%2013.6-6.4l127.9-128c4-4%206.4-9.5%206.4-14.1.1-4.6-2.4-10.1-6.3-14.1z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px;
+  padding-right: 25px;
 }
 
-.policy-header-controls-moderator button:hover {
-  background-color: #d1d5db;
-}
 
 /* --------------------------- */
 /* Table Wrapper + Scroll      */
 /* --------------------------- */
 .policy-table-wrapper-moderator {
    flex: 1;
-  overflow-y: auto; /* so rows scroll instead of shrinking */
+  overflow-y: auto;
   min-height: 0;
 }
 
@@ -241,21 +314,21 @@ tr:hover {
 }
 
 .reset-btn-policy-moderator {
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid #ddd;
+  border: none;
   cursor: pointer;
-  background-color: #f9f9f9;
-  font-size: 14px;
+  background-color: #e5e7eb;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
 }
 
 .reset-btn-policy-moderator:hover {
-  background-color: #f0f0f0;
+  background-color: #d1d5db;
 }
 
-.premium-cell-policy-moderator {
-  white-space: nowrap;   
-  text-align: right;     
-  width: 1%;             
+.premium-cell-moderator {
+  white-space: nowrap;
+  text-align: right;
+  width: 1%;
 }
-

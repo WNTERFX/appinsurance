@@ -3,12 +3,12 @@
 }
 
 .claims-container {
-  background-color: #F2F5FA;
-  font-family: 'Inter', sans-serif;
-  height: auto;
-  max-width: 100%;
-  overflow-x: hidden;
-  padding-bottom: 30px;
+    background-color: #F2F5FA;
+    font-family: 'Inter', sans-serif;
+    height: auto;
+    max-width: 100%;
+    overflow-x: hidden;
+    padding-bottom: 30px;
 }
 
 @media (min-width: 3440px) {
@@ -19,18 +19,11 @@
 
 /* ✅ FIXED CLAIMS HEADER — same design as Client & Policy */
 .claims-header {
-  display: flex;
-  justify-content: space-between; /* left title + right actions */
-  align-items: center;
-  background-color: #fff;
-  border: 2px solid #E0E0E0;
-  border-left: 6px solid #4b0082; /* purple accent */
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  height: 90px;
-  padding: 0 10px 0 24px;
-  margin-bottom: 24px;
-  margin-top: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 90px;
+    padding: 20px 10px 10px 10px; 
 }
 
 /* Title */

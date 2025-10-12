@@ -151,8 +151,8 @@
 /* Top 4 small metric cards (outer wrapper) */
 .active-clients,
 .active-policy,
-.undelivered-policy,
-.delivered-policy {
+.delivered-policy,
+.payment {
   background: #fff;
   border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0,0,0,0.08);
@@ -174,8 +174,8 @@
 /* inner container - where we pin header to top and value to bottom */
 .active-clients .active-clients-data,
 .active-policy .active-policy-data,
-.undelivered-policy .undelivered-policy-data,
-.delivered-policy .delivered-policy-data {
+.delivered-policy .delivered-policy-data,
+.payment .payment-data {
   width: 100%;
   padding: 18px 20px;        /* change padding safely here */
   display: flex;
@@ -188,11 +188,11 @@
 /* accent colors (left thick border) */
 .active-clients { border-left-color: #7B5F97; }     /* violet */
 .active-policy { border-left-color: #4b0082; }        /* indigo */
-.undelivered-policy { border-left-color: #f5a623; } /* orange */
-.delivered-policy { border-left-color: #28a745; }   /* green */
+.delivered-policy { border-left-color: #f5a623; } /* orange */
+.payment { border-left-color: #28a745; }   /* green */
 
 /* headings & numbers — no margin surprises */
-.active-clients h2, .active-policy h2, .undelivered-policy h2, .delivered-policy h2 {
+.active-clients h2, .active-policy h2, .delivered-policy h2, .payment h2 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
@@ -203,7 +203,7 @@
   gap: 8px;
 }
 
-.active-clients p, .active-policy p, .undelivered-policy p, .delivered-policy p {
+.active-clients p, .active-policy p, .delivered-policy p, .payment p {
   margin: 0;
   font-size: 28px;
   font-weight: 700;
@@ -214,8 +214,8 @@
 /* Hover effect */
 .active-clients:hover,
 .active-policy:hover,
-.undelivered-policy:hover,
-.delivered-policy:hover {
+.delivered-policy:hover,
+.payment:hover {
   transform: translateY(-3px);
   box-shadow: 4px 6px 18px rgba(0,0,0,0.12);
   background-color: #EFF6FF;

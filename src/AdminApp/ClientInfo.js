@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import InfoModal from "./InfoModal";
 import './styles/client-info-modal-styles.css';
 import { getClientInfo, getPolicyInfo, getVehicleInfo, getPolicyComputationInfo } from "./AdminActions/ModalActions";
+
+// Import React Icons
+import { FaUser, FaFileAlt, FaCar, FaCalculator } from 'react-icons/fa';
 
 export default function ClientInfo({ selectedPolicy, onClose }) {
   const [client, setClient] = useState(null);
@@ -74,15 +77,25 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
     ].filter(Boolean).join(" ");
   };
 
-  const formatCurrency = (amount) => `₱${(amount || 0).toLocaleString()}`;
+  // Format currency to match picture: no decimal places, comma separated
+  const formatCurrency = (amount) => `₱${(amount || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
-  const InfoRow = ({ label, value, color }) => (
-    <div className={`info-row ${color ? 'highlight' : ''}`}>
-      <strong>{label}:</strong>
-      <span>{value}</span>
+  // Component for grid layout within cards (Client, Policy, Vehicle)
+  const InfoGrid = ({ children }) => (
+    <div className="info-grid">
+      {children}
     </div>
   );
 
+  // Individual label and value for InfoGrid items
+  const InfoItem = ({ label, value, className = "" }) => (
+    <>
+      <span className="info-label">{label}:</span>
+      <span className={`info-value ${className}`}>{value}</span>
+    </>
+  );
+
+  // Card wrapper component
   const Card = ({ children, className = "" }) => (
     <div className={`client-info-card ${className}`}>
       {children}
@@ -96,80 +109,95 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
 
       {client && !loading && (
         <div className="client-info-container">
-          {/* Left Column */}
-          <div style={{ flex: 1 }}>
-            <Card>
-              <h3>Client Information</h3>
-              <InfoRow label="Name" value={formatClientName(client)} />
-              <InfoRow label="Agent" value={client.employee?.personnel_Name || 'N/A'} />
-              <InfoRow label="Address" value={client.address || 'N/A'} />
-              <InfoRow label="Email" value={client.email || 'N/A'} />
-              <InfoRow label="Phone" value={client.phone_Number || 'N/A'} />
-            </Card>
+          <Card className="client-information-card">
+            <h3><FaUser className="icon-style" /> Client Information</h3>
+            <hr className="section-header-separator" />
+            <InfoGrid>
+              <InfoItem label="Name" value={formatClientName(client)} />
+              <InfoItem label="Address" value={client.address || 'N/A'} />
+              <InfoItem label="Phone" value={client.phone_Number || 'N/A'} />
+              <InfoItem label="Email" value={client.email || 'N/A'} />
+              <InfoItem label="Agent" value={client.employee?.personnel_Name || 'N/A'} />
+            </InfoGrid>
+          </Card>
 
-            {policy && (
-              <Card className="policy-card">
-                <h3>Selected Policy (ID: {policy.id})</h3>
-                <InfoRow label="Type" value={policy.policy_type || 'N/A'} />
-                <InfoRow label="Inception" value={policy.policy_inception || 'N/A'} />
-                <InfoRow label="Expiry" value={policy.policy_expiry || 'N/A'} />
-                <InfoRow 
-                  label="Status" 
-                  value={policy.policy_is_active ? "Active" : "Inactive"} 
-                  color={policy.policy_is_active ? '#22c55e' : '#ef4444'} 
+          {policy && (
+            <Card className="policy-information-card">
+              <h3><FaFileAlt className="icon-style" /> Policy Information (ID: {policy.id})</h3>
+              <hr className="section-header-separator" />
+              <InfoGrid>
+                <InfoItem label="Type" value={policy.policy_type || 'N/A'} />
+                <InfoItem label="Status"
+                  value={policy.policy_is_active ? "Active" : "Inactive"}
+                  className={policy.policy_is_active ? "status-active" : "status-inactive"}
                 />
-                <InfoRow label="Insurance Partner" value={policy.insurance_Partners?.insurance_Name || 'N/A'} />
+                <InfoItem label="Inception" value={policy.policy_inception || 'N/A'} />
+                <InfoItem label="Expiry" value={policy.policy_expiry || 'N/A'} />
+                <InfoItem label="Insurance Partner" value={policy.insurance_Partners?.insurance_Name || 'N/A'} />
                 {policy.insurance_Partners?.insurance_Rate && (
-                  <InfoRow label="Insurance Rate" value={`${policy.insurance_Partners.insurance_Rate}%`} />
+                  <InfoItem label="Insurance Rate" value={`${policy.insurance_Partners.insurance_Rate}%`} />
                 )}
-              </Card>
+              </InfoGrid>
+            </Card>
+          )}
+
+          <Card className="computation-summary-card">
+            <h3><FaCalculator className="icon-style" /> Computation Summary</h3>
+            <hr className="section-header-separator" />
+            {policyComputations.length > 0 ? (
+              <div className="computation-items-container">
+                {policyComputations.map((c, i) => (
+                  <React.Fragment key={c.id}>
+                    <div className="computation-info-item">
+                      <span className="info-label">Original Value</span>
+                      <span className="info-value">{formatCurrency(c.original_Value)}</span>
+                    </div>
+                    <div className="computation-info-item">
+                      <span className="info-label">Current Value</span>
+                      <span className="info-value">{formatCurrency(c.current_Value)}</span>
+                    </div>
+                    <div className="computation-info-item">
+                      <span className="info-label">AON Cost</span>
+                      <span className="info-value">{formatCurrency(c.aon_Cost)}</span>
+                    </div>
+                    <div className="computation-info-item">
+                      <span className="info-label">Vehicle Rate Value</span>
+                      <span className="info-value">{formatCurrency(c.vehicle_Rate_Value)}</span>
+                    </div>
+                    <hr className="total-premium-separator" />
+                    <div className="total-premium-item">
+                      <span className="info-label">Total Premium</span>
+                      <span className="info-value">{formatCurrency(c.total_Premium)}</span>
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">No computations found for this policy</div>
             )}
+          </Card>
 
-            <Card>
-              <h3>Vehicles for This Policy ({policyVehicles.length})</h3>
-              {policyVehicles.length > 0 ? (
-                <div style={{ maxHeight: "300px", overflowY: "auto" }}>
-                  {policyVehicles.map((v) => (
-                    <div key={v.id} className="vehicle-card">
-                      <InfoRow label="Vehicle Maker" value={v.vehicle_maker || 'N/A'} />
-                      <InfoRow label="Vehicle Name" value={v.vehicle_name || 'N/A'} />
-                      <InfoRow label="Year" value={v.vehicle_year || 'N/A'} />
-                      <InfoRow label="Color" value={v.vehicle_color || 'N/A'} />
-                      <InfoRow label="Plate Number" value={v.plate_num || 'N/A'} />
-                      <InfoRow label="Engine Serial No" value={v.engine_serial_no || 'N/A'} />
-                      <InfoRow label="VIN" value={v.vin_num || 'N/A'} />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="empty-state">No vehicles found for this policy</div>
-              )}
-            </Card>
-          </div>
-
-          {/* Right Column */}
-          <div style={{ flex: 1 }}>
-            <Card className="computation-card">
-             <h3>Computations for This Policy ({policyComputations.length})</h3>
-              {policyComputations.length > 0 ? (
-                <div style={{ maxHeight: "600px", overflowY: "auto" }}>
-                  {policyComputations.map((c, i) => (
-                    <div key={c.id} className="computation-card-info">
-                      <h4>Computation #{i + 1}</h4>
-                      <InfoRow label="Original Value" value={formatCurrency(c.original_Value)} />
-                      <InfoRow label="Current Value" value={formatCurrency(c.current_Value)} />
-                      <InfoRow label="AON Cost" value={formatCurrency(c.aon_Cost)} />
-                      <InfoRow label="Vehicle Rate Value" value={formatCurrency(c.vehicle_Rate_Value)} />
-                      <hr />
-                      <InfoRow label="Total Premium" value={formatCurrency(c.total_Premium)} color="#059669" />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="empty-state">No computations found for this policy</div>
-              )}
-            </Card>
-          </div>
+          <Card className="vehicle-information-card">
+            <h3><FaCar className="icon-style" /> Vehicle Information</h3>
+            <hr className="section-header-separator" />
+            {policyVehicles.length > 0 ? (
+              <div className="vehicle-list-container">
+                {policyVehicles.map((v) => (
+                  <InfoGrid key={v.id}>
+                    <InfoItem label="Vehicle Maker" value={v.vehicle_maker || 'N/A'} />
+                    <InfoItem label="Vehicle Name" value={v.vehicle_name || 'N/A'} />
+                    <InfoItem label="Year" value={v.vehicle_year || 'N/A'} />
+                    <InfoItem label="Color" value={v.vehicle_color || 'N/A'} />
+                    <InfoItem label="Plate Number" value={v.plate_num || 'N/A'} />
+                    <InfoItem label="Engine Serial Number" value={v.engine_serial_no || 'N/A'} />
+                    <InfoItem label="VIN Number" value={v.vin_num || 'N/A'} />
+                  </InfoGrid>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state">No vehicles found for this policy</div>
+            )}
+          </Card>
         </div>
       )}
 

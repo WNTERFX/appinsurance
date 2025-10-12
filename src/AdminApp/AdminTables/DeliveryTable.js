@@ -1,32 +1,35 @@
-import { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo } from "react"; // Removed useEffect, useNavigate
 import { FaEdit } from "react-icons/fa";
 import ScrollToTopButton from "../../ReusableComponents/ScrollToTop";
-import { fetchDeliveries, archiveDelivery, markDeliveryAsDelivered } from "../AdminActions/DeliveryActions";
+import { archiveDelivery, markDeliveryAsDelivered } from "../AdminActions/DeliveryActions"; // Removed fetchDeliveries
 import "../styles/delivery-table-styles.css";
 
-export default function DeliveryTable({ onEditDelivery }) {
-  const navigate = useNavigate();
-
-  const [deliveries, setDeliveries] = useState([]);
-  const [selectedDeliveryID, setSelectedDeliveryID] = useState(null);
+export default function DeliveryTable({
+  deliveries, // Directly use the deliveries prop
+  loading,
+  policies,
+  onEditDelivery,
+  onSelectPolicyForClientInfo,
+  onRefreshData // <--- New prop: callback to refresh data in parent
+}) {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [searchTerm, setSearchTerm] = useState("");
-  const [deliveryFilter, setDeliveryFilter] = useState("All"); // New state for filter
+  const [deliveryFilter, setDeliveryFilter] = useState("All");
 
-  // 🔹 Load deliveries
-  const loadDeliveries = async () => {
-    const data = await fetchDeliveries();
-    // Assuming data from fetchDeliveries already has client info for policy_Holder
-    setDeliveries(data);
+  const handleRowClick = (delivery) => {
+    const policy = policies.find(p => p.id === delivery.policy_Id);
+
+    if (policy && policy.client_id) {
+      onSelectPolicyForClientInfo({
+        policyId: delivery.policy_Id,
+        clientId: policy.client_id,
+      });
+    } else {
+      console.warn("Could not find client_id for policy_Id:", delivery.policy_Id, "or policy:", policy);
+      // Optionally, show a toast/alert to the user that client info isn't available
+    }
   };
-
-  useEffect(() => {
-    loadDeliveries();
-  }, []);
-
-  const handleRowClick = (id) => setSelectedDeliveryID(id);
 
   const handleArchiveClick = async (deliveryId) => {
     const confirmArchive = window.confirm("Proceed to archive this delivery?");
@@ -34,11 +37,10 @@ export default function DeliveryTable({ onEditDelivery }) {
 
     try {
       await archiveDelivery(deliveryId);
-      setDeliveries((prev) => prev.filter((d) => d.uid !== deliveryId));
-      // Reload deliveries to ensure the count is accurate after archiving a filtered item
-      await loadDeliveries();
+      onRefreshData(); // <--- Trigger parent to refresh all data
     } catch (error) {
       console.error("Error archiving delivery:", error);
+      alert("Failed to archive delivery: " + error.message);
     }
   };
 
@@ -48,49 +50,43 @@ export default function DeliveryTable({ onEditDelivery }) {
 
     try {
       await markDeliveryAsDelivered(deliveryId);
-      // Refresh the deliveries to show updated status
-      await loadDeliveries();
+      onRefreshData(); // <--- Trigger parent to refresh all data
     } catch (error) {
       console.error("Error marking delivery as delivered:", error);
       alert("Failed to mark delivery as delivered: " + error.message);
     }
   };
 
-  const handleReset = async () => {
+  const handleReset = () => {
     setSearchTerm("");
-    setDeliveryFilter("All"); // Reset filter as well
+    setDeliveryFilter("All");
     setCurrentPage(1);
-    await loadDeliveries();
+    onRefreshData(); // <--- Trigger parent to refresh all data
   };
 
   // 🔹 Filter and Search Logic
   const filteredAndSearchedDeliveries = useMemo(() => {
-    let tempDeliveries = deliveries;
+    let tempDeliveries = deliveries; // Use the prop directly
 
-    // Apply Delivery Status Filter
     if (deliveryFilter === "Delivered") {
       tempDeliveries = tempDeliveries.filter((delivery) => delivery.delivered_at !== null);
     } else if (deliveryFilter === "Undelivered") {
       tempDeliveries = tempDeliveries.filter((delivery) => delivery.delivered_at === null);
     }
 
-    // Apply Search Term
     if (searchTerm.trim()) {
       const lowerCaseSearchTerm = searchTerm.trim().toLowerCase();
       tempDeliveries = tempDeliveries.filter((delivery) => {
-        // Search by Delivery ID (uid)
-        const deliveryIdMatch = delivery.uid?.toString().includes(lowerCaseSearchTerm);
-
-        // Search by Policy Holder (assuming delivery object has a policy_Holder property from the join)
+        const deliveryIdMatch = delivery.uid?.toString().toLowerCase().includes(lowerCaseSearchTerm);
         const policyHolderName = delivery.policy_Holder ? delivery.policy_Holder.toLowerCase() : "";
         const policyHolderMatch = policyHolderName.includes(lowerCaseSearchTerm);
+        const policyIdMatch = delivery.policy_Id?.toString().toLowerCase().includes(lowerCaseSearchTerm);
 
-        return deliveryIdMatch || policyHolderMatch;
+        return deliveryIdMatch || policyHolderMatch || policyIdMatch;
       });
     }
-
     return tempDeliveries;
-  }, [deliveries, searchTerm, deliveryFilter]);
+  }, [deliveries, searchTerm, deliveryFilter]); // Dependencies on props and local state
 
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
@@ -123,12 +119,11 @@ export default function DeliveryTable({ onEditDelivery }) {
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                setCurrentPage(1); // Reset page on search
+                setCurrentPage(1);
               }}
               className="delivery-search-input"
             />
 
-            {/* New Filter Dropdown */}
             <div className="delivery-status-filter-dropdown">
               <label htmlFor="deliveryFilter">Status:</label>
               <select
@@ -162,6 +157,9 @@ export default function DeliveryTable({ onEditDelivery }) {
           </div>
         </div>
 
+        {loading ? (
+            <div className="loading-overlay">Loading deliveries and policies...</div>
+        ) : (
         <div className="delivery-table-wrapper">
           <div className="delivery-table-scroll">
             <table>
@@ -185,11 +183,10 @@ export default function DeliveryTable({ onEditDelivery }) {
                       className={`delivery-table-clickable-row ${
                         delivery.delivered_at ? 'delivered' : 'not-delivered'
                       }`}
-                      onClick={() => handleRowClick(delivery.uid)}
+                      onClick={() => handleRowClick(delivery)}
                     >
                       <td>{delivery.uid}</td>
                       <td>{delivery.policy_Id}</td>
-                      {/* Assuming policy_Holder is available directly on the delivery object */}
                       <td>{delivery.policy_Holder || "Unknown"}</td>
                       <td>{delivery.address}</td>
                       <td>{delivery.created_At}</td>
@@ -205,7 +202,6 @@ export default function DeliveryTable({ onEditDelivery }) {
                       <td className="remarks">
                         {delivery.remarks ? delivery.remarks : "No remarks"}
                       </td>
-
 
                       <td className="delivery-table-actions">
                         {!delivery.delivered_at && (
@@ -278,6 +274,7 @@ export default function DeliveryTable({ onEditDelivery }) {
             </div>
           )}
         </div>
+        )}
       </div>
 
       <ScrollToTopButton />

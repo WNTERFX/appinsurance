@@ -10,15 +10,19 @@ export default function ModeratorPolicyEditForm({
   setYearInput,
   vehicleOriginalValueFromDB,
   setVehicleOriginalValueFromDB,
-  basicPremiumValue,
+  basicPremiumValue, // without commission
+  basicPremiumWithCommission, // with commission applied to basic premium
   isAoN,
   setIsAoN,
   setOriginalVehicleCost,
   originalVehicleCost,
   currentVehicleValueCost,
   totalVehicleValueRate,
-  totalPremiumCost,
+  totalPremiumCost, // final total (includes commission amount we saved)
   actOfNatureCost,
+  commissionRate,
+  setCommissionRate,
+  commissionValue, // commission in ₱ calculated in controller
   vehicleName,
   setVehicleName,
   vehicleMaker,
@@ -80,21 +84,18 @@ export default function ModeratorPolicyEditForm({
             {/* Vehicle Maker */}
             <div className="form-group-policy-edit-moderator">
               <label>Vehicle Maker</label>
-              <input type="text" value={vehicleMaker} disabled />
               <input type="text" value={vehicleMaker} onChange={(e) => setVehicleMaker(e.target.value)} />
             </div>
 
             {/* Vehicle Name */}
             <div className="form-group-policy-edit-moderator">
               <label>Previous Vehicle Name</label>
-              <input type="text" value={vehicleName} disabled />
               <input type="text" value={vehicleName} onChange={(e) => setVehicleName(e.target.value)} />
             </div>
 
             {/* Vehicle VIN */}
             <div className="form-group-policy-edit-moderator">
               <label>Vehicle VIN Number</label>
-              <input type="text" value={vehicleVinNumber || ""} maxLength={17} disabled />
               <input type="text" value={vehicleVinNumber || ""} maxLength={17} onChange={(e) => setVinNumber(e.target.value)} />
               <small style={{ color: vehicleVinNumber?.length >= 17 ? "red" : "gray" }}>
                 {vehicleVinNumber?.length || 0}/17 characters
@@ -104,28 +105,24 @@ export default function ModeratorPolicyEditForm({
             {/* Vehicle Plate */}
             <div className="form-group-policy-edit-moderator">
               <label>Vehicle Plate Number</label>
-              <input type="text" value={vehiclePlateNumber || ""} disabled />
               <input type="text" value={vehiclePlateNumber || ""} onChange={(e) => setPlateNumber(e.target.value)} />
             </div>
 
              {/* Vehicle Engine Number */}
             <div className="form-group-policy-edit-moderator">
               <label>Vehicle Engine Serial</label>
-              <input type="text" value={vehicleEngineNumber || ""} disabled />
               <input type="text" value={vehicleEngineNumber || ""} onChange={(e) => setEngineNumber(e.target.value)} />
             </div>
 
             {/* Vehicle Color */}
             <div className="form-group-policy-edit-moderator">
               <label>Vehicle Color</label>
-              <input type="text" value={vehicleColor || ""} disabled />
               <input type="text" value={vehicleColor || ""} onChange={(e) => setVehicleColor(e.target.value)} />
             </div>
 
             {/* Vehicle Year */}
             <div className="form-group-policy-edit-moderator">
               <label>Vehicle Year</label>
-              <input type="text" value={yearInput || ""} disabled />
               <input type="number" value={yearInput || ""} onChange={(e) => setYearInput(Number(e.target.value))} />
             </div>
 
@@ -154,7 +151,6 @@ export default function ModeratorPolicyEditForm({
             {/* Vehicle Original Cost */}
             <div className="form-group-policy-edit-moderator">
               <label>Original Value of Vehicle</label>
-              <input type="text" value={vehicleOriginalValueFromDB} disabled />
               <input
                 type="number"
                 value={originalVehicleCost}
@@ -182,12 +178,21 @@ export default function ModeratorPolicyEditForm({
               <label>Rate</label>
               <input type="text" value={vehicleDetails?.vehicle_Rate ? `${vehicleDetails.vehicle_Rate}%` : "0%"} readOnly />
             </div>
-          </div>
+
+            <div className="form-group-policy-edit-moderator">
+              <label>Commission Fee (%)</label>
+              <input
+                type="number"
+                value={commissionRate}
+                onChange={(e) => setCommissionRate(parseFloat(e.target.value) || 0)}
+              />
+            </div>
                      
           {/* AoN */}
             <div className="form-group-policy-edit-moderator aon-row">
             <label>AoN (Act of Nature)</label>
             <input type="checkbox" checked={isAoN} onChange={(e) => setIsAoN(e.target.checked)} />
+          </div>
           </div>
 
           {/* RIGHT COLUMN */}
@@ -201,10 +206,12 @@ export default function ModeratorPolicyEditForm({
               <p>Bodily Injury: <span>₱ {formatPHP(vehicleDetails?.bodily_Injury)}</span></p>
               <p>Property Damage: <span>₱ {formatPHP(vehicleDetails?.property_Damage)}</span></p>
               <p>Personal Accident: <span>₱ {formatPHP(vehicleDetails?.personal_Accident)}</span></p>
-              <p>Basic Premium: <span>₱ {formatPHP(basicPremiumValue)}</span></p>
+              <p>Basic Premium (without Commission): <span>₱ {formatPHP(basicPremiumValue)}</span></p>
+              <p>Basic Premium (with Commission): <span>₱ {formatPHP(basicPremiumWithCommission)}</span></p>
               <p>Local Government Tax: <span>{vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "—"}</span></p>
               <p>VAT: <span>{vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "—"}</span></p>
               <p>Documentary Stamp: <span>{vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "—"}</span></p>
+              <p>Commission Amount: <span>₱ {formatPHP(commissionValue)}</span></p>
               {isAoN && <p>AoN (Act of Nature): <span>₱ {formatPHP(actOfNatureCost)}</span></p>}
               <hr />
               <strong>

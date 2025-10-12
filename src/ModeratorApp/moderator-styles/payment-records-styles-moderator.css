@@ -1,22 +1,33 @@
-
-
+* {
+  box-sizing: border-box;
+}
 
 .payment-records-container-moderator{
-          background-color: #F2F5FA;
-font-family: 'Inter', sans-serif;
-height: auto;
-max-width: 100%;         
-overflow-x: hidden; 
+     background-color: #F2F5FA;
+  font-family: 'Inter', sans-serif;
+  height: auto;
+  max-width: 100%;
+  overflow-x: hidden;
+  padding-bottom: 30px;
     
 
 }
 
 .payment-record-header-moderator {
-  display: flex;
-  justify-content: space-between; 
-  align-items: center;
-  padding: 10px;
-  position: relative;
+ display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 90px;
+    padding: 20px 10px 10px 10px;
+
+}
+
+.Payment-title-moderator{
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  color: #222;
+  line-height: 1.1;
 }
 
 .payment-records-container-moderator > .payment-record-header-moderator{

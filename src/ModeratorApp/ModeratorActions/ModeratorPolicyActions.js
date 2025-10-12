@@ -70,3 +70,12 @@ export async function archivePolicy(policyId) {
   if (error) throw error;
   return data?.[0] || null;
 }
+
+export async function fetchPartners() {
+  const { data, error } = await db
+    .from("insurance_Partners")
+    .select("id, insurance_Name")
+    .order("insurance_Name", { ascending: true });
+  if (error) throw error;
+  return data;
+}

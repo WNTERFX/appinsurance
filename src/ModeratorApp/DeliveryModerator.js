@@ -1,16 +1,19 @@
-import './moderator-styles/delivery-styles-moderator.css';
-import DropdownAccountsModerator from "./DropDownAccountsModerator";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { FaPlus, FaArchive, FaUserCircle } from "react-icons/fa";
-import { useEffect, useState, useRef } from "react";
+import DropdownAccountsModerator from "./DropDownAccountsModerator";
 import { useModeratorProfile } from "./useModeratorProfile";
 import ModeratorDeliveryTable from './ModeratorTables/ModeratorDeliveryTable';
 import ModeratorDeliveryCreationController from './ControllerModerator/ModeratorDeliveryCreationController';
 import ModeratorEditDeliveryController from './ControllerModerator/ModeratorEditDeliveryController';
 import ModeratorDeliveryArchiveTable from './ModeratorTables/ModeratorDeliveryArchiveTable';
 import { fetchModeratorDeliveries } from './ModeratorActions/ModeratorDeliveryActions';
+// ⭐ Using the Admin's fetchPolicies directly
+import { fetchPolicies } from "../AdminApp/AdminActions/PolicyActions";
+import ClientInfo from '../AdminApp/ClientInfo';
+
+import './moderator-styles/delivery-styles-moderator.css';
 
 export default function DeliveryModerator() {
-
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
   const buttonRef = useRef(null);
@@ -18,20 +21,53 @@ export default function DeliveryModerator() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editDelivery, setEditDelivery] = useState(null);
   const [showArchive, setShowArchive] = useState(false);
+
   const [deliveries, setDeliveries] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingDeliveries, setLoadingDeliveries] = useState(true);
 
-  // ✅ Fetch deliveries like in Admin
+  const [policies, setPolicies] = useState([]);
+  const [loadingPolicies, setLoadingPolicies] = useState(true);
+
+  const [selectedPolicyForClientInfo, setSelectedPolicyForClientInfo] = useState(null);
+
+  // Memoized load deliveries function
+  const loadDeliveries = useCallback(async () => {
+    if (!profile?.id) {
+      setDeliveries([]);
+      setLoadingDeliveries(false);
+      return;
+    }
+    setLoadingDeliveries(true);
+    try {
+      const data = await fetchModeratorDeliveries(profile.id);
+      setDeliveries(data || []);
+    } catch (error) {
+      console.error("Error fetching moderator deliveries:", error);
+      setDeliveries([]);
+    } finally {
+      setLoadingDeliveries(false);
+    }
+  }, [profile]); // Depends on profile to ensure we have the ID
+
+  // Memoized load policies function - now directly using Admin's fetchPolicies
+  const loadPolicies = useCallback(async () => {
+    setLoadingPolicies(true);
+    try {
+      const data = await fetchPolicies(); // ⭐ Using the imported Admin action
+      setPolicies(data || []);
+    } catch (error) {
+      console.error("Error fetching policies:", error); // Adjusted error message
+      setPolicies([]);
+    } finally {
+      setLoadingPolicies(false);
+    }
+  }, []); // Empty dependency array as fetchPolicies likely doesn't depend on local state/props
+
+  // Initial data load for deliveries and policies
   useEffect(() => {
-    if (profile) loadDeliveries();
-  }, [profile]);
-
-  const loadDeliveries = async () => {
-    setLoading(true);
-    const data = await fetchModeratorDeliveries(profile);
-    setDeliveries(data || []);
-    setLoading(false);
-  };
+    loadDeliveries();
+    loadPolicies();
+  }, [loadDeliveries, loadPolicies]); // Dependencies on memoized functions
 
   // close dropdown on outside click
   useEffect(() => {
@@ -48,6 +84,13 @@ export default function DeliveryModerator() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Callback to refresh both deliveries and policies after actions (Create/Edit)
+  const handleDataRefresh = useCallback(async () => {
+    await loadDeliveries();
+    await loadPolicies();
+  }, [loadDeliveries, loadPolicies]);
+
 
   return (
     <div className="delivery-container-moderator">
@@ -75,7 +118,7 @@ export default function DeliveryModerator() {
             className="btn btn-archive-moderator"
             onClick={() => setShowArchive((prev) => !prev)}
           >
-            <FaArchive className="btn-icon" />{" "}
+            <FaArchive className="btn-icon-moderator" />
             {showArchive ? "Back to Deliveries" : "View Archive"}
           </button>
 
@@ -107,8 +150,11 @@ export default function DeliveryModerator() {
           <ModeratorDeliveryTable
             currentUser={profile}
             deliveries={deliveries}
-            loading={loading}
+            loading={loadingDeliveries || loadingPolicies}
+            policies={policies} // Pass fetched policies
             onEditDelivery={(delivery) => setEditDelivery(delivery)}
+            onSelectPolicyForClientInfo={setSelectedPolicyForClientInfo}
+            onRefreshData={handleDataRefresh}
           />
         )}
       </div>
@@ -120,7 +166,7 @@ export default function DeliveryModerator() {
             <ModeratorDeliveryCreationController
               onCancel={() => setShowCreateModal(false)}
               onCreateSuccess={async () => {
-                await loadDeliveries();
+                await handleDataRefresh();
                 setShowCreateModal(false);
               }}
             />
@@ -136,13 +182,19 @@ export default function DeliveryModerator() {
               delivery={editDelivery}
               onClose={() => setEditDelivery(null)}
               onUpdateSuccess={async () => {
-                await loadDeliveries();
+                await handleDataRefresh();
                 setEditDelivery(null);
               }}
             />
           </div>
         </div>
       )}
+
+      {/* === CLIENT INFO MODAL === */}
+      <ClientInfo
+        selectedPolicy={selectedPolicyForClientInfo}
+        onClose={() => setSelectedPolicyForClientInfo(null)}
+      />
     </div>
   );
 }

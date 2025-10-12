@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
-import "./moderator-styles/client-table-styles.css";
-import ClientInfo from "../AdminApp/ClientInfo";
-import { fetchModeratorClients, getCurrentUser ,archiveClient} from "./ModeratorActions/ModeratorClientActions";
-import { FaEdit } from "react-icons/fa"; 
+import "../moderator-styles/client-table-styles.css";
+import ClientInfo from "../../AdminApp/ClientInfo";
+import { fetchModeratorClients, getCurrentUser ,archiveClient} from "../ModeratorActions/ModeratorClientActions";
+import { FaEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import ScrollToTopButton from "../ReusableComponents/ScrollToTop";
+import ScrollToTopButton from "../../ReusableComponents/ScrollToTop";
 
 export default function ClientTableModerator({ agentId , onEditClient }) {
   const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [selectedClientID, setSelectedClientID] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(15); 
+  const [rowsPerPage, setRowsPerPage] = useState(15);
   const [searchTerm, setSearchTerm] = useState("");
 
   //  Load clients (always respect agentId)
@@ -40,9 +40,27 @@ export default function ClientTableModerator({ agentId , onEditClient }) {
   };
 
   // 🔹 Pagination logic
- const filteredClients = clients.filter((client) =>
-  (client.internal_id || "").toLowerCase().includes(searchTerm.toLowerCase())
-);
+  // --- MODIFIED FILTERING LOGIC (only ID and Name) ---
+  const filteredClients = clients.filter((client) => {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+    // Construct full name for searching
+    const clientFullName = [
+        client.prefix,
+        client.first_Name,
+        client.middle_Name,
+        client.family_Name,
+        client.suffix,
+    ].filter(Boolean).join(" ").toLowerCase();
+
+    // Search only by Client ID or Client Full Name
+    return (
+      (client.internal_id || "").toLowerCase().includes(lowerCaseSearchTerm) ||
+      clientFullName.includes(lowerCaseSearchTerm)
+    );
+  });
+  // --- END MODIFIED FILTERING LOGIC ---
+
 
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
@@ -57,7 +75,7 @@ export default function ClientTableModerator({ agentId , onEditClient }) {
     const handleArchiveClick = async (clientId) => {
       const confirmArchive = window.confirm("Proceed to archive this client?");
       if (!confirmArchive) return;
-  
+
       try {
         await archiveClient(clientId);
         setClients((prev) => prev.filter((c) => c.uid !== clientId));
@@ -67,17 +85,16 @@ export default function ClientTableModerator({ agentId , onEditClient }) {
     };
 
 
-
   return (
     <>
       <div className="client-table-container-moderator">
         <div className="client-table-header-moderator">
-          <h2>Active Clients</h2>
+          <h2>Active Clients ({filteredClients.length})</h2>
 
           <div className="client-header-controls-moderator">
             <input
               type="text"
-              placeholder="Search by ID..."
+              placeholder="Search by ID or Name..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="client-search-input-moderator"
@@ -162,7 +179,7 @@ export default function ClientTableModerator({ agentId , onEditClient }) {
                         >
                           Archive
                         </button>
-                      </td>                     
+                      </td>
                     </tr>
                   ))
                 ) : (

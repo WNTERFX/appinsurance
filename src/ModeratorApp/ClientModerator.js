@@ -1,4 +1,4 @@
-import ClientTableModerator from "./ClientTableModerator";
+import ClientTableModerator from "./ModeratorTables/ClientTableModerator";
 import './moderator-styles/client-styles-moderator.css';
 import React, { useState, useRef, useEffect } from "react";
 import ModeratorClientArchiveTable from "./ModeratorTables/ModeratorClientArchiveTable";
@@ -105,16 +105,7 @@ export default function ClientModerator() {
       </div>
     </div>
   </div>
-            {!showArchive && (
-            <div className="Client-content-moderator">
-                <div className="Agents-moderator">
-                    Lily bon                    
-                        <p>Total Client</p>
-                        <p>Client_Count</p>
-                </div>
-            </div>
-       
-            )}
+
             {/* Table toggle */}
            <div className="client-data-field-moderator">
         {showArchive ? (

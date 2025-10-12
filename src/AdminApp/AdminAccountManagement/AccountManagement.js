@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; // ADDED useRef
 import { useNavigate } from "react-router-dom";
 import "../styles/account-management-styles.css";
 import { createAccount, fetchAccounts, editAccount, deleteAccount } from "./AccountCreationActions";
 import ScreenLock from "../../ReusableComponents/ScreenLock";
 import { showGlobalAlert } from "../../ReusableComponents/GlobalAlert";
 import { db } from "../../dbServer";
+
+import DropdownAccounts from "../DropDownAccounts";
+import { FaUserCircle } from "react-icons/fa"; // ADDED FaUserCircle import
 
 // 🪵 Logging utility
 function logEvent(label, data = null) {
@@ -32,6 +35,12 @@ export default function AccountManagement() {
   const [passwordLocked, setPasswordLocked] = useState(true);
   const [showLockScreen, setShowLockScreen] = useState(false);
 
+  // Profile Menu State and Refs
+  const profileButtonRef = useRef(null); // Renamed from buttonRef to avoid confusion
+  const dropdownRef = useRef(null);     // ADDED dropdownRef
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false); // Renamed from open to avoid confusion
+
+
   // 🧭 Load current user
   useEffect(() => {
     const loadUser = async () => {
@@ -46,6 +55,23 @@ export default function AccountManagement() {
   useEffect(() => {
     if (activeTab === "edit") loadAccounts();
   }, [activeTab]);
+
+  // Click outside handler for profile menu dropdown
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target) &&
+        profileButtonRef.current && // Use the new ref name here
+        !profileButtonRef.current.contains(e.target)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []); // ADDED: Dependency array for useEffect
+
 
   const loadAccounts = async () => {
     logEvent("Fetching accounts...");
@@ -196,6 +222,30 @@ export default function AccountManagement() {
           >
             Edit Accounts
           </button>
+
+          {/* ADDED: Profile Menu     nextime the ui in profile-menu*/}
+          <div className="profile-menu">
+            <button
+              ref={profileButtonRef} // Use the new ref name
+              className="profile-button"
+              onClick={() => setIsProfileMenuOpen((s) => !s)} // Use the new state name
+              aria-haspopup="true"
+              aria-expanded={isProfileMenuOpen} // Use the new state name
+            >
+              <span className="profile-name">Admin</span> {/* Display current user's email or "Admin" */}
+              <FaUserCircle className="profile-icon" />
+            </button>
+
+            <div ref={dropdownRef}> {/* ADDED ref to the dropdown container */}
+              <DropdownAccounts
+                open={isProfileMenuOpen} // Use the new state name
+                onClose={() => setIsProfileMenuOpen(false)} // Use the new state name
+                onDarkMode={() => console.log("Dark Mode toggled")} // Placeholder for dark mode logic
+              />
+            </div>
+          </div>
+          {/* END ADDED: Profile Menu */}
+
         </div>
       </div>
 
@@ -216,7 +266,7 @@ export default function AccountManagement() {
                   </tr>
                 </thead>
                 <tbody>
-  
+
                    {accounts.map(acc => (
                     <tr key={acc.id}>
                       <td>

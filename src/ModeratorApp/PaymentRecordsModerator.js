@@ -3,8 +3,9 @@ import './moderator-styles/payment-records-styles-moderator.css';
 import PaymentDueTableModerator from './ModeratorTables/PaymentDueTableModerator';
 import  DropdownAccountsModerator  from './DropDownAccountsModerator';
 import { useEffect, useState, useRef } from "react";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle ,FaArchive } from "react-icons/fa";
 import { useModeratorProfile } from "../ModeratorApp/useModeratorProfile";
+import PaymentDueArchive from "../AdminApp/AdminTables/PaymentDueArchive";  // for now i use it in addmin
 
 export default function PaymentRecordsModerator() {
 
@@ -12,6 +13,7 @@ export default function PaymentRecordsModerator() {
       const dropdownRef = useRef(null);
       const buttonRef = useRef(null);
         const profile = useModeratorProfile();
+         const [showArchive, setShowArchive] = useState(false); // toggle archive
     
       // close dropdown when clicking outside
       useEffect(() => {
@@ -33,15 +35,20 @@ export default function PaymentRecordsModerator() {
         <div className="payment-records-container-moderator">
               <div className="payment-record-header-moderator">
           <div className="right-actions-moderator">
-            <p className="Payment-title-moderator">Payment Records</p>
-            <input
-            type="text"
-            className="record-search"
-            placeholder="Search clients..."
-            />
+            <p className="Payment-title-moderator">
+              {showArchive ? "Archived Payments" : "Payment Records"}
+            </p>
+            
           </div>
 
                   <div className="left-actions-moderator">
+                   <button
+                    className="btn btn-archive"
+                    onClick={() => setShowArchive((prev) => !prev)}
+                    >
+                     <FaArchive className="btn-icon" />
+                    {showArchive ? "Back to Records" : "View Archive"}
+                   </button>
                     <div className="profile-menu-moderator">
                       <button
                         ref={buttonRef}
@@ -69,11 +76,9 @@ export default function PaymentRecordsModerator() {
             <div className="payment-records-content-moderator">
                 <div className="policy-data-field-moderator">
                     <div className="control-options-moderator">
-                        <button className="disapprove-btn-policy-moderator">Edit</button>
-                        <button className="print-btn-policy-moderator">Print</button>
                     </div>
                 <div className="client-payment-table-moderator"> 
-                 <PaymentDueTableModerator/>                     
+                 {showArchive ? <PaymentDueArchive /> : <PaymentDueTableModerator />}                  
             </div>
             </div>
              

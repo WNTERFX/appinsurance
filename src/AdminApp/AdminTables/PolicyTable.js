@@ -84,7 +84,7 @@ export default function PolicyTable() {
     }
   };
 
-    const filteredAndSearchedPolicies = useMemo(() => {
+ const filteredAndSearchedPolicies = useMemo(() => {
       let tempPolicies = policies;
 
       // 🔹 Partner filter
@@ -115,7 +115,11 @@ export default function PolicyTable() {
       if (searchTerm.trim()) {
         const lowerCaseSearchTerm = searchTerm.trim().toLowerCase();
         tempPolicies = tempPolicies.filter((policy) => {
-          const policyIdMatch = policy.id.toString().includes(lowerCaseSearchTerm);
+          // Keep searching by policy.id (which you had)
+          const policyMainIdMatch = policy.id.toString().toLowerCase().includes(lowerCaseSearchTerm);
+
+          // ADDED: Search by policy.internal_id
+          const policyInternalIdMatch = policy.internal_id?.toString().toLowerCase().includes(lowerCaseSearchTerm);
 
           const client = policy.clients_Table;
           const clientName = client
@@ -131,7 +135,8 @@ export default function PolicyTable() {
 
           const clientNameMatch = clientName.includes(lowerCaseSearchTerm);
 
-          return policyIdMatch || clientNameMatch;
+          // Combine all match conditions
+          return policyMainIdMatch || policyInternalIdMatch || clientNameMatch;
         });
       }
 
