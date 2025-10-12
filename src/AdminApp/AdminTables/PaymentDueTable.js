@@ -224,6 +224,7 @@ export default function PolicyWithPaymentsList() {
                     <thead>
                       <tr>
                         <th>Date</th>
+                        <th>Penalty %</th>
                         <th>Amount to be Paid</th>
                         <th>Paid Amount</th>
                         <th>Status</th>
@@ -240,6 +241,7 @@ export default function PolicyWithPaymentsList() {
                           return (
                             <tr key={p.id} className={`payment-${status}`}>
                               <td>{new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</td>
+                              <td></td>
                               <td>{p.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
                               <td>{p.paid_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" }) || "₱0.00"}</td>
                               <td className="payment-status-cell">{status}</td>
