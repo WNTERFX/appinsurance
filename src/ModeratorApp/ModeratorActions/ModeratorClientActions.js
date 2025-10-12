@@ -11,22 +11,35 @@ export async function getCurrentUser() {
 }
 
 // Fetch ONLY clients assigned to this moderator
-export async function fetchModeratorClients(agentId) {
-  const { data, error } = await db
+export async function fetchModeratorClients(agentId, from = null, to = null) {
+  if (!agentId) {
+    console.error("fetchModeratorClients requires a valid agentId");
+    return [];
+  }
+
+  let query = db
     .from("clients_Table")
     .select(`
       *,
       employee:employee_Accounts(personnel_Name)
     `)
-    .eq("agent_Id", agentId) // filter only assigned
-    .or("is_archived.is.null,is_archived.eq.false"); // allow null or false
+    .eq("agent_Id", agentId) // only clients assigned to the moderator
+    .or("is_archived.is.null,is_archived.eq.false"); // exclude archived clients
+
+  // Optional date range filter
+  if (from && to) {
+    query = query.gte("client_Registered", from).lte("client_Registered", to);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
-    console.error("Error fetching moderator clients:", error);
+    console.error("Error fetching moderator clients:", error.message);
     return [];
   }
 
-  return data || [];
+  console.log("MODERATOR CLIENTS DATA:", data);
+  return data;
 }
 
 // Create new client for this moderator

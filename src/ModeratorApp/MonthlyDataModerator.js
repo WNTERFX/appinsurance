@@ -1,147 +1,118 @@
 
-import { BarChart } from '@mui/x-charts/BarChart';
-import FilterModerator from './FilterModerator';
-import MonthlyDataPartnersModerator from './MonthlyDataPartnersModerator';
-import './moderator-styles/monthly-styles-moderator.css';
-import DropdownAccountsModerator from "./DropDownAccountsModerator";
-import { FaPlus, FaArchive, FaUserCircle } from "react-icons/fa";
-import { useEffect, useState, useRef } from "react";
-import { useModeratorProfile } from "../ModeratorApp/useModeratorProfile";
+import { FaUserCircle, FaMoon, FaSignOutAlt } from "react-icons/fa";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function MonthlyDataModerator() {
- const [open, setOpen] = useState(false);
-    const dropdownRef = useRef(null);
-    const buttonRef = useRef(null);
-    const profile = useModeratorProfile();
+import './moderator-styles/monthly-styles-moderator.css'
+import DropDownAccountsModerator from './DropDownAccountsModerator' 
+import PrintingModalModerator from './RecordPrintingModerator/PrintingModalModerator';
 
-    // dropdown close
-      useEffect(() => {
-        function handleClickOutside(e) {
-          if (
-            dropdownRef.current &&
-            !dropdownRef.current.contains(e.target) &&
-            buttonRef.current &&
-            !buttonRef.current.contains(e.target)
-          ) {
-            setOpen(false);
-          }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-      }, []);
+export default function MonthlyDataModerator({ view, setView }) {
+  const navigate = useNavigate();
 
- 
-    return (
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [recordType, setRecordType] = useState(null);
 
-        <div className="monthly-data-container-moderator">
-            <div className="monthly-data-header-moderator">
-                   <div className="right-actions-moderator">
-                <p className="reports-title-moderator">Reports</p>
-                <input
-                    type="text"
-                    className="monthly-data-search-moderator"
-                    placeholder="Search clients..."
-                />
-                </div>
-                 <div className="left-actions-moderator">
+  // close when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(e.target)
+      ) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-                     <div className="profile-menu-moderator">
-                        <button
-                        ref={buttonRef}
-                       className="profile-button-moderator"
-                       onClick={() => setOpen((s) => !s)}
-                        aria-haspopup="true"
-                        aria-expanded={open}
-                       >
-                         <span className="profile-name-moderator">{profile?.fullName || "?"}</span>
-                       <FaUserCircle className="profile-icon-moderator" />
-                        </button>
-                                
-                          <div>
-                       <DropdownAccountsModerator
-                          open={open}
-                         onClose={() => setOpen(false)}
-                       onDarkMode={() => console.log("Dark Mode toggled")}
-                          />
-                        </div>
-                     </div>
-                 </div>
-            </div>
-                <div className="client-table-moderator"> 
-           <table>
-                <thead>
-                    <tr>
-                        <th>Client ID</th>
-                        <th>Client Name</th>
-                        <th>Agent</th>
-                        <th>Insurance Partner</th>
-                        <th>Address</th>
-                        <th>Phone Number</th>
-                        <th>Vehicle</th>
-                        <th>Client Status</th>
-                        <th>Client Registered</th>
-                        <th>Policy Exception </th>
-                        <th>Policy Expiration</th>
-                        <th>Remarks</th>
-
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>John Doe</td>
-                        <td>Lily Bon</td>
-                        <td>Cocogen</td>
-                        <td>123 Main St, Quezon City</td>
-                        <td>123-456-7890</td>
-                        <td>Toyota Vios</td>
-                        <td>Active</td>
-                        <td>2025-10-01</td>
-                        <td>2025-10-01</td>
-                        <td>2026-10-01</td>
-                        <td>Approved</td>
-                    </tr>
-                </tbody>
-
-                  <tbody>
-                    <tr>
-                        <td>2</td>
-                        <td>Jane Doe</td>
-                        <td>Lily Bon</td>
-                        <td>Cocogen</td>
-                        <td>123 Main St, Quezon City</td>
-                        <td>123-456-7890</td>
-                        <td>Toyota Vios</td>
-                        <td>Active</td>
-                        <td>2025-10-01</td>
-                        <td>-------</td>
-                        <td>-------</td>
-                        <td>Pending</td>
-                    </tr>
-                </tbody>
-            </table> 
-            </div>
-
-
-
-
-          {/**   <div className="data-area-moderator">
-                  <MonthlyDataPartnersModerator /> 
-            </div>
-           
-
-            <div className="graph-container-moderator">
-                <p>Insurance</p>
-                <div className="graph-moderator">
-                   <BarChart
-                           xAxis={[{ scaleType: 'band', data: ['group A', 'group B', 'group C'] }]}
-                           series={[{ data: [4, 3, 5] }, { data: [1, 6, 3] }, { data: [2, 5, 6] }]}
-                           height={200}
-                           width={1000}
-                        />    
-                </div>
-            </div>*/}
+  return (
+    <div className="moderator-reports-container">
+      <div className="moderator-reports-header">
+        <div className="moderator-right-actions">
+          <p className="moderator-reports-title">Reports</p>
         </div>
-    );
 
+        <div className="moderator-left-actions">
+          <div className="moderator-profile-menu">
+            <button
+              ref={buttonRef}
+              className="moderator-profile-button"
+              onClick={() => setOpen((s) => !s)}
+              aria-haspopup="true"
+              aria-expanded={open}
+            >
+              <span className="moderator-profile-name">Moderator</span>
+              <FaUserCircle className="moderator-profile-icon" />
+            </button>
+
+            <div>
+              <DropDownAccountsModerator
+                open={open}
+                onClose={() => setOpen(false)}
+                onDarkMode={() => console.log("Dark Mode toggled")}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="moderator-client-record header-with-button">
+        <p className="moderator-client-title">Client</p>
+        <button
+          className="moderator-btn moderator-btn-create"
+          onClick={() => {
+            setRecordType("client");
+            setOpenModal(true);
+          }}
+        >
+          Print
+        </button>
+      </div>
+
+      <div className="moderator-policy-record header-with-button">
+        <p className="moderator-policy-title">Policy</p>
+        <button
+          className="moderator-btn moderator-btn-create"
+          onClick={() => {
+            setRecordType("policy");
+            setOpenModal(true);
+          }}
+        >
+          Print
+        </button>
+      </div>
+
+      <div className="moderator-due-record header-with-button">
+        <p className="moderator-due-title">Due</p>
+        <button
+          className="moderator-btn moderator-btn-create"
+          onClick={() => {
+            setRecordType("due");
+            setOpenModal(true);
+          }}
+        >
+          Print
+        </button>
+      </div>
+
+      <div className="moderator-renewal-record header-with-button">
+        <p className="moderator-renewals-title">Renewals</p>
+        <button className="moderator-btn moderator-btn-create">Print</button>
+      </div>
+
+      {openModal && (
+        <PrintingModalModerator
+          recordType={recordType}
+          onClose={() => setOpenModal(false)}
+        />
+      )}
+    </div>
+  );
 }

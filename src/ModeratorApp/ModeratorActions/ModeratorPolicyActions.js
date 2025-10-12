@@ -1,8 +1,15 @@
 import { db } from "../../dbServer";
 
 //  Fetch only policies where the linked client belongs to the moderator
-export async function fetchModeratorPolicies(moderatorId) {
-  const { data, error } = await db
+export async function fetchModeratorPolicies(moderatorId, fromDate = null, toDate = null, partnerId = null) {
+  console.log("fetchModeratorPolicies called with:", {
+    moderatorId,
+    fromDate,
+    toDate,
+    partnerId,
+  });
+
+  let query = db
     .from("policy_Table")
     .select(`
       *,
@@ -15,7 +22,8 @@ export async function fetchModeratorPolicies(moderatorId) {
         suffix,
         address,
         email,
-        phone_Number
+        phone_Number,
+        internal_id
       ),
       insurance_Partners(
         insurance_Name,
@@ -23,15 +31,37 @@ export async function fetchModeratorPolicies(moderatorId) {
       ),
       policy_Computation_Table(
         total_Premium
-      ) 
-     
+      )
     `)
-   
-
-    .eq("clients_Table.agent_Id", moderatorId) //  filter by the agent that owns the client
+    .eq("clients_Table.agent_Id", moderatorId) // ✅ filter by agent that owns the client
     .or("is_archived.is.null,is_archived.eq.false")
-    .is("archival_date", null)
-    .order("created_at", { ascending: false });
+    .is("archival_date", null);
+
+  // ✅ Add date filtering if both are provided
+  if (fromDate && toDate) {
+    query = query
+      .gte("created_at", fromDate)
+      .lte("created_at", toDate);
+  }
+
+  // ✅ Add partner filter if provided
+  if (partnerId) {
+    console.log("Applying partner filter:", partnerId);
+    query = query.eq("partner_id", partnerId);
+  }
+
+  query = query.order("created_at", { ascending: false });
+
+  const { data, error } = await query;
+
+  console.log("Moderator policy query result:", {
+    count: data?.length,
+    error,
+  });
+
+  if (data && data.length > 0) {
+    console.log("Sample moderator policy:", data[0].partner_id);
+  }
 
   if (error) throw error;
   return data || [];
