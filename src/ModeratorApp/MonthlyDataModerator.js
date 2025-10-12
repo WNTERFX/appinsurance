@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import './moderator-styles/monthly-styles-moderator.css'
 import DropDownAccountsModerator from './DropDownAccountsModerator' 
 import PrintingModalModerator from './RecordPrintingModerator/PrintingModalModerator';
+import { useModeratorProfile } from './useModeratorProfile';
 
 export default function MonthlyDataModerator({ view, setView }) {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function MonthlyDataModerator({ view, setView }) {
   const buttonRef = useRef(null);
   const [openModal, setOpenModal] = useState(false);
   const [recordType, setRecordType] = useState(null);
+  const profile = useModeratorProfile();
 
   // close when clicking outside
   useEffect(() => {
@@ -48,9 +50,9 @@ export default function MonthlyDataModerator({ view, setView }) {
               aria-haspopup="true"
               aria-expanded={open}
             >
-              <span className="moderator-profile-name">Moderator</span>
-              <FaUserCircle className="moderator-profile-icon" />
-            </button>
+              <span className="moderator-profile-name">{profile?.fullName || "?"}</span>
+              <FaUserCircle className="profile-icon-moderator" />  {/** nexttime*/}
+            </button> 
 
             <div>
               <DropDownAccountsModerator

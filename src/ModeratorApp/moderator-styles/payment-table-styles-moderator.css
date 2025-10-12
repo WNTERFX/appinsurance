@@ -7,7 +7,7 @@ body {
 }
 
 /* Main Payments Overview Section */
-.payments-overview-section-moderator {
+.payments-overview-section {
     padding: 20px;
     box-sizing: border-box;
     margin-top: -23px; 
@@ -17,7 +17,7 @@ body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Subtle shadow */
 }
 
-.payments-overview-header-moderator {
+.payments-overview-header {
     display: flex;
     justify-content: space-between; /* Puts H2 on left, search controls on right */
     align-items: center;
@@ -28,7 +28,7 @@ body {
     gap: 15px; /* Gap between the H2 and the search bar block */
 }
 
-.payments-overview-header-moderator h2 {
+.payments-overview-header h2 {
     margin: 0;
     font-size: 20px;
     font-weight: 600;
@@ -36,7 +36,7 @@ body {
     white-space: nowrap; /* Prevent heading from wrapping */
 }
 
-.search-filter-refresh-bar-moderator {
+.search-filter-refresh-bar {
     display: flex;
     align-items: center;
     gap: 10px; /* Space between input, select, button */
@@ -44,7 +44,7 @@ body {
     justify-content: flex-end; /* Align to the right if space allows */
 }
 
-.search-input-moderator {
+.search-input {
     padding: 8px 12px;
     border: 1px solid #cccccc;
     border-radius: 4px;
@@ -53,12 +53,12 @@ body {
     font-size: 14px;
     outline: none;
 }
-.search-input-moderator:focus {
+.search-input:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
 }
 
-.result-select-wrapper-moderator {
+.result-select-wrapper {
     display: flex;
     align-items: center;
     gap: 5px;
@@ -67,7 +67,7 @@ body {
     white-space: nowrap;
 }
 
-.result-select-moderator {
+.result-select {
     padding: 8px;
     border: 1px solid #cccccc;
     border-radius: 4px;
@@ -75,12 +75,12 @@ body {
     outline: none;
     cursor: pointer;
 }
-.result-select-moderator:focus {
+.result-select:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
 }
 
-.refresh-btn-moderator {
+.refresh-btn {
     padding: 8px 15px;
     background-color: #f0f0f0;
     border: 1px solid #cccccc;
@@ -91,13 +91,13 @@ body {
     transition: background-color 0.2s ease;
     white-space: nowrap;
 }
-.refresh-btn-moderator:hover {
+.refresh-btn:hover {
     background-color: #e0e0e0;
 }
 
 
 /* Policy Item Card (for each policy overview) */
-.policy-item-card-moderator {
+.policy-item-card {
     border: 1px solid #e0e0e0;
     border-radius: 6px;
     margin-bottom: 15px;  
@@ -105,7 +105,7 @@ body {
     background-color: #ffffff;
 }
 
-.policy-summary-moderator {
+.policy-summary {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -116,41 +116,41 @@ body {
     border-bottom: 1px solid #eeeeee; /* Add a bottom border for separation between summary rows */
 }
 /* For the last policy summary, remove the bottom border */
-.policy-item-card-moderator:last-child .policy-summary-moderator {
+.policy-item-card:last-child .policy-summary {
     border-bottom: none;
 }
-.policy-item-card-moderator:last-child .policy-details-table-wrapper.show {
+.policy-item-card:last-child .policy-details-table-wrapper.show {
     border-bottom: none; /* Also remove if the last expanded item */
 }
 
 
-.policy-summary-moderator:hover {
+.policy-summary:hover {
     background-color: #f0f0f0;
 }
 
-.policy-info-left-moderator {
+.policy-info-left {
     display: flex;
     gap: 25px;
     font-size: 15px;
 }
 
-.policy-id-moderator {
+.policy-id {
     font-weight: bold;
     color: #333;
 }
 
-.policy-holder-moderator {
+.policy-holder {
     color: #666;
 }
 
-.policy-info-right-moderator {
+.policy-info-right {
     display: flex;
     align-items: center;
     gap: 20px;
 }
 
 /* Status Badges within policy summary */
-.status-moderator {
+.status {
     padding: 4px 10px;
     border-radius: 4px;
     font-size: 13px;
@@ -158,20 +158,20 @@ body {
     white-space: nowrap;
 }
 
-.status-moderator.active {
+.status.active {
     background-color: #d4edda;
     color: #155724;
     border: 1px solid #c3e6cb;
 }
 
-.status-moderator.inactive {
+.status.inactive {
     background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
 }
 
 /* Expand Toggle Button (the ⌄ arrow) */
-.expand-toggle-moderator {
+.expand-toggle {
     background: none;
     border: none;
     font-size: 18px;
@@ -183,18 +183,18 @@ body {
     outline: none;
 }
 
-.expand-toggle-moderator .arrow-moderator {
+.expand-toggle .arrow {
     display: block;
     line-height: 1;
 }
 
-.expand-toggle-moderator.expanded .arrow-moderator {
+.expand-toggle.expanded .arrow {
     transform: rotate(180deg);
 }
 
 
 /* Payment Details Table Wrapper (the expandable section) */
-.payment-details-table-wrapper-moderator {
+.payment-details-table-wrapper {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.5s ease-out, padding 0.5s ease-out;
@@ -202,7 +202,7 @@ body {
     padding: 0 20px;
 }
 
-.payment-details-table-wrapper-moderator.show {
+.payment-details-table-wrapper.show {
     max-height: 600px; /* Enough for client info + 6 payment rows */
     padding: 15px 20px;
     border-bottom: 1px solid #eeeeee;
@@ -210,14 +210,14 @@ body {
 }
 
 
-.payment-details-title-moderator {
+.payment-details-title {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 15px;
     color: #444;
 }
 
-.no-payments-message-moderator {
+.no-payments-message {
     padding: 10px 0;
     color: #666;
     text-align: center;
@@ -225,56 +225,56 @@ body {
 }
 
 /* Inner Payments Table */
-.payments-table-moderator {
+.payments-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
     font-size: 14px;
 }
 
-.payments-table-moderator th,
-.payments-table-moderator td {
+.payments-table th,
+.payments-table td {
     border: 1px solid #e0e0e0;
     padding: 10px 12px;
     text-align: left;
 }
 
-.payments-table-moderator th {
+.payments-table th {
     background-color: #f2f2f2;
     font-weight: 600;
     color: #555;
 }
 
-.payments-table-moderator tbody tr:nth-child(even) {
+.payments-table tbody tr:nth-child(even) {
     background-color: #f9f9f9; /* RE-ADDED: Light background for even rows */
 }
 
 /* Reverted to OLD Payment Status Row Coloring */
-.payment-not-paid-moderator td {
+.payment-not-paid td {
   background-color: #ffcccc; /* light red */
   color: #b30000;
 }
 
-.payment-partially-paid-moderator td {
+.payment-partially-paid td {
   background-color: #fff3cd; /* light yellow */
   color: #856404;
 }
 
-.payment-fully-paid-moderator td {
+.payment-fully-paid td {
   background-color: #d4edda; /* light green */
   color: #155724;
 }
 
-.payment-status-cell-moderator {
+.payment-status-cell {
     text-transform: capitalize;
     font-weight: 600;
     white-space: nowrap;
 }
 
-.payment-actions-moderator button {
+.payment-actions button {
     padding: 6px 12px;
-    border: 1px solid #007bff;
-    background-color: #007bff;
+    border: 1px solid #E0E0E0;
+    background-color: #E0E0E0;
     color: white;
     border-radius: 4px;
     cursor: pointer;
@@ -282,14 +282,14 @@ body {
     transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.payment-actions-moderator button:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
+.payment-actions button:hover {
+    background-color: #D0D0D0;
+    border-color: #D0D0D0;
 }
 
 
 /* Pagination Controls */
-.pagination-controls-moderator {
+.pagination-controls {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -299,7 +299,7 @@ body {
     color: #555;
 }
 
-.pagination-controls-moderator button {
+.pagination-controls button {
     padding: 8px 15px;
     border: 1px solid #cccccc;
     background-color: #f0f0f0;
@@ -310,18 +310,18 @@ body {
     transition: background-color 0.2s ease;
 }
 
-.pagination-controls-moderator button:hover:not(:disabled) {
+.pagination-controls button:hover:not(:disabled) {
     background-color: #e0e0e0;
 }
 
-.pagination-controls-moderator button:disabled {
+.pagination-controls button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
 
 
 /* Modal Styles */
-.payment-modal-backdrop-moderator {
+.payment-modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
@@ -334,7 +334,7 @@ body {
   z-index: 1000;
 }
 
-.payment-modal-moderator {
+.payment-modal {
   background: #fff;
   padding: 20px 25px;
   border-radius: 8px;
@@ -346,21 +346,21 @@ body {
   gap: 10px;
 }
 
-.payment-modal-moderator input {
+.payment-modal input {
   padding: 8px 10px;
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 1rem;
 }
 
-.modal-actions-moderator {
+.modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 10px;
 }
 
-.modal-actions-moderator button {
+.modal-actions button {
   padding: 8px 15px;
   border-radius: 6px;
   border: none;
@@ -370,80 +370,80 @@ body {
   font-weight: 500;
 }
 
-.modal-actions-moderator button:hover {
+.modal-actions button:hover {
   background-color: #d0d0d0;
 }
-.modal-actions-moderator button:first-child {
+.modal-actions button:first-child {
     background-color: #007bff;
     color: white;
 }
-.modal-actions-moderator button:first-child:hover {
+.modal-actions button:first-child:hover {
     background-color: #0056b3;
 }
 
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
-    .payments-overview-section-moderator {
+    .payments-overview-section {
         padding: 15px;
         margin: 15px 0; /* Adjust margin for smaller screens, full width */
         max-width: unset; /* Remove max-width on small screens */
     }
 
-    .payments-overview-header-moderator {
+    .payments-overview-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
         padding-bottom: 10px;
     }
-    .payments-overview-header-moderator h2 {
+    .payments-overview-header h2 {
         font-size: 18px;
         width: 100%; /* Ensure heading takes full width if wrapping */
     }
 
-    .search-filter-refresh-bar-moderator {
+    .search-filter-refresh-bar {
         flex-direction: column;
         align-items: stretch;
         width: 100%; /* Take full width of its parent */
         gap: 8px;
     }
-    .search-input-moderator {
+    .search-input {
         width: 100%;
     }
-    .result-select-wrapper-moderator {
+    .result-select-wrapper {
         justify-content: space-between;
         width: 100%;
     }
-    .refresh-btn-moderator {
+    .refresh-btn {
         width: 100%;
     }
 
-    .policy-summary-moderator {
+    .policy-summary {
         flex-direction: column;
         align-items: flex-start;
         gap: 8px;
         padding: 12px 15px;
     }
-    .policy-info-left-moderator {
+    .policy-info-left {
         flex-direction: column;
         gap: 5px;
         width: 100%;
     }
-    .policy-info-right-moderator {
+    .policy-info-right {
         width: 100%;
         justify-content: space-between;
     }
 
-    .payments-table-moderator th, .payments-table-moderator td {
+    .payments-table th, .payments-table td {
         font-size: 0.85rem;
         padding: 8px 10px;
     }
 
-    .payment-details-table-wrapper-moderator.show {
+    .payment-details-table-wrapper.show {
         padding: 10px 15px;
     }
 
-    .payment-details-title-moderator {
+    .payment-details-title {
         font-size: 16px;
         margin-bottom: 10px;
     }
@@ -453,14 +453,14 @@ body {
 /* Additional styles for Payment Generation Feature */
 
 /* Payment Header with Generate Button */
-.payment-header-with-button-moderator {
+.payment-header-with-button {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
 }
 
-.generate-payment-btn-moderator {
+.generate-payment-btn {
     padding: 8px 16px;
     background-color: #28a745;
     color: white;
@@ -473,27 +473,27 @@ body {
     white-space: nowrap;
 }
 
-.generate-payment-btn-moderator:hover {
+.generate-payment-btn:hover {
     background-color: #218838;
 }
 
 /* Payment Generation Modal Specific Styles */
-.payment-generation-modal-moderator {
+.payment-generation-modal {
     width: 400px;
     max-width: 90%;
 }
 
-.modal-policy-info-moderator {
+.modal-policy-info {
     margin-bottom: 20px;
     color: #666;
     font-size: 14px;
 }
 
-.modal-form-group-moderator {
+.modal-form-group {
     margin-bottom: 20px;
 }
 
-.modal-label-moderator {
+.modal-label {
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
@@ -501,7 +501,7 @@ body {
     color: #333;
 }
 
-.modal-select-moderator {
+.modal-select {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
@@ -510,7 +510,7 @@ body {
     background-color: white;
 }
 
-.monthly-preview-moderator {
+.monthly-preview {
     margin-top: 10px;
     font-size: 13px;
     color: #666;
@@ -518,29 +518,29 @@ body {
 }
 
 /* Adjust modal actions buttons order for payment generation */
-.payment-generation-modal-moderator .modal-actions-moderator button:first-child {
+.payment-generation-modal .modal-actions button:first-child {
     order: 2; /* Generate button on right */
     background-color: #007bff !important;
     color: white !important;
 }
 
-.payment-generation-modal-moderator .modal-actions-moderator button:first-child:hover {
+.payment-generation-modal .modal-actions button:first-child:hover {
     background-color: #0056b3 !important;
 }
 
-.payment-generation-modal-moderator .modal-actions-moderator button:last-child {
+.payment-generation-modal .modal-actions button:last-child {
     order: 1; /* Cancel button on left */
     background-color: #6c757d !important;
     color: white !important;
     border: 1px solid #6c757d;
 }
 
-.payment-generation-modal-moderator .modal-actions-moderator button:last-child:hover {
+.payment-generation-modal .modal-actions button:last-child:hover {
     background-color: #5a6268 !important;
     border-color: #5a6268;
 }
 
-.payment-generation-modal-moderator .modal-actions-moderator button:disabled {
+.payment-generation-modal .modal-actions button:disabled {
     background-color: #cccccc !important;
     cursor: not-allowed;
     opacity: 0.6;
@@ -548,17 +548,17 @@ body {
 
 /* Responsive adjustments for payment generation */
 @media (max-width: 768px) {
-    .payment-header-with-button-moderator {
+    .payment-header-with-button {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
     }
     
-    .generate-payment-btn-moderator {
+    .generate-payment-btn {
         width: 100%;
     }
     
-    .payment-generation-modal-moderator {
+    .payment-generation-modal {
         width: 95%;
         max-height: 90vh;
         overflow-y: auto;
@@ -566,7 +566,7 @@ body {
 }
 
 /* Client Information Section */
-.client-info-section-moderator {
+.client-info-section {
     background-color: #f8f9fa;
     padding: 15px;
     border-radius: 6px;
@@ -574,7 +574,7 @@ body {
     border: 1px solid #e0e0e0;
 }
 
-.client-info-title-moderator {
+.client-info-title {
     margin-top: 0;
     margin-bottom: 10px;
     font-size: 16px;
@@ -582,7 +582,7 @@ body {
     color: #444;
 }
 
-.client-info-grid-moderator {
+.client-info-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
@@ -590,25 +590,25 @@ body {
     color: #333;
 }
 
-.client-info-grid-moderator strong {
+.client-info-grid strong {
     color: #555;
     font-weight: 600;
 }
 
 /* Responsive adjustments for client info */
 @media (max-width: 768px) {
-    .client-info-grid-moderator {
+    .client-info-grid {
         grid-template-columns: 1fr;
         gap: 8px;
     }
     
-    .client-info-section-moderator {
+    .client-info-section {
         padding: 12px;
         margin-bottom: 15px;
     }
 }
 
-.sort-controls-moderator {
+.sort-controls {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -617,11 +617,11 @@ body {
     color: #555;
 }
 
-.sort-controls-moderator label {
+.sort-controls label {
     font-weight: 500;
 }
 
-.sort-controls-moderator select {
+.sort-controls select {
     padding: 8px 10px;
     border: 1px solid #cccccc;
     border-radius: 4px;
@@ -632,23 +632,23 @@ body {
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.sort-controls-moderator select:focus {
+.sort-controls select:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
 }
 
-button.disabled-btn-moderator {
+button.disabled-btn {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
-    .sort-controls-moderator {
+    .sort-controls {
         flex-direction: column;
         align-items: flex-start;
         gap: 6px;
     }
-    .sort-controls-moderator select {
+    .sort-controls select {
         width: 100%;
     }
 }

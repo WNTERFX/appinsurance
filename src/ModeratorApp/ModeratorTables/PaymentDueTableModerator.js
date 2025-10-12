@@ -7,9 +7,9 @@ import {
   generatePayments // Import generatePayments for moderator
 } from "../ModeratorActions/ModeratorPaymentDueActions"; // Ensure these actions are available in ModeratorActions
 
-import "../moderator-styles/payment-table-styles-moderator.css"; 
+import "../moderator-styles/payment-table-styles-moderator.css";
 
-import PaymentGenerationModal from "../../AdminApp/PaymentGenerationModal"; // reuse this in admin 
+import PaymentGenerationModal from "../../AdminApp/PaymentGenerationModal"; // reuse this in admin
 
 export default function PaymentDueTableModerator() {
   const [policies, setPolicies] = useState([]);
@@ -23,7 +23,7 @@ export default function PaymentDueTableModerator() {
   const [generateModalOpen, setGenerateModalOpen] = useState(false);
   const [selectedPolicy, setSelectedPolicy] = useState(null);
 
-    // Header state
+  // Header state
   const [searchTerm, setSearchTerm] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(15);
   // Pagination state
@@ -107,7 +107,7 @@ export default function PaymentDueTableModerator() {
   const handleGeneratePayments = async (policyId, paymentsToGenerate) => {
     try {
       const newPayments = await generatePayments(policyId, paymentsToGenerate);
-      
+
       setPaymentsMap(prev => ({
         ...prev,
         [policyId]: [...(prev[policyId] || []), ...newPayments].sort(
@@ -123,7 +123,7 @@ export default function PaymentDueTableModerator() {
     }
   };
 
-   // Filter and Pagination
+  // Filter and Pagination
   const filteredPolicies = policies.filter(policy => {
     const client = policy.clients_Table;
     const clientName = client
@@ -137,7 +137,7 @@ export default function PaymentDueTableModerator() {
     return policyId.includes(search) || clientName.includes(search);
   });
 
-  
+
   const totalPoliciesCount = filteredPolicies.length;
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
@@ -148,25 +148,25 @@ export default function PaymentDueTableModerator() {
   if (!policies.length) return <p>Loading policies...</p>;
 
   return (
-    <div className="payments-overview-section-moderator">
+    <div className="payments-overview-section">
 
       {/* Payments Overview Header with search/filter controls */}
-      <div className="payments-overview-header-moderator">
+      <div className="payments-overview-header">
         <h2>Payments Overview ({totalPoliciesCount})</h2>
-        <div className="search-filter-refresh-bar-moderator">
+        <div className="search-filter-refresh-bar">
           <input
             type="text"
             placeholder="Search by Policy ID or Client Name..."
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-            className="search-input-moderator"
+            className="search-input"
           />
-          <div className="result-select-wrapper-moderator">
+          <div className="result-select-wrapper">
             <span>Result</span>
             <select
               value={rowsPerPage}
               onChange={(e) => { setRowsPerPage(Number(e.target.value)); setCurrentPage(1); }}
-              className="result-select"
+              className="result-select" // Fixed class name here
             >
               <option value={15}>15</option>
               <option value={25}>25</option>
@@ -174,12 +174,12 @@ export default function PaymentDueTableModerator() {
               <option value={100}>100</option>
             </select>
           </div>
-          <button className="refresh-btn-moderator" onClick={loadData}>Refresh</button> {/* Corrected onClick */}
+          <button className="refresh-btn" onClick={loadData}>Refresh</button>
         </div>
       </div>
 
       {/* Policies List */}
-      <div className="policies-list-moderator">
+      <div className="policies-list">
         {currentPolicies.map(policy => {
           const client = policy.clients_Table;
           const clientName = client
@@ -193,27 +193,27 @@ export default function PaymentDueTableModerator() {
           const isOpen = expanded[policy.id];
 
           return (
-            <div key={policy.id} className="policy-item-card-moderator">
-              <div className="policy-summary-moderator" onClick={() => toggleExpand(policy.id)}>
-                <div className="policy-info-left-moderator">
-                  <span className="policy-id-moderator">Policy ID: {policy.internal_id}</span>
-                  <span className="policy-holder-moderator">Policy Holder: {clientName}</span>
+            <div key={policy.id} className="policy-item-card">
+              <div className="policy-summary" onClick={() => toggleExpand(policy.id)}>
+                <div className="policy-info-left">
+                  <span className="policy-id">Policy ID: {policy.internal_id}</span>
+                  <span className="policy-holder">Policy Holder: {clientName}</span>
                 </div>
-                <div className="policy-info-right-moderator">
+                <div className="policy-info-right">
                   <span className={`status ${policy.policy_is_active ? "active" : "inactive"}`}>
                     Status: {policy.policy_is_active ? "Active" : "Inactive"}
                   </span>
-                  <button className={`expand-toggle-moderator ${isOpen ? "expanded" : ""}`}>
-                    <span className="arrow-moderator">⌄</span>
+                  <button className={`expand-toggle ${isOpen ? "expanded" : ""}`}>
+                    <span className="arrow">⌄</span>
                   </button>
                 </div>
               </div>
 
-              <div className={`payment-details-table-wrapper-moderator ${isOpen ? "show" : ""}`}>
+              <div className={`payment-details-table-wrapper ${isOpen ? "show" : ""}`}>
                 {/* Client Information Section */}
-                <div className="client-info-section-moderator">
-                  <h4 className="client-info-title-moderator">Client Information</h4>
-                  <div className="client-info-grid-moderator">
+                <div className="client-info-section-">
+                  <h4 className="client-info-title">Client Information</h4>
+                  <div className="client-info-grid">
                     <div>
                       <strong>Client Name:</strong> {clientName}
                     </div>
@@ -223,20 +223,20 @@ export default function PaymentDueTableModerator() {
                   </div>
                 </div>
 
-                <div className="payment-header-with-button-moderator">
-                  <h3 className="payment-details-title-moderator">Payments</h3>
-                  <button 
+                <div className="payment-header-with-button">
+                  <h3 className="payment-details-title">Payments</h3>
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleOpenGenerateModal(policy);
                     }}
-                    className="generate-payment-btn-moderator"
+                    className="generate-payment-btn"
                   >
                     + Generate Payments
                   </button>
                 </div>
                 {payments.length > 0 ? (
-                  <table className="payments-table-moderator">
+                  <table className="payments-table">
                     <thead>
                       <tr>
                         <th>Date</th>
@@ -255,13 +255,13 @@ export default function PaymentDueTableModerator() {
                             status === "fully-paid" || index > firstUnpaidIndex || firstUnpaidIndex === -1;
 
                           return (
-                            <tr key={p.id} className={`payment-${status}`}>
+                            <tr key={p.id} className={`payment-${status}`}> 
                               <td>{new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</td>
                               <td></td>
                               <td>{p.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
                               <td>{p.paid_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" }) || "₱0.00"}</td>
-                              <td className="payment-status-cell-moderator">{status}</td>
-                              <td className="payment-actions-moderator">
+                              <td className="payment-status-cell">{status}</td>
+                              <td className="payment-actions">
                                 <button
                                   disabled={isDisabled}
                                   onClick={() => handlePaymentClick({ ...p, policy_id: policy.id })}
@@ -275,7 +275,7 @@ export default function PaymentDueTableModerator() {
                         })}
                     </tbody>
                   </table>
-                ) : <p className="no-payments-message-moderator">No payments scheduled</p>}
+                ) : <p className="no-payments-message">No payments scheduled</p>}
               </div>
             </div>
           );
@@ -284,7 +284,7 @@ export default function PaymentDueTableModerator() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="pagination-controls-moderator">
+        <div className="pagination-controls">
           <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p-1)}>Previous</button>
           <span>Page {currentPage} of {totalPages}</span>
           <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p+1)}>Next</button>
@@ -293,8 +293,8 @@ export default function PaymentDueTableModerator() {
 
       {/* Payment Edit Modal (Moderator) */}
       {modalOpen && (
-        <div className="payment-modal-backdrop-moderator-moderator">
-          <div className="payment-modal-moderator-moderator">
+        <div className="payment-modal-backdrop">
+          <div className="payment-modal">
             <h3>Enter Payment</h3>
             <p>Policy ID: {currentPayment?.policy_id} <br /> Payment Date: {new Date(currentPayment?.payment_date).toLocaleDateString()}</p>
             <input
@@ -309,7 +309,7 @@ export default function PaymentDueTableModerator() {
                 }}
                 placeholder="Enter amount"
             />
-            <div className="modal-actions-moderator-moderator">
+            <div className="modal-actions">
               <button onClick={handlePaymentSave}>Save</button>
               <button onClick={() => setModalOpen(false)}>Cancel</button>
             </div>

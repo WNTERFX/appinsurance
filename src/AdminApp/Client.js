@@ -150,7 +150,7 @@ export default function Client() {
               <div className="agent-data">
                 <h2>
                   <FaUser className="agent-icon" />
-                  {agent.personnel_Name}
+                  {agent.first_name} {agent.last_name}
                 </h2>
                 <p>{agent.clientCount}</p> {/* This already shows the count per agent */}
               </div>
