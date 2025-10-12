@@ -17,7 +17,7 @@ export async function getAllAgentsWithAssignedColors() {
   try {
     const { data: agents, error } = await db
       .from("employee_Accounts")
-      .select("id, personnel_Name")
+      .select("id, first_name, last_name")
       .eq("is_Admin", false);
 
     if (error) {

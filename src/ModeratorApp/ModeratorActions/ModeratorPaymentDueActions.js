@@ -7,6 +7,7 @@ export async function fetchModeratorPoliciesWithPayments(moderatorId) {
     .select(`
       *,
       clients_Table!inner(
+        internal_id,
         agent_Id,
         first_Name,
         middle_Name,
