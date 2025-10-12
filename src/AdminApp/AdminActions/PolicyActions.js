@@ -148,3 +148,15 @@ export async function activatePolicy(policy, paymentTypeId) {
     return { success: false, error: error.message };
   }
 }
+
+export async function fetchPartners() {
+  const { data, error } = await db
+    .from("insurance_Partners")
+    .select("id, insurance_Name")
+    .order("insurance_Name", { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+
+

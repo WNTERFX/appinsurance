@@ -6,6 +6,7 @@ import {
   fetchPolicies,
   archivePolicy,
   activatePolicy,
+  fetchPartners
 } from "../AdminActions/PolicyActions";
 
 export default function PolicyTable() {
@@ -15,6 +16,8 @@ export default function PolicyTable() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [partnerFilter, setPartnerFilter] = useState("");
+  const [partners, setPartners] = useState([]);
   const navigate = useNavigate();
 
   const loadPolicies = async () => {
@@ -27,8 +30,18 @@ export default function PolicyTable() {
     }
   };
 
+  const loadPartners = async () => {
+  try {
+    const data = await fetchPartners();
+    setPartners(data);
+  } catch (err) {
+    console.error("Error loading partners:", err);
+  }
+};
+
   useEffect(() => {
     loadPolicies();
+    loadPartners();
   }, []);
 
   const handleRowClick = (policy) => {
@@ -71,40 +84,59 @@ export default function PolicyTable() {
     }
   };
 
-  const filteredAndSearchedPolicies = useMemo(() => {
-    let tempPolicies = policies;
+    const filteredAndSearchedPolicies = useMemo(() => {
+      let tempPolicies = policies;
 
-    if (statusFilter === "Active") {
-      tempPolicies = tempPolicies.filter((policy) => policy.policy_is_active);
-    } else if (statusFilter === "Inactive") {
-      tempPolicies = tempPolicies.filter((policy) => !policy.policy_is_active);
-    }
+      // 🔹 Partner filter
+      if (partnerFilter) { // empty string means All, so skip
+        tempPolicies = tempPolicies.filter((policy) => {
+          // insurance_Partners is an array from Supabase joins
+          const partnerArray = policy.insurance_Partners;
+          const partnerIdFromJoin =
+            Array.isArray(partnerArray) && partnerArray.length > 0
+              ? partnerArray[0].id
+              : null;
 
-    if (searchTerm.trim()) {
-      const lowerCaseSearchTerm = searchTerm.trim().toLowerCase();
-      tempPolicies = tempPolicies.filter((policy) => {
-        const policyIdMatch = policy.id.toString().includes(lowerCaseSearchTerm);
+          // fallback to direct FK column
+          const partnerId = partnerIdFromJoin || policy.partner_id || null;
 
-        const client = policy.clients_Table;
-        const clientName = client
-          ? [
-              client.first_Name,
-              client.middle_Name,
-              client.family_Name,
-            ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase()
-          : "";
+          return String(partnerId) === String(partnerFilter);
+        });
+      }
 
-        const clientNameMatch = clientName.includes(lowerCaseSearchTerm);
+      // 🔹 Status filter
+      if (statusFilter === "Active") {
+        tempPolicies = tempPolicies.filter((policy) => policy.policy_is_active);
+      } else if (statusFilter === "Inactive") {
+        tempPolicies = tempPolicies.filter((policy) => !policy.policy_is_active);
+      }
 
-        return policyIdMatch || clientNameMatch;
-      });
-    }
+      // 🔹 Search filter
+      if (searchTerm.trim()) {
+        const lowerCaseSearchTerm = searchTerm.trim().toLowerCase();
+        tempPolicies = tempPolicies.filter((policy) => {
+          const policyIdMatch = policy.id.toString().includes(lowerCaseSearchTerm);
 
-    return tempPolicies;
-  }, [policies, searchTerm, statusFilter]);
+          const client = policy.clients_Table;
+          const clientName = client
+            ? [
+                client.first_Name,
+                client.middle_Name,
+                client.family_Name,
+              ]
+                .filter(Boolean)
+                .join(" ")
+                .toLowerCase()
+            : "";
+
+          const clientNameMatch = clientName.includes(lowerCaseSearchTerm);
+
+          return policyIdMatch || clientNameMatch;
+        });
+      }
+
+      return tempPolicies;
+    }, [policies, searchTerm, statusFilter, partnerFilter]);
 
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
@@ -153,6 +185,25 @@ export default function PolicyTable() {
               <option value="All">All</option>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+
+          <div className="policy-partner-filter-dropdown">
+            <label htmlFor="partnerFilter">Partner:</label>
+            <select
+              id="partnerFilter"
+              value={partnerFilter}
+              onChange={(e) => {
+                setPartnerFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+            >
+             <option value="">All Partners</option>
+              {partners.map(partner => (
+                  <option key={partner.id} value={partner.id}>
+                    {partner.insurance_Name}
+                  </option>
+              ))}
             </select>
           </div>
 
