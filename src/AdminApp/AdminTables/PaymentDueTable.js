@@ -52,35 +52,37 @@ export default function PolicyWithPaymentsList() {
   };
 
   const handlePaymentSave = async () => {
-    if (!currentPayment || !currentPayment.id) return;
+  if (!currentPayment || !currentPayment.id) return;
 
-    try {
-      const cleanedInput = parseFloat(paymentInput.replace(/,/g, ""));
-      if (isNaN(cleanedInput)) {
-        alert("Please enter a valid number");
-        return;
-      }
-
-      const updatedRow = await updatePayment(
-        currentPayment.id,
-        cleanedInput,
-        currentPayment.amount_to_be_paid
-      );
-
-      setPaymentsMap(prev => {
-        const policyPayments = prev[currentPayment.policy_id].map(p =>
-          p.id === currentPayment.id ? updatedRow : p
-        );
-        return { ...prev, [currentPayment.policy_id]: policyPayments };
-      });
-
-      setModalOpen(false);
-      setCurrentPayment(null);
-      setPaymentInput("");
-    } catch (err) {
-      console.error("Error updating payment:", err);
+  try {
+    const cleanedInput = parseFloat(paymentInput.replace(/,/g, ""));
+    if (isNaN(cleanedInput)) {
+      alert("Please enter a valid number");
+      return;
     }
-  };
+
+    // Update payment (with rollover)
+    await updatePayment(
+      currentPayment.id,
+      cleanedInput,
+      currentPayment.amount_to_be_paid
+    );
+    const updatedPayments = await fetchPaymentSchedule(currentPayment.policy_id);
+    setPaymentsMap(prev => ({
+      ...prev,
+      [currentPayment.policy_id]: updatedPayments
+    }));
+
+    // Close modal
+    setModalOpen(false);
+    setCurrentPayment(null);
+    setPaymentInput("");
+
+    alert("Payment updated successfully!");
+  } catch (err) {
+    console.error("Error updating payment:", err);
+  }
+};
 
   // New function to handle payment generation
   const handleGeneratePayments = async (policyId, payments) => {
@@ -236,7 +238,7 @@ export default function PolicyWithPaymentsList() {
                           <td>{p.paid_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" }) || "₱0.00"}</td>
                           <td className="payment-status-cell">{getPaymentStatus(p)}</td>
                           <td className="payment-actions">
-                            <button onClick={() => handlePaymentClick({ ...p, policy_id: policy.id })}>Edit Payment</button>
+                            <button onClick={() => handlePaymentClick({ ...p, policy_id: policy.id })}>Payment</button>
                           </td>
                         </tr>
                       ))}

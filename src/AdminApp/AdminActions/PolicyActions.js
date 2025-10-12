@@ -1,7 +1,10 @@
 import { db } from "../../dbServer";
 
-export async function fetchPolicies() {
-  const { data, error } = await db
+// ✅ UPDATED: Now accepts date range parameters and partner filter
+export async function fetchPolicies(fromDate = null, toDate = null, partnerId = null) {
+  console.log("fetchPolicies called with partnerId:", partnerId, "Type:", typeof partnerId);
+  
+  let query = db
     .from("policy_Table")
     .select(`
       *,
@@ -17,20 +20,40 @@ export async function fetchPolicies() {
         internal_id
       ),
       insurance_Partners(
-        insurance_Name,
-        insurance_Rate
+        insurance_Name
       ),
       policy_Computation_Table(
         total_Premium
       )
     `)
     .or("is_archived.is.null,is_archived.eq.false")
-    .is("archival_date", null)
-    .order("created_at", { ascending: false })
+    .is("archival_date", null);
+
+  // ✅ Add date filtering if dates are provided
+  if (fromDate && toDate) {
+    query = query
+      .gte("created_at", fromDate)
+      .lte("created_at", toDate);
+  }
+
+  // ✅ Add partner filtering if partnerId is provided
+  if (partnerId) {
+    console.log("Applying partner filter:", partnerId);
+    query = query.eq("partner_id", partnerId);
+  }
+
+  query = query.order("created_at", { ascending: false });
+
+  const { data, error } = await query;
+  
+  console.log("Query result:", { count: data?.length, error });
+  if (data && data.length > 0) {
+    console.log("Sample policy partner_id:", data[0].partner_id);
+  }
+  
   if (error) throw error;
   return data || [];
 }
-
 
 export async function getPolicyById(policyId) {
   const { data, error } = await db
@@ -53,25 +76,22 @@ export async function getPolicyById(policyId) {
       `
     )
     .eq("id", policyId)
-    .or("is_archived.is.null,is_archived.eq.false") // ✅ this is fine alone
-    .is("archival_date", null) // ✅ move outside
+    .or("is_archived.is.null,is_archived.eq.false")
+    .is("archival_date", null)
     .single();
-
   if (error) throw error;
   return data;
 }
-
 
 export async function archivePolicy(policyId) {
   const { data, error } = await db
     .from("policy_Table")
     .update({
       is_archived: true,
-      archival_date: new Date().toISOString().split("T")[0], 
+      archival_date: new Date().toISOString().split("T")[0],
     })
     .eq("id", policyId)
-    .select(); 
-
+    .select();
   if (error) throw error;
   return data?.[0] || null;
 }
@@ -80,14 +100,13 @@ export async function activatePolicy(policy, paymentTypeId) {
   try {
     const totalPremium = policy.policy_Computation_Table?.[0]?.total_Premium;
     const months = policy.payment_type?.months_payment || 6;
-
     if (!totalPremium) throw new Error("No premium available to split.");
-
+    
     // Dates for inception/expiry
-    const inceptionDate = new Date(); // today
+    const inceptionDate = new Date();
     const expiryDate = new Date();
-    expiryDate.setFullYear(inceptionDate.getFullYear() + 1); // +1 year
-
+    expiryDate.setFullYear(inceptionDate.getFullYear() + 1);
+    
     // 1. Update policy with active + dates
     const { data: policyData, error: policyError } = await db
       .from("policy_Table")
@@ -98,13 +117,11 @@ export async function activatePolicy(policy, paymentTypeId) {
       })
       .eq("id", policy.id)
       .select();
-
     if (policyError) throw policyError;
-
+    
     // 2. Create payments
     const monthlyAmount = totalPremium / months;
     const today = new Date();
-
     const paymentRows = Array.from({ length: months }, (_, i) => ({
       payment_date: new Date(
         today.getFullYear(),
@@ -118,14 +135,13 @@ export async function activatePolicy(policy, paymentTypeId) {
       paid_amount: null,
       payment_type_id: paymentTypeId,
     }));
-
+    
     const { data: payments, error: paymentError } = await db
       .from("payment_Table")
       .insert(paymentRows)
       .select();
-
     if (paymentError) throw paymentError;
-
+    
     return { success: true, policy: policyData, payments };
   } catch (error) {
     console.error("Error activating policy:", error.message);
