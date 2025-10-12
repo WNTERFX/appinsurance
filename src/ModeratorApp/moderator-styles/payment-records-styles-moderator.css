@@ -13,6 +13,13 @@
 
 }
 
+@media (min-width: 3440px) {
+  .payment-records-container-moderator {
+    padding-left: 100px;
+  }
+}
+
+
 .payment-record-header-moderator {
  display: flex;
     justify-content: space-between;

@@ -211,5 +211,21 @@
 }
 
 
+@media (min-width: 2000px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr; /* left + right side by side */
+    gap: 2rem;
+  }
+
+  .form-grid > .form-right-column {
+    border-left: 1px solid #ccc;
+    padding-left: 1rem;
+    margin-top: 0; /* remove stacked spacing */
+  }
+}
 
 
+.client-select__control {
+  min-width: 350px; /* adjust to how wide you want */
+  max-width: 100%; /* prevents it from overflowing */
+}
