@@ -5,6 +5,7 @@ import { autoTable } from 'jspdf-autotable';
 import { fetchClients } from "../AdminActions/ClientActions";
 import { fetchPolicies } from "../AdminActions/PolicyActions";
 import { fetchAllDues } from "../AdminActions/PaymentDueActions";
+import { fetchReportCreator } from "./PrintingActions";
 import { db } from "../../dbServer";
 
 import "../styles/printing-record-styles.css";
@@ -21,8 +22,17 @@ export default function PrintingModal({ recordType, onClose }) {
   const [sortOrder, setSortOrder] = useState("latest");
   const [partners, setPartners] = useState([]);
   const [selectedPartner, setSelectedPartner] = useState("");
+  const [reportCreator, setReportCreator] = useState("");
 
   const safeRecordType = recordType || "client";
+
+  useEffect(() => {
+    async function loadCreator() {
+      const creator = await fetchReportCreator();
+      setReportCreator(creator);
+    }
+    loadCreator();
+  }, []);
 
   // Fetch insurance partners on mount if recordType is policy
   useEffect(() => {
@@ -208,18 +218,22 @@ export default function PrintingModal({ recordType, onClose }) {
     }
   };
 
-  const handlePrintPDF = () => {
+    const handlePrintPDF = () => {
     const doc = new jsPDF();
     const title = `${safeRecordType.charAt(0).toUpperCase() + safeRecordType.slice(1)} Report`;
+    const reportCreatorText = reportCreator ? `Report created by: ${reportCreator}` : "";
     
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.text(title, 14, 15);
     
+    let currentY = 23; // Track vertical position
+    
     if (currentDateRange.start && currentDateRange.end) {
       doc.setFontSize(10);
       const dateRangeText = `Period: ${formatDateRange(currentDateRange.start, currentDateRange.end)}`;
-      doc.text(dateRangeText, 14, 23);
+      doc.text(dateRangeText, 14, currentY);
+      currentY += 6; // Move down 6 units
     }
     
     // Add partner filter info for policy reports
@@ -227,18 +241,24 @@ export default function PrintingModal({ recordType, onClose }) {
       const partnerName = partners.find(p => p.id === selectedPartner)?.insurance_Name;
       if (partnerName) {
         doc.setFontSize(10);
-        doc.text(`Partner: ${partnerName}`, 14, 29);
+        doc.text(`Partner: ${partnerName}`, 14, currentY);
+        currentY += 6;
       }
-      doc.setFontSize(9);
-      doc.text(`Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, 14, 35);
-    } else {
-      doc.setFontSize(9);
-      doc.text(`Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, 14, 29);
+    }
+    
+    // Generated date
+    doc.setFontSize(9);
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, 14, currentY);
+    currentY += 6;
+
+    // Report creator - with space after
+    if (reportCreatorText) {
+      doc.text(reportCreatorText, 14, currentY);
+      currentY += 8; // Extra space after creator name before table
     }
 
     let headers = [];
     let body = [];
-    let startY = safeRecordType === "policy" && selectedPartner ? 41 : 35;
 
     if (safeRecordType === "client") {
       headers = ["#", "Client Name", "Phone Number", "Address", "Agent", "Date Registered"];
@@ -280,7 +300,7 @@ export default function PrintingModal({ recordType, onClose }) {
     const tableConfig = {
       head: [headers],
       body,
-      startY: startY,
+      startY: currentY, // Use dynamic Y position
       styles: { fontSize: 8 },
       headStyles: { fillColor: [66, 139, 202] }
     };
