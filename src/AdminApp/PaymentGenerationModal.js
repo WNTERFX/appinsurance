@@ -39,7 +39,7 @@ export default function PaymentGenerationModal({ policy, onClose, onGenerate }) 
         });
       } else {
         // Generate 6 monthly payments
-        const monthlyAmount = parseFloat((amount / 6).toFixed(2));
+        const monthlyAmount = Math.round((amount / 6) * 100) / 100;
         const start = new Date(startDate);
         
         for (let i = 0; i < 6; i++) {

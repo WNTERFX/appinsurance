@@ -231,17 +231,30 @@ export default function PolicyWithPaymentsList() {
                       </tr>
                     </thead>
                     <tbody>
-                      {payments.map(p => (
-                        <tr key={p.id} className={`payment-${getPaymentStatus(p)}`}>
-                          <td>{new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</td>
-                          <td>{p.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
-                          <td>{p.paid_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" }) || "₱0.00"}</td>
-                          <td className="payment-status-cell">{getPaymentStatus(p)}</td>
-                          <td className="payment-actions">
-                            <button onClick={() => handlePaymentClick({ ...p, policy_id: policy.id })}>Payment</button>
-                          </td>
-                        </tr>
-                      ))}
+                      {payments.map((p, index) => {
+                          const status = getPaymentStatus(p);
+                          const firstUnpaidIndex = payments.findIndex(pay => getPaymentStatus(pay) !== "fully-paid");
+                          const isDisabled =
+                            status === "fully-paid" || index > firstUnpaidIndex || firstUnpaidIndex === -1;
+
+                          return (
+                            <tr key={p.id} className={`payment-${status}`}>
+                              <td>{new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</td>
+                              <td>{p.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
+                              <td>{p.paid_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" }) || "₱0.00"}</td>
+                              <td className="payment-status-cell">{status}</td>
+                              <td className="payment-actions">
+                                <button
+                                  disabled={isDisabled}
+                                  onClick={() => handlePaymentClick({ ...p, policy_id: policy.id })}
+                                  className={isDisabled ? "disabled-btn" : ""}
+                                >
+                                  {status === "fully-paid" ? "Paid" : "Payment"}
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
                     </tbody>
                   </table>
                 ) : <p className="no-payments-message">No payments scheduled</p>}
