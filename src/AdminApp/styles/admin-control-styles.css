@@ -1,0 +1,205 @@
+/* admin-control.css */
+
+.admin-controller-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admin-controller-wrapper {
+  background: #fff;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.admin-controller-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.admin-controller-title {
+  font-size: 1.75rem;
+  margin: 0;
+  color: #333;
+}
+
+.admin-controller-subtitle {
+  font-size: 1.25rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+/* Message */
+.admin-controller-message {
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.admin-controller-message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.admin-controller-message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Form */
+.admin-controller-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.admin-controller-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-controller-label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.admin-controller-input,
+.admin-controller-select {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.admin-controller-input:focus,
+.admin-controller-select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.admin-controller-button-group {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* Buttons */
+.admin-controller-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-controller-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-controller-btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.admin-controller-btn-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.admin-controller-btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.admin-controller-btn-secondary:hover {
+  background-color: #545b62;
+}
+
+.admin-controller-btn-edit {
+  background-color: #ffc107;
+  color: #000;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  margin-right: 0.25rem;
+}
+
+.admin-controller-btn-edit:hover {
+  background-color: #e0a800;
+}
+
+.admin-controller-btn-delete {
+  background-color: #dc3545;
+  color: white;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.admin-controller-btn-delete:hover {
+  background-color: #c82333;
+}
+
+/* Table */
+.admin-controller-table-wrapper {
+  overflow-x: auto;
+  margin-top: 2rem;
+}
+
+.admin-controller-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-controller-table th,
+.admin-controller-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.admin-controller-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.admin-controller-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.admin-controller-empty {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-controller-form {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-controller-table {
+    font-size: 0.8rem;
+  }
+
+  .admin-controller-table th,
+  .admin-controller-table td {
+    padding: 0.5rem;
+  }
+}

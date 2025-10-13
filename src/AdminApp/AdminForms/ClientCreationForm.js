@@ -8,6 +8,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
     phoneNumber: "",
     email: "",
     firstName: "",
+    familyName: "",
     address: "",
   });
 
@@ -64,6 +65,15 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
     });
   };
 
+  const handleFamilyNameChange = (e) => {
+    const value = e.target.value;
+    onChange(e);
+    setErrors({
+      ...errors,
+      familyName: !value.trim() ? "Last Name is required" : "",
+    });
+  };
+
   const handleHomeAddressChange = (e) => {
     const value = e.target.value;
     onChange(e);
@@ -78,6 +88,8 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
 
     if (!clientData?.firstName?.trim())
       newErrors.firstName = "First Name is required";
+    if (!clientData?.familyName?.trim())
+      newErrors.familyName = "Last Name is required";
     if (!clientData?.email?.trim()) newErrors.email = "Email is required";
     if (
       !clientData?.phoneNumber?.trim() ||
@@ -91,6 +103,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
 
     if (
       !newErrors.firstName &&
+      !newErrors.familyName &&
       !newErrors.email &&
       !newErrors.phoneNumber &&
       !newErrors.address
@@ -144,8 +157,9 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit , on
               type="text"
               name="familyName"
               value={clientData?.familyName}
-              onChange={onChange}
+              onChange={handleFamilyNameChange}
             />
+            {errors.familyName && <p style={{ color: "red" }}>{errors.familyName}</p>}
           </div>
 
           <div className="form-group-client-creation">

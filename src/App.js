@@ -27,6 +27,7 @@ import NewClientController from "./AdminApp/ControllerAdmin/NewClientController"
 import EditPolicyController from "./AdminApp/ControllerAdmin/EditPolicyController";
 import About from "./AdminApp/About";
 import AccountManagement from "./AdminApp/AdminAccountManagement/AccountManagement";
+import AdminControl from "./AdminApp/AdminControl";
 
 // Moderator Components
 import MainAreaModerator from "./ModeratorApp/MainAreaModerator";
@@ -90,6 +91,7 @@ function App() {
             <Route path="records" element={<MonthlyDataController />} />
             <Route path="payment-records" element={<PaymentRecords />} />
             <Route path="account-management" element={<AccountManagement />} />
+            <Route path="admin-controls" element={<AdminControl/>} />
             <Route path="about" element={<About />} />
             <Route path="*" element={<div>Page not found</div>} />
           </Route>

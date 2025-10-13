@@ -69,7 +69,7 @@ export default function ClientEditForm({originalData,formData,errors,onChange,on
 
             {/* Family Name */}
             <div className="form-group-client-update">
-              <label>Last Name</label>
+              <label>Last Name *</label>
               <input
                 type="text"
                 value={originalData.family_Name}
@@ -82,6 +82,9 @@ export default function ClientEditForm({originalData,formData,errors,onChange,on
                 value={formData.family_Name}
                 onChange={onChange}
               />
+              {errors.family_Name && (
+                <p style={{ color: "red" }}>{errors.family_Name}</p>
+              )}
             </div>
 
             {/* Suffix */}
@@ -187,6 +190,18 @@ export default function ClientEditForm({originalData,formData,errors,onChange,on
                 className="submit-btn-client-update"
                 type="button"
                 onClick={onSubmit}
+                disabled={
+                  errors.first_Name ||
+                  errors.family_Name ||
+                  errors.phone_Number ||
+                  errors.address ||
+                  errors.email ||
+                  !formData.first_Name?.trim() ||
+                  !formData.family_Name?.trim() ||
+                  !formData.phone_Number?.trim() ||
+                  !formData.address?.trim() ||
+                  !formData.email?.trim()
+                }
               >
                 Update
               </button>
