@@ -1,9 +1,11 @@
-// calculationActions.js
 import { db } from "../../dbServer";
 
+/* =============================
+   CALCULATION TABLE ACTIONS
+   ============================= */
+
 /**
- * Fetch all calculations from the database
- * @returns {Promise<Array>} Array of calculation records
+ * Fetch all calculations
  */
 export const fetchAllCalculations = async () => {
   try {
@@ -21,9 +23,7 @@ export const fetchAllCalculations = async () => {
 };
 
 /**
- * Create a new calculation record
- * @param {Object} calculationData - The calculation data to insert
- * @returns {Promise<Object>} The created calculation record
+ * Create a new calculation
  */
 export const createCalculation = async (calculationData) => {
   try {
@@ -41,10 +41,7 @@ export const createCalculation = async (calculationData) => {
 };
 
 /**
- * Update an existing calculation record
- * @param {number} id - The ID of the calculation to update
- * @param {Object} calculationData - The updated calculation data
- * @returns {Promise<Object>} The updated calculation record
+ * Update a calculation
  */
 export const updateCalculation = async (id, calculationData) => {
   try {
@@ -63,9 +60,7 @@ export const updateCalculation = async (id, calculationData) => {
 };
 
 /**
- * Delete a calculation record
- * @param {number} id - The ID of the calculation to delete
- * @returns {Promise<void>}
+ * Delete a calculation
  */
 export const deleteCalculation = async (id) => {
   try {
@@ -83,8 +78,6 @@ export const deleteCalculation = async (id) => {
 
 /**
  * Fetch calculation by vehicle type
- * @param {string} vehicleType - The vehicle type to search for
- * @returns {Promise<Object|null>} The calculation record or null
  */
 export const fetchCalculationByVehicleType = async (vehicleType) => {
   try {
@@ -94,13 +87,8 @@ export const fetchCalculationByVehicleType = async (vehicleType) => {
       .eq("vehicle_type", vehicleType)
       .single();
 
-    if (error) {
-      if (error.code === "PGRST116") {
-        // No rows returned
-        return null;
-      }
-      throw error;
-    }
+    if (error?.code === "PGRST116") return null;
+    if (error) throw error;
     return data;
   } catch (error) {
     console.error("Error in fetchCalculationByVehicleType:", error);
@@ -110,8 +98,6 @@ export const fetchCalculationByVehicleType = async (vehicleType) => {
 
 /**
  * Fetch calculation by ID
- * @param {number} id - The ID of the calculation
- * @returns {Promise<Object|null>} The calculation record or null
  */
 export const fetchCalculationById = async (id) => {
   try {
@@ -121,15 +107,173 @@ export const fetchCalculationById = async (id) => {
       .eq("id", id)
       .single();
 
-    if (error) {
-      if (error.code === "PGRST116") {
-        return null;
-      }
-      throw error;
-    }
+    if (error?.code === "PGRST116") return null;
+    if (error) throw error;
     return data;
   } catch (error) {
     console.error("Error in fetchCalculationById:", error);
+    throw error;
+  }
+};
+
+/* =============================
+   MESSAGE TABLE ACTIONS
+   ============================= */
+
+/**
+ * Fetch all messages
+ */
+export const fetchAllMessages = async () => {
+  try {
+    const { data, error } = await db
+      .from("message_table")
+      .select("*")
+      .order("id", { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new message
+ */
+export const createMessage = async (messageData) => {
+  try {
+    const { data, error } = await db
+      .from("message_table")
+      .insert([messageData])
+      .select();
+
+    if (error) throw error;
+    return data[0];
+  } catch (error) {
+    console.error("Error creating message:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update an existing message
+ */
+export const updateMessage = async (id, messageData) => {
+  try {
+    const { data, error } = await db
+      .from("message_table")
+      .update(messageData)
+      .eq("id", id)
+      .select();
+
+    if (error) throw error;
+    return data[0];
+  } catch (error) {
+    console.error("Error updating message:", error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a message
+ */
+export const deleteMessage = async (id) => {
+  try {
+    const { error } = await db
+      .from("message_table")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error deleting message:", error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch message by ID
+ */
+export const fetchMessageById = async (id) => {
+  try {
+    const { data, error } = await db
+      .from("message_table")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error?.code === "PGRST116") return null;
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error in fetchMessageById:", error);
+    throw error;
+  }
+};
+
+export const fetchAllInsurancePartners = async () => {
+  try {
+    const { data, error } = await db
+      .from("insurance_Partners")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching insurance partners:", error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new insurance partner
+ */
+export const createInsurancePartner = async (partnerData) => {
+  try {
+    const { data, error } = await db
+      .from("insurance_Partners")
+      .insert([partnerData])
+      .select();
+
+    if (error) throw error;
+    return data[0];
+  } catch (error) {
+    console.error("Error creating insurance partners:", error);
+    throw error;
+  }
+};
+
+export const updateInsurancePartner = async (id, partnerData) => {
+  try {
+    const { data, error } = await db
+      .from("insurance_Partners")
+      .update(partnerData)
+      .eq("id", id)
+      .select();
+
+    if (error) throw error;
+    return data[0];
+  } catch (error) {
+    console.error("Error updating insurance partner:", error);
+    throw error;
+  }
+};
+
+/**
+ * Delete an insurance partner
+ */
+export const deleteInsurancePartner = async (id) => {
+  try {
+    const { error } = await db
+      .from("insurance_Partners")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error deleting insurance partner:", error);
     throw error;
   }
 };

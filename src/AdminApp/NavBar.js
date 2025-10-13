@@ -99,7 +99,7 @@ export default function NavBar() {
          <Link to="/appinsurance/main-app/admin-controls" className={"side-bar-item" + (isActive("/appinsurance/main-app/admin-controls") ? " active" : "")}>
           <div className="side-bar-label">
             <LuSettings className="side-bar-icon" />
-            <span>Admin Fields</span>
+            <span>Admin Controls</span>
           </div>
         </Link>
 
