@@ -86,12 +86,12 @@ export default function PolicyWithPaymentsList() {
     if (isNaN(cleanedInput)) { alert("Please enter a valid number"); return; }
 
     const totalDue = calculateTotalDue(currentPayment);
-    const minimumPayment = totalDue * 0.25;
+    const minimumPayment = totalDue * 0.01;
     const alreadyPaid = calculateTotalPaid(currentPayment); // ✅ keep if needed
     const remainingBalance = totalDue - alreadyPaid; // ✅ use currentPayment instead of p
 
     if (cleanedInput < minimumPayment) {
-      alert(`Payment must be at least 25% of total due (₱${minimumPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`);
+      alert(`Payment must be at least 1% of total due (₱${minimumPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`);
       return;
     }
 
@@ -231,7 +231,7 @@ export default function PolicyWithPaymentsList() {
               <strong>Total Due:</strong> {calculateTotalDue(currentPayment).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
             </p>
             <p>
-              <strong>Minimum Payment (25%):</strong> {(calculateTotalDue(currentPayment) * 0.25)?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+              <strong>Minimum Payment (1%):</strong> {(calculateTotalDue(currentPayment) * 0.01)?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}
             </p>
 
             <input
