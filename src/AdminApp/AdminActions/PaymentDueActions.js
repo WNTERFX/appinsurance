@@ -1,21 +1,36 @@
 import { db } from "../../dbServer";
+import { fetchPenaltiesForPayments, calculateTotalDue, calculateRemainingBalance } from "./PaymentPenaltyActions";
 
 // Fetch all payments linked to a policy
 export async function fetchPaymentSchedule(policyId) {
-  const { data, error } = await db
+  const { data: payments, error } = await db
     .from("payment_Table")
     .select(`id, payment_date, amount_to_be_paid, is_paid, paid_amount`)
     .eq("policy_id", policyId)
     .order("payment_date", { ascending: true });
+
   if (error) throw error;
-  return data || [];
+
+  const paymentIds = payments.map(p => p.id);
+  const penaltiesMap = await fetchPenaltiesForPayments(paymentIds);
+
+  // Attach penalties and calculate totals
+  return payments.map(p => {
+    const penalties = penaltiesMap[p.id] || [];
+    return {
+      ...p,
+      penalties,
+      total_due: calculateTotalDue(p, penalties),
+      remaining_balance: calculateRemainingBalance(p, penalties)
+    };
+  });
 }
 
 // Update an existing payment
-export async function updatePayment(paymentId, paidAmount, amountToBePaid) {
+export async function updatePayment(paymentId, paidAmount) {
   if (!paymentId) throw new Error("Payment ID is required");
+  if (!paidAmount || paidAmount <= 0) throw new Error("Paid amount must be positive");
 
-  // Fetch the current payment
   const { data: currentPayment, error: fetchError } = await db
     .from("payment_Table")
     .select("id, policy_id, payment_date, amount_to_be_paid, paid_amount, is_paid")
@@ -27,7 +42,6 @@ export async function updatePayment(paymentId, paidAmount, amountToBePaid) {
 
   const { policy_id } = currentPayment;
 
-  // Fetch all payments for this policy (ordered by date)
   const { data: allPayments, error: allError } = await db
     .from("payment_Table")
     .select("id, payment_date, amount_to_be_paid, paid_amount, is_paid")
@@ -36,49 +50,60 @@ export async function updatePayment(paymentId, paidAmount, amountToBePaid) {
 
   if (allError) throw allError;
 
-  // Find index of current payment in the list
   const currentIndex = allPayments.findIndex(p => p.id === paymentId);
   if (currentIndex === -1) throw new Error("Payment not found in schedule");
 
-  // Apply new payment with rollover
   let remaining = paidAmount;
   const updates = [];
 
   for (let i = currentIndex; i < allPayments.length && remaining > 0; i++) {
     const payment = allPayments[i];
+
+    // Apply to penalties first
+    const { data: penalties } = await db
+      .from("payment_due_penalties")
+      .select("id, penalty_amount, is_paid")
+      .eq("payment_id", payment.id)
+      .order("penalty_date", { ascending: true });
+
+    for (const penalty of penalties || []) {
+      if (penalty.is_paid) continue;
+      const toPay = Math.min(remaining, penalty.penalty_amount);
+      remaining -= toPay;
+
+      await db
+        .from("payment_due_penalties")
+        .update({ is_paid: true })
+        .eq("id", penalty.id);
+
+      if (remaining <= 0) break;
+    }
+
+    if (remaining <= 0) break;
+
+    // Apply to base payment
     const due = parseFloat(payment.amount_to_be_paid);
     const alreadyPaid = parseFloat(payment.paid_amount || 0);
-
     const needed = Math.max(due - alreadyPaid, 0);
     const applied = Math.min(remaining, needed);
     const newPaid = alreadyPaid + applied;
     const isPaid = newPaid >= due;
 
-    updates.push({
-      id: payment.id,
-      paid_amount: newPaid,
-      is_paid: isPaid
-    });
-
+    updates.push({ id: payment.id, paid_amount: newPaid, is_paid: isPaid });
     remaining -= applied;
   }
 
-  // Perform all updates in parallel
   for (const up of updates) {
     const { error: updateErr } = await db
       .from("payment_Table")
-      .update({
-        paid_amount: up.paid_amount,
-        is_paid: up.is_paid
-      })
+      .update({ paid_amount: up.paid_amount, is_paid: up.is_paid })
       .eq("id", up.id);
     if (updateErr) throw updateErr;
   }
 
-  // Return the updated first payment (the one that triggered the update)
-  const updatedCurrent = updates.find(u => u.id === paymentId);
-  return updatedCurrent;
+  return updates.find(u => u.id === paymentId);
 }
+
 
 export async function fetchArchivedPayments() {
   const { data, error } = await db
@@ -182,8 +207,6 @@ export async function generatePayments(policyId, payments) {
 
 // ✅ UPDATED: Now accepts date range parameters
 export async function fetchAllDues(fromDate = null, toDate = null) {
-  console.log("fetchAllDues called with:", { fromDate, toDate });
-  
   let query = db
     .from("payment_Table")
     .select(`
@@ -207,9 +230,7 @@ export async function fetchAllDues(fromDate = null, toDate = null) {
     `)
     .or("is_archive.is.null,is_archive.eq.false");
 
-  // ✅ Add date filtering if dates are provided
   if (fromDate && toDate) {
-    console.log("Applying date filters:", { fromDate, toDate });
     query = query
       .gte("payment_date", fromDate)
       .lte("payment_date", toDate);
@@ -217,13 +238,19 @@ export async function fetchAllDues(fromDate = null, toDate = null) {
 
   query = query.order("payment_date", { ascending: true });
 
-  const { data, error } = await query;
-  
-  console.log("fetchAllDues result:", { data, error, count: data?.length });
-  
-  if (error) {
-    console.error("Error in fetchAllDues:", error);
-    throw error;
-  }
-  return data || [];
+  const { data: payments, error } = await query;
+  if (error) throw error;
+
+  const paymentIds = payments.map(p => p.id);
+  const penaltiesMap = await fetchPenaltiesForPayments(paymentIds);
+
+  return payments.map(p => {
+    const penalties = penaltiesMap[p.id] || [];
+    return {
+      ...p,
+      penalties,
+      total_due: calculateTotalDue(p, penalties),
+      remaining_balance: calculateRemainingBalance(p, penalties)
+    };
+  });
 }
