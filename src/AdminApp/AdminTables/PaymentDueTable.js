@@ -85,8 +85,8 @@ export default function PolicyWithPaymentsList() {
       return { daysOverdue, penaltyPercentage };
     };
         const calculateTotalPaid = (payment) => {
-    const basePaid = parseFloat(payment.paid_amount || 0);
-    const penaltiesPaid = (payment.penalties || []) // <-- use 'penalties'
+        const basePaid = parseFloat(payment.paid_amount || 0);
+        const penaltiesPaid = (payment.penalties || []) // <-- use 'penalties'
       .filter(p => p.is_paid)
       .reduce((sum, p) => sum + parseFloat(p.penalty_amount || 0), 0);
     return basePaid + penaltiesPaid;
@@ -97,42 +97,84 @@ export default function PolicyWithPaymentsList() {
     setModalOpen(true);
   };
 
-  const handlePaymentSave = async () => {
-  if (!currentPayment?.id || !currentPayment?.policy_id) return;
+    const handlePaymentSave = async () => {
+      if (!currentPayment?.id || !currentPayment?.policy_id) return;
 
-  try {
-    const cleanedInput = parseFloat(paymentInput.replace(/,/g, ""));
-    if (isNaN(cleanedInput)) { alert("Please enter a valid number"); return; }
+      try {
+        const cleanedInput = parseFloat(paymentInput.replace(/,/g, ""));
+        if (isNaN(cleanedInput)) {
+          alert("Please enter a valid number");
+          return;
+        }
 
-    const totalDue = calculateTotalDue(currentPayment);
-    const minimumPayment = totalDue * 0.01;
-    const alreadyPaid = calculateTotalPaid(currentPayment); // ✅ keep if needed
-    const remainingBalance = totalDue - alreadyPaid; // ✅ use currentPayment instead of p
+        const policyId = currentPayment.policy_id;
+        const payments = paymentsMap[policyId] || [];
 
-    if (cleanedInput < minimumPayment) {
-      alert(`Payment must be at least 1% of total due (₱${minimumPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`);
-      return;
-    }
+        const currentIndex = payments.findIndex(p => p.id === currentPayment.id);
+        if (currentIndex === -1) return;
 
-    if (cleanedInput > remainingBalance) {
-      alert(`You cannot pay more than the remaining balance (₱${remainingBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`);
-      return;
-    }
+        const currentTotalDue = calculateTotalDue(currentPayment);
+        const currentPaid = calculateTotalPaid(currentPayment);
+        const currentRemaining = Math.max(currentTotalDue - currentPaid, 0);
 
-    await updatePayment(currentPayment.id, cleanedInput, currentPayment.amount_to_be_paid);
+        const totalRemainingAcrossAll = payments.reduce((sum, p) => {
+          const totalDue = calculateTotalDue(p);
+          const totalPaid = calculateTotalPaid(p);
+          const remaining = Math.max(totalDue - totalPaid, 0);
+          return sum + remaining;
+        }, 0);
 
-    const updatedPayments = await fetchPaymentSchedule(currentPayment.policy_id);
-    setPaymentsMap(prev => ({ ...prev, [currentPayment.policy_id]: updatedPayments }));
+        if (cleanedInput > totalRemainingAcrossAll + 0.0001) {
+          alert(`You cannot pay more than the total remaining balance (₱${totalRemainingAcrossAll.toLocaleString()}).`);
+          return;
+        }
 
-    setModalOpen(false);
-    setCurrentPayment(null);
-    setPaymentInput("");
+        // Case A: within current month's remaining
+        if (cleanedInput <= currentRemaining + 0.0001) {
+          await updatePayment(currentPayment.id, cleanedInput, currentPayment.amount_to_be_paid);
+        } else {
+          // Case B: spillover across multiple months
+          let remainingToApply = cleanedInput;
 
-  } catch (err) {
-    console.error("Error updating payment:", err);
-    alert("Failed to update payment. See console for details.");
-  }
-};
+          for (let i = currentIndex; i < payments.length && remainingToApply > 0; i++) {
+            const p = payments[i];
+            const totalDue = calculateTotalDue(p);
+            const totalPaid = calculateTotalPaid(p);
+            const remaining = Math.max(totalDue - totalPaid, 0);
+
+            if (remaining <= 0) continue;
+
+            const amountToPay = Math.min(remaining, remainingToApply);
+            await updatePayment(p.id, amountToPay, p.amount_to_be_paid);
+            remainingToApply -= amountToPay;
+          }
+        }
+
+        // ✅ Only refresh that policy’s payment schedule
+        const updatedSchedule = await fetchPaymentSchedule(policyId);
+        setPaymentsMap(prev => ({
+          ...prev,
+          [policyId]: updatedSchedule,
+        }));
+
+        if (Math.abs(cleanedInput - totalRemainingAcrossAll) < 0.01) {
+          alert("Full payment applied across remaining months!");
+        } else if (cleanedInput > currentRemaining) {
+          alert("Payment applied with spillover across months.");
+        } else {
+          alert("Payment applied successfully!");
+        }
+
+        setModalOpen(false);
+        setCurrentPayment(null);
+        setPaymentInput("");
+
+      } catch (err) {
+        console.error("Error updating payment:", err);
+        alert("Failed to update payment. Check console for details.");
+      }
+    };
+
 
     const handleAddPenalty = (payment) => {
       const overdueInfo = calculateOverdueInfo(payment);
