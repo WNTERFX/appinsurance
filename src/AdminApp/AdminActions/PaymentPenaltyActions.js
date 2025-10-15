@@ -55,6 +55,12 @@ export async function addPaymentPenalty(paymentId, penaltyAmount, penaltyReason,
   if (paymentError) throw paymentError;
   if (!payment) throw new Error("Payment not found");
   
+  // ✅ NEW: Delete all existing penalties for this payment before adding new one
+  await db
+    .from("payment_due_penalties")
+    .delete()
+    .eq("payment_id", paymentId);
+  
   const penaltyRecord = {
     payment_id: paymentId,
     penalty_date: new Date().toISOString().split('T')[0],
@@ -74,13 +80,23 @@ export async function addPaymentPenalty(paymentId, penaltyAmount, penaltyReason,
 }
 
 // Calculate daily penalty (1% per day)
-export function calculateDailyPenalty(amountToBePaid, daysOverdue) {
-  // 1% per day, capped at 90 days (90%)
-  const maxDays = 90;
-  const effectiveDays = Math.min(daysOverdue, maxDays);
-  const penaltyRate = 0.01; // 1% per day
-  
-  return amountToBePaid * penaltyRate * effectiveDays;
+export async function calculateDailyPenalty(payment) {
+  const today = new Date();
+  const paymentDate = new Date(payment.payment_date);
+  const daysOverdue = Math.floor((today - paymentDate) / (1000 * 60 * 60 * 24));
+
+  // No penalty if not overdue
+  if (daysOverdue <= 0) return { daysOverdue: 0, penaltyAmount: 0, penaltyPercentage: 0 };
+
+  // ✅ Cap the penalty percentage at 31%
+  const penaltyPercentage = Math.min(daysOverdue, 31);
+  const penaltyAmount = payment.amount_to_be_paid * (penaltyPercentage / 100);
+
+  return {
+    daysOverdue,
+    penaltyAmount: Number(penaltyAmount.toFixed(2)),
+    penaltyPercentage
+  };
 }
 
 // Calculate automatic penalty for a payment (1% per day)
@@ -324,4 +340,13 @@ export function calculateRemainingBalance(payment, penalties = []) {
   const totalDue = calculateTotalDue(payment, penalties);
   const paidAmount = parseFloat(payment.paid_amount || 0);
   return Math.max(totalDue - paidAmount, 0);
+}
+
+export function hasPenaltyForToday(payment) {
+  const today = new Date().toISOString().split('T')[0];
+  const penalties = payment.penalties || payment.payment_due_penalties || [];
+  return penalties.some(penalty => {
+    const penaltyDate = penalty.penalty_date.split('T')[0]; // Handle both date formats
+    return penaltyDate === today;
+  });
 }
