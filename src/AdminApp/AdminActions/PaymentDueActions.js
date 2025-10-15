@@ -56,50 +56,69 @@ export async function updatePayment(paymentId, paidAmount) {
   let remaining = paidAmount;
   const updates = [];
 
-  for (let i = currentIndex; i < allPayments.length && remaining > 0; i++) {
-    const payment = allPayments[i];
+ for (let i = currentIndex; i < allPayments.length && remaining > 0; i++) {
+  const payment = allPayments[i];
 
-    // Apply to penalties first
-    const { data: penalties } = await db
+  // Apply to penalties first
+  const { data: penalties } = await db
+    .from("payment_due_penalties")
+    .select("id, penalty_amount, is_paid")
+    .eq("payment_id", payment.id)
+    .order("penalty_date", { ascending: true });
+
+  for (const penalty of penalties || []) {
+    if (penalty.is_paid) continue;
+    const toPay = Math.min(remaining, penalty.penalty_amount);
+    remaining -= toPay;
+
+    await db
       .from("payment_due_penalties")
-      .select("id, penalty_amount, is_paid")
-      .eq("payment_id", payment.id)
-      .order("penalty_date", { ascending: true });
+      .update({ is_paid: toPay >= penalty.penalty_amount })
+      .eq("id", penalty.id);
 
-    for (const penalty of penalties || []) {
-      if (penalty.is_paid) continue;
-      const toPay = Math.min(remaining, penalty.penalty_amount);
-      remaining -= toPay;
-
-      await db
-        .from("payment_due_penalties")
-        .update({ is_paid: true })
-        .eq("id", penalty.id);
-
-      if (remaining <= 0) break;
+    if (remaining <= 0) break;
     }
 
     if (remaining <= 0) break;
 
-    // Apply to base payment
+    // Apply to payment
     const due = parseFloat(payment.amount_to_be_paid);
     const alreadyPaid = parseFloat(payment.paid_amount || 0);
     const needed = Math.max(due - alreadyPaid, 0);
+
+    if (needed <= 0) continue;
+
     const applied = Math.min(remaining, needed);
     const newPaid = alreadyPaid + applied;
     const isPaid = newPaid >= due;
 
-    updates.push({ id: payment.id, paid_amount: newPaid, is_paid: isPaid });
+    updates.push({
+      id: payment.id,
+      paid_amount: newPaid,
+      is_paid: isPaid,
+      spillover: applied < remaining ? true : false
+    });
+
+    console.log(
+      applied < remaining
+        ? `💧 Spillover applied to ${payment.payment_date}: ₱${applied.toFixed(2)}`
+        : `✅ Payment applied to ${payment.payment_date}: ₱${applied.toFixed(2)}`
+    );
+
     remaining -= applied;
   }
 
   for (const up of updates) {
     const { error: updateErr } = await db
       .from("payment_Table")
-      .update({ paid_amount: up.paid_amount, is_paid: up.is_paid })
+      .update({
+        paid_amount: up.paid_amount,
+        is_paid: up.is_paid
+      })
       .eq("id", up.id);
+
     if (updateErr) throw updateErr;
-  }
+    }
 
   return updates.find(u => u.id === paymentId);
 }
