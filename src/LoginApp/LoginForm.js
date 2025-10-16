@@ -34,7 +34,7 @@ export default function LoginForm({ anotherLoginDetected }) {
   if (result.isAdmin) {
     navigate("/appinsurance/main-app/dashboard");
   } else {
-    navigate("/appinsurance/MainAreaModerator/DashboardModerator");
+    navigate("/appinsurance/main-app/dashboard");;
   }
 };
 

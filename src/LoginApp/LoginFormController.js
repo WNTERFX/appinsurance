@@ -25,7 +25,7 @@ export default function useLoginFormController(setSession) {
     if (result.isAdmin) {
       navigate("/appinsurance/main-app/dashboard");
     } else {
-      navigate("/appinsurance/MainAreaModerator/DashboardModerator");
+      navigate("/appinsurance/main-app/dashboard");
     }
   };
 
