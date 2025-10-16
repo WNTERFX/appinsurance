@@ -5,39 +5,27 @@ import { db } from "../../dbServer";
  */
 export async function createAccount({ firstName, middleName, lastName, email, password, isAdmin = false, status = "active" }) {
   try {
-    const personnel_Name = [firstName, middleName, lastName].filter(Boolean).join(" ");
-
-    const { data: authData, error: authError } = await db.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { username: personnel_Name },
-    });
-
-    if (authError) throw authError;
-    const accountId = authData.user.id;
-
-    await db.from("employee_Accounts").insert([
+    const { data: { session } } = await db.auth.getSession();
+    
+    const response = await fetch(
+      "https://ezmvecxqcjnrspmjfgkk.functions.supabase.co/create-employee",
       {
-        id: accountId,
-        personnel_Name,
-        first_name: firstName,
-        middle_name: middleName,
-        last_name: lastName,
-        employee_email: email,
-        creation_Date: new Date().toISOString().split("T")[0],
-        status_Account: status === "active",  // <-- convert string to boolean
-        is_Admin: isAdmin,
-      },
-    ]);
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ firstName, middleName, lastName, email, password, isAdmin, status }),
+      }
+    );
 
-    return { success: true, id: accountId };
+    const result = await response.json();
+    return result;
   } catch (err) {
     console.error("Error creating account:", err);
     return { success: false, error: err.message };
   }
 }
-
 
 
 /**
