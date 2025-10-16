@@ -308,26 +308,24 @@ export default function AccountManagement() {
                 <label>Last Name *</label>
                 <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required />
               </div>
-              <div>
-                <label>Email *</label>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    disabled={emailLocked}
-                    style={{ flex: 1 }}
-                  />
-                  {editingAccount && (
-                    <button type="button" onClick={() => setEmailLocked(!emailLocked)}>
-                      {emailLocked ? "Unlock" : "Lock"}
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div>
+              <label>Email *</label>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      disabled={editingAccount && emailLocked} // ✅ Only lock when editing
+                      style={{ flex: 1 }}
+                    />
+                    {editingAccount && (
+                      <button type="button" onClick={() => setEmailLocked(!emailLocked)}>
+                        {emailLocked ? "Unlock" : "Lock"}
+                      </button>
+                    )}
+                  </div>
+                <div>
                 <label>{editingAccount ? "New Password" : "Password *"}</label>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <input
