@@ -61,7 +61,9 @@ export async function NewVehicleCreation(vehicleData) {
 export async function fetchClients() {
   const { data, error } = await db
     .from("clients_Table")
-    .select("uid, internal_id,  prefix, first_Name, middle_Name, family_Name, suffix");
+    .select("uid, internal_id,  prefix, first_Name, middle_Name, family_Name, suffix")
+    .order("client_Registered", { ascending: false }); // ⬅ newest first
+
 
   if (error) {
     console.error("Error fetching clients:", error);

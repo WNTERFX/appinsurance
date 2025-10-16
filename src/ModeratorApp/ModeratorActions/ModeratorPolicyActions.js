@@ -82,7 +82,9 @@ export async function fetchModeratorClients(moderatorId) {
   const { data, error } = await db
     .from("clients_Table")
     .select("*")
+    .order("client_Registered", { ascending: false }) // ⬅ newest first
     .eq("agent_Id", moderatorId); // Only clients of this moderator
+    
   if (error) throw error;
   return data || [];
 }
