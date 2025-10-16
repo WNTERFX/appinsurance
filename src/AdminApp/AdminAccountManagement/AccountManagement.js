@@ -4,6 +4,7 @@ import "../styles/account-management-styles.css";
 import { createAccount, fetchAccounts, editAccount, deleteAccount } from "./AccountCreationActions";
 import ScreenLock from "../../ReusableComponents/ScreenLock";
 import { showGlobalAlert } from "../../ReusableComponents/GlobalAlert";
+import ProfileMenu from "../../ReusableComponents/ProfileMenu";
 import { db } from "../../dbServer";
 
 import DropdownAccounts from "../DropDownAccounts";
@@ -45,11 +46,25 @@ export default function AccountManagement() {
   useEffect(() => {
     const loadUser = async () => {
       const { data: { user } } = await db.auth.getUser();
-      setCurrentUser(user);
+      if (!user) return;
+
+      // Fetch user role from employee_Accounts
+      const { data: account, error } = await db
+        .from("employee_Accounts")
+        .select("is_Admin")
+        .eq("id", user.id)
+        .single();
+
+      if (!error && account) {
+        setCurrentUser({ ...user, isAdmin: account.is_Admin });
+      }
+
       logEvent("Current user loaded", user);
     };
+
     loadUser();
   }, []);
+  
 
   // 📋 Load accounts on tab change
   useEffect(() => {
@@ -210,42 +225,26 @@ export default function AccountManagement() {
         </div>
 
         <div className="right-actions-client">
-            <button
-            className={`btn-create ${activeTab === "add" ? "active" : ""}`}
-            onClick={handleAddClick}
-          >
-            Add Account
-          </button>
-          <button
-            className={`btn-archive ${activeTab === "edit" ? "active" : ""}`}
-            onClick={() => setActiveTab("edit")}
-          >
-            Edit Accounts
-          </button>
-
-          {/* ADDED: Profile Menu     nextime the ui in profile-menu*/}
+             {currentUser?.isAdmin && (
+              <>
+                <button
+                  className={`btn-create ${activeTab === "add" ? "active" : ""}`}
+                  onClick={handleAddClick}
+                >
+                  Add Account
+                </button>
+                <button
+                  className={`btn-archive ${activeTab === "edit" ? "active" : ""}`}
+                  onClick={() => setActiveTab("edit")}
+                >
+                  Edit Accounts
+                </button>
+              </>
+            )}
+          {/* Profile Menu */}
           <div className="profile-menu">
-            <button
-              ref={profileButtonRef} // Use the new ref name
-              className="profile-button"
-              onClick={() => setIsProfileMenuOpen((s) => !s)} // Use the new state name
-              aria-haspopup="true"
-              aria-expanded={isProfileMenuOpen} // Use the new state name
-            >
-              <span className="profile-name">Admin</span> {/* Display current user's email or "Admin" */}
-              <FaUserCircle className="profile-icon" />
-            </button>
-
-            <div ref={dropdownRef}> {/* ADDED ref to the dropdown container */}
-              <DropdownAccounts
-                open={isProfileMenuOpen} // Use the new state name
-                onClose={() => setIsProfileMenuOpen(false)} // Use the new state name
-                onDarkMode={() => console.log("Dark Mode toggled")} // Placeholder for dark mode logic
-              />
-            </div>
+              <ProfileMenu onDarkMode={() => console.log("Dark Mode toggled")} />
           </div>
-          {/* END ADDED: Profile Menu */}
-
         </div>
       </div>
 
@@ -261,7 +260,7 @@ export default function AccountManagement() {
                     <th>Name</th>
                     <th>Email</th>
                     <th>Status</th>
-                    <th>Admin</th>
+                     {currentUser?.isAdmin && <th>Admin</th>}
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -281,10 +280,16 @@ export default function AccountManagement() {
                           {acc.status_Account ? "Active" : "Inactive"}
                         </span>
                       </td>
-                      <td>{acc.is_Admin ? "Yes" : "No"}</td>
+                      
+                      {currentUser?.isAdmin && <td>{acc.is_Admin ? "Yes" : "No"}</td>}
+
                       <td className="account-table-actions">
                         <button onClick={() => handleEditClick(acc)}>Edit</button>
-                        <button onClick={() => handleDelete(acc.id)}>Delete</button>
+
+                        {/* Only admins can delete */}
+                        {currentUser?.isAdmin && (
+                          <button onClick={() => handleDelete(acc.id)}>Delete</button>
+                        )}
                       </td>
                     </tr>
                   ))}

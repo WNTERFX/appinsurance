@@ -14,6 +14,7 @@ import {
   getMonthlyPartnerPolicyData,
   getAllPartners
 } from "./AdminActions/DashboardActions";
+import ProfileMenu from "../ReusableComponents/ProfileMenu";
 import {FaUsers, FaFileAlt,FaTruck, FaCheckCircle, FaChartBar,FaHourglassHalf , FaMoneyBill} from "react-icons/fa";
 
 
@@ -118,32 +119,14 @@ useEffect(() => {
     <div className="right-actions">
       <div className="dashboard-title-container">
       <h4 className="dashboard-title">Dashboard</h4>
-      <p className="welcome-text">Welcome back, ADMIN! Here's  your Silverstar agency overview. </p>
+      <p className="welcome-text">Welcome back, Here's  your current overview. </p>
       </div>
     </div>
 
     {/* Right side */}
     <div className="left-actions">
       <div className="profile-menu">
-        <button
-          ref={buttonRef}
-          className="profile-button"
-          onClick={() => setOpen((s) => !s)}
-          aria-haspopup="true"
-          aria-expanded={open}
-        >
-            <span className="profile-name">Admin</span>
-          <FaUserCircle className="profile-icon" />
-
-        </button>
-
-        <div>
-          <DropdownAccounts
-          open={open}
-          onClose={() => setOpen(false)}
-          onDarkMode={() => console.log("Dark Mode toggled")}
-          />
-        </div>
+        <ProfileMenu onDarkMode={() => console.log("Dark Mode toggled")} />
       </div>
     </div>
 

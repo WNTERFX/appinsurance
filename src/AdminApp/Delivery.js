@@ -7,6 +7,7 @@ import DeliveryCreationController from "./ControllerAdmin/DeliveryCreationContro
 import EditDeliveryController from "./ControllerAdmin/EditDeliveryController";
 import { fetchDeliveries } from "./AdminActions/DeliveryActions";
 import { fetchPolicies } from "./AdminActions/PolicyActions";
+import ProfileMenu from "../ReusableComponents/ProfileMenu";
 import "./styles/delivery-styles.css";
 
 import ClientInfo from "./ClientInfo";
@@ -104,21 +105,7 @@ export default function Delivery() {
           </button>
 
           <div className="profile-menu">
-            <button
-              ref={buttonRef}
-              className="profile-button"
-              onClick={() => setOpen((s) => !s)}
-            >
-              <span className="profile-name">Admin</span>
-              <FaUserCircle className="profile-icon" />
-            </button>
-            <div ref={dropdownRef}>
-              <DropdownAccounts
-                open={open}
-                onClose={() => setOpen(false)}
-                onDarkMode={() => console.log("Dark Mode toggled")}
-              />
-            </div>
+            <ProfileMenu onDarkMode={() => console.log("Dark Mode toggled")} />
           </div>
         </div>
       </div>

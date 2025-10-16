@@ -8,6 +8,7 @@ import ClientTableDue from './ClientTableDue';
 import ClientTable from './AdminTables/ClientTable';
 
 import PolicyTable from './AdminTables/PolicyTable';
+import ProfileMenu from "../ReusableComponents/ProfileMenu";
 import './styles/monthly-styles.css'; 
 import  DropdownAccounts  from './DropDownAccounts'
 
@@ -55,26 +56,8 @@ export default function MonthlyData({
             <div className="left-actions">
 
                 <div className="profile-menu">
-                        <button
-                          ref={buttonRef}
-                          className="profile-button"
-                          onClick={() => setOpen((s) => !s)}
-                          aria-haspopup="true"
-                          aria-expanded={open}
-                        >
-                            <span className="profile-name">Admin</span>
-                          <FaUserCircle className="profile-icon" />
-                          
-                        </button>
-                
-                        <div>
-                         <DropdownAccounts 
-                           open={open}
-                           onClose={() => setOpen(false)}
-                           onDarkMode={() => console.log("Dark Mode toggled")}
-                          />
-                        </div>
-                      </div>
+                 <ProfileMenu onDarkMode={() => console.log("Dark Mode toggled")} />
+                </div>
             </div>
 
             </div>

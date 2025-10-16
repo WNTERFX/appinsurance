@@ -1,26 +1,45 @@
-import "./styles/nav-styles.css";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LuLayoutDashboard, LuUser, LuClipboard, LuMail, LuFolder, LuCreditCard, LuSettings, LuActivity, LuInfo } from "react-icons/lu";
-import "./images/logo_.png"
+import { db } from "../dbServer"
+import "./styles/nav-styles.css";
 
 export default function NavBar() {
   const location = useLocation();
+  const [isAdmin, setIsAdmin] = useState(null);
+
+  useEffect(() => {
+    async function fetchUserRole() {
+      const { data: { user } } = await db.auth.getUser();
+
+      if (user) {
+        const { data, error } = await db
+          .from("employee_Accounts")
+          .select("is_Admin")
+          .eq("id", user.id)
+          .single();
+
+        if (!error && data) {
+          setIsAdmin(data.is_Admin);
+        }
+      }
+    }
+
+    fetchUserRole();
+  }, []);
+
   const isActive = (path) => location.pathname === path;
 
   return (
-
     <div className="nav-bar">
       <div className="logo-container">
-              <img className="nav-logo-img" src={require("./images/logo_.png")} alt="silverstar_insurance_inc_Logo" />
+        <img className="nav-logo-img" src={require("./images/logo_.png")} alt="silverstar_insurance_inc_Logo" />
         <h1 className="logo">Silverstar Insurance</h1>
       </div>
 
-
-        {/* Divider line */}
       <hr className="nav-divider" />
 
       <div className="side-bar-container">
-        {/* --- TOP LINKS --- */}
         <div className="side-bar top-links">
           <Link to="/appinsurance/main-app/dashboard" className={"side-bar-item" + (isActive("/appinsurance/main-app/dashboard") ? " active" : "")}>
             <div className="side-bar-label">
@@ -35,18 +54,6 @@ export default function NavBar() {
               <span>Clients</span>
             </div>
           </Link>
-
-        {/*<Link to="/appinsurance/MainArea/Due" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Due") ? " active" : "")}>
-        {isMinimize ? (
-          <LuCalendarArrowUp />
-        ) : (
-          <div className="side-bar-label">
-            <LuCalendarArrowUp className="side-bar-icon" />
-            <span>Due</span>
-         </div>
-        )}   
-      </Link>*/}
-
 
           <Link to="/appinsurance/main-app/policy" className={"side-bar-item" + (isActive("/appinsurance/main-app/policy") ? " active" : "")}>
             <div className="side-bar-label">
@@ -83,36 +90,25 @@ export default function NavBar() {
             </div>
           </Link>
 
-        {/*<Link to="/appinsurance/MainArea/Profile" className={"side-bar-item" + (isActive("/appinsurance/MainArea/Profile") ? " active" : "")}>
-        {isMinimize ? (
-         <LuSettings />
-        ) : (
-          <div className="side-bar-label">
-            <LuSettings className="side-bar-icon" />
-            <span className="side-bar-name" >Profile</span>
-          </div>
-        )}
-      </Link>
-         */}
+          {/* Only show this if user is ADMIN */}
+          {isAdmin && (
+            <Link to="/appinsurance/main-app/admin-controls" className={"side-bar-item" + (isActive("/appinsurance/main-app/admin-controls") ? " active" : "")}>
+              <div className="side-bar-label">
+                <LuSettings className="side-bar-icon" />
+                <span>Admin Controls</span>
+              </div>
+            </Link>
+          )}
 
-          
-         <Link to="/appinsurance/main-app/admin-controls" className={"side-bar-item" + (isActive("/appinsurance/main-app/admin-controls") ? " active" : "")}>
-          <div className="side-bar-label">
-            <LuSettings className="side-bar-icon" />
-            <span>Admin Controls</span>
-          </div>
-        </Link>
-
-
+          {/* Change label based on user role */}
           <Link to="/appinsurance/main-app/account-management" className={"side-bar-item" + (isActive("/appinsurance/main-app/account-management") ? " active" : "")}>
             <div className="side-bar-label">
               <LuSettings className="side-bar-icon" />
-              <span>Manage Users</span>
+              <span>{isAdmin ? "Manage Users" : "Manage User"}</span>
             </div>
           </Link>
         </div>
 
-        {/* --- BOTTOM LINKS --- */}
         <div className="side-bar bottom-links">
           <Link to="/appinsurance/main-app/about" className="side-bar-item">
             <div className="side-bar-label">

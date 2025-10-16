@@ -10,6 +10,7 @@ import {
   getAllAgentsWithAssignedColors,
   getClientCountByAgent
 } from "./AdminActions/AgentActions";
+import ProfileMenu from "../ReusableComponents/ProfileMenu";
 
 import NewClientController from "./ControllerAdmin/NewClientController";
 import EditClientController from "./ControllerAdmin/EditClientController";
@@ -116,24 +117,7 @@ export default function Client() {
           </button>
 
           <div className="profile-menu">
-            <button
-              ref={buttonRef}
-              className="profile-button"
-              onClick={() => setOpen((s) => !s)}
-              aria-haspopup="true"
-              aria-expanded={open}
-            >
-              <span className="profile-name">Admin</span>
-              <FaUserCircle className="profile-icon" />
-            </button>
-
-            <div>
-              <DropdownAccounts
-                open={open}
-                onClose={() => setOpen(false)}
-                onDarkMode={() => console.log("Dark Mode toggled")}
-              />
-            </div>
+              <ProfileMenu onDarkMode={() => console.log("Dark Mode toggled")} />  
           </div>
         </div>
       </div>

@@ -89,11 +89,18 @@ export async function archivePolicy(policyId) {
     .update({
       is_archived: true,
       archival_date: new Date().toISOString().split("T")[0],
+      policy_is_active: false, // ✅ Deactivate when archiving
     })
     .eq("id", policyId)
-    .select();
-  if (error) throw error;
-  return data?.[0] || null;
+    .select()
+    .single(); // ✅ Returns single object instead of array
+
+  if (error) {
+    console.error("Error archiving policy:", error.message);
+    throw error;
+  }
+  
+  return data;
 }
 
 export async function activatePolicy(policy, paymentTypeId) {

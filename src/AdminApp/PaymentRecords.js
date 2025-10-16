@@ -4,6 +4,7 @@ import DropdownAccounts from "./DropDownAccounts";
 import PaymentDueTable from "./AdminTables/PaymentDueTable";
 import PaymentDueArchive from "./AdminTables/PaymentDueArchive";
 import { FaUserCircle, FaArchive } from "react-icons/fa";
+import ProfileMenu from "../ReusableComponents/ProfileMenu";
 import "./styles/payment-records-styles.css";
 
 export default function PaymentRecords() {
@@ -49,24 +50,7 @@ export default function PaymentRecords() {
           </button>
 
           <div className="profile-menu">
-            <button
-              ref={buttonRef}
-              className="profile-button"
-              onClick={() => setOpen((s) => !s)}
-              aria-haspopup="true"
-              aria-expanded={open}
-            >
-              <span className="profile-name">Admin</span>
-              <FaUserCircle className="profile-icon" />
-            </button>
-
-            <div ref={dropdownRef}>
-              <DropdownAccounts
-                open={open}
-                onClose={() => setOpen(false)}
-                onDarkMode={() => console.log("Dark Mode toggled")}
-              />
-            </div>
+             <ProfileMenu onDarkMode={() => console.log("Dark Mode toggled")} />
           </div>
         </div>
       </div>

@@ -5,8 +5,8 @@ import ScreenLock from "./ScreenLock";
 import GlobalAlert, { showGlobalAlert } from "./GlobalAlert";
 
 export default function AuthChecker() {
-  const IDLE_TIMEOUT = 15 * 60 * 1000; // 30 seconds for testing (change back to 15 * 60 * 1000 for production)
-  const WARNING_TIME = 60 * 1000; // 10 seconds warning for testing (change back to 60 * 1000 for production)
+  const IDLE_TIMEOUT = 15 * 60 * 1000;
+  const WARNING_TIME = 60 * 1000;
   const idleTimeout = useRef(null);
   const warningTimeout = useRef(null);
   const [locked, setLocked] = useState(false);
@@ -18,19 +18,22 @@ export default function AuthChecker() {
       clearTimeout(warningTimeout.current);
       setLockMessage(message);
       setLocked(true);
-      
-      // Show alert at the same time as the lock screen
+     
       if (showAlert) {
         showGlobalAlert(alertMessage || message);
       }
     };
 
     const verifySession = async () => {
-      const userId = localStorage.getItem("user_id");
-      const token = localStorage.getItem("session_token");
-      if (!userId || !token) {
+      // Get current Supabase session
+      const { data: { session }, error: sessionError } = await db.auth.getSession();
+      
+      if (sessionError || !session) {
         return lockScreen("You have been logged out due to inactivity.");
       }
+
+      const userId = session.user.id;
+      
       try {
         const { data, error } = await db
           .from("employee_Accounts")
@@ -38,7 +41,8 @@ export default function AuthChecker() {
           .eq("id", userId)
           .single();
        
-        if (error || !data?.current_session_token || data.current_session_token !== token) {
+        // Compare with actual Supabase session token
+        if (error || !data?.current_session_token || data.current_session_token !== session.access_token) {
           return lockScreen(
             "Another login has been detected. Click anywhere to go to login.",
             true,
@@ -80,11 +84,8 @@ export default function AuthChecker() {
 
   return (
     <>
-      {/* GlobalAlert must be rendered for showGlobalAlert() to work */}
       <GlobalAlert />
-      {/* Always render Outlet so there's content to blur */}
       <Outlet />
-      {/* Render ScreenLock on top when locked */}
       {locked && <ScreenLock message={lockMessage} />}
     </>
   );

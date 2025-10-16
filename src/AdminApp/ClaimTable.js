@@ -3,7 +3,7 @@ import Filter from './Filter';
 import React, { useState, useRef, useEffect } from "react";
 import { FaUserCircle , FaMoon, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import  DropdownAccounts  from './DropDownAccounts'
+import ProfileMenu from "../ReusableComponents/ProfileMenu";
 
 export default function ClaimTable() {
     
@@ -38,25 +38,7 @@ export default function ClaimTable() {
             </div>
             <div className="left-actions">
         <div className="profile-menu">
-        <button
-          ref={buttonRef}
-          className="profile-button"
-          onClick={() => setOpen((s) => !s)}
-          aria-haspopup="true"
-          aria-expanded={open}
-        >
-            <span className="profile-name">Admin</span>
-          <FaUserCircle className="profile-icon" />
-          
-        </button>
-
-        <div>
-          <DropdownAccounts 
-           open={open}
-           onClose={() => setOpen(false)}
-           onDarkMode={() => console.log("Dark Mode toggled")}
-           />
-        </div>
+           <ProfileMenu onDarkMode={() => console.log("Dark Mode toggled")} />
         </div>
         </div>
 
