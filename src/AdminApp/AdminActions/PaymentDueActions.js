@@ -7,6 +7,7 @@ export async function fetchPaymentSchedule(policyId) {
     .from("payment_Table")
     .select(`id, payment_date, amount_to_be_paid, is_paid, paid_amount`)
     .eq("policy_id", policyId)
+    .or("is_archive.is.null,is_archive.eq.false")
     .order("payment_date", { ascending: true });
 
   if (error) throw error;
@@ -144,7 +145,7 @@ export async function fetchArchivedPayments() {
         )
       )
     `)
-    .eq("is_archived", true)
+    .eq("is_archive", true)
     .order("payment_date", { ascending: false });
  
   if (error) throw error;
@@ -157,7 +158,7 @@ export async function archivePayment(paymentId) {
  
   const { data, error } = await db
     .from("payment_Table")
-    .update({ is_archived: true })
+    .update({ is_archive: true })
     .eq("id", paymentId)
     .select();
  
@@ -171,7 +172,7 @@ export async function unArchivePayment(paymentId) {
  
   const { data, error } = await db
     .from("payment_Table")
-    .update({ is_archived: false })
+    .update({ is_archive: false })
     .eq("id", paymentId)
     .select();
  

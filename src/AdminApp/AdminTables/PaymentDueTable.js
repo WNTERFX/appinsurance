@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { fetchPolicies } from "../AdminActions/PolicyActions";
-import { fetchPaymentSchedule, updatePayment, generatePayments } from "../AdminActions/PaymentDueActions";
+import { fetchPaymentSchedule, updatePayment, generatePayments, archivePayment } from "../AdminActions/PaymentDueActions";
 import { addPaymentPenalty, calculateDailyPenalty, hasPenaltyForToday } from "../AdminActions/PaymentPenaltyActions";
 import PaymentGenerationModal from "../PaymentGenerationModal";
-import "../styles/payment-table-styles.css"; 
-
-
-
+import "../styles/payment-table-styles.css";
 
 export default function PolicyWithPaymentsList() {
   const [policies, setPolicies] = useState([]);
@@ -14,7 +11,7 @@ export default function PolicyWithPaymentsList() {
   const [expanded, setExpanded] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
   const [currentPayment, setCurrentPayment] = useState(null);
-  const [paymentInput, setPaymentInput] = useState(""); 
+  const [paymentInput, setPaymentInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const [penaltyModalOpen, setPenaltyModalOpen] = useState(false);
@@ -27,9 +24,13 @@ export default function PolicyWithPaymentsList() {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Archive confirmation modal state
+  const [archiveModalOpen, setArchiveModalOpen] = useState(false);
+  const [selectedPaymentForArchive, setSelectedPaymentForArchive] = useState(null);
+
   useEffect(() => { loadPolicies(); }, []);
 
-   const loadPolicies = async () => {
+  const loadPolicies = async () => {
     try {
       setIsLoading(true);
       setPolicies([]);
@@ -53,8 +54,8 @@ export default function PolicyWithPaymentsList() {
   const toggleExpand = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
 
   const calculateTotalPenalties = (payment) => {
-  const penalties = payment.penalties || []; // <-- use 'penalties' from fetchPaymentSchedule
-  return penalties.reduce((sum, p) => sum + parseFloat(p.penalty_amount || 0), 0);
+    const penalties = payment.penalties || [];
+    return penalties.reduce((sum, p) => sum + parseFloat(p.penalty_amount || 0), 0);
   };
 
   const calculateTotalDue = (payment) => {
@@ -62,188 +63,184 @@ export default function PolicyWithPaymentsList() {
     const totalPenalties = calculateTotalPenalties(payment);
     return baseDue + totalPenalties;
   };
-    const calculateOverdueInfo = (payment) => {
-      const paymentDate = new Date(payment.payment_date);
-      const today = new Date();
-      const isPaid = getPaymentStatus(payment) === "fully-paid";
-      const penalties = payment.penalties || payment.payment_due_penalties || [];
 
-      if (isPaid) {
-        if (penalties.length > 0) {
-          const lastPenalty = penalties[penalties.length - 1];
-          const lastDaysOverdue = lastPenalty.not_paid_days || 0;
-          const penaltyPercentage = Math.min(lastDaysOverdue, 31); // <-- cap at 31%
-          return { daysOverdue: lastDaysOverdue, penaltyPercentage };
-        }
-        return { daysOverdue: 0, penaltyPercentage: 0 };
+  const calculateOverdueInfo = (payment) => {
+    const paymentDate = new Date(payment.payment_date);
+    const today = new Date();
+    const isPaid = getPaymentStatus(payment) === "fully-paid";
+    const penalties = payment.penalties || payment.payment_due_penalties || [];
+
+    if (isPaid) {
+      if (penalties.length > 0) {
+        const lastPenalty = penalties[penalties.length - 1];
+        const lastDaysOverdue = lastPenalty.not_paid_days || 0;
+        const penaltyPercentage = Math.min(lastDaysOverdue, 31);
+        return { daysOverdue: lastDaysOverdue, penaltyPercentage };
       }
+      return { daysOverdue: 0, penaltyPercentage: 0 };
+    }
 
-      const daysOverdue = Math.floor((today - paymentDate) / (1000 * 60 * 60 * 24));
-      if (daysOverdue <= 0) return { daysOverdue: 0, penaltyPercentage: 0 };
+    const daysOverdue = Math.floor((today - paymentDate) / (1000 * 60 * 60 * 24));
+    if (daysOverdue <= 0) return { daysOverdue: 0, penaltyPercentage: 0 };
 
-      const penaltyPercentage = Math.min(daysOverdue, 31); // <-- cap at 31%
-      return { daysOverdue, penaltyPercentage };
-    };
-        const calculateTotalPaid = (payment) => {
-        const basePaid = parseFloat(payment.paid_amount || 0);
-        const penaltiesPaid = (payment.penalties || []) // <-- use 'penalties'
+    const penaltyPercentage = Math.min(daysOverdue, 31);
+    return { daysOverdue, penaltyPercentage };
+  };
+
+  const calculateTotalPaid = (payment) => {
+    const basePaid = parseFloat(payment.paid_amount || 0);
+    const penaltiesPaid = (payment.penalties || [])
       .filter(p => p.is_paid)
       .reduce((sum, p) => sum + parseFloat(p.penalty_amount || 0), 0);
     return basePaid + penaltiesPaid;
   };
+
   const handlePaymentClick = (payment, clientPhone) => {
     setCurrentPayment({ ...payment, client_phone: clientPhone, policy_id: payment.policy_id });
     setPaymentInput(String(payment?.paid_amount || ""));
     setModalOpen(true);
   };
 
-    const handlePaymentSave = async () => {
-      if (!currentPayment?.id || !currentPayment?.policy_id) return;
+  const handlePaymentSave = async () => {
+    if (!currentPayment?.id || !currentPayment?.policy_id) return;
 
-      try {
-        const cleanedInput = parseFloat(paymentInput.replace(/,/g, ""));
-        if (isNaN(cleanedInput)) {
-          alert("Please enter a valid number");
-          return;
-        }
+    try {
+      const cleanedInput = parseFloat(paymentInput.replace(/,/g, ""));
+      if (isNaN(cleanedInput)) {
+        alert("Please enter a valid number");
+        return;
+      }
 
-        const policyId = currentPayment.policy_id;
-        const payments = paymentsMap[policyId] || [];
+      const policyId = currentPayment.policy_id;
+      const payments = paymentsMap[policyId] || [];
 
-        const currentIndex = payments.findIndex(p => p.id === currentPayment.id);
-        if (currentIndex === -1) return;
+      const currentIndex = payments.findIndex(p => p.id === currentPayment.id);
+      if (currentIndex === -1) return;
 
-        const currentTotalDue = calculateTotalDue(currentPayment);
-        const currentPaid = calculateTotalPaid(currentPayment);
-        const currentRemaining = Math.max(currentTotalDue - currentPaid, 0);
+      const currentTotalDue = calculateTotalDue(currentPayment);
+      const currentPaid = calculateTotalPaid(currentPayment);
+      const currentRemaining = Math.max(currentTotalDue - currentPaid, 0);
 
-        const totalRemainingAcrossAll = payments.reduce((sum, p) => {
+      const totalRemainingAcrossAll = payments.reduce((sum, p) => {
+        const totalDue = calculateTotalDue(p);
+        const totalPaid = calculateTotalPaid(p);
+        const remaining = Math.max(totalDue - totalPaid, 0);
+        return sum + remaining;
+      }, 0);
+
+      if (cleanedInput > totalRemainingAcrossAll + 0.0001) {
+        alert(`You cannot pay more than the total remaining balance (₱${totalRemainingAcrossAll.toLocaleString()}).`);
+        return;
+      }
+
+      if (cleanedInput <= currentRemaining + 0.0001) {
+        await updatePayment(currentPayment.id, cleanedInput, currentPayment.amount_to_be_paid);
+      } else {
+        let remainingToApply = cleanedInput;
+
+        for (let i = currentIndex; i < payments.length && remainingToApply > 0; i++) {
+          const p = payments[i];
           const totalDue = calculateTotalDue(p);
           const totalPaid = calculateTotalPaid(p);
           const remaining = Math.max(totalDue - totalPaid, 0);
-          return sum + remaining;
-        }, 0);
 
-        if (cleanedInput > totalRemainingAcrossAll + 0.0001) {
-          alert(`You cannot pay more than the total remaining balance (₱${totalRemainingAcrossAll.toLocaleString()}).`);
-          return;
+          if (remaining <= 0) continue;
+
+          const amountToPay = Math.min(remaining, remainingToApply);
+          await updatePayment(p.id, amountToPay, p.amount_to_be_paid);
+          remainingToApply -= amountToPay;
         }
-
-        // Case A: within current month's remaining
-        if (cleanedInput <= currentRemaining + 0.0001) {
-          await updatePayment(currentPayment.id, cleanedInput, currentPayment.amount_to_be_paid);
-        } else {
-          // Case B: spillover across multiple months
-          let remainingToApply = cleanedInput;
-
-          for (let i = currentIndex; i < payments.length && remainingToApply > 0; i++) {
-            const p = payments[i];
-            const totalDue = calculateTotalDue(p);
-            const totalPaid = calculateTotalPaid(p);
-            const remaining = Math.max(totalDue - totalPaid, 0);
-
-            if (remaining <= 0) continue;
-
-            const amountToPay = Math.min(remaining, remainingToApply);
-            await updatePayment(p.id, amountToPay, p.amount_to_be_paid);
-            remainingToApply -= amountToPay;
-          }
-        }
-
-        // ✅ Only refresh that policy’s payment schedule
-        const updatedSchedule = await fetchPaymentSchedule(policyId);
-        setPaymentsMap(prev => ({
-          ...prev,
-          [policyId]: updatedSchedule,
-        }));
-
-        if (Math.abs(cleanedInput - totalRemainingAcrossAll) < 0.01) {
-          alert("Full payment applied across remaining months!");
-        } else if (cleanedInput > currentRemaining) {
-          alert("Payment applied with spillover across months.");
-        } else {
-          alert("Payment applied successfully!");
-        }
-
-        setModalOpen(false);
-        setCurrentPayment(null);
-        setPaymentInput("");
-
-      } catch (err) {
-        console.error("Error updating payment:", err);
-        alert("Failed to update payment. Check console for details.");
       }
-    };
 
+      const updatedSchedule = await fetchPaymentSchedule(policyId);
+      setPaymentsMap(prev => ({
+        ...prev,
+        [policyId]: updatedSchedule,
+      }));
 
-    const handleAddPenalty = (payment) => {
-      const overdueInfo = calculateOverdueInfo(payment);
-      if (overdueInfo.daysOverdue <= 0) {
-        alert("This payment is not yet overdue. Penalties can only be added to overdue payments.");
-        return;
+      if (Math.abs(cleanedInput - totalRemainingAcrossAll) < 0.01) {
+        alert("Full payment applied across remaining months!");
+      } else if (cleanedInput > currentRemaining) {
+        alert("Payment applied with spillover across months.");
+      } else {
+        alert("Payment applied successfully!");
       }
-      setSelectedPaymentForPenalty(payment);
-      setPenaltyModalOpen(true);
-    };
 
-    const handlePenaltySave = async () => {
-  if (!selectedPaymentForPenalty) return;
+      setModalOpen(false);
+      setCurrentPayment(null);
+      setPaymentInput("");
 
-  try {
-   const overdueInfo = calculateOverdueInfo(selectedPaymentForPenalty);
-    const { penaltyAmount } = await calculateDailyPenalty({
-      amount_to_be_paid: selectedPaymentForPenalty.amount_to_be_paid,
-      payment_date: selectedPaymentForPenalty.payment_date
-    });
-    const reason = `${overdueInfo.daysOverdue} day(s) overdue - ${overdueInfo.penaltyPercentage}% penalty (1% per day)`;
+    } catch (err) {
+      console.error("Error updating payment:", err);
+      alert("Failed to update payment. Check console for details.");
+    }
+  };
 
-    // ✅ Step 1: Add the penalty record
-    const penalty = await addPaymentPenalty(
-      selectedPaymentForPenalty.id,
-      penaltyAmount,
-      reason,
-      overdueInfo.daysOverdue
-    );
+  const handleAddPenalty = (payment) => {
+    const overdueInfo = calculateOverdueInfo(payment);
+    if (overdueInfo.daysOverdue <= 0) {
+      alert("This payment is not yet overdue. Penalties can only be added to overdue payments.");
+      return;
+    }
+    setSelectedPaymentForPenalty(payment);
+    setPenaltyModalOpen(true);
+  };
 
-    // ✅ Step 2: Notify client via Edge Function
+  const handlePenaltySave = async () => {
+    if (!selectedPaymentForPenalty) return;
+
     try {
-          const res = await fetch("https://ezmvecxqcjnrspmjfgkk.functions.supabase.co/payment_penalty_notify", {
+      const overdueInfo = calculateOverdueInfo(selectedPaymentForPenalty);
+      const { penaltyAmount } = await calculateDailyPenalty({
+        amount_to_be_paid: selectedPaymentForPenalty.amount_to_be_paid,
+        payment_date: selectedPaymentForPenalty.payment_date
+      });
+      const reason = `${overdueInfo.daysOverdue} day(s) overdue - ${overdueInfo.penaltyPercentage}% penalty (1% per day)`;
+
+      const penalty = await addPaymentPenalty(
+        selectedPaymentForPenalty.id,
+        penaltyAmount,
+        reason,
+        overdueInfo.daysOverdue
+      );
+
+      try {
+        const res = await fetch("https://ezmvecxqcjnrspmjfgkk.functions.supabase.co/payment_penalty_notify", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6bXZlY3hxY2pucnNwbWpmZ2trIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ1MjUzMzMsImV4cCI6MjA3MDEwMTMzM30.M0ZsDxmJRc7EFe3uzRFmy69TymcsdwMbV54jkay29tI`
           },
-        body: JSON.stringify({
-           payment_id: selectedPaymentForPenalty.id,
-          penalty_amount: penaltyAmount,
-          penalty_reason: reason,
-          not_paid_days: overdueInfo.daysOverdue,
-        }),
-      });
+          body: JSON.stringify({
+            payment_id: selectedPaymentForPenalty.id,
+            penalty_amount: penaltyAmount,
+            penalty_reason: reason,
+            not_paid_days: overdueInfo.daysOverdue,
+          }),
+        });
 
-      if (res.ok) {
-        console.log("✅ Penalty notification sent!");
-      } else {
-        console.warn("⚠️ Notification failed:", await res.text());
+        if (res.ok) {
+          console.log("✅ Penalty notification sent!");
+        } else {
+          console.warn("⚠️ Notification failed:", await res.text());
+        }
+      } catch (notifyErr) {
+        console.error("Error sending penalty notification:", notifyErr);
       }
-    } catch (notifyErr) {
-      console.error("Error sending penalty notification:", notifyErr);
+
+      const policyId = selectedPaymentForPenalty.policy_id;
+      const updatedPayments = await fetchPaymentSchedule(policyId);
+      setPaymentsMap(prev => ({ ...prev, [policyId]: updatedPayments }));
+
+      alert("Penalty added successfully!");
+      setPenaltyModalOpen(false);
+      setSelectedPaymentForPenalty(null);
+
+    } catch (err) {
+      console.error("Error adding penalty:", err);
+      alert("Failed to add penalty. See console for details.");
     }
-
-    // ✅ Step 3: Reload payments to refresh UI
-    const policyId = selectedPaymentForPenalty.policy_id;
-    const updatedPayments = await fetchPaymentSchedule(policyId);
-    setPaymentsMap(prev => ({ ...prev, [policyId]: updatedPayments }));
-
-    alert("Penalty added successfully!");
-    setPenaltyModalOpen(false);
-    setSelectedPaymentForPenalty(null);
-
-  } catch (err) {
-    console.error("Error adding penalty:", err);
-    alert("Failed to add penalty. See console for details.");
-  }
-};
+  };
 
   const handleGeneratePayments = async (policyId, payments) => {
     try {
@@ -259,6 +256,55 @@ export default function PolicyWithPaymentsList() {
   const handleOpenGenerateModal = (policy) => {
     setSelectedPolicy(policy);
     setGenerateModalOpen(true);
+  };
+
+  // Archive functionality
+  const handleOpenArchiveModal = (payment) => {
+    setSelectedPaymentForArchive(payment);
+    setArchiveModalOpen(true);
+  };
+
+  const handleArchiveConfirm = async () => {
+    if (!selectedPaymentForArchive) return;
+
+    try {
+      // Check if we're archiving all payments for a policy
+      if (selectedPaymentForArchive.payments) {
+        const { policy_id, payments } = selectedPaymentForArchive;
+        
+        // Archive all payments
+        for (const payment of payments) {
+          await archivePayment(payment.id);
+        }
+        
+        // Refresh the payment schedule
+        const updatedSchedule = await fetchPaymentSchedule(policy_id);
+        setPaymentsMap(prev => ({
+          ...prev,
+          [policy_id]: updatedSchedule,
+        }));
+
+        alert(`All ${payments.length} payments archived successfully!`);
+      } else {
+        // Single payment archive (keeping old functionality)
+        await archivePayment(selectedPaymentForArchive.id);
+        
+        const policyId = selectedPaymentForArchive.policy_id;
+        const updatedSchedule = await fetchPaymentSchedule(policyId);
+        setPaymentsMap(prev => ({
+          ...prev,
+          [policyId]: updatedSchedule,
+        }));
+
+        alert("Payment archived successfully!");
+      }
+      
+      setArchiveModalOpen(false);
+      setSelectedPaymentForArchive(null);
+    } catch (err) {
+      console.error("Error archiving payment:", err);
+      alert("Failed to archive payment. Check console for details.");
+    }
   };
 
   const filteredPolicies = policies.filter(policy => {
@@ -284,7 +330,6 @@ export default function PolicyWithPaymentsList() {
 
   return (
     <div className="payments-overview-section">
-
       {/* PAYMENT MODAL */}
       {modalOpen && currentPayment && (
         <div className="payment-modal-backdrop">
@@ -295,7 +340,6 @@ export default function PolicyWithPaymentsList() {
               <strong>Base Amount:</strong> {currentPayment.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}
             </p>
 
-            {/* Only show penalties if > 0 */}
             {calculateTotalPenalties(currentPayment) > 0 && (
               <p>
                 <strong>Penalties:</strong> {calculateTotalPenalties(currentPayment).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
@@ -352,6 +396,34 @@ export default function PolicyWithPaymentsList() {
         </div>
       )}
 
+      {/* ARCHIVE CONFIRMATION MODAL */}
+      {archiveModalOpen && selectedPaymentForArchive && (
+        <div className="payment-modal-backdrop">
+          <div className="payment-modal">
+            <h3>Archive {selectedPaymentForArchive.payments ? 'All Payments' : 'Payment'}</h3>
+            <p>Are you sure you want to archive {selectedPaymentForArchive.payments ? `all ${selectedPaymentForArchive.payments.length} payments` : 'this payment'}?</p>
+            {selectedPaymentForArchive.payments ? (
+              <>
+                <p><strong>Total Payments:</strong> {selectedPaymentForArchive.payments.length}</p>
+                <p><strong>All payments are fully paid</strong></p>
+              </>
+            ) : (
+              <>
+                <p>Payment Date: {new Date(selectedPaymentForArchive.payment_date).toLocaleDateString()}</p>
+                <p>Amount: {selectedPaymentForArchive.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</p>
+              </>
+            )}
+            <p style={{ color: '#666', fontSize: '0.9em', marginTop: '10px' }}>
+              Note: Archived payments can be restored from the archived payments section.
+            </p>
+            <div className="modal-actions">
+              <button onClick={handleArchiveConfirm} style={{ backgroundColor: '#ff6b6b' }}>Yes, Archive</button>
+              <button onClick={() => { setArchiveModalOpen(false); setSelectedPaymentForArchive(null); }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* PAYMENT GENERATION MODAL */}
       {generateModalOpen && selectedPolicy && (
         <PaymentGenerationModal
@@ -360,6 +432,7 @@ export default function PolicyWithPaymentsList() {
           onGenerate={handleGeneratePayments}
         />
       )}
+
       <div className="payments-overview-header">
         <h2>Payments Overview ({totalPoliciesCount})</h2>
         <div className="search-filter-refresh-bar">
@@ -434,12 +507,37 @@ export default function PolicyWithPaymentsList() {
 
                 <div className="payment-header-with-button">
                   <h3 className="payment-details-title">Payments</h3>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); handleOpenGenerateModal(policy); }}
-                    className="generate-payment-btn"
-                  >
-                    + Generate Payments
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {(() => {
+                      const allPaid = payments.length > 0 && payments.every(p => getPaymentStatus(p) === "fully-paid");
+                      return allPaid && (
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setSelectedPaymentForArchive({ policy_id: policy.id, payments }); 
+                            setArchiveModalOpen(true);
+                          }}
+                          style={{
+                            backgroundColor: '#6c757d',
+                            color: 'white',
+                            padding: '8px 16px',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: '500'
+                          }}
+                        >
+                          Archive All Payments
+                        </button>
+                      );
+                    })()}
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleOpenGenerateModal(policy); }}
+                      className="generate-payment-btn"
+                    >
+                      + Generate Payments
+                    </button>
+                  </div>
                 </div>
 
                 {payments.length > 0 ? (
@@ -465,20 +563,17 @@ export default function PolicyWithPaymentsList() {
                         const remainingBalance = totalDue - calculateTotalPaid(p);
                         const isOverdue = overdueInfo.daysOverdue > 0 && status !== "fully-paid";
                         
-                        // ✅ NEW: Check if penalty exists for TODAY specifically
                         const hasTodayPenalty = hasPenaltyForToday(p);
                         const hasAnyPenalty = p.payment_due_penalties && p.payment_due_penalties.length > 0;
 
-                        // Determine if all previous payments are fully paid
                         const previousPaymentsPaid = payments
                           .slice(0, index)
                           .every(pay => getPaymentStatus(pay) === "fully-paid");
 
-                        // ✅ UPDATED: Only block payment if overdue AND no penalty added today yet
                         const disablePayment =
                           status === "fully-paid" ||
                           remainingBalance <= 0 ||
-                          (isOverdue && !hasTodayPenalty) || // ✅ Changed from !hasPenalty
+                          (isOverdue && !hasTodayPenalty) ||
                           !previousPaymentsPaid;
 
                         return (
@@ -517,7 +612,6 @@ export default function PolicyWithPaymentsList() {
                                 {status === "fully-paid" ? "Paid" : "Payment"}
                               </button>
 
-                              {/* ✅ UPDATED: Show +Penalty button if overdue and no penalty for TODAY */}
                               {isOverdue && !hasTodayPenalty && (
                                 <button
                                   onClick={() => handleAddPenalty({ ...p, policy_id: policy.id })}
@@ -531,10 +625,6 @@ export default function PolicyWithPaymentsList() {
                           </tr>
                         );
                       })}
-                                                                  
-                     
-   
-
                     </tbody>
                   </table>
                 ) : <p className="no-payments-message">No payments scheduled</p>}
@@ -556,7 +646,6 @@ export default function PolicyWithPaymentsList() {
   );
 }
 
-// Helper
 function getPaymentStatus(payment) {
   const paid = parseFloat(payment.paid_amount || 0);
   const due = parseFloat(payment.amount_to_be_paid || 0);

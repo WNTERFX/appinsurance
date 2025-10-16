@@ -10,7 +10,9 @@ import {
   fetchRecentPolicy ,
   getClientCount ,
   getTotalPolicyCount,         
-  getTotalDeliveredPolicyCount 
+  getTotalDeliveredPolicyCount,
+  getMonthlyPartnerPolicyData,
+  getAllPartners
 } from "./AdminActions/DashboardActions";
 import {FaUsers, FaFileAlt,FaTruck, FaCheckCircle, FaChartBar,FaHourglassHalf , FaMoneyBill} from "react-icons/fa";
 
@@ -27,6 +29,9 @@ export default function Dashboard() {
     const [totalDeliveredCount, setTotalDeliveredCount] = useState(0); 
     const [recentClients, setRecentClients] = useState([]);
     const [recentPolicies, setRecentPolicies] = useState([]);
+    const [chartData, setChartData] = useState({ xAxis: [], series: [] });
+    const [partners, setPartners] = useState([]);
+    const [partnerColors, setPartnerColors] = useState({});
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -76,6 +81,33 @@ useEffect(() => {
     }
   }
   fetchAllCounts();
+  
+  }, []);
+
+  useEffect(() => {
+    async function fetchChartData() {
+      const result = await getMonthlyPartnerPolicyData();
+      setChartData(result);
+    }
+    fetchChartData();
+  }, []);
+
+  useEffect(() => {
+  async function fetchPartners() {
+    const partnersData = await getAllPartners();
+    setPartners(partnersData);
+
+    setPartnerColors((prevColors) => {
+      const newColors = { ...prevColors };
+      partnersData.forEach((p) => {
+        if (!newColors[p.insurance_Name]) {
+          newColors[p.insurance_Name] = generateRandomColor();
+        }
+      });
+      return newColors;
+    });
+  }
+  fetchPartners();
 }, []);
 
     return (
@@ -160,30 +192,48 @@ useEffect(() => {
                 </div>
 
 
-               <div className="monthly-data">
-                <div className="monthly-data-header">
-                 <h2><FaChartBar className="card-icon" /> Monthly Client Data</h2>
-                    <div className="partner-container">
-                       <span className="partner merchantile">Merchantile</span>
-                    <span className="partner standard">Standard</span>
-                     <span className="partner stronghold">Stronghold</span>
-                    <span className="partner cocogen">Cocogen</span>
-                    </div>
-                        </div>
+              <div className="monthly-data">
+              <div className="monthly-data-header">
+                <h2><FaChartBar className="card-icon" /> Monthly Client Data</h2>
 
-                      <div className="monthly-data-chart">
-                      <BarChart
-                      xAxis={[{ scaleType: 'band', data: ['group A', 'group B', 'group C'] }]}
-                       series={[
-                      { data: [4, 3, 5] },
-                     { data: [1, 6, 3] },
-                    { data: [2, 5, 6] },
-                        ]}
-                    height={200}
-                     width={1000}
-                          />
-                          </div>
-                         </div>
+                {/* Dynamic legend */}
+                <div className="partner-container">
+                  {partners.map((p) => (
+                    <span
+                      key={p.id}
+                      className="partner"
+                      style={{
+                        backgroundColor: partnerColors[p.insurance_Name] || "#888",
+                        color: "white",
+                        padding: "4px 10px",      
+                        borderRadius: "16px",      
+                        fontSize: "0.85rem",
+                        fontWeight: 500,
+                        display: "inline-flex",    
+                        alignItems: "center",      
+                        justifyContent: "center",  
+                        lineHeight: 1,             
+                        whiteSpace: "nowrap",      
+                      }}
+                    >
+                      {p.insurance_Name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="monthly-data-chart">
+                  <BarChart
+                    xAxis={[{ scaleType: "band", data: chartData.xAxis }]}
+                    series={chartData.series.map((s) => ({
+                      ...s,
+                      color: partnerColors[s.label] || "#888888",
+                    }))}
+                    height={300}
+                    sx={{ width: '100%' }}  // ✅ let it adapt to container width
+                  />
+              </div>
+            </div>
 
                    <div className="pending-claims">
                       <div className="pending-claims-header">
@@ -195,4 +245,10 @@ useEffect(() => {
                             </div>
                            </div>
     );
+}
+
+function generateRandomColor() {
+  // Soft random pastel tones
+  const hue = Math.floor(Math.random() * 360);
+  return `hsl(${hue}, 70%, 50%)`;
 }

@@ -106,3 +106,75 @@ export async function getTotalDeliveredPolicyCount() {
     return 0;
   }
 }
+
+export async function getMonthlyPartnerPolicyData() {
+  try {
+    const { data, error } = await db
+      .from("policy_Table")
+      .select(`
+        id,
+        created_at,
+        partner_id,
+        insurance_Partners!policy_table_partner_id_fkey(insurance_Name)
+      `)
+      .or("is_archived.is.null,is_archived.eq.false")
+      .is("archival_date", null);
+
+    if (error) {
+      console.error("Supabase query error:", error.message);
+      return { xAxis: [], series: [] };
+    }
+
+    console.log("Raw policy data:", data); 
+
+    const monthMap = {
+      0: "Jan", 1: "Feb", 2: "Mar", 3: "Apr",
+      4: "May", 5: "Jun", 6: "Jul", 7: "Aug",
+      8: "Sep", 9: "Oct", 10: "Nov", 11: "Dec"
+    };
+
+    const monthlyCounts = {};
+    const partnerNames = new Set();
+
+    data.forEach((policy) => {
+      const createdDate = new Date(policy.created_at);
+      const month = monthMap[createdDate.getMonth()];
+      const partner = policy.insurance_Partners?.insurance_Name || "Unknown";
+
+      partnerNames.add(partner);
+      monthlyCounts[month] ??= {};
+      monthlyCounts[month][partner] ??= 0;
+      monthlyCounts[month][partner] += 1;
+    });
+
+    const xAxis = Object.keys(monthlyCounts);
+    const partners = Array.from(partnerNames);
+
+    const series = partners.map((partner) => ({
+      label: partner,
+      data: xAxis.map((month) => monthlyCounts[month][partner] || 0),
+    }));
+
+    console.log("Chart data:", { xAxis, series }); // 👈 DEBUG
+
+    return { xAxis, series };
+  } catch (err) {
+    console.error("Error fetching monthly partner data:", err.message);
+    return { xAxis: [], series: [] };
+  }
+}
+
+export async function getAllPartners() {
+  try {
+    const { data, error } = await db
+      .from("insurance_Partners")
+      .select("id, insurance_Name")
+      .order("insurance_Name", { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error("Error fetching partners:", err.message);
+    return [];
+  }
+}

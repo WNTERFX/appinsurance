@@ -226,16 +226,26 @@
 .monthly-data {
   grid-column: span 3;
   min-height: 540px;
-  padding: 10px 22px 22px 22px; /* ⬅ Reduced top padding */
+  padding: 10px 22px 22px 22px;
   border-radius: 8px;
   background: #fff;
   border-left: 6px solid #4b0082;
   display: flex;
   flex-direction: column;
+  justify-content: space-between; /* ⬅ pushes header up, chart down */
 }
 
-.monthly-data .monthly-data-chart {
-  flex: 1 1 auto; /* chart grows to fill the box */
+.monthly-data-chart {
+  flex-grow: 1;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;          /* ✅ ensures it stays inside parent */
+  overflow: hidden;     /* ✅ hides any accidental overflow */
+}
+
+.monthly-data-chart canvas {
+  max-width: 100% !important; /* ✅ prevents overflow */
+  height: auto !important;
 }
 
 .pending-claims {
@@ -282,11 +292,7 @@
 
 /* ---------- Monthly Data Header ---------- */
 .monthly-data-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0;                /* ⬅ remove margin gap */
-  padding-top: 0;           /* ⬅ ensure flush with top */
+  flex-shrink: 0; /* keep header fixed height */
 }
 
 
@@ -296,8 +302,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid #dcdcdc;
-  border-radius: 4px;
+  margin-top: 5px;
   padding: 4px 10px;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
 }
@@ -309,6 +314,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 
 }
 
