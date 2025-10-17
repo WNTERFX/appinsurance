@@ -12,7 +12,7 @@ import MainArea from "./AdminApp/MainArea";
 import Dashboard from "./AdminApp/Dashboard";
 import Due from "./AdminApp/Due";
 import Policy from "./AdminApp/Policy";
-import ClaimTable from "./AdminApp/ClaimTable";
+import Claims from "./AdminApp/Claims";
 import Delivery from "./AdminApp/Delivery";
 import Client from "./AdminApp/Client";
 import MonthlyDataController from "./AdminApp/ControllerAdmin/MonthlyDataController";
@@ -85,7 +85,7 @@ function App() {
             <Route path="policy/listClient" element={<ListClient />} />
             <Route path="policy/listClient/edit-client-form" element={<EditClientForm />} />
             <Route path="policy/listClient/edit-client-form/edit-vehicle-details-form" element={<EditVehicleDetailsForm />} />
-            <Route path="claim" element={<ClaimTable />} />
+            <Route path="claim" element={<Claims />} />
             <Route path="delivery" element={<Delivery />} />
             <Route path="delivery/new-delivery-form" element={<DeliveryCreationForm />} />
             <Route path="records" element={<MonthlyDataController />} />
