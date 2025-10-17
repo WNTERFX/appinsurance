@@ -6,29 +6,42 @@ export default function SessionMonitor({ session }) {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const storedUserId = localStorage.getItem("user_id");
-        const storedToken = localStorage.getItem("session_token");
+    
+        const { data: { session: currentSession } } = await db.auth.getSession();
+        
+        if (!currentSession) {
+          console.warn("No active Supabase session");
+          return;
+        }
 
-        if (!storedUserId || !storedToken) return; // nothing to check
+        const userId = currentSession.user.id;
+        const currentToken = currentSession.access_token;
 
         const { data, error } = await db
           .from("employee_Accounts")
           .select("current_session_token")
-          .eq("id", storedUserId)
-          .single();
+          .eq("id", userId)
+          .maybeSingle();
 
         if (error) {
-          console.error(error);
+          console.error("Supabase error:", error);
           return;
         }
 
+        if (data && data.current_session_token !== currentToken) {
+          showGlobalAlert("Your session has expired or logged in elsewhere.");
+          await db.auth.signOut(); 
+          window.location.reload();
+        }
       } catch (err) {
-        console.error(err);
+        console.error("Session check failed:", err);
       }
     };
 
-    const interval = setInterval(checkSession, 5000);
-    return () => clearInterval(interval);
+    if (session) {
+      const interval = setInterval(checkSession, 5000);
+      return () => clearInterval(interval);
+    }
   }, [session]);
 
   return null;
