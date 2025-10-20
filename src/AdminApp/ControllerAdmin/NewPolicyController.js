@@ -72,7 +72,6 @@ export default function NewPolicyController() {
   const [AoNRate, setAoNRate] = useState(0);
   const [isAoN, setIsAoN] = useState(false);
 
-  // 🔧 FIX: Changed to string to preserve input formatting
   const [commissionFee, setCommissionFee] = useState("0");
 
   // -----------------------------------
@@ -80,6 +79,7 @@ export default function NewPolicyController() {
   // -----------------------------------
   const [orginalVehicleCost, setOriginalVehicleCost] = useState(0);
   const [currentVehicleValueCost, setCurrentVehicleCost] = useState(0);
+  const [claimableAmount, setClaimableAmount] = useState(0);
   const [totalVehicleValueRate, setTotalVehicleValueRate] = useState(0);
   const [totalPremiumCost, setTotalPremiumCost] = useState(0);
   const [commissionValue, setCommissionValue] = useState(0);
@@ -151,7 +151,6 @@ export default function NewPolicyController() {
   // AoN cost
   const actOfNatureCost = isAoN ? ComputationActionsAoN(vehicleValue, AoNRate) : 0;
 
-  // 🔧 FIX: Convert string to number for calculation
   const commissionFeeNumber = parseFloat(commissionFee) || 0;
   const computedCommissionValue = commissionFeeNumber > 0
     ? ComputationActionsCommission(
@@ -168,6 +167,7 @@ export default function NewPolicyController() {
   useEffect(() => {
     setOriginalVehicleCost(vehicleCost);
     setCurrentVehicleCost(vehicleValue);
+    setClaimableAmount(vehicleValue); // Initially same as current vehicle value
     setTotalVehicleValueRate(vehicleValueRate);
     setTotalPremiumCost(totalWithCommission);
     setCommissionValue(computedCommissionValue);
@@ -177,13 +177,13 @@ export default function NewPolicyController() {
   // Save handler
   // -----------------------------------
   const handleSaveClient = async () => {
-    // 🔧 FIX: Convert commission fee to number before saving
     const commissionFeeToSave = parseFloat(commissionFee) || 0;
 
     console.log("=== SAVING NEW POLICY ===");
     console.log("Commission fee (%) to save:", commissionFeeToSave);
     console.log("Commission value (₱):", computedCommissionValue);
     console.log("Total Premium:", totalWithCommission);
+    console.log("Claimable Amount:", claimableAmount);
 
     const policyData = {
       policy_type: "Comprehensive",
@@ -219,13 +219,13 @@ export default function NewPolicyController() {
       policy_id: policyId,
       original_Value: orginalVehicleCost,
       current_Value: currentVehicleValueCost,
+      policy_claim_amount: claimableAmount, // Add claimable amount (initially same as current value)
       total_Premium: totalWithCommission,
       vehicle_Rate_Value: totalVehicleValueRate,
       aon_Cost: actOfNatureCost,
-      commission_fee: commissionFeeToSave // 🔧 FIX: Save as number
+      commission_fee: commissionFeeToSave
     };
 
-    // 🔧 DEBUG: Log the data being saved
     console.log("💾 Computation data being saved:", computationData);
 
     const computationResult = await NewComputationCreation(computationData);
@@ -276,12 +276,13 @@ export default function NewPolicyController() {
       setIsAoN={setIsAoN}
       orginalVehicleCost={orginalVehicleCost}
       currentVehicleValueCost={currentVehicleValueCost}
+      claimableAmount={claimableAmount}
       totalVehicleValueRate={totalVehicleValueRate}
       basicPremiumValue={basicPremiumValue}
       totalPremiumValue={totalPremiumBeforeCommission}
       actOfNatureCost={actOfNatureCost}
       commissionFee={commissionFee}
-      setCommissionFee={setCommissionFee} // 🔧 FIX: Direct setter
+      setCommissionFee={setCommissionFee}
       commissionValue={commissionValue}
       totalPremiumWithCommission={totalWithCommission}
       basicPremiumWithCommissionValue={basicPremiumWithCommissionValue} 

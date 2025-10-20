@@ -1,13 +1,33 @@
 import { useState, useEffect } from "react";
+import { FileText } from "lucide-react";
+import { getClaimDocumentUrls } from "../AdminActions/ClaimsTableActions";
 import "../styles/view-claim-modal-styles.css";
 
 export default function ViewClaimModal({ policy, claims, onClose }) {
-  const [documentUrls, setDocumentUrls] = useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [loadingDocs, setLoadingDocs] = useState(true);
 
   useEffect(() => {
-    // If you need to fetch signed URLs for documents, do it here
-    // For now, we'll just use the documents array as-is
+    loadDocuments();
   }, [claims]);
+
+  const loadDocuments = async () => {
+    if (!claims || claims.length === 0 || !claims[0].documents) {
+      setDocuments([]);
+      setLoadingDocs(false);
+      return;
+    }
+
+    try {
+      const docsWithUrls = await getClaimDocumentUrls(claims[0].documents);
+      setDocuments(docsWithUrls);
+    } catch (error) {
+      console.error('Error loading documents:', error);
+      setDocuments([]);
+    } finally {
+      setLoadingDocs(false);
+    }
+  };
 
   const formatCurrency = (amount) => {
     if (!amount) return "₱0.00";
@@ -42,7 +62,6 @@ export default function ViewClaimModal({ policy, claims, onClose }) {
   const partnerCompany = policy.policy_Table?.insurance_Partners?.insurance_Name || "N/A";
 
   // For simplicity, we'll display the first claim's details
-  // You can modify this to show all claims or allow selection
   const claim = claims[0];
 
   return (
@@ -128,7 +147,7 @@ export default function ViewClaimModal({ policy, claims, onClose }) {
               <div className="info-row">
                 <div className="info-item full-width">
                   <label>Description:</label>
-                  <span>{claim.description_of_incident || "Bumper crash at parking lot"}</span>
+                  <span>{claim.description_of_incident || "No description provided"}</span>
                 </div>
               </div>
             </div>
@@ -138,20 +157,28 @@ export default function ViewClaimModal({ policy, claims, onClose }) {
           <div className="documents-section">
             <h3>Supporting Documents:</h3>
             <div className="documents-list">
-              {claim.documents && Array.isArray(claim.documents) && claim.documents.length > 0 ? (
-                claim.documents.map((doc, index) => (
+              {loadingDocs ? (
+                <p className="no-documents">Loading documents...</p>
+              ) : documents.length === 0 ? (
+                <p className="no-documents">No documents uploaded</p>
+              ) : (
+                documents.map((doc, index) => (
                   <div key={index} className="document-item">
-                    <span className="doc-icon">📄</span>
-                    <span className="doc-name">{doc.name || doc.path || `Document ${index + 1}`}</span>
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="document-link"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <span className="doc-icon"></span>
+                      <span className="doc-name">{doc.name || doc.path || `Document ${index + 1}`}</span>
+                    </a>
                   </div>
                 ))
-              ) : (
-                <p className="no-documents">No documents uploaded</p>
               )}
             </div>
           </div>
-
-
         </div>
       </div>
     </div>

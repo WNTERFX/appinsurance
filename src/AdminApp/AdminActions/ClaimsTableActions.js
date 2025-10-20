@@ -1,13 +1,15 @@
 import { db } from "../../dbServer";
 
-/**
- * ORIGINAL FUNCTIONS
- */
+import { recalculateClaimableAmount } from "./ClaimableAmountActions";
 
+/**
+ * Fetch all claims with policy and client information
+ */
 export const fetchClaims = async () => {
   console.log("Fetching claims from Supabase...");
 
-  const { data, error } = await db
+  // Step 1: Fetch all claims with their policy and client info
+  const { data: claims, error: claimsError } = await db
     .from('claims_Table')
     .select(`
       *,
@@ -26,6 +28,7 @@ export const fetchClaims = async () => {
           family_Name,
           prefix,
           suffix,
+          phone_Number,
           internal_id
         ),
         insurance_Partners (
@@ -36,15 +39,35 @@ export const fetchClaims = async () => {
     `)
     .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error("Error fetching claims:", error);
-    throw new Error(`Failed to fetch claims: ${error.message}`);
-  }
+  if (claimsError) throw claimsError;
 
-  console.log("Claims fetched from Supabase:", data);
-  return data;
+  // Step 2: Fetch computation data separately
+  const { data: computations, error: compError } = await db
+    .from('policy_Computation_Table')
+    .select('policy_id, policy_claim_amount');
+
+  if (compError) throw compError;
+
+  // Step 3: Merge claim + computation by policy_id
+  const computationsMap = Object.fromEntries(
+    computations.map(c => [c.policy_id, c])
+  );
+
+  const enrichedClaims = claims.map(c => ({
+    ...c,
+    policy_Table: {
+      ...c.policy_Table,
+      policy_Computation_Table: computationsMap[c.policy_id] || null,
+    },
+  }));
+
+  console.log("Claims fetched and enriched:", enrichedClaims);
+  return enrichedClaims;
 };
 
+/**
+ * Update claim status to Under Review
+ */
 export const updateClaimToUnderReview = async (policyId) => {
   console.log(`Setting claims for policy ${policyId} to Under Review...`);
 
@@ -68,6 +91,9 @@ export const updateClaimToUnderReview = async (policyId) => {
   return data;
 };
 
+/**
+ * Update claim status to Rejected
+ */
 export const updateClaimToRejected = async (policyId) => {
   console.log(`Rejecting claims for policy ${policyId}...`);
 
@@ -92,6 +118,9 @@ export const updateClaimToRejected = async (policyId) => {
   return data;
 };
 
+/**
+ * Update claim status to Approved and recalculate claimable amount
+ */
 export const updateClaimToApproved = async (policyId, approvedAmount = null) => {
   console.log(`Approving claims for policy ${policyId}...`);
 
@@ -117,9 +146,54 @@ export const updateClaimToApproved = async (policyId, approvedAmount = null) => 
   }
 
   console.log(`Claims for policy ${policyId} approved:`, data);
+
+  // 🔄 RECALCULATE CLAIMABLE AMOUNT AFTER APPROVAL
+  try {
+    const { success, error: recalcError, newClaimableAmount } = await recalculateClaimableAmount(policyId);
+    
+    if (!success) {
+      console.error("⚠️ Warning: Failed to update claimable amount:", recalcError);
+      // Don't throw error - claim approval was successful
+    } else {
+      console.log(`✅ Claimable amount updated to ₱${newClaimableAmount}`);
+    }
+  } catch (recalcError) {
+    console.error("⚠️ Warning: Error recalculating claimable amount:", recalcError);
+    // Don't throw error - claim approval was successful
+  }
+
   return data;
 };
 
+/**
+ * Update claim status to Completed
+ */
+export const updateClaimToCompleted = async (claimId) => {
+  console.log(`Marking claim ${claimId} as completed...`);
+
+  const updateData = {
+    status: 'Completed',
+    completed_date: new Date().toISOString().split('T')[0],
+  };
+
+  const { data, error } = await db
+    .from('claims_Table')
+    .update(updateData)
+    .eq('id', claimId)
+    .select();
+
+  if (error) {
+    console.error(`Error marking claim ${claimId} as completed:`, error);
+    throw new Error(`Failed to mark claim as completed: ${error.message}`);
+  }
+
+  console.log(`Claim ${claimId} marked as completed:`, data);
+  return data;
+};
+
+/**
+ * Update claim status (deprecated - use specific functions instead)
+ */
 export const updateClaimStatus = async (policyId, newStatus) => {
   console.log(`[DEPRECATED] Use specific status update functions instead`);
 
@@ -134,6 +208,9 @@ export const updateClaimStatus = async (policyId, newStatus) => {
   throw new Error(`Invalid status: ${newStatus}`);
 };
 
+/**
+ * Create a new claim
+ */
 export const createClaim = async (newClaimData) => {
   console.log("Creating new claim in Supabase:", newClaimData);
 
@@ -154,6 +231,9 @@ export const createClaim = async (newClaimData) => {
   return data[0];
 };
 
+/**
+ * Get signed URLs for claim documents
+ */
 export async function getClaimDocumentUrls(documents) {
   if (!documents || documents.length === 0) return [];
 
@@ -197,10 +277,27 @@ export async function getClaimDocumentUrls(documents) {
   return successfulResults;
 }
 
+/**
+ * Update a single claim record
+ * If the claim is being approved and has an approved_amount, update the claimable amount
+ */
 export async function updateClaim(claimId, updatedData) {
   try {
     console.log(`Updating claim ${claimId}...`);
 
+    // Get current claim data before update
+    const { data: currentClaim, error: fetchError } = await db
+      .from('claims_Table')
+      .select('policy_id, status, approved_amount')
+      .eq('id', claimId)
+      .single();
+
+    if (fetchError) {
+      console.error(`Error fetching current claim ${claimId}:`, fetchError);
+      throw new Error(`Failed to fetch current claim: ${fetchError.message}`);
+    }
+
+    // Update the claim
     const { data, error } = await db
       .from('claims_Table')
       .update(updatedData)
@@ -213,6 +310,31 @@ export async function updateClaim(claimId, updatedData) {
     }
 
     console.log(`Claim ${claimId} updated successfully:`, data);
+
+    // 🔄 RECALCULATE CLAIMABLE AMOUNT IF NEEDED
+    // Check if status changed to Approved or approved_amount changed
+    const statusChanged = updatedData.status && updatedData.status !== currentClaim.status;
+    const approvedAmountChanged = updatedData.approved_amount !== undefined && 
+                                   updatedData.approved_amount !== currentClaim.approved_amount;
+
+    if ((statusChanged && updatedData.status === "Approved") || 
+        (currentClaim.status === "Approved" && approvedAmountChanged)) {
+      
+      console.log("🔄 Recalculating claimable amount due to approval or amount change");
+      
+      try {
+        const { success, error: recalcError } = await recalculateClaimableAmount(currentClaim.policy_id);
+        
+        if (!success) {
+          console.error("⚠️ Warning: Failed to update claimable amount:", recalcError);
+          // Don't throw error - claim update was successful
+        }
+      } catch (recalcError) {
+        console.error("⚠️ Warning: Error recalculating claimable amount:", recalcError);
+        // Don't throw error - claim update was successful
+      }
+    }
+
     return data[0];
   } catch (err) {
     console.error(`updateClaim error:`, err.message);
@@ -220,6 +342,9 @@ export async function updateClaim(claimId, updatedData) {
   }
 }
 
+/**
+ * Delete a claim document from storage
+ */
 export async function deleteClaimDocumentFromStorage(filePath) {
   try {
     if (!filePath || typeof filePath !== 'string' || filePath.trim() === '') {

@@ -76,6 +76,17 @@
   padding: 24px 30px;
 }
 
+/* Error Message */
+.edit-claims-error-message {
+  background-color: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
 /* Header Row (Policy ID and Claim ID) */
 .edit-claims-header-row {
   display: grid;
@@ -152,7 +163,6 @@
   color: #555;
   cursor: pointer;
   font-weight: normal;
-  
 }
 
 .edit-claims-checkbox-label input[type="checkbox"] {
@@ -160,7 +170,6 @@
   height: 16px;
   cursor: pointer;
 }
-
 
 .edit-claims-checkbox-label input[type="checkbox"]:disabled {
   cursor: not-allowed;
@@ -178,7 +187,8 @@
   min-height: 60px;
 }
 
-.edit-claims-documents-list .no-docs {
+.edit-claims-documents-list .no-docs,
+.edit-claims-documents-list .loading-docs {
   color: #999;
   font-size: 14px;
   text-align: center;
@@ -196,20 +206,18 @@
 }
 
 .edit-claims-document-link {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   color: #007bff;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
   transition: color 0.2s ease;
   flex: 1;
-  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 
 .edit-claims-document-link:hover {
@@ -232,6 +240,7 @@
   justify-content: center;
   border-radius: 4px;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .edit-claims-delete-doc-btn:hover {

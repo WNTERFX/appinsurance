@@ -2,55 +2,55 @@ import '../styles/Policy-new-client.css';
 import Select from 'react-select';
 
 export default function PolicyNewClient({
-  // Total Premium Calculation
-      vehicleTypes,
-      selected,
-      setSelected,
-      vehicleDetails,
-      yearInput,
-      setYearInput,   
-      vehicleCost,
-      setVehicleCost,  
-      basicPremiumValue, 
-      basicPremiumWithCommissionValue,        
-   
-      isAoN,
-      setIsAoN,
+  vehicleTypes,
+  selected,
+  setSelected,
+  vehicleDetails,
+  yearInput,
+  setYearInput,   
+  vehicleCost,
+  setVehicleCost,  
+  basicPremiumValue, 
+  basicPremiumWithCommissionValue,        
+ 
+  isAoN,
+  setIsAoN,
 
-      //VehicleValue
-      orginalVehicleCost,
-      currentVehicleValueCost,
-      totalVehicleValueRate,
-      totalPremiumCost,
-      actOfNatureCost,
-      commissionFee,
-      setCommissionFee,
-      commissionValue, 
+  //VehicleValue
+  orginalVehicleCost,
+  currentVehicleValueCost,
+  claimableAmount,
+  totalVehicleValueRate,
+  totalPremiumCost,
+  actOfNatureCost,
+  commissionFee,
+  setCommissionFee,
+  commissionValue, 
 
-      
-      setSelectedPartner,
-      vehicleMaker,
-      setVehicleMaker,
-      vehicleName,
-      setVehicleName,
-      vehicleColor,
-      setVehicleColor,
-      vehicleVinNumber,
-      setVinNumber,
-      vehiclePlateNumber,
-      setPlateNumber,
-      vehicleEngineNumber,
-      setEngineNumber,
-      
+  
+  setSelectedPartner,
+  vehicleMaker,
+  setVehicleMaker,
+  vehicleName,
+  setVehicleName,
+  vehicleColor,
+  setVehicleColor,
+  vehicleVinNumber,
+  setVinNumber,
+  vehiclePlateNumber,
+  setPlateNumber,
+  vehicleEngineNumber,
+  setEngineNumber,
+  
 
-      clients,
-      selectedClient,
-      setSelectedClient,
-      
-      partners,
-      selectedPartner,
-      onSaveClient,
-      navigate
+  clients,
+  selectedClient,
+  setSelectedClient,
+  
+  partners,
+  selectedPartner,
+  onSaveClient,
+  navigate
 })  {
  console.log("Selected Partner:", selectedPartner);
  
@@ -71,7 +71,7 @@ export default function PolicyNewClient({
                   className="client-select"
                   classNamePrefix="client-select"
                   options={clients.map(c => ({
-                    value: c.uid, // still use uid for lookups
+                    value: c.uid,
                     label: `${c.internal_id} | ${c.first_Name || ""} ${c.middle_Name || ""} ${c.family_Name || ""}`,
                   }))}
                   value={
@@ -347,6 +347,12 @@ export default function PolicyNewClient({
                         <span>₱ {totalPremiumCost.toLocaleString("en-PH")}</span>
                       </p>
                     </strong>
+                    <hr />
+                    <strong>
+                      <p>Claimable Amount: 
+                        <span>₱ {claimableAmount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
+                      </p>
+                    </strong>
                   </div>
         <div className="button-container-new-policy">
         <button
@@ -373,4 +379,3 @@ export default function PolicyNewClient({
     </div>
   );
 }
-
