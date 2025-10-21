@@ -199,7 +199,7 @@ useEffect(() => {
                         whiteSpace: "nowrap",      
                       }}
                     >
-                      {p.insurance_Name}
+                    {p.insurance_Name}
                     </span>
                   ))}
                 </div>

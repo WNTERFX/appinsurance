@@ -301,10 +301,28 @@
 .partner-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   margin-top: 5px;
-  padding: 4px 10px;
+  padding: 4px 0 10px 0;     /* ⬅ add bottom padding for scrollbar space */
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: thin;      /* for Firefox */
+}
+
+/* Optional: subtle custom scrollbar */
+.partner-container::-webkit-scrollbar {
+  height: 6px;
+}
+.partner-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
+}
+.partner-container::-webkit-scrollbar-track {
+  background: transparent;
+  margin-top: 2px;           /* ⬅ adds a little gap between chips & scrollbar */
 }
 
 .partner {

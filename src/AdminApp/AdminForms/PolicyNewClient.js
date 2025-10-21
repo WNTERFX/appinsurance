@@ -49,12 +49,20 @@ export default function PolicyNewClient({
       
       partners,
       selectedPartner,
+      
+      paymentTypes,
+      selectedPaymentType,
+      setSelectedPaymentType,
+      
       onSaveClient,
       navigate
 })  {
  console.log("Selected Partner:", selectedPartner);
  
-
+ // Calculate monthly payment based on selected payment type
+ const selectedPaymentTypeObj = paymentTypes?.find(pt => pt.id === Number(selectedPaymentType));
+ const months = selectedPaymentTypeObj?.months_payment || 0;
+ const monthlyPayment = months > 0 ? (totalPremiumCost / months) : 0;
 
   return (
     <div className="new-client-container">
@@ -71,7 +79,7 @@ export default function PolicyNewClient({
                   className="client-select"
                   classNamePrefix="client-select"
                   options={clients.map(c => ({
-                    value: c.uid, // still use uid for lookups
+                    value: c.uid,
                     label: `${c.internal_id} | ${c.first_Name || ""} ${c.middle_Name || ""} ${c.family_Name || ""}`,
                   }))}
                   value={
@@ -183,6 +191,21 @@ export default function PolicyNewClient({
               </select>
             </div>
 
+            <div className="form-group">
+              <label>Payment Type</label>
+              <select
+                value={selectedPaymentType}
+                onChange={(e) => setSelectedPaymentType(e.target.value)}
+              >
+                <option value="">-- Select Payment Type --</option>
+                {Array.isArray(paymentTypes) &&
+                  paymentTypes.map((pt) => (
+                    <option key={pt.id} value={pt.id}>
+                      {pt.payment_type_name} ({pt.months_payment} months)
+                    </option>
+                  ))}
+              </select>
+            </div>
 
             <div className="form-group">
               <label>Vehicle Type</label>
@@ -347,6 +370,19 @@ export default function PolicyNewClient({
                         <span>₱ {totalPremiumCost.toLocaleString("en-PH")}</span>
                       </p>
                     </strong>
+                    
+                    {/* Monthly Payment Display */}
+                    {selectedPaymentType && months > 0 && (
+                      <div className="monthly-payment-section">
+                        <hr />
+                        <p className="monthly-payment-label">
+                          Estimated Per Month Payment ({months} months):
+                        </p>
+                        <p className="monthly-payment-amount">
+                          ₱ {monthlyPayment.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                      </div>
+                    )}
                   </div>
         <div className="button-container-new-policy">
         <button
@@ -373,4 +409,3 @@ export default function PolicyNewClient({
     </div>
   );
 }
-

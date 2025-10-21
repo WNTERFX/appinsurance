@@ -34,6 +34,7 @@ export default function NewPolicyController() {
   const [vehicleTypes, setVehicleTypes] = useState([]);
   const [clients, setClients] = useState([]);
   const [partners, setPartners] = useState([]);
+  const [paymentTypes, setPaymentTypes] = useState([]);
 
   // -----------------------------------
   // Selected items
@@ -41,6 +42,7 @@ export default function NewPolicyController() {
   const [selected, setSelected] = useState("");
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedPartner, setSelectedPartner] = useState("");
+  const [selectedPaymentType, setSelectedPaymentType] = useState("");
   const [vehicleDetails, setVehicleDetails] = useState(null);
 
   // -----------------------------------
@@ -72,7 +74,6 @@ export default function NewPolicyController() {
   const [AoNRate, setAoNRate] = useState(0);
   const [isAoN, setIsAoN] = useState(false);
 
-  // 🔧 FIX: Changed to string to preserve input formatting
   const [commissionFee, setCommissionFee] = useState("0");
 
   // -----------------------------------
@@ -92,16 +93,35 @@ export default function NewPolicyController() {
   // -----------------------------------
   useEffect(() => {
     (async () => {
-      const [vt, cl, pt] = await Promise.all([
+      const [vt, cl, pt, pmt] = await Promise.all([
         getComputationValue(),
         fetchClients(),
-        fetchPartners()
+        fetchPartners(),
+        fetchPaymentTypes()
       ]);
       setVehicleTypes(vt || []);
       setClients(cl || []);
       setPartners(pt || []);
+      setPaymentTypes(pmt || []);
     })();
   }, []);
+
+  // Fetch payment types function
+  const fetchPaymentTypes = async () => {
+    try {
+      const { db } = await import("../../dbServer");
+      const { data, error } = await db
+        .from("payment_type")
+        .select("*")
+        .order("months_payment", { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error fetching payment types:", error);
+      return [];
+    }
+  };
 
   // -----------------------------------
   // Load vehicle details
@@ -132,15 +152,12 @@ export default function NewPolicyController() {
   const vehicleValue = ComputationActionsVehicleValue(vehicleCost, yearInput);
   const vehicleValueRate = ComputatationRate(rateInput, vehicleValue);
   
-
-  // Basic Premium (without commission)
   const basicPremiumValue = ComputationActionsBasicPre(
     bodily_Injury,
     property_Damage,
     personal_Accident
   ) + vehicleValueRate;
 
-  // Total premium before commission (with taxes)
   const totalPremiumBeforeCommission = ComputationActionsTax(
     basicPremiumValue,
     vat_Tax,
@@ -148,10 +165,8 @@ export default function NewPolicyController() {
     local_Gov_Tax
   );
 
-  // AoN cost
   const actOfNatureCost = isAoN ? ComputationActionsAoN(vehicleValue, AoNRate) : 0;
 
-  // 🔧 FIX: Convert string to number for calculation
   const commissionFeeNumber = parseFloat(commissionFee) || 0;
   const computedCommissionValue = commissionFeeNumber > 0
     ? ComputationActionsCommission(
@@ -160,11 +175,9 @@ export default function NewPolicyController() {
       )
     : 0;
 
-  // Total premium including commission
   const totalWithCommission = totalPremiumBeforeCommission + actOfNatureCost + computedCommissionValue;
   const basicPremiumWithCommissionValue = basicPremiumValue + computedCommissionValue;
 
-  // Update derived display states
   useEffect(() => {
     setOriginalVehicleCost(vehicleCost);
     setCurrentVehicleCost(vehicleValue);
@@ -177,13 +190,24 @@ export default function NewPolicyController() {
   // Save handler
   // -----------------------------------
   const handleSaveClient = async () => {
-    // 🔧 FIX: Convert commission fee to number before saving
+    // Validation
+    if (!selectedClient) {
+      alert("Please select a client");
+      return;
+    }
+    if (!selectedPartner) {
+      alert("Please select a partner");
+      return;
+    }
+    if (!selectedPaymentType) {
+      alert("Please select a payment type");
+      return;
+    }
+
     const commissionFeeToSave = parseFloat(commissionFee) || 0;
 
     console.log("=== SAVING NEW POLICY ===");
-    console.log("Commission fee (%) to save:", commissionFeeToSave);
-    console.log("Commission value (₱):", computedCommissionValue);
-    console.log("Total Premium:", totalWithCommission);
+    console.log("Payment Type ID:", selectedPaymentType);
 
     const policyData = {
       policy_type: "Comprehensive",
@@ -216,25 +240,24 @@ export default function NewPolicyController() {
     if (!newVehicleResult.success) return alert("Error saving vehicle details");
 
     const computationData = {
-      policy_id: policyId,
-      original_Value: orginalVehicleCost,
-      current_Value: currentVehicleValueCost,
-      total_Premium: totalWithCommission,
-      vehicle_Rate_Value: totalVehicleValueRate,
-      aon_Cost: actOfNatureCost,
-      commission_fee: commissionFeeToSave // 🔧 FIX: Save as number
-    };
-
-    // 🔧 DEBUG: Log the data being saved
-    console.log("💾 Computation data being saved:", computationData);
+    policy_id: policyId,
+    original_Value: orginalVehicleCost,
+    current_Value: currentVehicleValueCost,
+    total_Premium: totalWithCommission,
+    vehicle_Rate_Value: totalVehicleValueRate,
+    aon_Cost: actOfNatureCost,
+    commission_fee: commissionFeeToSave,
+    payment_type_id: Number(selectedPaymentType)
+  };
 
     const computationResult = await NewComputationCreation(computationData);
-    if (computationResult.success) {
-      alert("Client and computation saved successfully!");
-      navigate("/appinsurance/main-app/policy");
-    } else {
+    if (!computationResult.success) {
       alert("Error saving computation: " + computationResult.error);
+      return;
     }
+
+    alert("Policy created successfully!");
+    navigate("/appinsurance/main-app/policy");
   };
 
   // -----------------------------------
@@ -281,7 +304,7 @@ export default function NewPolicyController() {
       totalPremiumValue={totalPremiumBeforeCommission}
       actOfNatureCost={actOfNatureCost}
       commissionFee={commissionFee}
-      setCommissionFee={setCommissionFee} // 🔧 FIX: Direct setter
+      setCommissionFee={setCommissionFee}
       commissionValue={commissionValue}
       totalPremiumWithCommission={totalWithCommission}
       basicPremiumWithCommissionValue={basicPremiumWithCommissionValue} 
@@ -292,6 +315,9 @@ export default function NewPolicyController() {
       partners={partners}
       selectedPartner={selectedPartner}
       setSelectedPartner={setSelectedPartner}
+      paymentTypes={paymentTypes}
+      selectedPaymentType={selectedPaymentType}
+      setSelectedPaymentType={setSelectedPaymentType}
       onSaveClient={handleSaveClient}
       navigate={navigate}
     />

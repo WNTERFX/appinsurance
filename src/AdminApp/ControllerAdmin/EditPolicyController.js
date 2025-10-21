@@ -32,10 +32,12 @@ export default function EditPolicyController() {
   const [vehicleTypes, setVehicleTypes] = useState([]);
   const [clients, setClients] = useState([]);
   const [partners, setPartners] = useState([]);
+  const [paymentTypes, setPaymentTypes] = useState([]);
 
   const [selectedVehicleType, setSelectedVehicleType] = useState("");
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedPartner, setSelectedPartner] = useState("");
+  const [selectedPaymentType, setSelectedPaymentType] = useState("");
 
   const [vehicleDetails, setVehicleDetails] = useState(null);
   const [vehicleName, setVehicleName] = useState("");
@@ -59,24 +61,64 @@ export default function EditPolicyController() {
   const [isAon, setIsAon] = useState(false);
   const [rateInput, setRateInput] = useState(0);
   
-  // 🔧 FIX: Changed to string to preserve input formatting
   const [commissionFee, setCommissionFee] = useState("0");
 
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   const safeNumber = (val) => (isNaN(Number(val)) ? 0 : Number(val));
 
+  // Fetch payment types function
+  const fetchPaymentTypes = async () => {
+    try {
+      const { db } = await import("../../dbServer");
+      const { data, error } = await db
+        .from("payment_type")
+        .select("*")
+        .order("months_payment", { ascending: true });
+      
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error fetching payment types:", error);
+      return [];
+    }
+  };
+
+  // Fetch payment type for existing policy
+  const fetchPolicyPaymentType = async (policyId) => {
+    try {
+      const { db } = await import("../../dbServer");
+      const { data, error } = await db
+        .from("payment_Table")
+        .select("payment_type_id")
+        .eq("policy_id", policyId)
+        .limit(1)
+        .single();
+      
+      if (error) {
+        console.log("No payment type found for this policy");
+        return null;
+      }
+      return data?.payment_type_id;
+    } catch (error) {
+      console.error("Error fetching policy payment type:", error);
+      return null;
+    }
+  };
+
   // load lookups once
   useEffect(() => {
     (async () => {
-      const [vt, cl, pt] = await Promise.all([
+      const [vt, cl, pt, pmt] = await Promise.all([
         getComputationValue(),
         fetchClients(),
-        fetchPartners()
+        fetchPartners(),
+        fetchPaymentTypes()
       ]);
       setVehicleTypes(vt || []);
       setClients(cl || []);
       setPartners(pt || []);
+      setPaymentTypes(pmt || []);
     })();
   }, []);
 
@@ -85,21 +127,27 @@ export default function EditPolicyController() {
     if (!policyId || !clients.length || !vehicleTypes.length) return;
     (async () => {
       try {
-        const [policy, vehicle, computation] = await Promise.all([
+        const [policy, vehicle, computation, paymentTypeId] = await Promise.all([
           fetchPolicyById(policyId),
           fetchVehicleByPolicyId(policyId),
-          fetchComputationByPolicyId(policyId)
+          fetchComputationByPolicyId(policyId),
+          fetchPolicyPaymentType(policyId)
         ]);
 
         console.log("=== LOADED DATA ===");
         console.log("Policy:", policy);
         console.log("Vehicle:", vehicle);
         console.log("Computation:", computation);
+        console.log("Payment Type ID:", paymentTypeId);
 
         if (policy) {
           const foundClient = clients.find((c) => c.uid === policy.client_id);
           setSelectedClient(foundClient || null);
           setSelectedPartner(policy.partner_id || "");
+        }
+
+        if (paymentTypeId) {
+          setSelectedPaymentType(String(paymentTypeId));
         }
 
         if (vehicle) {
@@ -120,6 +168,7 @@ export default function EditPolicyController() {
           console.log("total_Premium:", computation.total_Premium);
           console.log("aon_Cost:", computation.aon_Cost);
           console.log("commission_fee:", computation.commission_fee);
+          console.log("payment_type_id:", computation.payment_type_id);
 
           setOriginalVehicleCost(computation.original_Value || vehicleOriginalValueFromDB || 0);
 
@@ -142,8 +191,11 @@ export default function EditPolicyController() {
           setRateInput(computation.vehicle_Rate || 0);
           setIsAon(Boolean(computation.aon_Cost && computation.aon_Cost > 0));
           
-          // 🔧 FIX: Convert to string for proper input handling
           setCommissionFee(String(computation.commission_fee ?? 0));
+
+        if (computation.payment_type_id) {
+            setSelectedPaymentType(String(computation.payment_type_id));
+        }
         } else {
           console.warn("No computation data found - using vehicle table values");
           setOriginalVehicleCost(vehicleOriginalValueFromDB);
@@ -178,7 +230,6 @@ export default function EditPolicyController() {
 
   const actOfNatureCost = isAon ? ComputationActionsAoN(vehicleValue, aonRate) : 0;
 
-  // 🔧 FIX: Convert string to number for calculation
   const commissionFeeNumber = parseFloat(commissionFee) || 0;
   const commissionValue = commissionFeeNumber > 0
     ? ComputationActionsCommission(
@@ -201,11 +252,17 @@ export default function EditPolicyController() {
   // Update handler
   const handleUpdatePolicy = async () => {
     try {
-      // 🔧 FIX: Convert commission fee to number before saving
+      // Validation
+      if (!selectedPaymentType) {
+        alert("Please select a payment type");
+        return;
+      }
+
       const commissionFeeToSave = parseFloat(commissionFee) || 0;
 
       console.log("=== SAVING UPDATES ===");
       console.log("Commission fee (%) to save:", commissionFeeToSave);
+      console.log("Payment Type ID:", selectedPaymentType);
       console.log("Total Premium:", totalPremiumFinal);
 
       const policyResult = await updatePolicy(policyId, {
@@ -232,16 +289,16 @@ export default function EditPolicyController() {
       });
       if (!vehicleResult.success) throw new Error(vehicleResult.error);
 
-      const computationData = {
-        original_Value: originalVehicleCost,
-        current_Value: vehicleValue,
-        vehicle_Rate_Value: vehicleValueRate,
-        total_Premium: totalPremiumFinal,
-        aon_Cost: actOfNatureCost,
-        commission_fee: commissionFeeToSave // 🔧 FIX: Save as number
-      };
+     const computationData = {
+      original_Value: originalVehicleCost,
+      current_Value: vehicleValue,
+      vehicle_Rate_Value: vehicleValueRate,
+      total_Premium: totalPremiumFinal,
+      aon_Cost: actOfNatureCost,
+      commission_fee: commissionFeeToSave,
+      payment_type_id: Number(selectedPaymentType)
+    };
 
-      // 🔧 DEBUG: Log the data being saved
       console.log("💾 Computation data being saved:", computationData);
 
       const computationResult = await updateComputation(policyId, computationData);
@@ -269,15 +326,15 @@ export default function EditPolicyController() {
       basicPremiumValue={basicPremiumValue}
       basicPremiumWithCommission={basicPremiumWithCommission}
       isAoN={isAon}
-      setIsAoN={setIsAon}  // 🔧 FIX: Changed from setIsAoN to setIsAon (lowercase 'a')
+      setIsAoN={setIsAon}
       setOriginalVehicleCost={setOriginalVehicleCost}
       originalVehicleCost={originalVehicleCost}
       currentVehicleValueCost={vehicleValue}
       totalVehicleValueRate={vehicleValueRate}
       totalPremiumCost={totalPremiumFinal}
       actOfNatureCost={actOfNatureCost}
-      commissionRate={commissionFee} // Pass as string
-      setCommissionRate={setCommissionFee} // 🔧 FIX: Direct setter
+      commissionRate={commissionFee}
+      setCommissionRate={setCommissionFee}
       commissionValue={commissionValue}
       vehicleName={vehicleName}
       setVehicleName={setVehicleName}
@@ -297,6 +354,9 @@ export default function EditPolicyController() {
       partners={partners}
       selectedPartner={selectedPartner}
       setSelectedPartner={setSelectedPartner}
+      paymentTypes={paymentTypes}
+      selectedPaymentType={selectedPaymentType}
+      setSelectedPaymentType={setSelectedPaymentType}
       onSaveClient={handleUpdatePolicy}
       navigate={navigate}
     />

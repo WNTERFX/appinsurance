@@ -11,19 +11,19 @@ export default function PolicyEditForm({
   setYearInput,
   vehicleOriginalValueFromDB,
   setVehicleOriginalValueFromDB,
-  basicPremiumValue, // without commission
-  basicPremiumWithCommission, // with commission applied to basic premium
+  basicPremiumValue,
+  basicPremiumWithCommission,
   isAoN,
   setIsAoN,
   setOriginalVehicleCost,
   originalVehicleCost,
   currentVehicleValueCost,
   totalVehicleValueRate,
-  totalPremiumCost, // final total (includes commission amount we saved)
+  totalPremiumCost,
   actOfNatureCost,
   commissionRate,
   setCommissionRate,
-  commissionValue, // commission in ₱ calculated in controller
+  commissionValue,
   vehicleName,
   setVehicleName,
   vehicleMaker,
@@ -42,11 +42,19 @@ export default function PolicyEditForm({
   partners,
   selectedPartner,
   setSelectedPartner,
+  paymentTypes,
+  selectedPaymentType,
+  setSelectedPaymentType,
   onSaveClient,
   navigate
 }) {
   const formatPHP = (num, digits = 2) =>
     num != null ? num.toLocaleString("en-PH", { minimumFractionDigits: digits }) : "0.00";
+
+  // Calculate monthly payment based on selected payment type
+  const selectedPaymentTypeObj = paymentTypes?.find(pt => pt.id === Number(selectedPaymentType));
+  const months = selectedPaymentTypeObj?.months_payment || 0;
+  const monthlyPayment = months > 0 ? (totalPremiumCost / months) : 0;
 
   return (
     <div className="new-client-policy-edit">
@@ -116,6 +124,22 @@ export default function PolicyEditForm({
             </div>
 
             <div className="form-group-policy-edit">
+              <label>Payment Type</label>
+              <select
+                value={selectedPaymentType || ""}
+                onChange={(e) => setSelectedPaymentType(e.target.value)}
+              >
+                <option value="">-- Select Payment Type --</option>
+                {Array.isArray(paymentTypes) &&
+                  paymentTypes.map((pt) => (
+                    <option key={pt.id} value={pt.id}>
+                      {pt.payment_type_name} ({pt.months_payment} months)
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <div className="form-group-policy-edit">
               <label>Vehicle Type</label>
               <select value={selected || ""} onChange={(e) => setSelected(e.target.value)}>
                 <option value="">-- Select Vehicle Type --</option>
@@ -158,9 +182,9 @@ export default function PolicyEditForm({
             <div className="form-group-policy-edit">
               <label>Commission Fee (%)</label>
               <input
-                type="number"
+                type="text"
                 value={commissionRate}
-                onChange={(e) => setCommissionRate(parseFloat(e.target.value) || 0)}
+                onChange={(e) => setCommissionRate(e.target.value)}
               />
             </div>
 
@@ -178,7 +202,7 @@ export default function PolicyEditForm({
               <p>Original Vehicle Cost: <span>₱ {formatPHP(originalVehicleCost)}</span></p>
               <p>Current Vehicle Value: <span>₱ {formatPHP(currentVehicleValueCost)}</span></p>
               <p>Total Vehicle Value Rate: <span>₱ {formatPHP(totalVehicleValueRate)}</span></p>
-               <p>Bodily Injury: <span>₱ {formatPHP(vehicleDetails?.bodily_Injury)}</span></p>
+              <p>Bodily Injury: <span>₱ {formatPHP(vehicleDetails?.bodily_Injury)}</span></p>
               <p>Property Damage: <span>₱ {formatPHP(vehicleDetails?.property_Damage)}</span></p>
               <p>Personal Accident: <span>₱ {formatPHP(vehicleDetails?.personal_Accident)}</span></p>
               <p>Basic Premium (without Commission): <span>₱ {formatPHP(basicPremiumValue)}</span></p>
@@ -193,6 +217,19 @@ export default function PolicyEditForm({
               <strong>
                 <p>Total Premium (final): <span>₱ {formatPHP(totalPremiumCost)}</span></p>
               </strong>
+
+              {/* Monthly Payment Display */}
+              {selectedPaymentType && months > 0 && (
+                <div className="monthly-payment-section-policy-edit">
+                  <hr />
+                  <p className="monthly-payment-label-policy-edit">
+                    Estimated Monthly Payment ({months} months):
+                  </p>
+                  <p className="monthly-payment-amount-policy-edit">
+                    ₱ {monthlyPayment.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="button-container-policy-edit">
