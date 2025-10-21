@@ -1,11 +1,21 @@
 import { db } from "../../dbServer";
 import { fetchPenaltiesForPayments, calculateTotalDue, calculateRemainingBalance } from "./PaymentPenaltyActions";
 
-// ✅ UPDATED: Fetch payment_type_id to identify cheque payments
+// ✅ UPDATED: Fetch payment_type_id and payment_type_name to identify payment types
 export async function fetchPaymentSchedule(policyId) {
   const { data: payments, error } = await db
     .from("payment_Table")
-    .select(`id, payment_date, amount_to_be_paid, is_paid, paid_amount, payment_type_id`)
+    .select(`
+      id, 
+      payment_date, 
+      amount_to_be_paid, 
+      is_paid, 
+      paid_amount, 
+      payment_type_id,
+      payment_type (
+        payment_type_name
+      )
+    `)
     .eq("policy_id", policyId)
     .or("is_archive.is.null,is_archive.eq.false")
     .order("payment_date", { ascending: true });
@@ -15,11 +25,12 @@ export async function fetchPaymentSchedule(policyId) {
   const paymentIds = payments.map(p => p.id);
   const penaltiesMap = await fetchPenaltiesForPayments(paymentIds);
 
-  // Attach penalties and calculate totals
+  // Attach penalties, payment type name, and calculate totals
   return payments.map(p => {
     const penalties = penaltiesMap[p.id] || [];
     return {
       ...p,
+      payment_type_name: p.payment_type?.payment_type_name || null,
       penalties,
       total_due: calculateTotalDue(p, penalties),
       remaining_balance: calculateRemainingBalance(p, penalties)
@@ -225,7 +236,7 @@ export async function generatePayments(policyId, payments) {
   return data;
 }
 
-// ✅ UPDATED: Fetch all dues with payment_type_id
+// ✅ UPDATED: Fetch all dues with payment_type_id and payment_type_name
 export async function fetchAllDues(fromDate = null, toDate = null) {
   let query = db
     .from("payment_Table")
@@ -236,6 +247,9 @@ export async function fetchAllDues(fromDate = null, toDate = null) {
       is_paid,
       paid_amount,
       payment_type_id,
+      payment_type (
+        payment_type_name
+      ),
       policy_Table (
         id,
         internal_id,
@@ -269,6 +283,7 @@ export async function fetchAllDues(fromDate = null, toDate = null) {
     const penalties = penaltiesMap[p.id] || [];
     return {
       ...p,
+      payment_type_name: p.payment_type?.payment_type_name || null,
       penalties,
       total_due: calculateTotalDue(p, penalties),
       remaining_balance: calculateRemainingBalance(p, penalties)

@@ -357,9 +357,16 @@ export default function PolicyWithPaymentsList() {
           <div className="payment-modal">
             <h3>Enter Payment</h3>
             <p>Payment Date: {new Date(currentPayment.payment_date).toLocaleDateString()}</p>
-            {isChequePayment(currentPayment) && (
-              <p style={{ backgroundColor: '#e3f2fd', padding: '8px', borderRadius: '4px', marginBottom: '10px' }}>
-                <strong>Payment Type:</strong> Cheque (No penalties apply)
+            {currentPayment.payment_type_name && (
+              <p style={{ 
+                backgroundColor: isChequePayment(currentPayment) ? '#e3f2fd' : '#f5f5f5', 
+                padding: '8px', 
+                borderRadius: '4px', 
+                marginBottom: '10px',
+                fontWeight: '500'
+              }}>
+                <strong>Payment Type:</strong> {currentPayment.payment_type_name}
+                {isChequePayment(currentPayment) && ' (No penalties apply)'}
               </p>
             )}
             <p>
@@ -611,15 +618,15 @@ export default function PolicyWithPaymentsList() {
                               {!isCheque && overdueInfo.daysOverdue >= 90 && <span className="void-warning-badge">⚠️ 90+ Days</span>}
                             </td>
                             <td>
-                              {isCheque && (
+                              {p.payment_type_name && (
                                 <span style={{ 
-                                  backgroundColor: '#e3f2fd', 
+                                  backgroundColor: isCheque ? '#e3f2fd' : '#f5f5f5', 
                                   padding: '4px 8px', 
                                   borderRadius: '4px',
                                   fontSize: '0.85em',
                                   fontWeight: '500'
                                 }}>
-                                  Cheque
+                                  {p.payment_type_name}
                                 </span>
                               )}
                             </td>
