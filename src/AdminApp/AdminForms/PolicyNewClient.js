@@ -2,46 +2,46 @@ import '../styles/Policy-new-client.css';
 import Select from 'react-select';
 
 export default function PolicyNewClient({
-  // Total Premium Calculation
-      vehicleTypes,
-      selected,
-      setSelected,
-      vehicleDetails,
-      yearInput,
-      setYearInput,   
-      vehicleCost,
-      setVehicleCost,  
-      basicPremiumValue, 
-      basicPremiumWithCommissionValue,        
-   
-      isAoN,
-      setIsAoN,
+  vehicleTypes,
+  selected,
+  setSelected,
+  vehicleDetails,
+  yearInput,
+  setYearInput,   
+  vehicleCost,
+  setVehicleCost,  
+  basicPremiumValue, 
+  basicPremiumWithCommissionValue,        
+ 
+  isAoN,
+  setIsAoN,
 
-      //VehicleValue
-      orginalVehicleCost,
-      currentVehicleValueCost,
-      totalVehicleValueRate,
-      totalPremiumCost,
-      actOfNatureCost,
-      commissionFee,
-      setCommissionFee,
-      commissionValue, 
+  //VehicleValue
+  orginalVehicleCost,
+  currentVehicleValueCost,
+  claimableAmount,
+  totalVehicleValueRate,
+  totalPremiumCost,
+  actOfNatureCost,
+  commissionFee,
+  setCommissionFee,
+  commissionValue, 
 
-      
-      setSelectedPartner,
-      vehicleMaker,
-      setVehicleMaker,
-      vehicleName,
-      setVehicleName,
-      vehicleColor,
-      setVehicleColor,
-      vehicleVinNumber,
-      setVinNumber,
-      vehiclePlateNumber,
-      setPlateNumber,
-      vehicleEngineNumber,
-      setEngineNumber,
-      
+  
+  setSelectedPartner,
+  vehicleMaker,
+  setVehicleMaker,
+  vehicleName,
+  setVehicleName,
+  vehicleColor,
+  setVehicleColor,
+  vehicleVinNumber,
+  setVinNumber,
+  vehiclePlateNumber,
+  setPlateNumber,
+  vehicleEngineNumber,
+  setEngineNumber,
+  
 
       clients,
       selectedClient,
@@ -49,11 +49,6 @@ export default function PolicyNewClient({
       
       partners,
       selectedPartner,
-      
-      paymentTypes,
-      selectedPaymentType,
-      setSelectedPaymentType,
-      
       onSaveClient,
       navigate
 })  {
@@ -370,19 +365,6 @@ export default function PolicyNewClient({
                         <span>₱ {totalPremiumCost.toLocaleString("en-PH")}</span>
                       </p>
                     </strong>
-                    
-                    {/* Monthly Payment Display */}
-                    {selectedPaymentType && months > 0 && (
-                      <div className="monthly-payment-section">
-                        <hr />
-                        <p className="monthly-payment-label">
-                          Estimated Per Month Payment ({months} months):
-                        </p>
-                        <p className="monthly-payment-amount">
-                          ₱ {monthlyPayment.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </p>
-                      </div>
-                    )}
                   </div>
         <div className="button-container-new-policy">
         <button

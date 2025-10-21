@@ -31,8 +31,8 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
         phone_number: claim.phone_number || '',
         estimate_amount: claim.estimate_amount || '',
         approved_amount: claim.approved_amount || '',
-        location_of_incident: claim.location_of_incident || '',
-        description_of_incident: claim.description_of_incident || '',
+        //location_of_incident: claim.location_of_incident || '',
+        //description_of_incident: claim.description_of_incident || '',
         incident_date: claim.incident_date ? new Date(claim.incident_date).toISOString().split('T')[0] : '',
         claim_date: claim.claim_date ? new Date(claim.claim_date).toISOString().split('T')[0] : '',
         message: claim.message || ''
@@ -160,15 +160,6 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
     }
   };
 
-  const openDocumentInNewTab = (url) => {
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    } else {
-      setError('Document URL is not available. It might have failed to load or the file does not exist in storage.');
-      console.warn('Attempted to open document with no URL.');
-    }
-  };
-
   return (
     <div className="edit-claims-modal-overlay" onClick={onClose}>
       <div className="edit-claims-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -188,12 +179,6 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
               {error}
             </div>
           )}
-
-          {/*{successMessage && (
-            <div className="edit-claims-success-message">
-              {successMessage}
-            </div>
-          )}*/}
 
           <div className="edit-claims-header-row">
             <div className="edit-claims-field">
@@ -239,7 +224,7 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
               </div>
             </div>
 
-            <div className="edit-claims-field">
+           {/* <div className="edit-claims-field">
               <label>Phone Number</label>
               <input
                 type="tel"
@@ -248,7 +233,7 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
                 onChange={handleChange}
                 disabled={isFinalized}
               />
-            </div>
+            </div>*/}
 
             <div className="edit-claims-field">
               <label>Estimate Amount</label>
@@ -294,7 +279,7 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
               />
             </div>
 
-            <div className="edit-claims-field edit-claims-full-width">
+           {/*<div className="edit-claims-field edit-claims-full-width">
               <label>Location of Incident:</label>
               <textarea
                 name="location_of_incident"
@@ -314,31 +299,39 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
                 rows={3}
                 disabled={isFinalized}
               />
-            </div>
+            </div>*/}
 
             <div className="edit-claims-field edit-claims-full-width">
               <label>Supporting Documents:</label>
               <div className="edit-claims-documents-list">
                 {loadingDocs ? (
-                  <p>Loading documents...</p>
+                  <p className="no-docs">Loading documents...</p>
                 ) : documents.length === 0 ? (
                   <p className="no-docs">No documents attached</p>
                 ) : (
                   documents.map((doc, index) => (
                     <div key={index} className="edit-claims-document-item">
-                      <button
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="edit-claims-document-link"
-                        onClick={() => openDocumentInNewTab(doc.url)}
-                        type="button"
-                        title={doc.url ? "Open document" : "Document URL not available"}
+                        title="Click to open document in new tab"
+                        onClick={(e) => {
+                          // Prevent any parent handlers
+                          e.stopPropagation();
+                        }}
                       >
                         <FileText size={16} />
-                        {doc.name}
-                      </button>
-                      {!isFinalized && (
+                        <span>{doc.name}</span>
+                      </a>
+                      {(!isFinalized && claim?.status !== 'Approved' && claim?.status !== 'Rejected') && (
                         <button
                           className="edit-claims-delete-doc-btn"
-                          onClick={() => handleDeleteDocument(doc)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteDocument(doc);
+                          }}
                           type="button"
                           title="Remove document"
                         >
@@ -376,8 +369,8 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
         {deleteConfirm && (
           <div className="delete-confirm-overlay" onClick={cancelDeleteDocument}>
             <div className="delete-confirm-modal" onClick={(e) => e.stopPropagation()}>
-              <h3>Confirm Deletion</h3>
-              <p>Are you sure you want to remove the attachment <strong>"{deleteConfirm.name}"</strong>? This action cannot be undone and will permanently delete the file.</p>
+              <h3>Confirm</h3>
+              <p>Are you sure you want to remove this attachment?</p>
               <div className="delete-confirm-actions">
                 <button className="delete-confirm-cancel" onClick={cancelDeleteDocument}>
                   Cancel

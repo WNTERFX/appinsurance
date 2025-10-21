@@ -81,6 +81,7 @@ export default function NewPolicyController() {
   // -----------------------------------
   const [orginalVehicleCost, setOriginalVehicleCost] = useState(0);
   const [currentVehicleValueCost, setCurrentVehicleCost] = useState(0);
+  const [claimableAmount, setClaimableAmount] = useState(0);
   const [totalVehicleValueRate, setTotalVehicleValueRate] = useState(0);
   const [totalPremiumCost, setTotalPremiumCost] = useState(0);
   const [commissionValue, setCommissionValue] = useState(0);
@@ -181,6 +182,7 @@ export default function NewPolicyController() {
   useEffect(() => {
     setOriginalVehicleCost(vehicleCost);
     setCurrentVehicleCost(vehicleValue);
+    setClaimableAmount(vehicleValue); // Initially same as current vehicle value
     setTotalVehicleValueRate(vehicleValueRate);
     setTotalPremiumCost(totalWithCommission);
     setCommissionValue(computedCommissionValue);
@@ -190,24 +192,13 @@ export default function NewPolicyController() {
   // Save handler
   // -----------------------------------
   const handleSaveClient = async () => {
-    // Validation
-    if (!selectedClient) {
-      alert("Please select a client");
-      return;
-    }
-    if (!selectedPartner) {
-      alert("Please select a partner");
-      return;
-    }
-    if (!selectedPaymentType) {
-      alert("Please select a payment type");
-      return;
-    }
-
+    // 🔧 FIX: Convert commission fee to number before saving
     const commissionFeeToSave = parseFloat(commissionFee) || 0;
 
     console.log("=== SAVING NEW POLICY ===");
-    console.log("Payment Type ID:", selectedPaymentType);
+    console.log("Commission fee (%) to save:", commissionFeeToSave);
+    console.log("Commission value (₱):", computedCommissionValue);
+    console.log("Total Premium:", totalWithCommission);
 
     const policyData = {
       policy_type: "Comprehensive",
@@ -240,15 +231,17 @@ export default function NewPolicyController() {
     if (!newVehicleResult.success) return alert("Error saving vehicle details");
 
     const computationData = {
-    policy_id: policyId,
-    original_Value: orginalVehicleCost,
-    current_Value: currentVehicleValueCost,
-    total_Premium: totalWithCommission,
-    vehicle_Rate_Value: totalVehicleValueRate,
-    aon_Cost: actOfNatureCost,
-    commission_fee: commissionFeeToSave,
-    payment_type_id: Number(selectedPaymentType)
-  };
+      policy_id: policyId,
+      original_Value: orginalVehicleCost,
+      current_Value: currentVehicleValueCost,
+      total_Premium: totalWithCommission,
+      vehicle_Rate_Value: totalVehicleValueRate,
+      aon_Cost: actOfNatureCost,
+      commission_fee: commissionFeeToSave // 🔧 FIX: Save as number
+    };
+
+    // 🔧 DEBUG: Log the data being saved
+    console.log("💾 Computation data being saved:", computationData);
 
     const computationResult = await NewComputationCreation(computationData);
     if (!computationResult.success) {
@@ -299,6 +292,7 @@ export default function NewPolicyController() {
       setIsAoN={setIsAoN}
       orginalVehicleCost={orginalVehicleCost}
       currentVehicleValueCost={currentVehicleValueCost}
+      claimableAmount={claimableAmount}
       totalVehicleValueRate={totalVehicleValueRate}
       basicPremiumValue={basicPremiumValue}
       totalPremiumValue={totalPremiumBeforeCommission}
