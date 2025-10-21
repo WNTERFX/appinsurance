@@ -41,16 +41,20 @@ export default function PolicyNewClient({
   setPlateNumber,
   vehicleEngineNumber,
   setEngineNumber,
+
+  paymentTypes,             
+  selectedPaymentType,     
+  setSelectedPaymentType,   
   
 
-      clients,
-      selectedClient,
-      setSelectedClient,
+  clients,
+  selectedClient,
+  setSelectedClient,
       
-      partners,
-      selectedPartner,
-      onSaveClient,
-      navigate
+  partners,
+  selectedPartner,
+  onSaveClient,
+  navigate
 })  {
  console.log("Selected Partner:", selectedPartner);
  
