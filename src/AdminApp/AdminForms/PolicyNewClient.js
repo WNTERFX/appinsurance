@@ -152,7 +152,11 @@ export default function PolicyNewClient({
                 type="text"
                 value={vehiclePlateNumber || ""}
                 onChange={(e) => setPlateNumber(e.target.value)}
+                maxLength={8}
               />
+               <small style={{ color: vehiclePlateNumber?.length >= 8 ? "red" : "gray" }}>
+                {vehiclePlateNumber?.length || 0}/8 characters
+              </small>
             </div>
 
             <div className="form-group">
