@@ -292,41 +292,49 @@ export default function PolicyNewClient({
           <div className="form-right-column">
                   <div className="calculation-card">
                     <h3>Calculation Summary</h3>
-                    <p>Original Vehicle Cost: 
-                      <span>
-                         ₱ {orginalVehicleCost.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
-                      </span>
-                    </p>
 
-                    <p>Current Vehicle Value: 
-                      <span>
-                        ₱ {currentVehicleValueCost.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
-                      </span>
-                    </p>
+                    <div className="vehicle-val">
+                      <p>Original Vehicle Cost: 
+                        <span>
+                          ₱ {orginalVehicleCost.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
+                        </span>
+                      </p>
 
-                    <p>Total Vehicle Value Rate: 
-                      <span>
-                        ₱ {totalVehicleValueRate.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
-                      </span>
-                    </p>
+                      <p>Current Vehicle Value: 
+                        <span>
+                          ₱ {currentVehicleValueCost.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
+                        </span>
+                      </p>
 
-                    <p>Bodily Injury 
-                      <span>
-                        ₱ {vehicleDetails?.bodily_Injury ? vehicleDetails.bodily_Injury.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
-                      </span>
-                    </p>
+                      <p>Total Vehicle Value Rate: 
+                        <span>
+                          ₱ {totalVehicleValueRate.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
+                        </span>
+                      </p>
+                    </div>
 
-                    <p>Property Damage: 
-                      <span>
-                        ₱ {vehicleDetails?.property_Damage ? vehicleDetails.property_Damage.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
-                      </span>
-                    </p>
+                    <div className="own-tax">
 
-                    <p>Personal Accident: 
-                      <span>
-                        ₱ {vehicleDetails?.personal_Accident ? vehicleDetails.personal_Accident.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
-                      </span>
-                    </p>
+                      <p>Bodily Injury 
+                        <span>
+                          ₱ {vehicleDetails?.bodily_Injury ? vehicleDetails.bodily_Injury.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
+                        </span>
+                      </p>
+
+                      <p>Property Damage: 
+                        <span>
+                          ₱ {vehicleDetails?.property_Damage ? vehicleDetails.property_Damage.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
+                        </span>
+                      </p>
+
+                      <p>Personal Accident: 
+                        <span>
+                          ₱ {vehicleDetails?.personal_Accident ? vehicleDetails.personal_Accident.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
+                        </span>
+                      </p>
+                    </div>
+
+                    <div className="basic-prem">
 
                     <p>Basic Premium: 
                       <span>
@@ -334,29 +342,34 @@ export default function PolicyNewClient({
                       </span>
                     </p>
 
-                   <p>Basic Premium (with Commission): 
-                    <span>
-                      ₱ {basicPremiumWithCommissionValue ? basicPremiumWithCommissionValue.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
-                    </span>
-                  </p>
+               
 
-                     <p>Local Government Tax: 
-                        <span>{vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "—"}</span>
-                      </p>
+                    <p>Basic Premium (with Commission): 
+                          <span>
+                            ₱ {basicPremiumWithCommissionValue ? basicPremiumWithCommissionValue.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
+                          </span>
+                        </p>
+                    </div>
+                     <div className="local-tax">
+                        <p>Local Government Tax: 
+                            <span>{vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "—"}</span>
+                          </p>
 
-                      <p>VAT: 
-                        <span>{vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "—"}</span>
-                      </p>
+                          <p>VAT: 
+                            <span>{vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "—"}</span>
+                          </p>
 
-                      <p>Documentary Stamp: 
-                        <span>{vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "—"}</span>
-                      </p>
+                          <p>Documentary Stamp: 
+                            <span>{vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "—"}</span>
+                          </p>
 
-                      <p>Commission Amount: 
-                      <span>
-                        ₱ {commissionValue ? commissionValue.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
-                      </span>
-                    </p>
+                          <p>Commission Amount: 
+                          <span>
+                            ₱ {commissionValue ? commissionValue.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
+                          </span>
+                        </p>
+
+                      </div>
 
                      {isAoN && (
                         <p>AoN (Act of Nature): 
@@ -368,6 +381,13 @@ export default function PolicyNewClient({
                       <p>Total Premium: 
                         <span>₱ {totalPremiumCost.toLocaleString("en-PH")}</span>
                       </p>
+                      <p>Claimable Amount: 
+                        <span>
+                          ₱ {currentVehicleValueCost.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
+                        </span>
+                      </p>
+
+                      
                     </strong>
                   </div>
         <div className="button-container-new-policy">

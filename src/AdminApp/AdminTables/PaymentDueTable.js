@@ -28,6 +28,9 @@ export default function PolicyWithPaymentsList() {
   const [archiveModalOpen, setArchiveModalOpen] = useState(false);
   const [selectedPaymentForArchive, setSelectedPaymentForArchive] = useState(null);
 
+  // Constant for cheque payment type
+  const CHEQUE_PAYMENT_TYPE = 2;
+
   useEffect(() => { loadPolicies(); }, []);
 
   const loadPolicies = async () => {
@@ -64,7 +67,18 @@ export default function PolicyWithPaymentsList() {
     return baseDue + totalPenalties;
   };
 
+  // ✅ UPDATED: Check if payment is cheque type
+  const isChequePayment = (payment) => {
+    return payment.payment_type_id === CHEQUE_PAYMENT_TYPE;
+  };
+
+  // ✅ UPDATED: Exclude cheque payments from overdue calculation
   const calculateOverdueInfo = (payment) => {
+    // Cheque payments are never overdue
+    if (isChequePayment(payment)) {
+      return { daysOverdue: 0, penaltyPercentage: 0 };
+    }
+
     const paymentDate = new Date(payment.payment_date);
     const today = new Date();
     const isPaid = getPaymentStatus(payment) === "fully-paid";
@@ -176,7 +190,14 @@ export default function PolicyWithPaymentsList() {
     }
   };
 
+  // ✅ UPDATED: Prevent penalty addition for cheque payments
   const handleAddPenalty = (payment) => {
+    // Cannot add penalties to cheque payments
+    if (isChequePayment(payment)) {
+      alert("Cheque payments are not subject to overdue penalties.");
+      return;
+    }
+
     const overdueInfo = calculateOverdueInfo(payment);
     if (overdueInfo.daysOverdue <= 0) {
       alert("This payment is not yet overdue. Penalties can only be added to overdue payments.");
@@ -336,6 +357,11 @@ export default function PolicyWithPaymentsList() {
           <div className="payment-modal">
             <h3>Enter Payment</h3>
             <p>Payment Date: {new Date(currentPayment.payment_date).toLocaleDateString()}</p>
+            {isChequePayment(currentPayment) && (
+              <p style={{ backgroundColor: '#e3f2fd', padding: '8px', borderRadius: '4px', marginBottom: '10px' }}>
+                <strong>Payment Type:</strong> Cheque (No penalties apply)
+              </p>
+            )}
             <p>
               <strong>Base Amount:</strong> {currentPayment.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}
             </p>
@@ -545,6 +571,7 @@ export default function PolicyWithPaymentsList() {
                     <thead>
                       <tr>
                         <th>Date</th>
+                        <th>Type</th>
                         <th>Penalty %</th>
                         <th>Base Amount</th>
                         <th>Penalty Amount</th>
@@ -562,6 +589,7 @@ export default function PolicyWithPaymentsList() {
                         const totalDue = calculateTotalDue(p);
                         const remainingBalance = totalDue - calculateTotalPaid(p);
                         const isOverdue = overdueInfo.daysOverdue > 0 && status !== "fully-paid";
+                        const isCheque = isChequePayment(p);
                         
                         const hasTodayPenalty = hasPenaltyForToday(p);
                         const hasAnyPenalty = p.payment_due_penalties && p.payment_due_penalties.length > 0;
@@ -573,16 +601,30 @@ export default function PolicyWithPaymentsList() {
                         const disablePayment =
                           status === "fully-paid" ||
                           remainingBalance <= 0 ||
-                          (isOverdue && !hasTodayPenalty) ||
+                          (!isCheque && isOverdue && !hasTodayPenalty) ||
                           !previousPaymentsPaid;
 
                         return (
-                          <tr key={p.id} className={`payment-${status} ${overdueInfo.daysOverdue >= 90 ? 'payment-void-warning' : ''}`}>
-                            <td>{new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-                                {overdueInfo.daysOverdue >= 90 && <span className="void-warning-badge">⚠️ 90+ Days</span>}
+                          <tr key={p.id} className={`payment-${status} ${!isCheque && overdueInfo.daysOverdue >= 90 ? 'payment-void-warning' : ''}`}>
+                            <td>
+                              {new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                              {!isCheque && overdueInfo.daysOverdue >= 90 && <span className="void-warning-badge">⚠️ 90+ Days</span>}
                             </td>
                             <td>
-                              {overdueInfo.penaltyPercentage > 0 ? (
+                              {isCheque && (
+                                <span style={{ 
+                                  backgroundColor: '#e3f2fd', 
+                                  padding: '4px 8px', 
+                                  borderRadius: '4px',
+                                  fontSize: '0.85em',
+                                  fontWeight: '500'
+                                }}>
+                                  Cheque
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              {!isCheque && overdueInfo.penaltyPercentage > 0 ? (
                                 <span 
                                   className={`penalty-badge ${getPaymentStatus(p) === "fully-paid" ? "frozen" : ""}`}
                                   title={getPaymentStatus(p) === "fully-paid" ? "Penalty frozen after full payment" : ""}
@@ -603,7 +645,7 @@ export default function PolicyWithPaymentsList() {
                                 className={`payment-btn ${disablePayment ? "disabled-btn" : ""}`}
                                 title={
                                   status === "fully-paid" ? "Payment fully covered" :
-                                  (isOverdue && !hasTodayPenalty) ? "Add today's penalty before paying" :
+                                  (!isCheque && isOverdue && !hasTodayPenalty) ? "Add today's penalty before paying" :
                                   !previousPaymentsPaid ? "Pay previous months first" :
                                   ""
                                 }
@@ -612,7 +654,7 @@ export default function PolicyWithPaymentsList() {
                                 {status === "fully-paid" ? "Paid" : "Payment"}
                               </button>
 
-                              {isOverdue && !hasTodayPenalty && (
+                              {!isCheque && isOverdue && !hasTodayPenalty && (
                                 <button
                                   onClick={() => handleAddPenalty({ ...p, policy_id: policy.id })}
                                   className="penalty-btn"

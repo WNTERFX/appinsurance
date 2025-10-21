@@ -198,26 +198,38 @@ export default function PolicyEditForm({
           <div className="form-right-column-policy-edit">
             <div className="calculation-card-policy-edit">
               <h3>Calculation Summary</h3>
-
-              <p>Original Vehicle Cost: <span>₱ {formatPHP(originalVehicleCost)}</span></p>
-              <p>Current Vehicle Value: <span>₱ {formatPHP(currentVehicleValueCost)}</span></p>
-              <p>Total Vehicle Value Rate: <span>₱ {formatPHP(totalVehicleValueRate)}</span></p>
+              <div className="vehicle-val"> 
+                <p>Original Vehicle Cost: <span>₱ {formatPHP(originalVehicleCost)}</span></p>
+                <p>Current Vehicle Value: <span>₱ {formatPHP(currentVehicleValueCost)}</span></p>
+                <p>Total Vehicle Value Rate: <span>₱ {formatPHP(totalVehicleValueRate)}</span></p>
+              </div>
+              <div className="own-tax">
               <p>Bodily Injury: <span>₱ {formatPHP(vehicleDetails?.bodily_Injury)}</span></p>
               <p>Property Damage: <span>₱ {formatPHP(vehicleDetails?.property_Damage)}</span></p>
               <p>Personal Accident: <span>₱ {formatPHP(vehicleDetails?.personal_Accident)}</span></p>
+              </div>
+              <div className="basic-prem">
+              <p>Commission Amount: <span>₱ {formatPHP(commissionValue)}</span></p>
               <p>Basic Premium (without Commission): <span>₱ {formatPHP(basicPremiumValue)}</span></p>
               <p>Basic Premium (with Commission): <span>₱ {formatPHP(basicPremiumWithCommission)}</span></p>
+              </div>
+              <div className="local-tax">
               <p>Local Government Tax: <span>{vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "—"}</span></p>
               <p>VAT: <span>{vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "—"}</span></p>
               <p>Documentary Stamp: <span>{vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "—"}</span></p>
-              <p>Commission Amount: <span>₱ {formatPHP(commissionValue)}</span></p>
-
               {isAoN && <p>AoN (Act of Nature): <span>₱ {formatPHP(actOfNatureCost)}</span></p>}
-              <hr />
-              <strong>
-                <p>Total Premium (final): <span>₱ {formatPHP(totalPremiumCost)}</span></p>
+             
+             
+              </div>
+               <hr />
+
+               <strong>
+                <p>Total Premium: <span>₱ {formatPHP(totalPremiumCost)}</span></p>
+                <p>Claimable Amount: <span>₱ {formatPHP(currentVehicleValueCost)}</span></p>
               </strong>
 
+
+              
               {/* Monthly Payment Display */}
               {selectedPaymentType && months > 0 && (
                 <div className="monthly-payment-section-policy-edit">

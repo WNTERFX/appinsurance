@@ -276,3 +276,37 @@ color: #000;
   min-width: 350px; /* adjust to how wide you want */
   max-width: 100%; /* prevents it from overflowing */
 }
+
+
+.vehicle-val {
+  background-color: #b0c9f7;
+  border: 1px solid #b0c9f7;
+  padding: 5px;
+  border-radius: 15px 15px;
+  font-weight: bold;
+  
+}
+
+.own-tax {
+  background-color: #e3e4b6;
+  border: 1px solid #e3e4b6;
+  padding: 5px;
+  border-radius: 15px 15px;
+  font-weight: bold;
+}
+
+.basic-prem {
+  background-color: #e7b4d0;
+  border: 1px solid #e7b4d0;
+  padding: 5px;
+  border-radius: 15px 15px;
+  font-weight: bold;
+}
+
+.local-tax {
+  background-color: #b1f1b9;
+  border: 1px solid #b1f1b9;
+  padding: 5px;
+  border-radius: 15px 15px;
+  font-weight: bold;
+}
