@@ -7,7 +7,7 @@ import {
   archivePolicy,
   fetchPartners
 } from "../AdminActions/PolicyActions";
-import { ActivatePolicyAndPayment } from "../AdminActions/PolicyActivationActions";
+import { ActivatePolicyAndPayment, CancelPolicyAndRefund  } from "../AdminActions/PolicyActivationActions";
 
 export default function PolicyTable() {
   const [policies, setPolicies] = useState([]);
@@ -34,6 +34,9 @@ export default function PolicyTable() {
   const getPolicyStatus = (policy) => {
     if (policy.policy_status === 'voided') {
       return { text: "Voided", class: "policy-status-voided" };
+    }
+    if (policy.policy_status === 'cancelled') {
+      return { text: "Cancelled", class: "policy-status-cancelled" };
     }
     if (isPolicyExpired(policy.policy_expiry)) {
       return { text: "Expired", class: "policy-status-expired" };
@@ -253,6 +256,144 @@ export default function PolicyTable() {
     }
   };
 
+const handleCancelClick = async (policy) => {
+  const reason = prompt("Enter reason for cancelling this policy:");
+  if (!reason || !reason.trim()) return;
+
+  const confirmCancel = window.confirm(
+    `Cancel this policy?\n\nThis will:\n- Refund the first payment\n- Cancel all remaining payments\n- Mark the policy as CANCELLED\n\nReason: ${reason}`
+  );
+  if (!confirmCancel) return;
+
+  try {
+    const { db } = await import("../../dbServer");
+
+    // 1️⃣ Get computation info
+    const computation = policy.policy_Computation_Table?.[0];
+    if (!computation || !computation.total_Premium) {
+      alert("No computation found for this policy.");
+      return;
+    }
+
+    // 2️⃣ Get payment type info (same logic as activation)
+    const paymentType = await fetchPolicyPaymentType(policy.id);
+    if (!paymentType) {
+      alert("No payment type found for this policy. Please edit the policy and select one.");
+      return;
+    }
+
+    const totalPremium = computation.total_Premium;
+    const months = paymentType.months_payment;
+    const paymentTypeId = paymentType.id;
+
+    console.log("=== CANCELLING POLICY ===");
+    console.log("Policy ID:", policy.id);
+    console.log("Payment Type:", paymentType.payment_type_name);
+    console.log("Months:", months);
+    console.log("Total Premium:", totalPremium);
+
+    // 3️⃣ Check if there are existing payments
+    const { data: existingPayments, error: payError } = await db
+      .from("payment_Table")
+      .select("*")
+      .eq("policy_id", policy.id);
+
+    if (payError) throw payError;
+
+    let paymentsToUse = existingPayments;
+
+    // 4️⃣ If no payments exist, generate them (copy from activation)
+    if (!paymentsToUse || paymentsToUse.length === 0) {
+      console.log("No existing payments — generating before refund/cancel...");
+      const now = new Date();
+      const monthlyAmount = Number((totalPremium / months).toFixed(2));
+
+      const paymentRows = Array.from({ length: months }, (_, i) => {
+        const paymentDate = new Date(now);
+        paymentDate.setMonth(paymentDate.getMonth() + (i + 1));
+        return {
+          payment_date: paymentDate.toISOString().split("T")[0],
+          amount_to_be_paid: monthlyAmount,
+          is_paid: false,
+          paid_amount: 0,
+          policy_id: policy.id,
+          payment_type_id: paymentTypeId,
+        };
+      });
+
+      const { data: inserted, error: insertError } = await db
+        .from("payment_Table")
+        .insert(paymentRows)
+        .select();
+
+      if (insertError) throw insertError;
+      console.log("✅ Generated payments:", inserted.length);
+      paymentsToUse = inserted;
+    }
+
+    // 5️⃣ Refund first payment
+   const firstPayment = paymentsToUse[0];
+    await db
+      .from("payment_Table")
+      .update({
+        is_paid: false,
+        paid_amount: 0,
+        is_refunded: true,
+        refund_amount: firstPayment.amount_to_be_paid,
+        refund_date: new Date().toISOString(),
+        refund_reason: reason,
+        payment_status: "refunded",
+      })
+      .eq("id", firstPayment.id);
+
+    // 6️⃣ Cancel remaining payments (not archive)
+    if (paymentsToUse.length > 1) {
+      const remainingIds = paymentsToUse.slice(1).map((p) => p.id);
+      await db
+        .from("payment_Table")
+        .update({
+          payment_status: "cancelled",
+          is_archive: false,
+        })
+        .in("id", remainingIds);
+    }
+
+    // 7️⃣ Update policy as cancelled
+    const { error: policyError } = await db
+      .from("policy_Table")
+      .update({
+        policy_status: "cancelled",
+        cancellation_reason: reason,
+        cancellation_date: new Date().toISOString(),
+        policy_is_active: false,
+      })
+      .eq("id", policy.id);
+
+    if (policyError) throw policyError;
+
+    // 8️⃣ Update UI
+    setPolicies((prev) =>
+      prev.map((p) =>
+        p.id === policy.id
+          ? {
+              ...p,
+              policy_status: "cancelled",
+              cancellation_reason: reason,
+              cancellation_date: new Date().toISOString(),
+              policy_is_active: false,
+            }
+          : p
+      )
+    );
+
+    alert("✅ Policy cancelled successfully. First payment refunded, remaining payments cancelled.");
+  } catch (error) {
+    console.error("Error cancelling policy:", error);
+    alert("Error cancelling policy: " + error.message);
+  }
+};
+
+
   const filteredAndSearchedPolicies = useMemo(() => {
     let tempPolicies = policies;
 
@@ -279,6 +420,8 @@ export default function PolicyTable() {
       tempPolicies = tempPolicies.filter((policy) => isPolicyExpired(policy.policy_expiry));
     } else if (statusFilter === "Voided") {
       tempPolicies = tempPolicies.filter((policy) => policy.policy_status === 'voided');
+    } else if (statusFilter === "Cancelled") {
+      tempPolicies = tempPolicies.filter((policy) => policy.policy_status === 'cancelled');
     }
 
     // Search filter
@@ -355,6 +498,7 @@ export default function PolicyTable() {
               <option value="Inactive">Inactive</option>
               <option value="Expired">Expired</option>
               <option value="Voided">Voided</option>
+              <option value="Cancelled">Cancelled</option>
             </select>
           </div>
 
@@ -430,6 +574,7 @@ export default function PolicyTable() {
                   const computation = policy.policy_Computation_Table?.[0];
                   const isExpired = isPolicyExpired(policy.policy_expiry);
                   const isVoided = policy.policy_status === 'voided';
+                  const isCancelled = policy.policy_status === 'cancelled';
                   const policyStatus = getPolicyStatus(policy);
                   
                   const clientName = client
@@ -451,15 +596,33 @@ export default function PolicyTable() {
                       key={policy.id}
                       className={`policy-table-clickable-row ${
                         isExpired ? 'policy-row-expired' : ''
-                      } ${isVoided ? 'policy-row-voided' : ''}`}
+                      } ${isVoided ? 'policy-row-voided' : ''} ${
+                        isCancelled ? 'policy-row-cancelled' : ''
+                      }`}
                       onClick={() => handleRowClick(policy)}
                     >
                       <td>{policy.internal_id}</td>
                       <td>{policy.policy_type}</td>
                       <td>{clientName}</td>
                       <td>{partner?.insurance_Name || "No Partner"}</td>
-                      <td>{policy.policy_inception || "N/A"}</td>
-                      <td>{policy.policy_expiry || "N/A"}</td>
+                      <td>
+                        {policy.policy_inception
+                          ? new Date(policy.policy_inception).toLocaleString("en-PH", {
+                              timeZone: "Asia/Manila",
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            })
+                          : "N/A"}
+                      </td>
+                      <td>
+                        {policy.policy_expiry
+                          ? new Date(policy.policy_expiry).toLocaleString("en-PH", {
+                              timeZone: "Asia/Manila",
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            })
+                          : "N/A"}
+                      </td>
                       <td>
                         <span className={policyStatus.class}>
                           {policyStatus.text}
@@ -475,40 +638,59 @@ export default function PolicyTable() {
                       </td>
                       <td className="policy-table-actions">
                         <button
-                          disabled={policy.policy_is_active || isExpired || isVoided}
+                          disabled={policy.policy_is_active || isExpired || isVoided || isCancelled}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleActivateClick(policy);
                           }}
                           title={
                             isExpired ? "Cannot activate expired policy" :
-                            isVoided ? "Cannot activate voided policy" : ""
+                            isVoided ? "Cannot activate voided policy" :
+                            isCancelled ? "Cannot activate cancelled policy" : ""
                           }
                         >
                           Activate
                         </button>
                         <button
-                          disabled={isVoided}
+                          disabled={isVoided || isCancelled}
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(
                               `/appinsurance/main-app/policy/Edit/${policy.id}`
                             );
                           }}
-                          title={isVoided ? "Cannot edit voided policy" : ""}
+                          title={isVoided || isCancelled ? "Cannot edit voided/cancelled policy" : ""}
                         >
                           Edit
                         </button>
                         <button
-                          disabled={isVoided}
+                          disabled={isVoided || isCancelled || isExpired}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleVoidClick(policy);
                           }}
                           className="void-btn"
-                          title={isVoided ? "Policy already voided" : ""}
+                          title={
+                            isExpired ? "Cannot void expired policy" :
+                            isVoided || isCancelled ? "Policy already voided/cancelled" : ""
+                          }
                         >
                           Void
+                        </button>
+                        <button
+                          disabled={policy.policy_is_active || isVoided || isCancelled || isExpired}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCancelClick(policy);
+                          }}
+                          className="cancel-btn"
+                          title={
+                            policy.policy_is_active ? "Cannot cancel active policy" :
+                            isExpired ? "Cannot cancel expired policy" :
+                            isVoided || isCancelled ? "Policy already voided/cancelled" : ""
+                          }
+                        >
+                          Cancel
                         </button>
                         <button
                           disabled={policy.policy_is_active}

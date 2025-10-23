@@ -106,7 +106,7 @@ export default function PolicyNewClient({
                     
 
              <div className="form-group">
-              <label>Vehicle Maker</label>
+              <label>Make Model</label>
               <input 
                 type="text" 
                 value={vehicleMaker}

@@ -76,7 +76,7 @@ export default function PolicyEditForm({
             </div>
 
             <div className="form-group-policy-edit">
-              <label>Vehicle Maker</label>
+              <label>Make Model</label>
               <input type="text" value={vehicleMaker} onChange={(e) => setVehicleMaker(e.target.value)} />
             </div>
 

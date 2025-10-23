@@ -289,15 +289,22 @@ export default function PolicyWithPaymentsList() {
     if (!selectedPaymentForArchive) return;
 
     try {
-      // Check if we're archiving all payments for a policy
+      // Check if we're archiving multiple payments for a policy
       if (selectedPaymentForArchive.payments) {
         const { policy_id, payments } = selectedPaymentForArchive;
-        
-        // Archive all payments
+
+        if (payments.length === 0) {
+          alert("No payments to archive.");
+          setArchiveModalOpen(false);
+          setSelectedPaymentForArchive(null);
+          return;
+        }
+
+        // Archive all payments regardless of status
         for (const payment of payments) {
           await archivePayment(payment.id);
         }
-        
+
         // Refresh the payment schedule
         const updatedSchedule = await fetchPaymentSchedule(policy_id);
         setPaymentsMap(prev => ({
@@ -307,9 +314,9 @@ export default function PolicyWithPaymentsList() {
 
         alert(`All ${payments.length} payments archived successfully!`);
       } else {
-        // Single payment archive (keeping old functionality)
+        // Single payment archive
         await archivePayment(selectedPaymentForArchive.id);
-        
+
         const policyId = selectedPaymentForArchive.policy_id;
         const updatedSchedule = await fetchPaymentSchedule(policyId);
         setPaymentsMap(prev => ({
@@ -319,7 +326,7 @@ export default function PolicyWithPaymentsList() {
 
         alert("Payment archived successfully!");
       }
-      
+
       setArchiveModalOpen(false);
       setSelectedPaymentForArchive(null);
     } catch (err) {
@@ -541,30 +548,42 @@ export default function PolicyWithPaymentsList() {
                 <div className="payment-header-with-button">
                   <h3 className="payment-details-title">Payments</h3>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    {(() => {
-                      const allPaid = payments.length > 0 && payments.every(p => getPaymentStatus(p) === "fully-paid");
-                      return allPaid && (
-                        <button 
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            setSelectedPaymentForArchive({ policy_id: policy.id, payments }); 
-                            setArchiveModalOpen(true);
-                          }}
-                          style={{
-                            backgroundColor: '#6c757d',
-                            color: 'white',
-                            padding: '8px 16px',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Archive All Payments
-                        </button>
-                      );
-                    })()}
-                    <button 
+                        {(() => {
+                          if (payments.length === 0) return null;
+
+                          const archivableStatuses = ["fully-paid", "refunded", "cancelled"];
+                          const allArchivable = payments.every(p => archivableStatuses.includes(getPaymentStatus(p)));
+                          if (!allArchivable) return null;
+
+                          // Count each type
+                          const fullyPaidCount = payments.filter(p => getPaymentStatus(p) === "fully-paid").length;
+                          const refundedCount = payments.filter(p => getPaymentStatus(p) === "refunded").length;
+                          const cancelledCount = payments.filter(p => getPaymentStatus(p) === "cancelled").length;
+
+                          const buttonText = `Archive All Payments (${fullyPaidCount} Paid / ${refundedCount} Refunded / ${cancelledCount} Cancelled)`;
+
+                          return (
+                            <button 
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                setSelectedPaymentForArchive({ policy_id: policy.id, payments }); 
+                                setArchiveModalOpen(true);
+                              }}
+                              style={{
+                                backgroundColor: '#6c757d',
+                                color: 'white',
+                                padding: '8px 16px',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontWeight: '500'
+                              }}
+                            >
+                              {buttonText}
+                            </button>
+                          );
+                        })()}
+                      <button 
                       onClick={(e) => { e.stopPropagation(); handleOpenGenerateModal(policy); }}
                       className="generate-payment-btn"
                     >
@@ -588,7 +607,7 @@ export default function PolicyWithPaymentsList() {
                         <th>Actions</th>
                       </tr>
                     </thead>
-                    <tbody>
+                   <tbody>
                       {payments.map((p, index) => {
                         const status = getPaymentStatus(p);
                         const overdueInfo = calculateOverdueInfo(p);
@@ -597,26 +616,54 @@ export default function PolicyWithPaymentsList() {
                         const remainingBalance = totalDue - calculateTotalPaid(p);
                         const isOverdue = overdueInfo.daysOverdue > 0 && status !== "fully-paid";
                         const isCheque = isChequePayment(p);
-                        
+
+                        // Special statuses
+                        const isRefunded = status === "refunded";
+                        const isCancelled = status === "cancelled";
+                        const isVoided = status === "voided";
+                        const isSpecialStatus = isRefunded || isCancelled || isVoided;
+
                         const hasTodayPenalty = hasPenaltyForToday(p);
-                        const hasAnyPenalty = p.payment_due_penalties && p.payment_due_penalties.length > 0;
 
                         const previousPaymentsPaid = payments
                           .slice(0, index)
-                          .every(pay => getPaymentStatus(pay) === "fully-paid");
+                          .every(pay => {
+                            const payStatus = getPaymentStatus(pay);
+                            return payStatus === "fully-paid" || payStatus === "refunded" || payStatus === "cancelled" || payStatus === "voided";
+                          });
 
                         const disablePayment =
+                          isSpecialStatus ||
                           status === "fully-paid" ||
                           remainingBalance <= 0 ||
                           (!isCheque && isOverdue && !hasTodayPenalty) ||
                           !previousPaymentsPaid;
 
+                        // Row background color for special statuses
+                        const rowStyle = {
+                          backgroundColor: isRefunded ? '#e8f5e9' : 
+                                          isVoided ? '#ffebee' :
+                                          isCancelled ? '#fff3e0' : 'white'
+                        };
+
                         return (
-                          <tr key={p.id} className={`payment-${status} ${!isCheque && overdueInfo.daysOverdue >= 90 ? 'payment-void-warning' : ''}`}>
+                          <tr 
+                            key={p.id} 
+                            className={`
+                              payment-${status} 
+                              ${!isCheque && overdueInfo.daysOverdue >= 90 && !isSpecialStatus ? 'payment-void-warning' : ''}
+                            `}
+                            style={rowStyle}
+                          >
+                            {/* Payment Date */}
                             <td>
                               {new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-                              {!isCheque && overdueInfo.daysOverdue >= 90 && <span className="void-warning-badge">⚠️ 90+ Days</span>}
+                              {!isCheque && overdueInfo.daysOverdue >= 90 && !isSpecialStatus && (
+                                <span className="void-warning-badge">⚠️ 90+ Days</span>
+                              )}
                             </td>
+
+                            {/* Payment Type */}
                             <td>
                               {p.payment_type_name && (
                                 <span style={{ 
@@ -630,38 +677,83 @@ export default function PolicyWithPaymentsList() {
                                 </span>
                               )}
                             </td>
+
+                            {/* Penalty % */}
                             <td>
-                              {!isCheque && overdueInfo.penaltyPercentage > 0 ? (
+                              {!isCheque && !isSpecialStatus && overdueInfo.penaltyPercentage > 0 ? (
                                 <span 
-                                  className={`penalty-badge ${getPaymentStatus(p) === "fully-paid" ? "frozen" : ""}`}
-                                  title={getPaymentStatus(p) === "fully-paid" ? "Penalty frozen after full payment" : ""}
+                                  className={`penalty-badge ${status === "fully-paid" ? "frozen" : ""}`}
+                                  title={status === "fully-paid" ? "Penalty frozen after full payment" : ""}
                                 >
                                   {overdueInfo.penaltyPercentage}%
                                 </span>
                               ) : "-"}
                             </td>
+
+                            {/* Base Amount */}
                             <td>{p.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
-                            <td>{totalPenalties > 0 ? totalPenalties.toLocaleString(undefined, { style: "currency", currency: "PHP" }) : "₱0.00"}</td>
-                            <td className="total-due-cell"><strong>{totalDue.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</strong></td>
-                            <td>{calculateTotalPaid(p)?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
-                            <td className="payment-status-cell">{status}</td>
+
+                            {/* Penalty Amount */}
+                            <td>
+                              <td>
+                                {totalPenalties > 0 
+                                  ? totalPenalties.toLocaleString(undefined, { style: "currency", currency: "PHP" })
+                                  : "₱0.00"
+                                }
+                              </td>
+                            </td>
+
+                            {/* Total Due */}
+                            <td className="total-due-cell">
+                              <strong>
+                                {isRefunded ? (
+                                  <span style={{ color: '#4caf50' }}>₱0.00 (Refunded)</span>
+                                ) : isVoided ? (
+                                  <span style={{ color: '#f44336' }}>₱0.00 (Voided)</span>
+                                ) : isCancelled ? (
+                                  <span style={{ color: '#ff9800' }}>₱0.00 (Cancelled)</span>
+                                ) : (
+                                  totalDue.toLocaleString(undefined, { style: "currency", currency: "PHP" })
+                                )}
+                              </strong>
+                            </td>
+
+                            {/* Paid Amount */}
+                            <td>
+                              {isRefunded ? (
+                                <span style={{ color: '#4caf50', fontWeight: '600' }}>
+                                  {p.refund_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" })} (Refunded)
+                                </span>
+                              ) : isVoided ? (
+                                <span style={{ color: '#f44336', fontWeight: '600' }}>₱0.00 (Voided)</span>
+                              ) : isCancelled ? (
+                                <span style={{ color: '#ff9800', fontWeight: '600' }}>₱0.00 (Cancelled)</span>
+                              ) : (
+                                calculateTotalPaid(p)?.toLocaleString(undefined, { style: "currency", currency: "PHP" })
+                              )}
+                            </td>
+
+                            {/* Status */}
+                            <td className="payment-status-cell">
+                              {isRefunded && <span className="payment-status-badge status-refunded">Refunded</span>}
+                              {isCancelled && <span className="payment-status-badge status-cancelled">Cancelled</span>}
+                              {isVoided && <span className="payment-status-badge status-voided">Voided</span>}
+                              {!isSpecialStatus && status}
+                            </td>
+
+                            {/* Actions */}
                             <td className="payment-actions">
                               <button
                                 disabled={disablePayment}
                                 onClick={() => handlePaymentClick({ ...p, policy_id: policy.id }, client?.phone_Number)}
                                 className={`payment-btn ${disablePayment ? "disabled-btn" : ""}`}
-                                title={
-                                  status === "fully-paid" ? "Payment fully covered" :
-                                  (!isCheque && isOverdue && !hasTodayPenalty) ? "Add today's penalty before paying" :
-                                  !previousPaymentsPaid ? "Pay previous months first" :
-                                  ""
-                                }
                                 style={{ opacity: disablePayment ? 0.5 : 1, cursor: disablePayment ? "not-allowed" : "pointer" }}
                               >
-                                {status === "fully-paid" ? "Paid" : "Payment"}
+                                {isSpecialStatus ? status.charAt(0).toUpperCase() + status.slice(1) :
+                                status === "fully-paid" ? "Paid" : "Payment"}
                               </button>
 
-                              {!isCheque && isOverdue && !hasTodayPenalty && (
+                              {!isCheque && !isSpecialStatus && isOverdue && !hasTodayPenalty && (
                                 <button
                                   onClick={() => handleAddPenalty({ ...p, policy_id: policy.id })}
                                   className="penalty-btn"
@@ -675,6 +767,7 @@ export default function PolicyWithPaymentsList() {
                         );
                       })}
                     </tbody>
+
                   </table>
                 ) : <p className="no-payments-message">No payments scheduled</p>}
               </div>
@@ -696,6 +789,21 @@ export default function PolicyWithPaymentsList() {
 }
 
 function getPaymentStatus(payment) {
+  // Check for refunded status first
+  if (payment.is_refunded || payment.payment_status === "refunded") {
+    return "refunded";
+  }
+  
+  // Check for cancelled status
+  if (payment.payment_status === "cancelled") {
+    return "cancelled";
+  }
+  
+  // Check for voided status
+  if (payment.payment_status === "voided") {
+    return "voided";
+  }
+
   const paid = parseFloat(payment.paid_amount || 0);
   const due = parseFloat(payment.amount_to_be_paid || 0);
 

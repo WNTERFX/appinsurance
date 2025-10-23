@@ -449,3 +449,13 @@ tr:hover {
   border-color: #880e4f !important;
 }
 
+.policy-table-actions .cancel-btn {
+  background-color: #f57c00 !important;
+  color: white !important;
+  border-color: #f57c00 !important;
+}
+
+.policy-table-actions .cancel-btn:hover:not(:disabled) {
+  background-color: #e65100 !important;
+  border-color: #e65100 !important;
+}

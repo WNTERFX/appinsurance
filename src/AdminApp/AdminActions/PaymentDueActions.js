@@ -3,37 +3,60 @@ import { fetchPenaltiesForPayments, calculateTotalDue, calculateRemainingBalance
 
 // ✅ UPDATED: Fetch payment_type_id and payment_type_name to identify payment types
 export async function fetchPaymentSchedule(policyId) {
-  const { data: payments, error } = await db
+  if (!policyId) throw new Error("Policy ID is required");
+
+  // 1️⃣ Fetch all payments for this policy
+  const { data: payments, error: paymentsError } = await db
     .from("payment_Table")
     .select(`
-      id, 
-      payment_date, 
-      amount_to_be_paid, 
-      is_paid, 
-      paid_amount, 
+      id,
+      payment_date,
+      amount_to_be_paid,
+      is_paid,
+      paid_amount,
       payment_type_id,
-      payment_type (
-        payment_type_name
-      )
+      payment_status,
+      is_refunded,
+      refund_amount,
+      refund_date,
+      refund_reason,
+      payment_type ( payment_type_name )
     `)
     .eq("policy_id", policyId)
-    .or("is_archive.is.null,is_archive.eq.false")
+    .eq("is_archive", false)
     .order("payment_date", { ascending: true });
 
-  if (error) throw error;
+  if (paymentsError) throw paymentsError;
 
+  if (!payments || payments.length === 0) return [];
+
+  // 2️⃣ Fetch all penalties for these payments in a single query
   const paymentIds = payments.map(p => p.id);
-  const penaltiesMap = await fetchPenaltiesForPayments(paymentIds);
 
-  // Attach penalties, payment type name, and calculate totals
+  const { data: penalties, error: penaltiesError } = await db
+    .from("payment_due_penalties")
+    .select("*")
+    .in("payment_id", paymentIds)
+    .order("penalty_date", { ascending: true });
+
+  if (penaltiesError) throw penaltiesError;
+
+  // 3️⃣ Build a map of penalties by payment_id
+  const penaltiesMap = {};
+  for (const p of penalties) {
+    if (!penaltiesMap[p.payment_id]) penaltiesMap[p.payment_id] = [];
+    penaltiesMap[p.payment_id].push(p);
+  }
+
+  // 4️⃣ Merge penalties into payments
   return payments.map(p => {
-    const penalties = penaltiesMap[p.id] || [];
+    const paymentPenalties = penaltiesMap[p.id] || [];
     return {
       ...p,
       payment_type_name: p.payment_type?.payment_type_name || null,
-      penalties,
-      total_due: calculateTotalDue(p, penalties),
-      remaining_balance: calculateRemainingBalance(p, penalties)
+      penalties: paymentPenalties,
+      total_due: calculateTotalDue(p, paymentPenalties),
+      remaining_balance: calculateRemainingBalance(p, paymentPenalties)
     };
   });
 }
@@ -137,7 +160,8 @@ export async function updatePayment(paymentId, paidAmount) {
 
 // ✅ UPDATED: Fetch archived payments with payment_type_id
 export async function fetchArchivedPayments() {
-  const { data, error } = await db
+  // 1️⃣ Fetch archived payments with policy and client info
+  const { data: payments, error: paymentsError } = await db
     .from("payment_Table")
     .select(`
       *,
@@ -158,9 +182,38 @@ export async function fetchArchivedPayments() {
     `)
     .eq("is_archive", true)
     .order("payment_date", { ascending: false });
- 
-  if (error) throw error;
-  return data || [];
+
+  if (paymentsError) throw paymentsError;
+  if (!payments || payments.length === 0) return [];
+
+  // 2️⃣ Fetch all penalties for archived payments in one query
+  const paymentIds = payments.map(p => p.id);
+  const { data: penalties, error: penaltiesError } = await db
+    .from("payment_due_penalties")
+    .select("*")
+    .in("payment_id", paymentIds)
+    .order("penalty_date", { ascending: true });
+
+  if (penaltiesError) throw penaltiesError;
+
+  // 3️⃣ Map penalties by payment ID
+  const penaltiesMap = {};
+  for (const p of penalties) {
+    if (!penaltiesMap[p.payment_id]) penaltiesMap[p.payment_id] = [];
+    penaltiesMap[p.payment_id].push(p);
+  }
+
+  // 4️⃣ Merge penalties into payments
+  return payments.map(p => {
+    const paymentPenalties = penaltiesMap[p.id] || [];
+    return {
+      ...p,
+      payment_type_name: p.payment_type?.payment_type_name || null,
+      penalties: paymentPenalties,
+      total_due: calculateTotalDue(p, paymentPenalties),
+      remaining_balance: calculateRemainingBalance(p, paymentPenalties)
+    };
+  });
 }
 
 // Archive a payment
@@ -238,6 +291,7 @@ export async function generatePayments(policyId, payments) {
 
 // ✅ UPDATED: Fetch all dues with payment_type_id and payment_type_name
 export async function fetchAllDues(fromDate = null, toDate = null) {
+  // 1️⃣ Fetch payments with related policy and client info
   let query = db
     .from("payment_Table")
     .select(`
@@ -247,9 +301,7 @@ export async function fetchAllDues(fromDate = null, toDate = null) {
       is_paid,
       paid_amount,
       payment_type_id,
-      payment_type (
-        payment_type_name
-      ),
+      payment_type ( payment_type_name ),
       policy_Table (
         id,
         internal_id,
@@ -263,30 +315,44 @@ export async function fetchAllDues(fromDate = null, toDate = null) {
         )
       )
     `)
-    .or("is_archive.is.null,is_archive.eq.false");
+    .eq("is_archive", false);
 
   if (fromDate && toDate) {
-    query = query
-      .gte("payment_date", fromDate)
-      .lte("payment_date", toDate);
+    query = query.gte("payment_date", fromDate).lte("payment_date", toDate);
   }
 
   query = query.order("payment_date", { ascending: true });
 
-  const { data: payments, error } = await query;
-  if (error) throw error;
+  const { data: payments, error: paymentsError } = await query;
+  if (paymentsError) throw paymentsError;
+  if (!payments || payments.length === 0) return [];
 
+  // 2️⃣ Fetch all penalties for these payments in one query
   const paymentIds = payments.map(p => p.id);
-  const penaltiesMap = await fetchPenaltiesForPayments(paymentIds);
+  const { data: penalties, error: penaltiesError } = await db
+    .from("payment_due_penalties")
+    .select("*")
+    .in("payment_id", paymentIds)
+    .order("penalty_date", { ascending: true });
 
+  if (penaltiesError) throw penaltiesError;
+
+  // 3️⃣ Map penalties by payment ID
+  const penaltiesMap = {};
+  for (const p of penalties) {
+    if (!penaltiesMap[p.payment_id]) penaltiesMap[p.payment_id] = [];
+    penaltiesMap[p.payment_id].push(p);
+  }
+
+  // 4️⃣ Merge penalties into payments
   return payments.map(p => {
-    const penalties = penaltiesMap[p.id] || [];
+    const paymentPenalties = penaltiesMap[p.id] || [];
     return {
       ...p,
       payment_type_name: p.payment_type?.payment_type_name || null,
-      penalties,
-      total_due: calculateTotalDue(p, penalties),
-      remaining_balance: calculateRemainingBalance(p, penalties)
+      penalties: paymentPenalties,
+      total_due: calculateTotalDue(p, paymentPenalties),
+      remaining_balance: calculateRemainingBalance(p, paymentPenalties)
     };
   });
 }
