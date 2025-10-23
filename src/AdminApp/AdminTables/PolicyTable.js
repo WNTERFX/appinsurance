@@ -20,14 +20,60 @@ export default function PolicyTable() {
   const [partners, setPartners] = useState([]);
   const navigate = useNavigate();
 
+  // Helper function to check if policy is expired
+  const isPolicyExpired = (expiryDate) => {
+    if (!expiryDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expiry = new Date(expiryDate);
+    expiry.setHours(0, 0, 0, 0);
+    return expiry < today;
+  };
+
+  // Helper function to get policy status
+  const getPolicyStatus = (policy) => {
+    if (isPolicyExpired(policy.policy_expiry)) {
+      return { text: "Expired", class: "policy-status-expired" };
+    }
+    if (policy.policy_is_active) {
+      return { text: "Active", class: "policy-status-active" };
+    }
+    return { text: "Inactive", class: "policy-status-inactive" };
+  };
+
   const loadPolicies = async () => {
     try {
       const data = await fetchPolicies();
-      setPolicies(data);
+      // Auto-deactivate expired policies
+      const updatedData = await Promise.all(
+        data.map(async (policy) => {
+          if (policy.policy_is_active && isPolicyExpired(policy.policy_expiry)) {
+            try {
+              await deactivateExpiredPolicy(policy.id);
+              return { ...policy, policy_is_active: false };
+            } catch (err) {
+              console.error(`Failed to deactivate expired policy ${policy.id}:`, err);
+              return policy;
+            }
+          }
+          return policy;
+        })
+      );
+      setPolicies(updatedData);
     } catch (error) {
       console.error("Error loading policies:", error);
       setPolicies([]);
     }
+  };
+
+  const deactivateExpiredPolicy = async (policyId) => {
+    const { db } = await import("../../dbServer");
+    const { error } = await db
+      .from("policy_Table")
+      .update({ policy_is_active: false })
+      .eq("id", policyId);
+    
+    if (error) throw error;
   };
 
   const loadPartners = async () => {
@@ -84,6 +130,12 @@ export default function PolicyTable() {
   };
 
   const handleActivateClick = async (policy) => {
+    // Prevent activation if policy is expired
+    if (isPolicyExpired(policy.policy_expiry)) {
+      alert("Cannot activate an expired policy. Please update the expiry date first.");
+      return;
+    }
+
     const confirmActivate = window.confirm(
       "Activate this policy and generate payment schedule?"
     );
@@ -173,9 +225,11 @@ export default function PolicyTable() {
 
     // Status filter
     if (statusFilter === "Active") {
-      tempPolicies = tempPolicies.filter((policy) => policy.policy_is_active);
+      tempPolicies = tempPolicies.filter((policy) => policy.policy_is_active && !isPolicyExpired(policy.policy_expiry));
     } else if (statusFilter === "Inactive") {
-      tempPolicies = tempPolicies.filter((policy) => !policy.policy_is_active);
+      tempPolicies = tempPolicies.filter((policy) => !policy.policy_is_active && !isPolicyExpired(policy.policy_expiry));
+    } else if (statusFilter === "Expired") {
+      tempPolicies = tempPolicies.filter((policy) => isPolicyExpired(policy.policy_expiry));
     }
 
     // Search filter
@@ -250,6 +304,7 @@ export default function PolicyTable() {
               <option value="All">All</option>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
+              <option value="Expired">Expired</option>
             </select>
           </div>
 
@@ -314,6 +369,9 @@ export default function PolicyTable() {
                   const client = policy.clients_Table;
                   const partner = policy.insurance_Partners;
                   const computation = policy.policy_Computation_Table?.[0];
+                  const isExpired = isPolicyExpired(policy.policy_expiry);
+                  const policyStatus = getPolicyStatus(policy);
+                  
                   const clientName = client
                     ? [
                         client.prefix,
@@ -331,7 +389,7 @@ export default function PolicyTable() {
                   return (
                     <tr
                       key={policy.id}
-                      className="policy-table-clickable-row"
+                      className={`policy-table-clickable-row ${isExpired ? 'policy-row-expired' : ''}`}
                       onClick={() => handleRowClick(policy)}
                     >
                       <td>{policy.internal_id}</td>
@@ -341,14 +399,8 @@ export default function PolicyTable() {
                       <td>{policy.policy_inception || "N/A"}</td>
                       <td>{policy.policy_expiry || "N/A"}</td>
                       <td>
-                        <span
-                          className={
-                            policy.policy_is_active
-                              ? "policy-status-active"
-                              : "policy-status-inactive"
-                          }
-                        >
-                          {policy.policy_is_active ? "Active" : "Inactive"}
+                        <span className={policyStatus.class}>
+                          {policyStatus.text}
                         </span>
                       </td>
                       <td className="premium-cell">
@@ -361,11 +413,12 @@ export default function PolicyTable() {
                       </td>
                       <td className="policy-table-actions">
                         <button
-                          disabled={policy.policy_is_active}
+                          disabled={policy.policy_is_active || isExpired}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleActivateClick(policy);
                           }}
+                          title={isExpired ? "Cannot activate expired policy" : ""}
                         >
                           Activate
                         </button>

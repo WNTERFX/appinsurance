@@ -326,3 +326,24 @@ tr:hover {
   text-align: right;
   width: 1%;
 }
+
+/* Expired policy row styling */
+.policy-row-expired {
+  background-color: #ffebee !important;
+  border-left: 4px solid #d32f2f;
+}
+
+.policy-row-expired:hover {
+  background-color: #ffcdd2 !important;
+}
+
+/* Expired status badge */
+.policy-status-expired {
+  background-color: #d32f2f;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
