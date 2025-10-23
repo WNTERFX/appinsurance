@@ -32,6 +32,9 @@ export default function PolicyTable() {
 
   // Helper function to get policy status
   const getPolicyStatus = (policy) => {
+    if (policy.policy_status === 'voided') {
+      return { text: "Voided", class: "policy-status-voided" };
+    }
     if (isPolicyExpired(policy.policy_expiry)) {
       return { text: "Expired", class: "policy-status-expired" };
     }
@@ -206,6 +209,50 @@ export default function PolicyTable() {
     }
   };
 
+  const handleVoidClick = async (policy) => {
+    const reason = prompt("Enter reason for voiding this policy:");
+    if (!reason || !reason.trim()) return;
+
+    const confirmVoid = window.confirm(
+      `Void this policy?\n\nThis will:\n- Mark policy as VOIDED\n- Deactivate the policy\n- Prevent any claims or payments\n\nReason: ${reason}`
+    );
+    if (!confirmVoid) return;
+
+    try {
+      const { db } = await import("../../dbServer");
+      
+      const { error } = await db
+        .from("policy_Table")
+        .update({
+          policy_status: 'voided',
+          policy_is_active: false,
+          void_reason: reason,
+          voided_date: new Date().toISOString(),
+        })
+        .eq("id", policy.id);
+
+      if (error) throw error;
+
+      setPolicies((prev) =>
+        prev.map((p) =>
+          p.id === policy.id
+            ? { 
+                ...p, 
+                policy_status: 'voided',
+                policy_is_active: false,
+                void_reason: reason,
+                voided_date: new Date().toISOString()
+              }
+            : p
+        )
+      );
+      alert("Policy voided successfully");
+    } catch (error) {
+      console.error("Error voiding policy:", error);
+      alert("Error voiding policy: " + error.message);
+    }
+  };
+
   const filteredAndSearchedPolicies = useMemo(() => {
     let tempPolicies = policies;
 
@@ -227,9 +274,11 @@ export default function PolicyTable() {
     if (statusFilter === "Active") {
       tempPolicies = tempPolicies.filter((policy) => policy.policy_is_active && !isPolicyExpired(policy.policy_expiry));
     } else if (statusFilter === "Inactive") {
-      tempPolicies = tempPolicies.filter((policy) => !policy.policy_is_active && !isPolicyExpired(policy.policy_expiry));
+      tempPolicies = tempPolicies.filter((policy) => !policy.policy_is_active && !isPolicyExpired(policy.policy_expiry) && !policy.policy_status);
     } else if (statusFilter === "Expired") {
       tempPolicies = tempPolicies.filter((policy) => isPolicyExpired(policy.policy_expiry));
+    } else if (statusFilter === "Voided") {
+      tempPolicies = tempPolicies.filter((policy) => policy.policy_status === 'voided');
     }
 
     // Search filter
@@ -305,6 +354,7 @@ export default function PolicyTable() {
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
               <option value="Expired">Expired</option>
+              <option value="Voided">Voided</option>
             </select>
           </div>
 
@@ -341,7 +391,16 @@ export default function PolicyTable() {
             </select>
           </div>
 
-          <button onClick={loadPolicies} className="reset-btn-policy">
+          <button 
+            onClick={() => {
+              setSearchTerm("");
+              setStatusFilter("All");
+              setPartnerFilter("");
+              setCurrentPage(1);
+              loadPolicies();
+            }} 
+            className="reset-btn-policy"
+          >
             Refresh
           </button>
         </div>
@@ -370,6 +429,7 @@ export default function PolicyTable() {
                   const partner = policy.insurance_Partners;
                   const computation = policy.policy_Computation_Table?.[0];
                   const isExpired = isPolicyExpired(policy.policy_expiry);
+                  const isVoided = policy.policy_status === 'voided';
                   const policyStatus = getPolicyStatus(policy);
                   
                   const clientName = client
@@ -389,7 +449,9 @@ export default function PolicyTable() {
                   return (
                     <tr
                       key={policy.id}
-                      className={`policy-table-clickable-row ${isExpired ? 'policy-row-expired' : ''}`}
+                      className={`policy-table-clickable-row ${
+                        isExpired ? 'policy-row-expired' : ''
+                      } ${isVoided ? 'policy-row-voided' : ''}`}
                       onClick={() => handleRowClick(policy)}
                     >
                       <td>{policy.internal_id}</td>
@@ -413,30 +475,48 @@ export default function PolicyTable() {
                       </td>
                       <td className="policy-table-actions">
                         <button
-                          disabled={policy.policy_is_active || isExpired}
+                          disabled={policy.policy_is_active || isExpired || isVoided}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleActivateClick(policy);
                           }}
-                          title={isExpired ? "Cannot activate expired policy" : ""}
+                          title={
+                            isExpired ? "Cannot activate expired policy" :
+                            isVoided ? "Cannot activate voided policy" : ""
+                          }
                         >
                           Activate
                         </button>
                         <button
+                          disabled={isVoided}
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(
                               `/appinsurance/main-app/policy/Edit/${policy.id}`
                             );
                           }}
+                          title={isVoided ? "Cannot edit voided policy" : ""}
                         >
                           Edit
                         </button>
                         <button
+                          disabled={isVoided}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleVoidClick(policy);
+                          }}
+                          className="void-btn"
+                          title={isVoided ? "Policy already voided" : ""}
+                        >
+                          Void
+                        </button>
+                        <button
+                          disabled={policy.policy_is_active}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleArchiveClick(policy.id);
                           }}
+                          title={policy.policy_is_active ? "Cannot archive active policy - deactivate first" : ""}
                         >
                           Archive
                         </button>
