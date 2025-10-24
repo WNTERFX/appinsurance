@@ -136,69 +136,121 @@ export default function PolicyTable() {
   };
 
   const handleActivateClick = async (policy) => {
-    // Prevent activation if policy is expired
-    if (isPolicyExpired(policy.policy_expiry)) {
-      alert("Cannot activate an expired policy. Please update the expiry date first.");
+    console.log("🔍 FULL POLICY OBJECT:", policy);
+    console.log("🔍 COMPUTATION ARRAY:", policy.policy_Computation_Table);
+    console.log("🔍 FIRST COMPUTATION:", policy.policy_Computation_Table?.[0]);
+    
+    const computation = policy.policy_Computation_Table?.[0];
+    console.log("🔍 EXTRACTED COMPUTATION:", computation);
+    console.log("🔍 payment_type_id VALUE:", computation?.payment_type_id);
+    console.log("🔍 payment_type_id TYPE:", typeof computation?.payment_type_id);
+  
+  // Prevent activation if policy is expired
+  if (isPolicyExpired(policy.policy_expiry)) {
+    alert("Cannot activate an expired policy. Please update the expiry date first.");
+    return;
+  }
+
+  try {
+    // Get computation for total premium
+    const computation = policy.policy_Computation_Table?.[0];
+    
+    if (!computation) {
+      alert("❌ No computation found for this policy.\n\nPlease edit the policy and complete the computation first.");
+      return;
+    }
+    
+    if (!computation.total_Premium) {
+      alert("❌ Total premium is missing from computation.\n\nPlease edit the policy and recalculate.");
+      return;
+    }
+
+    // Check if payment_type_id exists in computation
+    if (!computation.payment_type_id) {
+      alert(
+        "❌ No payment type selected for this policy.\n\n" +
+        "To fix this:\n" +
+        "1. Click 'Edit' on this policy\n" +
+        "2. Select a payment type (Monthly, Quarterly, etc.)\n" +
+        "3. Save the policy\n" +
+        "4. Try activating again"
+      );
+      console.error("Missing payment_type_id in computation:", computation);
+      return;
+    }
+
+    // Get payment type that was selected during policy creation
+    const paymentType = await fetchPolicyPaymentType(policy.id);
+    
+    if (!paymentType) {
+      alert(
+        "❌ Payment type not found in database.\n\n" +
+        `Payment Type ID: ${computation.payment_type_id}\n\n` +
+        "Possible issues:\n" +
+        "- Payment type was deleted from the system\n" +
+        "- Invalid payment type ID stored\n\n" +
+        "Please edit the policy and select a valid payment type."
+      );
+      return;
+    }
+
+    const totalPremium = computation.total_Premium;
+    const months = paymentType.months_payment;
+    const paymentTypeId = paymentType.id;
+
+    // Validate months
+    if (!months || months <= 0) {
+      alert(
+        `❌ Invalid payment schedule.\n\n` +
+        `Payment Type: ${paymentType.payment_type_name}\n` +
+        `Months: ${months}\n\n` +
+        "Please contact system administrator."
+      );
       return;
     }
 
     const confirmActivate = window.confirm(
-      "Activate this policy and generate payment schedule?"
+      `Activate this policy?\n\n` +
+      `Payment Plan: ${paymentType.payment_type_name}\n` +
+      `Duration: ${months} months\n` +
+      `Total Premium: ₱${totalPremium.toLocaleString("en-PH", { minimumFractionDigits: 2 })}\n` +
+      `Monthly Payment: ₱${(totalPremium / months).toLocaleString("en-PH", { minimumFractionDigits: 2 })}\n\n` +
+      `This will generate ${months} payment records.`
     );
+    
     if (!confirmActivate) return;
 
-    try {
-      // Get computation for total premium
-      const computation = policy.policy_Computation_Table?.[0];
-      if (!computation || !computation.total_Premium) {
-        alert("No computation found for this policy");
-        return;
-      }
+    console.log("=== ACTIVATING POLICY ===");
+    console.log("Policy ID:", policy.id);
+    console.log("Payment Type:", paymentType.payment_type_name);
+    console.log("Months:", months);
+    console.log("Total Premium:", totalPremium);
 
-      // Get payment type that was selected during policy creation
-      const paymentType = await fetchPolicyPaymentType(policy.id);
-      if (!paymentType) {
-        alert("No payment type found for this policy. Please edit the policy and select a payment type.");
-        return;
-      }
+    // Activate and create payment schedule
+    const result = await ActivatePolicyAndPayment(
+      policy.id,
+      paymentTypeId,
+      totalPremium,
+      months
+    );
 
-      const totalPremium = computation.total_Premium;
-      const months = paymentType.months_payment;
-      const paymentTypeId = paymentType.id;
-
-      console.log("=== ACTIVATING POLICY ===");
-      console.log("Policy ID:", policy.id);
-      console.log("Payment Type:", paymentType.payment_type_name);
-      console.log("Months:", months);
-      console.log("Total Premium:", totalPremium);
-
-      // Activate and create payment schedule
-      const result = await ActivatePolicyAndPayment(
-        policy.id,
-        paymentTypeId,
-        totalPremium,
-        months
+    if (result.success) {
+      await loadPolicies(); // Reload to get fresh data
+      alert(
+        `✅ Policy activated successfully!\n\n` +
+        `Payment Plan: ${paymentType.payment_type_name} (${months} months)\n` +
+        `Monthly Payment: ₱${(totalPremium / months).toLocaleString("en-PH", { minimumFractionDigits: 2 })}\n` +
+        `Payments Created: ${months}\n` +
+        `Inception: ${new Date(result.inceptionTimestamp).toLocaleString("en-PH")}`
       );
-
-      if (result.success) {
-        setPolicies((prev) =>
-          prev.map((p) =>
-            p.id === policy.id ? { ...p, policy_is_active: true } : p
-          )
-        );
-        alert(
-          `Policy activated successfully!\n` +
-          `Payment Plan: ${paymentType.payment_type_name} (${months} months)\n` +
-          `Monthly Payment: ₱${(totalPremium / months).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`
-        );
-      } else {
-        alert("Error: " + result.error);
-      }
-    } catch (err) {
-      console.error("Activation failed:", err);
-      alert("Error activating policy: " + err.message);
+    } else {
+      alert("❌ Activation Error:\n\n" + result.error);
     }
-  };
+  } catch (err) {
+    console.error("Activation failed:", err);
+    alert("❌ Error activating policy:\n\n" + err.message);
+  }
+};
 
   const handleArchiveClick = async (policyId) => {
     const confirmArchive = window.confirm("Proceed to archive this policy?");

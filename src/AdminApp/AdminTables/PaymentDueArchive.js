@@ -294,7 +294,7 @@ export default function PaymentArchiveTable() {
 
                     return (
                       <tr key={p.id} className={`payment-${status}`}>
-                        <td>{new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</td>
+                        <td>{new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</td>
                         <td>{parseFloat(p.amount_to_be_paid || 0).toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
                         <td>{totalPenalties.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
                         <td>{totalDue.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>

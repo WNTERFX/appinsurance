@@ -23,7 +23,7 @@ export async function fetchPaymentSchedule(policyId) {
       payment_type ( payment_type_name )
     `)
     .eq("policy_id", policyId)
-    .eq("is_archive", false)
+    .or("is_archive.is.null,is_archive.eq.false")
     .order("payment_date", { ascending: true });
 
   if (paymentsError) throw paymentsError;

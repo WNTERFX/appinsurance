@@ -23,7 +23,8 @@ export async function fetchPolicies(fromDate = null, toDate = null, partnerId = 
         insurance_Name
       ),
       policy_Computation_Table(
-        total_Premium
+        total_Premium,
+        payment_type_id
       )
     `)
     .or("is_archived.is.null,is_archived.eq.false")

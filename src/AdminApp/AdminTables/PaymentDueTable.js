@@ -33,26 +33,37 @@ export default function PolicyWithPaymentsList() {
 
   useEffect(() => { loadPolicies(); }, []);
 
-  const loadPolicies = async () => {
-    try {
-      setIsLoading(true);
-      setPolicies([]);
-      setPaymentsMap({});
-      const allPolicies = await fetchPolicies();
-      setPolicies(allPolicies);
+const loadPolicies = async () => {
+  try {
+    setIsLoading(true);
+    setPolicies([]);
+    setPaymentsMap({});
+    const allPolicies = await fetchPolicies();
+    
+    setPolicies(allPolicies);
 
-      const paymentsByPolicy = {};
-      for (const policy of allPolicies) {
-        const paymentData = await fetchPaymentSchedule(policy.id);
-        paymentsByPolicy[policy.id] = paymentData;
-      }
-      setPaymentsMap(paymentsByPolicy);
-    } catch (error) {
-      console.error("Error loading policies or payments:", error);
-    } finally {
-      setIsLoading(false);
+    const paymentsByPolicy = {};
+    for (const policy of allPolicies) {
+      const paymentData = await fetchPaymentSchedule(policy.id);
+      paymentsByPolicy[policy.id] = paymentData;
     }
-  };
+    setPaymentsMap(paymentsByPolicy);
+    
+    // ✅ Filter: Show active policies OR inactive policies that have payments
+    const filteredPolicies = allPolicies.filter(policy => {
+      const hasPayments = paymentsByPolicy[policy.id]?.length > 0;
+      return policy.policy_is_active || hasPayments;
+    });
+    
+    console.log("🔍 FILTERED POLICIES:", filteredPolicies.length);
+    setPolicies(filteredPolicies);
+    
+  } catch (error) {
+    console.error("Error loading policies or payments:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const toggleExpand = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
 
@@ -657,7 +668,7 @@ export default function PolicyWithPaymentsList() {
                           >
                             {/* Payment Date */}
                             <td>
-                              {new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                              {new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
                               {!isCheque && overdueInfo.daysOverdue >= 90 && !isSpecialStatus && (
                                 <span className="void-warning-badge">⚠️ 90+ Days</span>
                               )}
