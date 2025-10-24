@@ -38,7 +38,7 @@ export async function ActivatePolicyAndPayment(policyId, paymentTypeId, totalPre
 
     const paymentRows = Array.from({ length: months }, (_, i) => {
       const paymentDate = new Date(now);
-      paymentDate.setMonth(paymentDate.getMonth() + (i + 1));
+      paymentDate.setMonth(paymentDate.getMonth() + i);
 
       return {
         payment_date: paymentDate.toISOString().split("T")[0], // only YYYY-MM-DD
@@ -143,7 +143,7 @@ export async function CancelPolicyAndRefund(policyId) {
 
             const paymentRows = Array.from({ length: months }, (_, i) => {
                 const paymentDate = new Date(startDate);
-                paymentDate.setMonth(paymentDate.getMonth() + (i + 1)); 
+                paymentDate.setMonth(paymentDate.getMonth() + i); 
 
                 return {
                     payment_date: paymentDate.toISOString().split("T")[0],

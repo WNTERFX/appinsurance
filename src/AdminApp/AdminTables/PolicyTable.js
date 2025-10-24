@@ -362,7 +362,7 @@ const handleCancelClick = async (policy) => {
 
       const paymentRows = Array.from({ length: months }, (_, i) => {
         const paymentDate = new Date(now);
-        paymentDate.setMonth(paymentDate.getMonth() + (i + 1));
+        paymentDate.setMonth(paymentDate.getMonth() + i );
         return {
           payment_date: paymentDate.toISOString().split("T")[0],
           amount_to_be_paid: monthlyAmount,
