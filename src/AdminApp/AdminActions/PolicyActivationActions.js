@@ -230,3 +230,59 @@ export async function CancelPolicyAndRefund(policyId) {
         return { success: false, error: err.message };
     }
 }
+
+export async function VoidPolicyAndPayments(policyId, voidReason) {
+  try {
+    console.log(`=== START VOID POLICY for ID: ${policyId} ===`);
+
+    // 1️⃣ Check for existing payments
+    const { data: payments, error: paymentFetchError } = await db
+      .from("payment_Table")
+      .select("id, payment_status, is_paid")
+      .eq("policy_id", policyId)
+      .order("payment_date", { ascending: true });
+
+    if (paymentFetchError) throw paymentFetchError;
+
+    // 2️⃣ Cancel all payments if they exist
+    if (payments && payments.length > 0) {
+      const paymentIds = payments.map(p => p.id);
+      
+      const { error: cancelPaymentsError } = await db
+        .from("payment_Table")
+        .update({
+          payment_status: "cancelled",
+          is_archive: false,
+          // Don't modify is_paid or paid_amount - keep payment history intact
+        })
+        .in("id", paymentIds);
+
+      if (cancelPaymentsError) throw cancelPaymentsError;
+      console.log(`✅ Cancelled ${payments.length} payments`);
+    }
+
+    // 3️⃣ Void the policy
+    const { error: policyUpdateError } = await db
+      .from("policy_Table")
+      .update({
+        policy_status: "voided",
+        policy_is_active: false,
+        void_reason: voidReason,
+        voided_date: new Date().toISOString(),
+      })
+      .eq("id", policyId);
+
+    if (policyUpdateError) throw policyUpdateError;
+
+    console.log("=== POLICY VOIDED SUCCESSFULLY ===");
+
+    return {
+      success: true,
+      message: `Policy voided successfully. ${payments?.length || 0} payments cancelled.`,
+      paymentsCancelled: payments?.length || 0,
+    };
+  } catch (err) {
+    console.error("❌ VoidPolicyAndPayments error:", err);
+    return { success: false, error: err.message };
+  }
+}

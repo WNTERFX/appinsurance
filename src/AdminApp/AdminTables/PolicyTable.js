@@ -7,7 +7,7 @@ import {
   archivePolicy,
   fetchPartners
 } from "../AdminActions/PolicyActions";
-import { ActivatePolicyAndPayment, CancelPolicyAndRefund  } from "../AdminActions/PolicyActivationActions";
+import { ActivatePolicyAndPayment, CancelPolicyAndRefund, VoidPolicyAndPayments  } from "../AdminActions/PolicyActivationActions";
 
 export default function PolicyTable() {
   const [policies, setPolicies] = useState([]);
@@ -269,42 +269,40 @@ export default function PolicyTable() {
     if (!reason || !reason.trim()) return;
 
     const confirmVoid = window.confirm(
-      `Void this policy?\n\nThis will:\n- Mark policy as VOIDED\n- Deactivate the policy\n- Prevent any claims or payments\n\nReason: ${reason}`
+      `Void this policy?\n\nThis will:\n- Mark policy as VOIDED\n- Cancel all associated payments\n- Deactivate the policy\n- Prevent any claims or payments\n\nReason: ${reason}`
     );
     if (!confirmVoid) return;
 
     try {
-      const { db } = await import("../../dbServer");
-      
-      const { error } = await db
-        .from("policy_Table")
-        .update({
-          policy_status: 'voided',
-          policy_is_active: false,
-          void_reason: reason,
-          voided_date: new Date().toISOString(),
-        })
-        .eq("id", policy.id);
+      const result = await VoidPolicyAndPayments(policy.id, reason.trim());
 
-      if (error) throw error;
+      if (result.success) {
+        // Update UI
+        setPolicies((prev) =>
+          prev.map((p) =>
+            p.id === policy.id
+              ? {
+                  ...p,
+                  policy_status: "voided",
+                  policy_is_active: false,
+                  void_reason: reason.trim(),
+                  voided_date: new Date().toISOString(),
+                }
+              : p
+          )
+        );
 
-      setPolicies((prev) =>
-        prev.map((p) =>
-          p.id === policy.id
-            ? { 
-                ...p, 
-                policy_status: 'voided',
-                policy_is_active: false,
-                void_reason: reason,
-                voided_date: new Date().toISOString()
-              }
-            : p
-        )
-      );
-      alert("Policy voided successfully");
+        alert(
+          `✅ ${result.message}\n\n` +
+          `Payments cancelled: ${result.paymentsCancelled}\n` +
+          `Reason: ${reason}`
+        );
+      } else {
+        alert("❌ Void Error:\n\n" + result.error);
+      }
     } catch (error) {
       console.error("Error voiding policy:", error);
-      alert("Error voiding policy: " + error.message);
+      alert("❌ Error voiding policy:\n\n" + error.message);
     }
   };
 
