@@ -40,23 +40,29 @@ const loadPolicies = async () => {
     setPaymentsMap({});
     const allPolicies = await fetchPolicies();
     
-    setPolicies(allPolicies);
-
     const paymentsByPolicy = {};
     for (const policy of allPolicies) {
       const paymentData = await fetchPaymentSchedule(policy.id);
-      paymentsByPolicy[policy.id] = paymentData;
+      // ✅ Filter out archived payments
+      const nonArchivedPayments = paymentData.filter(payment => payment.is_archive !== true);
+      paymentsByPolicy[policy.id] = nonArchivedPayments;
     }
-    setPaymentsMap(paymentsByPolicy);
     
-    // ✅ Filter: Show active policies OR inactive policies that have payments
+    // ✅ Filter: Exclude archived policies AND inactive policies with no (non-archived) payments
     const filteredPolicies = allPolicies.filter(policy => {
-      const hasPayments = paymentsByPolicy[policy.id]?.length > 0;
-      return policy.policy_is_active || hasPayments;
+      const isArchived = policy.is_archived === true;
+      const hasNonArchivedPayments = paymentsByPolicy[policy.id]?.length > 0;
+      
+      // Hide archived policies
+      if (isArchived) return false;
+      
+      // Show active policies OR inactive with non-archived payments
+      return policy.policy_is_active || hasNonArchivedPayments;
     });
     
     console.log("🔍 FILTERED POLICIES:", filteredPolicies.length);
     setPolicies(filteredPolicies);
+    setPaymentsMap(paymentsByPolicy);
     
   } catch (error) {
     console.error("Error loading policies or payments:", error);
