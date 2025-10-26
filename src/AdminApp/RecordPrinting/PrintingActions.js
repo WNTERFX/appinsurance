@@ -46,3 +46,47 @@ export async function fetchReportCreator() {
     return "Unknown User";
   }
 }
+
+export async function fetchPaymentsWithPenalties(policyId) {
+  try {
+    const { data, error } = await db
+      .from("payment_Table")
+      .select(`
+        id,
+        payment_date,
+        amount_to_be_paid,
+        is_paid,
+        paid_amount,
+        policy_id,
+        payment_type_id,
+        payment_due_penalties (
+          penalty_amount,
+          penalty_date,
+          penalty_reason
+        )
+      `)
+      .eq("policy_id", policyId)
+      .order("payment_date", { ascending: true });
+
+    if (error) throw error;
+
+    // Compute total penalty per payment
+    const processed = data.map((p) => {
+      const totalPenalty = p.payment_due_penalties?.reduce(
+        (sum, pen) => sum + (pen.penalty_amount || 0),
+        0
+      ) || 0;
+
+      return {
+        ...p,
+        totalPenalty,
+        totalDue: (p.amount_to_be_paid || 0) + totalPenalty,
+      };
+    });
+
+    return processed;
+  } catch (err) {
+    console.error("Error fetching payments with penalties:", err);
+    return [];
+  }
+}

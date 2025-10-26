@@ -1,5 +1,7 @@
 import { db } from "../../dbServer";
 
+// Export all functions for use in other components
+
 export async function ActivatePolicyAndPayment(policyId, paymentTypeId, totalPremium, months) {
   try {
     // 1️⃣ Get the exact UTC timestamp when activation happens
@@ -47,6 +49,7 @@ export async function ActivatePolicyAndPayment(policyId, paymentTypeId, totalPre
         policy_id: policyId,
         paid_amount: 0,
         payment_type_id: paymentTypeId,
+        payment_status: "pending", // ensure consistent status on create
       };
     });
 
@@ -284,5 +287,409 @@ export async function VoidPolicyAndPayments(policyId, voidReason) {
   } catch (err) {
     console.error("❌ VoidPolicyAndPayments error:", err);
     return { success: false, error: err.message };
+  }
+}
+
+// ========================================
+// 90-DAY OVERDUE VOID FUNCTIONS
+// ========================================
+
+// Utility function to check if payment is 90+ days overdue
+export const isPayment90DaysOverdue = (paymentDate, isPaid) => {
+  if (isPaid) return false;
+  
+  if (!paymentDate) return false;
+  // parse as UTC date to avoid timezone shifting
+  const payment = new Date(`${paymentDate}T00:00:00Z`);
+  const now = new Date();
+  const diffTime = now.getTime() - payment.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  return diffDays >= 90;
+};
+
+// Calculate days overdue for a payment
+export const getDaysOverdue = (paymentDate) => {
+  if (!paymentDate) return 0;
+  const payment = new Date(`${paymentDate}T00:00:00Z`);
+  const now = new Date();
+  const diffTime = now.getTime() - payment.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  // Debug log
+  console.log(`📅 Date calc: Today=${now.toISOString().split('T')[0]}, Payment=${payment.toISOString().split('T')[0]}, Diff=${diffDays} days`);
+  
+  return diffDays;
+};
+
+// Void a single policy if it has payments overdue by 90+ days
+export async function VoidOverduePaymentsAndPolicy(policyId) {
+  try {
+    console.log(`\n📋 Checking policy ${policyId} for overdue payments...`);
+
+    // 1️⃣ Fetch policy
+    const { data: policy, error: policyError } = await db
+      .from("policy_Table")
+      .select("id, internal_id, policy_status, policy_type, clients_Table(first_Name, family_Name)")
+      .eq("id", policyId)
+      .single();
+
+    if (policyError) throw policyError;
+
+    if (["voided", "cancelled"].includes(policy.policy_status)) {
+      console.log(`⏭️ Policy ${policy.internal_id} already ${policy.policy_status}, skipping`);
+      return { success: true, skipped: true, reason: `Already ${policy.policy_status}` };
+    }
+
+    // 2️⃣ Determine 90-day cutoff
+    const cutoff = new Date();
+    cutoff.setUTCDate(cutoff.getUTCDate() - 90);
+
+    // 3️⃣ Get all unpaid payments
+    const { data: payments, error: paymentsError } = await db
+      .from("payment_Table")
+      .select("*")
+      .eq("policy_id", policyId)
+      .eq("is_paid", false)
+      .in("payment_status", ["pending", "unpaid", null])
+      .order("payment_date", { ascending: true });
+
+    if (paymentsError) throw paymentsError;
+    if (!payments || payments.length === 0) {
+      console.log("✓ No unpaid payments found");
+      return { success: true, overdueCount: 0, voidedCount: 0 };
+    }
+
+    // 4️⃣ Check if ANY unpaid payment is 90+ days overdue
+    const overduePayments = payments.filter(p => getDaysOverdue(p.payment_date) >= 90);
+    if (overduePayments.length === 0) {
+      console.log("✓ No 90+ day overdue payments found");
+      return { success: true, overdueCount: 0, voidedCount: 0 };
+    }
+
+    console.log(`🚨 Found ${overduePayments.length} overdue payment(s)`);
+    const allUnpaidIds = payments.map(p => p.id);
+
+    // 5️⃣ Void ALL unpaid payments (since one is 90+ overdue)
+    const { error: voidError } = await db
+      .from("payment_Table")
+      .update({
+        payment_status: "voided",
+        is_archive: false,
+      })
+      .in("id", allUnpaidIds);
+
+    if (voidError) throw voidError;
+
+    // 6️⃣ Void policy itself
+    const maxDaysOverdue = Math.max(...overduePayments.map(p => getDaysOverdue(p.payment_date)));
+    const voidReason = `Auto-voided: payment overdue by 90+ days (${maxDaysOverdue} days late)`;
+
+    const { error: policyVoidError } = await db
+      .from("policy_Table")
+      .update({
+        policy_status: "voided",
+        void_reason: voidReason,
+        voided_date: new Date().toISOString(),
+        policy_is_active: false,
+      })
+      .eq("id", policyId);
+
+    if (policyVoidError) throw policyVoidError;
+
+    console.log(`✅ Policy ${policy.internal_id} voided — ${payments.length} unpaid payment(s) voided`);
+
+    return {
+      success: true,
+      policyVoided: true,
+      overdueCount: overduePayments.length,
+      totalVoided: payments.length,
+      maxDaysOverdue,
+    };
+  } catch (error) {
+    console.error("❌ Error voiding overdue payments:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// DEBUG FUNCTION - Test overdue detection for a specific policy
+export async function DebugCheckPolicy(policyId) {
+  try {
+    console.log("\n🐛 === DEBUG MODE ===");
+    console.log("Policy ID:", policyId);
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    console.log("Today's date:", today.toISOString().split('T')[0]);
+    console.log("Today (epoch):", today.getTime());
+    
+    // Get policy
+    const { data: policy, error: policyError } = await db
+      .from("policy_Table")
+      .select("*")
+      .eq("id", policyId)
+      .single();
+    
+    if (policyError) throw policyError;
+    console.log("\n📋 Policy:", {
+      id: policy.id,
+      internal_id: policy.internal_id,
+      status: policy.policy_status,
+      is_active: policy.policy_is_active,
+      is_archived: policy.is_archived
+    });
+    
+    // Get ALL payments for this policy (no filters)
+    const { data: allPayments, error: payError } = await db
+      .from("payment_Table")
+      .select("*")
+      .eq("policy_id", policyId)
+      .order("payment_date", { ascending: true });
+    
+    if (payError) throw payError;
+    
+    console.log(`\n💰 Total payments found: ${allPayments?.length || 0}`);
+    
+    if (allPayments && allPayments.length > 0) {
+      console.log("\n📊 ANALYZING ALL PAYMENTS:");
+      allPayments.forEach(payment => {
+        const paymentDate = new Date(`${payment.payment_date}T00:00:00Z`);
+        const diffTime = today.getTime() - paymentDate.getTime();
+        const daysOverdue = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        const isPaid = payment.is_paid;
+        const status = payment.payment_status || 'null';
+        
+        // Determine if this would be voided
+        const wouldVoid = !isPaid && 
+                         daysOverdue >= 90 && 
+                         status !== 'voided' && 
+                         status !== 'cancelled' && 
+                         status !== 'refunded';
+        
+        console.log(`\n  💳 Payment ${payment.id}:`);
+        console.log(`     Date: ${payment.payment_date} (${daysOverdue} days ${daysOverdue >= 0 ? 'overdue' : 'future'})`);
+        console.log(`     Amount: ₱${payment.amount_to_be_paid}`);
+        console.log(`     Is Paid: ${isPaid}`);
+        console.log(`     Status: ${status}`);
+        console.log(`     Archive: ${payment.is_archive}`);
+        console.log(`     🎯 Would Void: ${wouldVoid ? '🚨 YES' : 'no'}`);
+      });
+    }
+    
+    // Now test the actual filter used by the function
+    console.log("\n🔍 TESTING ACTUAL QUERY FILTER:");
+    const { data: filteredPayments, error: filterError } = await db
+      .from("payment_Table")
+      .select("*")
+      .eq("policy_id", policyId)
+      .eq("is_paid", false)
+      .in("payment_status", ["pending", "unpaid", null]);
+    
+    if (filterError) throw filterError;
+    
+    console.log(`   Unpaid payments after filter: ${filteredPayments?.length || 0}`);
+    
+    if (filteredPayments && filteredPayments.length > 0) {
+      filteredPayments.forEach(p => {
+        const paymentDate = new Date(`${p.payment_date}T00:00:00Z`);
+        const diffTime = today.getTime() - paymentDate.getTime();
+        const daysOverdue = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        console.log(`   - Payment ${p.id}: ${p.payment_date} → ${daysOverdue} days overdue`);
+      });
+    }
+    
+    const overduePayments = filteredPayments?.filter(p => {
+      const paymentDate = new Date(`${p.payment_date}T00:00:00Z`);
+      const diffTime = today.getTime() - paymentDate.getTime();
+      const daysOverdue = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      return daysOverdue >= 90;
+    }) || [];
+    
+    console.log(`\n🚨 FINAL RESULT: ${overduePayments.length} payment(s) overdue by 90+ days`);
+    
+    if (overduePayments.length > 0) {
+      console.log("\n⚠️ THESE PAYMENTS WOULD BE VOIDED:");
+      overduePayments.forEach(p => {
+        const paymentDate = new Date(`${p.payment_date}T00:00:00Z`);
+        const diffTime = today.getTime() - paymentDate.getTime();
+        const daysOverdue = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        console.log(`   🔴 Payment ${p.id}: ${daysOverdue} days overdue (Due: ${p.payment_date})`);
+      });
+    } else {
+      console.log("\n✅ No payments would be voided (none are 90+ days overdue)");
+    }
+    
+    return {
+      total_payments: allPayments?.length || 0,
+      unpaid_payments: filteredPayments?.length || 0,
+      overdue_90plus: overduePayments.length,
+      overdue_details: overduePayments.map(p => {
+        const paymentDate = new Date(`${p.payment_date}T00:00:00Z`);
+        const diffTime = today.getTime() - paymentDate.getTime();
+        const daysOverdue = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        return {
+          id: p.id,
+          date: p.payment_date,
+          days_overdue: daysOverdue,
+          amount: p.amount_to_be_paid
+        };
+      })
+    };
+    
+  } catch (error) {
+    console.error("❌ Debug error:", error);
+    return { error: error.message };
+  }
+}
+
+// SIMPLE TEST - Check ALL payments in database
+export async function DebugCheckAllPayments() {
+  try {
+    console.log("\n🔍 === CHECKING ALL PAYMENTS IN DATABASE ===");
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    console.log("Today:", today.toISOString().split('T')[0]);
+    
+    const { data: allPayments, error } = await db
+      .from("payment_Table")
+      .select("id, policy_id, payment_date, is_paid, payment_status, amount_to_be_paid")
+      .order("payment_date", { ascending: true });
+    
+    if (error) throw error;
+    
+    console.log(`\n📊 Total payments in database: ${allPayments?.length || 0}`);
+    
+    if (!allPayments || allPayments.length === 0) {
+      console.log("❌ No payments found in database!");
+      return { total: 0, overdue: 0 };
+    }
+    
+    let overdueCount = 0;
+    const overdueList = [];
+    
+    allPayments.forEach(p => {
+      const paymentDate = new Date(`${p.payment_date}T00:00:00Z`);
+      const diffTime = today.getTime() - paymentDate.getTime();
+      const daysOverdue = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (!p.is_paid && daysOverdue >= 90 && p.payment_status !== 'voided' && p.payment_status !== 'cancelled' && p.payment_status !== 'refunded') {
+        overdueCount++;
+        overdueList.push({
+          payment_id: p.id,
+          policy_id: p.policy_id,
+          date: p.payment_date,
+          days_overdue: daysOverdue,
+          amount: p.amount_to_be_paid,
+          status: p.payment_status || 'null'
+        });
+      }
+    });
+    
+    console.log(`\n🚨 Found ${overdueCount} payment(s) that are 90+ days overdue and unpaid:`);
+    
+    if (overdueList.length > 0) {
+      overdueList.forEach(p => {
+        console.log(`   🔴 Payment ${p.payment_id} (Policy ${p.policy_id}): ${p.days_overdue} days overdue, Due: ${p.date}, Amount: ₱${p.amount}, Status: ${p.status}`);
+      });
+    } else {
+      console.log("   ✅ None found - all payments are either paid, cancelled, or less than 90 days overdue");
+    }
+    
+    return {
+      total: allPayments.length,
+      overdue: overdueCount,
+      overdue_list: overdueList
+    };
+    
+  } catch (error) {
+    console.error("❌ Error:", error);
+    return { error: error.message };
+  }
+}
+
+// Batch check all active policies for overdue payments
+export async function CheckAllPoliciesForOverduePayments() {
+  try {
+    console.log("\n🔍 === STARTING OVERDUE PAYMENT CHECK ===");
+    console.log("Current date:", new Date().toISOString().split('T')[0]);
+    const checkStartTime = Date.now();
+    
+    // 1️⃣ Get all policies that are not already voided or cancelled
+    const { data: policies, error: policiesError } = await db
+      .from("policy_Table")
+      .select("id, internal_id, policy_type, policy_status, is_archived, clients_Table(first_Name, family_Name)")
+      .or("policy_status.is.null,policy_status.eq.active,policy_status.eq.pending,policy_status.eq.issued")
+      .or("is_archived.is.null,is_archived.eq.false");
+    
+    if (policiesError) throw policiesError;
+    
+    console.log("📋 Query results:", {
+      total: policies?.length || 0,
+      policies: policies?.map(p => ({
+        id: p.id,
+        internal_id: p.internal_id,
+        status: p.policy_status || 'null',
+        archived: p.is_archived
+      }))
+    });
+    
+    if (!policies || policies.length === 0) {
+      console.log("❌ No active policies found");
+      return {
+        success: true,
+        totalChecked: 0,
+        totalVoided: 0,
+        policiesAffected: []
+      };
+    }
+    
+    console.log(`✅ Found ${policies.length} active policies to check\n`);
+    
+    let totalVoided = 0;
+    let policiesAffected = [];
+    
+    // 2️⃣ Check each policy for overdue payments
+    for (const policy of policies) {
+      const result = await VoidOverduePaymentsAndPolicy(policy.id);
+      
+      if (result.success && result.policyVoided) {
+        totalVoided += result.voidedCount;
+        policiesAffected.push({
+          id: policy.id,
+          internal_id: policy.internal_id,
+          policy_type: policy.policy_type,
+          client_name: policy.clients_Table 
+            ? `${policy.clients_Table.first_Name} ${policy.clients_Table.family_Name}`
+            : "Unknown",
+          voidedCount: result.voidedCount,
+          maxDaysOverdue: result.maxDaysOverdue
+        });
+      }
+    }
+    
+    const checkDuration = ((Date.now() - checkStartTime) / 1000).toFixed(2);
+    
+    console.log("\n=== OVERDUE CHECK COMPLETE ===");
+    console.log(`Total policies checked: ${policies.length}`);
+    console.log(`Policies voided: ${policiesAffected.length}`);
+    console.log(`Total payments voided: ${totalVoided}`);
+    console.log(`Duration: ${checkDuration}s`);
+    
+    return {
+      success: true,
+      totalChecked: policies.length,
+      totalVoided,
+      policiesAffected,
+      duration: checkDuration
+    };
+    
+  } catch (error) {
+    console.error("❌ Error checking policies for overdue payments:", error);
+    return {
+      success: false,
+      error: error.message
+    };
   }
 }

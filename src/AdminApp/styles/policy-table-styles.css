@@ -459,3 +459,12 @@ tr:hover {
   background-color: #e65100 !important;
   border-color: #e65100 !important;
 }
+
+.policy-row-overdue-90 {
+  background-color: #fff3f3 !important;
+  border-left: 4px solid #ff4444 !important;
+}
+
+.policy-row-overdue-90:hover {
+  background-color: #ffe8e8 !important;
+}

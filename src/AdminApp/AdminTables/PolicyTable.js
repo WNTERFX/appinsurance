@@ -7,7 +7,13 @@ import {
   archivePolicy,
   fetchPartners
 } from "../AdminActions/PolicyActions";
-import { ActivatePolicyAndPayment, CancelPolicyAndRefund, VoidPolicyAndPayments  } from "../AdminActions/PolicyActivationActions";
+import { 
+  ActivatePolicyAndPayment, 
+  CancelPolicyAndRefund, 
+  VoidPolicyAndPayments,
+  CheckAllPoliciesForOverduePayments,  
+  DebugCheckPolicy                      
+} from "../AdminActions/PolicyActivationActions";
 
 export default function PolicyTable() {
   const [policies, setPolicies] = useState([]);
@@ -91,10 +97,78 @@ export default function PolicyTable() {
     }
   };
 
+  // AUTO-CHECK for 90+ day overdue payments on load
+  const checkOverdueOnLoad = async () => {
+    try {
+      console.log("🔍 Auto-checking for 90+ day overdue payments...");
+      const result = await CheckAllPoliciesForOverduePayments();
+      
+      if (result.success && result.policiesAffected.length > 0) {
+        console.log(`⚠️ Auto-voided ${result.policiesAffected.length} policies with overdue payments`);
+        
+        // Build notification message
+        const policyList = result.policiesAffected
+          .map(p => 
+            `• ${p.internal_id} - ${p.client_name}\n` +
+            `  payment(s) voided (${p.maxDaysOverdue} days overdue)`
+          )
+          .join('\n\n');
+
+        alert(
+          `⚠️ AUTOMATIC VOID NOTICE\n\n` +
+          `policy are automatically voided due to payments overdue by 90+ days:\n\n` +
+          `\n\n` +
+          `Check Duration: ${result.duration}s`
+        );
+        
+        // Reload policies to show updated status
+        await loadPolicies();
+      } else if (result.success) {
+        console.log("✓ No overdue payments found (90+ days)");
+      } else {
+        console.error("Auto-check error:", result.error);
+      }
+    } catch (error) {
+      console.error("Auto-check failed:", error);
+    }
+  };
+
   useEffect(() => {
-    loadPolicies();
-    loadPartners();
+    const initialize = async () => {
+      console.log("🚀 Initializing PolicyTable...");
+      await loadPolicies();
+      await loadPartners();
+
+      // ✅ run the global overdue checker on mount
+      console.log("🔍 Checking for overdue policies (90+ days)...");
+      const result = await CheckAllPoliciesForOverduePayments();
+      console.log("📊 Overdue check result:", result);
+
+      // ✅ optional debug for one known policy
+      console.log("🐛 Running debug check for policy 69...");
+      const debug = await DebugCheckPolicy(69);
+      console.log("🐛 Debug result:", debug);
+    };
+    initialize();
   }, []);
+
+
+  useEffect(() => {
+    const initializeTable = async () => {
+      // First load policies and partners
+      await loadPolicies();
+      await loadPartners();
+      
+      // Then check for overdue payments
+      await checkOverdueOnLoad();
+    };
+    
+    initializeTable();
+    
+    // Expose debug function globally for testing in console
+    window.debugCheckPolicy = DebugCheckPolicy;
+    console.log("💡 Debug helper available: window.debugCheckPolicy(policyId)");
+  }, []); // Only run once on mount
 
   const handleRowClick = (policy) => {
     setSelectedPolicy({
@@ -145,112 +219,112 @@ export default function PolicyTable() {
     console.log("🔍 payment_type_id VALUE:", computation?.payment_type_id);
     console.log("🔍 payment_type_id TYPE:", typeof computation?.payment_type_id);
   
-  // Prevent activation if policy is expired
-  if (isPolicyExpired(policy.policy_expiry)) {
-    alert("Cannot activate an expired policy. Please update the expiry date first.");
-    return;
-  }
-
-  try {
-    // Get computation for total premium
-    const computation = policy.policy_Computation_Table?.[0];
-    
-    if (!computation) {
-      alert("❌ No computation found for this policy.\n\nPlease edit the policy and complete the computation first.");
-      return;
-    }
-    
-    if (!computation.total_Premium) {
-      alert("❌ Total premium is missing from computation.\n\nPlease edit the policy and recalculate.");
+    // Prevent activation if policy is expired
+    if (isPolicyExpired(policy.policy_expiry)) {
+      alert("Cannot activate an expired policy. Please update the expiry date first.");
       return;
     }
 
-    // Check if payment_type_id exists in computation
-    if (!computation.payment_type_id) {
-      alert(
-        "❌ No payment type selected for this policy.\n\n" +
-        "To fix this:\n" +
-        "1. Click 'Edit' on this policy\n" +
-        "2. Select a payment type (Monthly, Quarterly, etc.)\n" +
-        "3. Save the policy\n" +
-        "4. Try activating again"
+    try {
+      // Get computation for total premium
+      const computation = policy.policy_Computation_Table?.[0];
+      
+      if (!computation) {
+        alert("❌ No computation found for this policy.\n\nPlease edit the policy and complete the computation first.");
+        return;
+      }
+      
+      if (!computation.total_Premium) {
+        alert("❌ Total premium is missing from computation.\n\nPlease edit the policy and recalculate.");
+        return;
+      }
+
+      // Check if payment_type_id exists in computation
+      if (!computation.payment_type_id) {
+        alert(
+          "❌ No payment type selected for this policy.\n\n" +
+          "To fix this:\n" +
+          "1. Click 'Edit' on this policy\n" +
+          "2. Select a payment type (Monthly, Quarterly, etc.)\n" +
+          "3. Save the policy\n" +
+          "4. Try activating again"
+        );
+        console.error("Missing payment_type_id in computation:", computation);
+        return;
+      }
+
+      // Get payment type that was selected during policy creation
+      const paymentType = await fetchPolicyPaymentType(policy.id);
+      
+      if (!paymentType) {
+        alert(
+          "❌ Payment type not found in database.\n\n" +
+          `Payment Type ID: ${computation.payment_type_id}\n\n` +
+          "Possible issues:\n" +
+          "- Payment type was deleted from the system\n" +
+          "- Invalid payment type ID stored\n\n" +
+          "Please edit the policy and select a valid payment type."
+        );
+        return;
+      }
+
+      const totalPremium = computation.total_Premium;
+      const months = paymentType.months_payment;
+      const paymentTypeId = paymentType.id;
+
+      // Validate months
+      if (!months || months <= 0) {
+        alert(
+          `❌ Invalid payment schedule.\n\n` +
+          `Payment Type: ${paymentType.payment_type_name}\n` +
+          `Months: ${months}\n\n` +
+          "Please contact system administrator."
+        );
+        return;
+      }
+
+      const confirmActivate = window.confirm(
+        `Activate this policy?\n\n` +
+        `Payment Plan: ${paymentType.payment_type_name}\n` +
+        `Duration: ${months} months\n` +
+        `Total Premium: ₱${totalPremium.toLocaleString("en-PH", { minimumFractionDigits: 2 })}\n` +
+        `Monthly Payment: ₱${(totalPremium / months).toLocaleString("en-PH", { minimumFractionDigits: 2 })}\n\n` +
+        `This will generate ${months} payment records.`
       );
-      console.error("Missing payment_type_id in computation:", computation);
-      return;
-    }
+      
+      if (!confirmActivate) return;
 
-    // Get payment type that was selected during policy creation
-    const paymentType = await fetchPolicyPaymentType(policy.id);
-    
-    if (!paymentType) {
-      alert(
-        "❌ Payment type not found in database.\n\n" +
-        `Payment Type ID: ${computation.payment_type_id}\n\n` +
-        "Possible issues:\n" +
-        "- Payment type was deleted from the system\n" +
-        "- Invalid payment type ID stored\n\n" +
-        "Please edit the policy and select a valid payment type."
+      console.log("=== ACTIVATING POLICY ===");
+      console.log("Policy ID:", policy.id);
+      console.log("Payment Type:", paymentType.payment_type_name);
+      console.log("Months:", months);
+      console.log("Total Premium:", totalPremium);
+
+      // Activate and create payment schedule
+      const result = await ActivatePolicyAndPayment(
+        policy.id,
+        paymentTypeId,
+        totalPremium,
+        months
       );
-      return;
+
+      if (result.success) {
+        await loadPolicies(); // Reload to get fresh data
+        alert(
+          `✅ Policy activated successfully!\n\n` +
+          `Payment Plan: ${paymentType.payment_type_name} (${months} months)\n` +
+          `Monthly Payment: ₱${(totalPremium / months).toLocaleString("en-PH", { minimumFractionDigits: 2 })}\n` +
+          `Payments Created: ${months}\n` +
+          `Inception: ${new Date(result.inceptionTimestamp).toLocaleString("en-PH")}`
+        );
+      } else {
+        alert("❌ Activation Error:\n\n" + result.error);
+      }
+    } catch (err) {
+      console.error("Activation failed:", err);
+      alert("❌ Error activating policy:\n\n" + err.message);
     }
-
-    const totalPremium = computation.total_Premium;
-    const months = paymentType.months_payment;
-    const paymentTypeId = paymentType.id;
-
-    // Validate months
-    if (!months || months <= 0) {
-      alert(
-        `❌ Invalid payment schedule.\n\n` +
-        `Payment Type: ${paymentType.payment_type_name}\n` +
-        `Months: ${months}\n\n` +
-        "Please contact system administrator."
-      );
-      return;
-    }
-
-    const confirmActivate = window.confirm(
-      `Activate this policy?\n\n` +
-      `Payment Plan: ${paymentType.payment_type_name}\n` +
-      `Duration: ${months} months\n` +
-      `Total Premium: ₱${totalPremium.toLocaleString("en-PH", { minimumFractionDigits: 2 })}\n` +
-      `Monthly Payment: ₱${(totalPremium / months).toLocaleString("en-PH", { minimumFractionDigits: 2 })}\n\n` +
-      `This will generate ${months} payment records.`
-    );
-    
-    if (!confirmActivate) return;
-
-    console.log("=== ACTIVATING POLICY ===");
-    console.log("Policy ID:", policy.id);
-    console.log("Payment Type:", paymentType.payment_type_name);
-    console.log("Months:", months);
-    console.log("Total Premium:", totalPremium);
-
-    // Activate and create payment schedule
-    const result = await ActivatePolicyAndPayment(
-      policy.id,
-      paymentTypeId,
-      totalPremium,
-      months
-    );
-
-    if (result.success) {
-      await loadPolicies(); // Reload to get fresh data
-      alert(
-        `✅ Policy activated successfully!\n\n` +
-        `Payment Plan: ${paymentType.payment_type_name} (${months} months)\n` +
-        `Monthly Payment: ₱${(totalPremium / months).toLocaleString("en-PH", { minimumFractionDigits: 2 })}\n` +
-        `Payments Created: ${months}\n` +
-        `Inception: ${new Date(result.inceptionTimestamp).toLocaleString("en-PH")}`
-      );
-    } else {
-      alert("❌ Activation Error:\n\n" + result.error);
-    }
-  } catch (err) {
-    console.error("Activation failed:", err);
-    alert("❌ Error activating policy:\n\n" + err.message);
-  }
-};
+  };
 
   const handleArchiveClick = async (policyId) => {
     const confirmArchive = window.confirm("Proceed to archive this policy?");
@@ -306,143 +380,142 @@ export default function PolicyTable() {
     }
   };
 
-const handleCancelClick = async (policy) => {
-  const reason = prompt("Enter reason for cancelling this policy:");
-  if (!reason || !reason.trim()) return;
+  const handleCancelClick = async (policy) => {
+    const reason = prompt("Enter reason for cancelling this policy:");
+    if (!reason || !reason.trim()) return;
 
-  const confirmCancel = window.confirm(
-    `Cancel this policy?\n\nThis will:\n- Refund the first payment\n- Cancel all remaining payments\n- Mark the policy as CANCELLED\n\nReason: ${reason}`
-  );
-  if (!confirmCancel) return;
+    const confirmCancel = window.confirm(
+      `Cancel this policy?\n\nThis will:\n- Refund the first payment\n- Cancel all remaining payments\n- Mark the policy as CANCELLED\n\nReason: ${reason}`
+    );
+    if (!confirmCancel) return;
 
-  try {
-    const { db } = await import("../../dbServer");
+    try {
+      const { db } = await import("../../dbServer");
 
-    // 1️⃣ Get computation info
-    const computation = policy.policy_Computation_Table?.[0];
-    if (!computation || !computation.total_Premium) {
-      alert("No computation found for this policy.");
-      return;
-    }
+      // 1️⃣ Get computation info
+      const computation = policy.policy_Computation_Table?.[0];
+      if (!computation || !computation.total_Premium) {
+        alert("No computation found for this policy.");
+        return;
+      }
 
-    // 2️⃣ Get payment type info (same logic as activation)
-    const paymentType = await fetchPolicyPaymentType(policy.id);
-    if (!paymentType) {
-      alert("No payment type found for this policy. Please edit the policy and select one.");
-      return;
-    }
+      // 2️⃣ Get payment type info (same logic as activation)
+      const paymentType = await fetchPolicyPaymentType(policy.id);
+      if (!paymentType) {
+        alert("No payment type found for this policy. Please edit the policy and select one.");
+        return;
+      }
 
-    const totalPremium = computation.total_Premium;
-    const months = paymentType.months_payment;
-    const paymentTypeId = paymentType.id;
+      const totalPremium = computation.total_Premium;
+      const months = paymentType.months_payment;
+      const paymentTypeId = paymentType.id;
 
-    console.log("=== CANCELLING POLICY ===");
-    console.log("Policy ID:", policy.id);
-    console.log("Payment Type:", paymentType.payment_type_name);
-    console.log("Months:", months);
-    console.log("Total Premium:", totalPremium);
+      console.log("=== CANCELLING POLICY ===");
+      console.log("Policy ID:", policy.id);
+      console.log("Payment Type:", paymentType.payment_type_name);
+      console.log("Months:", months);
+      console.log("Total Premium:", totalPremium);
 
-    // 3️⃣ Check if there are existing payments
-    const { data: existingPayments, error: payError } = await db
-      .from("payment_Table")
-      .select("*")
-      .eq("policy_id", policy.id);
-
-    if (payError) throw payError;
-
-    let paymentsToUse = existingPayments;
-
-    // 4️⃣ If no payments exist, generate them (copy from activation)
-    if (!paymentsToUse || paymentsToUse.length === 0) {
-      console.log("No existing payments — generating before refund/cancel...");
-      const now = new Date();
-      const monthlyAmount = Number((totalPremium / months).toFixed(2));
-
-      const paymentRows = Array.from({ length: months }, (_, i) => {
-        const paymentDate = new Date(now);
-        paymentDate.setMonth(paymentDate.getMonth() + i );
-        return {
-          payment_date: paymentDate.toISOString().split("T")[0],
-          amount_to_be_paid: monthlyAmount,
-          is_paid: false,
-          paid_amount: 0,
-          policy_id: policy.id,
-          payment_type_id: paymentTypeId,
-        };
-      });
-
-      const { data: inserted, error: insertError } = await db
+      // 3️⃣ Check if there are existing payments
+      const { data: existingPayments, error: payError } = await db
         .from("payment_Table")
-        .insert(paymentRows)
-        .select();
+        .select("*")
+        .eq("policy_id", policy.id);
 
-      if (insertError) throw insertError;
-      console.log("✅ Generated payments:", inserted.length);
-      paymentsToUse = inserted;
-    }
+      if (payError) throw payError;
 
-    // 5️⃣ Refund first payment
-   const firstPayment = paymentsToUse[0];
-    await db
-      .from("payment_Table")
-      .update({
-        is_paid: false,
-        paid_amount: 0,
-        is_refunded: true,
-        refund_amount: firstPayment.amount_to_be_paid,
-        refund_date: new Date().toISOString(),
-        refund_reason: reason,
-        payment_status: "refunded",
-      })
-      .eq("id", firstPayment.id);
+      let paymentsToUse = existingPayments;
 
-    // 6️⃣ Cancel remaining payments (not archive)
-    if (paymentsToUse.length > 1) {
-      const remainingIds = paymentsToUse.slice(1).map((p) => p.id);
+      // 4️⃣ If no payments exist, generate them (copy from activation)
+      if (!paymentsToUse || paymentsToUse.length === 0) {
+        console.log("No existing payments — generating before refund/cancel...");
+        const now = new Date();
+        const monthlyAmount = Number((totalPremium / months).toFixed(2));
+
+        const paymentRows = Array.from({ length: months }, (_, i) => {
+          const paymentDate = new Date(now);
+          paymentDate.setMonth(paymentDate.getMonth() + i);
+          return {
+            payment_date: paymentDate.toISOString().split("T")[0],
+            amount_to_be_paid: monthlyAmount,
+            is_paid: false,
+            paid_amount: 0,
+            policy_id: policy.id,
+            payment_type_id: paymentTypeId,
+          };
+        });
+
+        const { data: inserted, error: insertError } = await db
+          .from("payment_Table")
+          .insert(paymentRows)
+          .select();
+
+        if (insertError) throw insertError;
+        console.log("✅ Generated payments:", inserted.length);
+        paymentsToUse = inserted;
+      }
+
+      // 5️⃣ Refund first payment
+      const firstPayment = paymentsToUse[0];
       await db
         .from("payment_Table")
         .update({
-          payment_status: "cancelled",
-          is_archive: false,
+          is_paid: false,
+          paid_amount: 0,
+          is_refunded: true,
+          refund_amount: firstPayment.amount_to_be_paid,
+          refund_date: new Date().toISOString(),
+          refund_reason: reason,
+          payment_status: "refunded",
         })
-        .in("id", remainingIds);
+        .eq("id", firstPayment.id);
+
+      // 6️⃣ Cancel remaining payments (not archive)
+      if (paymentsToUse.length > 1) {
+        const remainingIds = paymentsToUse.slice(1).map((p) => p.id);
+        await db
+          .from("payment_Table")
+          .update({
+            payment_status: "cancelled",
+            is_archive: false,
+          })
+          .in("id", remainingIds);
+      }
+
+      // 7️⃣ Update policy as cancelled
+      const { error: policyError } = await db
+        .from("policy_Table")
+        .update({
+          policy_status: "cancelled",
+          cancellation_reason: reason,
+          cancellation_date: new Date().toISOString(),
+          policy_is_active: false,
+        })
+        .eq("id", policy.id);
+
+      if (policyError) throw policyError;
+
+      // 8️⃣ Update UI
+      setPolicies((prev) =>
+        prev.map((p) =>
+          p.id === policy.id
+            ? {
+                ...p,
+                policy_status: "cancelled",
+                cancellation_reason: reason,
+                cancellation_date: new Date().toISOString(),
+                policy_is_active: false,
+              }
+            : p
+        )
+      );
+
+      alert("✅ Policy cancelled successfully. First payment refunded, remaining payments cancelled.");
+    } catch (error) {
+      console.error("Error cancelling policy:", error);
+      alert("Error cancelling policy: " + error.message);
     }
-
-    // 7️⃣ Update policy as cancelled
-    const { error: policyError } = await db
-      .from("policy_Table")
-      .update({
-        policy_status: "cancelled",
-        cancellation_reason: reason,
-        cancellation_date: new Date().toISOString(),
-        policy_is_active: false,
-      })
-      .eq("id", policy.id);
-
-    if (policyError) throw policyError;
-
-    // 8️⃣ Update UI
-    setPolicies((prev) =>
-      prev.map((p) =>
-        p.id === policy.id
-          ? {
-              ...p,
-              policy_status: "cancelled",
-              cancellation_reason: reason,
-              cancellation_date: new Date().toISOString(),
-              policy_is_active: false,
-            }
-          : p
-      )
-    );
-
-    alert("✅ Policy cancelled successfully. First payment refunded, remaining payments cancelled.");
-  } catch (error) {
-    console.error("Error cancelling policy:", error);
-    alert("Error cancelling policy: " + error.message);
-  }
-};
-
+  };
 
   const filteredAndSearchedPolicies = useMemo(() => {
     let tempPolicies = policies;
@@ -586,12 +659,13 @@ const handleCancelClick = async (policy) => {
           </div>
 
           <button 
-            onClick={() => {
+            onClick={async () => {
               setSearchTerm("");
               setStatusFilter("All");
               setPartnerFilter("");
               setCurrentPage(1);
-              loadPolicies();
+              await loadPolicies();
+              await checkOverdueOnLoad(); // Re-check for overdue on manual refresh
             }} 
             className="reset-btn-policy"
           >
