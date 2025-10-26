@@ -43,12 +43,31 @@ export async function getVehicleInfo(policyIDs) {
 
 export async function getPolicyComputationInfo(policyIDs) {
   if (!policyIDs.length) return [];
-
   const { data, error } = await db
     .from("policy_Computation_Table")
     .select("*")
     .in("policy_id", policyIDs);
+ 
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getCalculationDataForPolicies(policyIDs) {
+  if (!policyIDs.length) return [];
   
+  const { data, error } = await db
+    .from("vehicle_table")
+    .select(`
+      policy_id,
+      calculation_Table(
+        vat_Tax,
+        docu_Stamp,
+        local_Gov_Tax
+      )
+    `)
+    .in("policy_id", policyIDs)
+    .not("vehicle_type_id", "is", null);
+ 
   if (error) throw error;
   return data || [];
 }

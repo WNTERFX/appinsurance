@@ -176,7 +176,8 @@ export async function fetchArchivedPayments() {
           first_Name,
           middle_Name,
           family_Name,
-          suffix
+          suffix,
+          internal_id
         )
       )
     `)
@@ -302,7 +303,7 @@ export async function fetchAllDues(fromDate = null, toDate = null) {
       paid_amount,
       payment_type_id,
       payment_type ( payment_type_name ),
-      policy_Table (
+      policy_Table!inner (
         id,
         internal_id,
         policy_type,

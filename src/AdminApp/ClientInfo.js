@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import InfoModal from "./InfoModal";
 import './styles/client-info-modal-styles.css';
-import { getClientInfo, getPolicyInfo, getVehicleInfo, getPolicyComputationInfo } from "./AdminActions/ModalActions";
+import { getClientInfo, getPolicyInfo, getVehicleInfo, getPolicyComputationInfo, getCalculationDataForPolicies } from "./AdminActions/ModalActions";
 
 // Import React Icons
 import { FaUser, FaFileAlt, FaCar, FaCalculator } from 'react-icons/fa';
@@ -11,6 +11,7 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
   const [allPolicies, setAllPolicies] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [computations, setComputations] = useState([]);
+  const [calculationData, setCalculationData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -32,6 +33,7 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
     setAllPolicies([]);
     setVehicles([]);
     setComputations([]);
+    setCalculationData([]);
     setError(null);
   };
 
@@ -47,15 +49,18 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
 
       const policyIds = (policyData || []).map(p => p.id);
       if (policyIds.length > 0) {
-        const [vehicleData, computationData] = await Promise.all([
+        const [vehicleData, computationData, calcData] = await Promise.all([
           getVehicleInfo(policyIds),
-          getPolicyComputationInfo(policyIds)
+          getPolicyComputationInfo(policyIds),
+          getCalculationDataForPolicies(policyIds)
         ]);
         setVehicles(vehicleData || []);
         setComputations(computationData || []);
+        setCalculationData(calcData || []);
       } else {
         setVehicles([]);
         setComputations([]);
+        setCalculationData([]);
       }
     } catch (err) {
       console.error('Error fetching client data:', err);
@@ -79,6 +84,11 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
 
   // Format currency to match picture: no decimal places, comma separated
   const formatCurrency = (amount) => `₱${(amount || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+
+  // Calculate amount from percentage
+  const calculateFromPercentage = (percentage, baseAmount) => {
+    return (percentage / 100) * baseAmount;
+  };
 
   // Component for grid layout within cards (Client, Policy, Vehicle)
   const InfoGrid = ({ children }) => (
@@ -146,31 +156,39 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
             <hr className="section-header-separator" />
             {policyComputations.length > 0 ? (
               <div className="computation-items-container">
-                {policyComputations.map((c, i) => (
-                  <React.Fragment key={c.id}>
-                    <div className="computation-info-item">
-                      <span className="info-label">Original Value</span>
-                      <span className="info-value">{formatCurrency(c.original_Value)}</span>
-                    </div>
-                    <div className="computation-info-item">
-                      <span className="info-label">Current Value</span>
-                      <span className="info-value">{formatCurrency(c.current_Value)}</span>
-                    </div>
-                    <div className="computation-info-item">
-                      <span className="info-label">AON Cost</span>
-                      <span className="info-value">{formatCurrency(c.aon_Cost)}</span>
-                    </div>
-                    <div className="computation-info-item">
-                      <span className="info-label">Vehicle Rate Value</span>
-                      <span className="info-value">{formatCurrency(c.vehicle_Rate_Value)}</span>
-                    </div>
-                    <hr className="total-premium-separator" />
-                    <div className="total-premium-item">
-                      <span className="info-label">Total Premium</span>
-                      <span className="info-value">{formatCurrency(c.total_Premium)}</span>
-                    </div>
-                  </React.Fragment>
-                ))}
+                {policyComputations.map((c) => {
+                  // Find the calculation data for this policy
+                  const policyCalcData = calculationData.find(cd => cd.policy_id === c.policy_id);
+                  const calcData = policyCalcData?.calculation_Table;
+                  
+                  return (
+                    <React.Fragment key={c.id}>
+                      <div className="computation-info-item">
+                        <span className="info-label">VAT</span>
+                        <span className="info-value">
+                          {formatCurrency(calculateFromPercentage(calcData?.vat_Tax || 0, c.total_Premium || 0))}
+                        </span>
+                      </div>
+                      <div className="computation-info-item">
+                        <span className="info-label">Documentation Stamp</span>
+                        <span className="info-value">
+                          {formatCurrency(calculateFromPercentage(calcData?.docu_Stamp || 0, c.total_Premium || 0))}
+                        </span>
+                      </div>
+                      <div className="computation-info-item">
+                        <span className="info-label">Local Tax</span>
+                        <span className="info-value">
+                          {formatCurrency(calculateFromPercentage(calcData?.local_Gov_Tax || 0, c.total_Premium || 0))}
+                        </span>
+                      </div>
+                      <hr className="total-premium-separator" />
+                      <div className="total-premium-item">
+                        <span className="info-label">Premium</span>
+                        <span className="info-value">{formatCurrency(c.total_Premium)}</span>
+                      </div>
+                    </React.Fragment>
+                  );
+                })}
               </div>
             ) : (
               <div className="empty-state">No computations found for this policy</div>
@@ -184,7 +202,7 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
               <div className="vehicle-list-container">
                 {policyVehicles.map((v) => (
                   <InfoGrid key={v.id}>
-                    <InfoItem label="Vehicle Maker" value={v.vehicle_maker || 'N/A'} />
+                    <InfoItem label="Model Make" value={v.vehicle_maker || 'N/A'} />
                     <InfoItem label="Vehicle Name" value={v.vehicle_name || 'N/A'} />
                     <InfoItem label="Year" value={v.vehicle_year || 'N/A'} />
                     <InfoItem label="Color" value={v.vehicle_color || 'N/A'} />
