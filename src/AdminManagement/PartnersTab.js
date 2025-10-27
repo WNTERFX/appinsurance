@@ -1,6 +1,3 @@
-// components/PartnersTab.jsx
-import React from "react";
-
 const formatDate = (dateString) => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
@@ -76,6 +73,19 @@ export default function PartnersTab({ controller }) {
               />
             </label>
           </div>
+          <div className="admin-controller-form-group">
+            <label className="admin-controller-label">
+              Initials:
+              <input
+                type="text"
+                value={controller.initials}
+                onChange={(e) => controller.setInitials(e.target.value)}
+                className="admin-controller-input"
+                placeholder="e.g., AIC"
+                maxLength="5"
+              />
+            </label>
+          </div>
 
           <div className="admin-controller-button-group">
             <button
@@ -105,6 +115,7 @@ export default function PartnersTab({ controller }) {
               <th>Address</th>
               <th>Contact</th>
               <th>Insurance Rate</th>
+              <th>Initials</th> {/* ✅ Added column */}
               <th>Created At</th>
               <th>Actions</th>
             </tr>
@@ -112,7 +123,7 @@ export default function PartnersTab({ controller }) {
           <tbody>
             {controller.partners.length === 0 ? (
               <tr>
-                <td colSpan="6" className="admin-controller-empty">
+                <td colSpan="7" className="admin-controller-empty">
                   No insurance partners found. Click "Add New Insurance Partner" to create one.
                 </td>
               </tr>
@@ -123,6 +134,7 @@ export default function PartnersTab({ controller }) {
                   <td>{partner.address || "N/A"}</td>
                   <td>{partner.contact || "N/A"}</td>
                   <td>{partner.insurance_Rate || "N/A"}</td>
+                  <td>{partner.initials || "N/A"}</td> {/* ✅ Display initials */}
                   <td>{formatDate(partner.created_at)}</td>
                   <td>
                     <button

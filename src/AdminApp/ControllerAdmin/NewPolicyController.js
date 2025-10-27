@@ -191,24 +191,33 @@ export default function NewPolicyController() {
   // -----------------------------------
   // Save handler
   // -----------------------------------
-  const handleSaveClient = async () => {
-    // 🔧 FIX: Convert commission fee to number before saving
-    const commissionFeeToSave = parseFloat(commissionFee) || 0;
+ const handleSaveClient = async () => {
+  // Validation
+  if (!selectedClient?.uid) {
+    alert("Please select a client");
+    return;
+  }
+  
+  if (!selectedPartner) {
+    alert("Please select a partner");
+    return;
+  }
 
-    console.log("=== SAVING NEW POLICY ===");
-    console.log("Commission fee (%) to save:", commissionFeeToSave);
-    console.log("Commission value (₱):", computedCommissionValue);
-    console.log("Total Premium:", totalWithCommission);
-
-    const policyData = {
-      policy_type: "Comprehensive",
-      policy_inception: null,
-      policy_expiry: null,
-      policy_is_active: false,
-      client_id: selectedClient?.uid,
-      partner_id: selectedPartner
-    };
-
+  const commissionFeeToSave = parseFloat(commissionFee) || 0;
+  
+  console.log("=== SAVING NEW POLICY ===");
+  console.log("Commission fee (%) to save:", commissionFeeToSave);
+  console.log("Commission value (₱):", computedCommissionValue);
+  console.log("Total Premium:", totalWithCommission);
+  
+  const policyData = {
+    policy_type: "Comprehensive",
+    policy_inception: null,
+    policy_expiry: null,
+    policy_is_active: false,
+    client_id: selectedClient.uid,
+    partner_id: selectedPartner  // ✅ Already a UUID string from the select
+  };
     const { success: policySuccess, data: policyRow, error: policyError } = await NewPolicyCreation(policyData);
     if (!policySuccess) return alert("Error saving policy: " + policyError);
 
