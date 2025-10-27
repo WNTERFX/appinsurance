@@ -565,42 +565,51 @@ const loadPolicies = async () => {
                 <div className="payment-header-with-button">
                   <h3 className="payment-details-title">Payments</h3>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                        {(() => {
-                          if (payments.length === 0) return null;
+                    {(() => {
+                      if (payments.length === 0) return null;
 
-                          const archivableStatuses = ["fully-paid", "refunded", "cancelled"];
-                          const allArchivable = payments.every(p => archivableStatuses.includes(getPaymentStatus(p)));
-                          if (!allArchivable) return null;
+                      // ✅ FIXED: Include "voided" in archivable statuses
+                      const archivableStatuses = ["fully-paid", "refunded", "cancelled", "voided"];
+                      const allArchivable = payments.every(p => archivableStatuses.includes(getPaymentStatus(p)));
+                      if (!allArchivable) return null;
 
-                          // Count each type
-                          const fullyPaidCount = payments.filter(p => getPaymentStatus(p) === "fully-paid").length;
-                          const refundedCount = payments.filter(p => getPaymentStatus(p) === "refunded").length;
-                          const cancelledCount = payments.filter(p => getPaymentStatus(p) === "cancelled").length;
+                      // Count each type
+                      const fullyPaidCount = payments.filter(p => getPaymentStatus(p) === "fully-paid").length;
+                      const refundedCount = payments.filter(p => getPaymentStatus(p) === "refunded").length;
+                      const cancelledCount = payments.filter(p => getPaymentStatus(p) === "cancelled").length;
+                      const voidedCount = payments.filter(p => getPaymentStatus(p) === "voided").length;
 
-                          const buttonText = `Archive All Payments (${fullyPaidCount} Paid / ${refundedCount} Refunded / ${cancelledCount} Cancelled)`;
+                      // Build button text dynamically based on what exists
+                      const statusParts = [];
+                      if (fullyPaidCount > 0) statusParts.push(`${fullyPaidCount} Paid`);
+                      if (refundedCount > 0) statusParts.push(`${refundedCount} Refunded`);
+                      if (cancelledCount > 0) statusParts.push(`${cancelledCount} Cancelled`);
+                      if (voidedCount > 0) statusParts.push(`${voidedCount} Voided`);
 
-                          return (
-                            <button 
-                              onClick={(e) => { 
-                                e.stopPropagation(); 
-                                setSelectedPaymentForArchive({ policy_id: policy.id, payments }); 
-                                setArchiveModalOpen(true);
-                              }}
-                              style={{
-                                backgroundColor: '#6c757d',
-                                color: 'white',
-                                padding: '8px 16px',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontWeight: '500'
-                              }}
-                            >
-                              {buttonText}
-                            </button>
-                          );
-                        })()}
-                      <button 
+                      const buttonText = `Archive All Payments (${statusParts.join(' / ')})`;
+
+                      return (
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            setSelectedPaymentForArchive({ policy_id: policy.id, payments }); 
+                            setArchiveModalOpen(true);
+                          }}
+                          style={{
+                            backgroundColor: '#6c757d',
+                            color: 'white',
+                            padding: '8px 16px',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: '500'
+                          }}
+                        >
+                          {buttonText}
+                        </button>
+                      );
+                    })()}
+                    <button 
                       onClick={(e) => { e.stopPropagation(); handleOpenGenerateModal(policy); }}
                       className="generate-payment-btn"
                     >

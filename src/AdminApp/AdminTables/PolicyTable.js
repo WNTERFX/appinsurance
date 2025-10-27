@@ -24,6 +24,8 @@ export default function PolicyTable() {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [partnerFilter, setPartnerFilter] = useState("");
   const [partners, setPartners] = useState([]);
+  const [isCheckingOverdue, setIsCheckingOverdue] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const navigate = useNavigate();
 
   // Helper function to check if policy is expired
@@ -97,39 +99,61 @@ export default function PolicyTable() {
     }
   };
 
-  // AUTO-CHECK for 90+ day overdue payments on load
-  const checkOverdueOnLoad = async () => {
+  // 🆕 MANUAL BUTTON: Check for 90+ day overdue payments
+  const handleCheckOverduePayments = async () => {
+    if (isCheckingOverdue) return; // Prevent double-clicks
+    
+    const confirmCheck = window.confirm(
+      "Check all policies for overdue payments?\n\n" +
+      "This will automatically void any policies with payments overdue by 90+ days.\n\n" +
+      "Continue?"
+    );
+    
+    if (!confirmCheck) return;
+
+    setIsCheckingOverdue(true);
+    
     try {
-      console.log("🔍 Auto-checking for 90+ day overdue payments...");
+      console.log("🔍 Manual check: Looking for 90+ day overdue payments...");
       const result = await CheckAllPoliciesForOverduePayments();
       
       if (result.success && result.policiesAffected.length > 0) {
-        console.log(`⚠️ Auto-voided ${result.policiesAffected.length} policies with overdue payments`);
+        console.log(`⚠️ Found and voided ${result.policiesAffected.length} policies with overdue payments`);
         
-        // Build notification message
+        // Build detailed notification
         const policyList = result.policiesAffected
           .map(p => 
             `• ${p.internal_id} - ${p.client_name}\n` +
-            `  payment(s) voided (${p.maxDaysOverdue} days overdue)`
+            `  ${p.voidedCount} payment(s) voided (${p.maxDaysOverdue} days overdue)`
           )
           .join('\n\n');
 
         alert(
-          `⚠️ AUTOMATIC VOID NOTICE\n\n` +
-          `policy are automatically voided due to payments overdue by 90+ days:\n\n` +
-          `\n\n` +
+          `⚠️ OVERDUE PAYMENT CHECK RESULTS\n\n` +
+          `Policies checked: ${result.totalChecked}\n` +
+          `Policies voided: ${result.policiesAffected.length}\n` +
+          `Total payments voided: ${result.totalVoided}\n\n` +
+          `Details:\n${policyList}\n\n` +
           `Check Duration: ${result.duration}s`
         );
         
         // Reload policies to show updated status
         await loadPolicies();
       } else if (result.success) {
-        console.log("✓ No overdue payments found (90+ days)");
+        alert(
+          `✅ CHECK COMPLETE\n\n` +
+          `Policies checked: ${result.totalChecked}\n` +
+          `No overdue payments found (90+ days)\n\n` +
+          `Duration: ${result.duration}s`
+        );
       } else {
-        console.error("Auto-check error:", result.error);
+        alert("❌ Check failed:\n\n" + result.error);
       }
     } catch (error) {
-      console.error("Auto-check failed:", error);
+      console.error("Manual overdue check failed:", error);
+      alert("❌ Error checking overdue payments:\n\n" + error.message);
+    } finally {
+      setIsCheckingOverdue(false);
     }
   };
 
@@ -138,37 +162,13 @@ export default function PolicyTable() {
       console.log("🚀 Initializing PolicyTable...");
       await loadPolicies();
       await loadPartners();
-
-      // ✅ run the global overdue checker on mount
-      console.log("🔍 Checking for overdue policies (90+ days)...");
-      const result = await CheckAllPoliciesForOverduePayments();
-      console.log("📊 Overdue check result:", result);
-
-      // ✅ optional debug for one known policy
-      console.log("🐛 Running debug check for policy 69...");
-      const debug = await DebugCheckPolicy(69);
-      console.log("🐛 Debug result:", debug);
     };
     initialize();
-  }, []);
-
-
-  useEffect(() => {
-    const initializeTable = async () => {
-      // First load policies and partners
-      await loadPolicies();
-      await loadPartners();
-      
-      // Then check for overdue payments
-      await checkOverdueOnLoad();
-    };
-    
-    initializeTable();
     
     // Expose debug function globally for testing in console
     window.debugCheckPolicy = DebugCheckPolicy;
     console.log("💡 Debug helper available: window.debugCheckPolicy(policyId)");
-  }, []); // Only run once on mount
+  }, []);
 
   const handleRowClick = (policy) => {
     setSelectedPolicy({
@@ -658,18 +658,33 @@ export default function PolicyTable() {
             </select>
           </div>
 
-          <button 
+          {/* 🆕 OVERDUE CHECK BUTTON */}
+        <button 
             onClick={async () => {
-              setSearchTerm("");
-              setStatusFilter("All");
-              setPartnerFilter("");
-              setCurrentPage(1);
-              await loadPolicies();
-              await checkOverdueOnLoad(); // Re-check for overdue on manual refresh
+              setIsRefreshing(true);
+              try {
+                // Reset all filters
+                setSearchTerm("");
+                setStatusFilter("All");
+                setPartnerFilter("");
+                setCurrentPage(1);
+                
+                // Reload data
+                await loadPolicies();
+                await loadPartners();
+                
+                console.log("✅ Policies refreshed successfully");
+              } catch (error) {
+                console.error("❌ Error refreshing:", error);
+                alert("Failed to refresh policies. Please try again.");
+              } finally {
+                setIsRefreshing(false);
+              }
             }} 
             className="reset-btn-policy"
+            disabled={isRefreshing}
           >
-            Refresh
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </button>
         </div>
       </div>
