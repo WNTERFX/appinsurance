@@ -92,22 +92,6 @@ export default function NewPolicyController() {
   // -----------------------------------
   // Load lookup data
   // -----------------------------------
-  useEffect(() => {
-    (async () => {
-      const [vt, cl, pt, pmt] = await Promise.all([
-        getComputationValue(),
-        fetchClients(),
-        fetchPartners(),
-        fetchPaymentTypes()
-      ]);
-      setVehicleTypes(vt || []);
-      setClients(cl || []);
-      setPartners(pt || []);
-      setPaymentTypes(pmt || []);
-    })();
-  }, []);
-
-  // Fetch payment types function
   const fetchPaymentTypes = async () => {
     try {
       const { db } = await import("../../dbServer");
@@ -115,7 +99,7 @@ export default function NewPolicyController() {
         .from("payment_type")
         .select("*")
         .order("months_payment", { ascending: true });
-      
+
       if (error) throw error;
       return data;
     } catch (error) {
@@ -123,6 +107,22 @@ export default function NewPolicyController() {
       return [];
     }
   };
+
+  // Load lookup data
+  useEffect(() => {
+    (async () => {
+      const [vt, cl, pt, pmt] = await Promise.all([
+        getComputationValue(),
+        fetchClients(),
+        fetchPartners(),
+        fetchPaymentTypes() // now works
+      ]);
+      setVehicleTypes(vt || []);
+      setClients(cl || []);
+      setPartners(pt || []);
+      setPaymentTypes(pmt || []);
+    })();
+  }, []);
 
   // -----------------------------------
   // Load vehicle details
@@ -246,7 +246,8 @@ export default function NewPolicyController() {
       total_Premium: totalWithCommission,
       vehicle_Rate_Value: totalVehicleValueRate,
       aon_Cost: actOfNatureCost,
-      commission_fee: commissionFeeToSave // 🔧 FIX: Save as number
+      commission_fee: commissionFeeToSave,
+      payment_type_id: Number(selectedPaymentType)
     };
 
     // 🔧 DEBUG: Log the data being saved

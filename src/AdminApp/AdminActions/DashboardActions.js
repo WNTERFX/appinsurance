@@ -178,3 +178,50 @@ export async function getAllPartners() {
     return [];
   }
 }
+
+export async function getThisMonthsDuePaymentsDetails() {
+  try {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+
+    const { data, error } = await db
+      .from("payment_Table")
+      .select(`
+        id,
+        payment_date,
+        amount_to_be_paid,
+        policy_Table (
+          internal_id,
+          client_id,
+          clients_Table (
+            first_Name,
+            middle_Name,
+            family_Name
+          )
+        )
+      `)
+      .gte("payment_date", startOfMonth)
+      .lte("payment_date", endOfMonth)
+      .eq("is_paid", false)
+      .or("is_archive.is.null,is_archive.eq.false")
+      .order("payment_date", { ascending: true })
+      .limit(20); // limit to 20 for dashboard
+
+    if (error) throw error;
+
+    // Format results
+    return data.map((payment) => ({
+      id: payment.id,
+      payment_date: new Date(payment.payment_date).toLocaleDateString(),
+      amount_to_be_paid: payment.amount_to_be_paid,
+      policy_id: payment.policy_Table?.internal_id || "N/A",
+      client_name: payment.policy_Table?.clients_Table
+        ? `${payment.policy_Table.clients_Table.first_Name || ""} ${payment.policy_Table.clients_Table.middle_Name || ""} ${payment.policy_Table.clients_Table.family_Name || ""}`.trim()
+        : "N/A",
+    }));
+  } catch (err) {
+    console.error("Error fetching this month's due payments details:", err.message);
+    return [];
+  }
+}

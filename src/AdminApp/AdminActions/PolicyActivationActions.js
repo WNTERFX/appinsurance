@@ -4,24 +4,26 @@ import { db } from "../../dbServer";
 
 export async function ActivatePolicyAndPayment(policyId, paymentTypeId, totalPremium, months) {
   try {
-    // 1️⃣ Get the exact UTC timestamp when activation happens
+    // 1️⃣ Get today's date at 12:00 noon (local time)
     const now = new Date();
+    now.setHours(12, 0, 0, 0); // Set to 12:00:00.000 noon
     const inceptionTimestamp = now.toISOString();
 
-    // 2️⃣ Calculate expiry (1 year from now, same UTC time)
+    // 2️⃣ Calculate expiry (1 year from inception, also at 12:00 noon)
     const expiryDate = new Date(now);
     expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+    expiryDate.setHours(12, 0, 0, 0); // Ensure 12:00 noon
     const expiryTimestamp = expiryDate.toISOString();
 
     console.log("=== ACTIVATION DETAILS ===");
     console.log("Policy ID:", policyId);
-    console.log("Inception (UTC):", inceptionTimestamp);
-    console.log("Expiry (UTC):", expiryTimestamp);
+    console.log("Inception (12:00 noon):", inceptionTimestamp);
+    console.log("Expiry (12:00 noon, +1 year):", expiryTimestamp);
     console.log("Payment Type ID:", paymentTypeId);
     console.log("Total Premium:", totalPremium);
     console.log("Months:", months);
 
-    // 3️⃣ Activate policy with UTC timestamps
+    // 3️⃣ Activate policy with noon timestamps
     const { data: policyData, error: policyError } = await db
       .from("policy_Table")
       .update({
@@ -81,6 +83,7 @@ export async function ActivatePolicyAndPayment(policyId, paymentTypeId, totalPre
     return { success: false, error: error.message };
   }
 }
+
 
 export async function CancelPolicyAndRefund(policyId) {
     try {

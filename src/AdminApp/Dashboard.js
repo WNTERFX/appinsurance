@@ -12,7 +12,8 @@ import {
   getTotalPolicyCount,         
   getTotalDeliveredPolicyCount,
   getMonthlyPartnerPolicyData,
-  getAllPartners
+  getAllPartners,
+  getThisMonthsDuePaymentsDetails
 } from "./AdminActions/DashboardActions";
 import ProfileMenu from "../ReusableComponents/ProfileMenu";
 import {FaUsers, FaFileAlt,FaTruck, FaCheckCircle, FaChartBar,FaHourglassHalf , FaMoneyBill} from "react-icons/fa";
@@ -33,7 +34,15 @@ export default function Dashboard() {
     const [chartData, setChartData] = useState({ xAxis: [], series: [] });
     const [partners, setPartners] = useState([]);
     const [partnerColors, setPartnerColors] = useState({});
+    const [duePayments, setDuePayments] = useState([]);
 
+    useEffect(() => {
+      async function fetchDuePayments() {
+        const result = await getThisMonthsDuePaymentsDetails();
+        setDuePayments(result);
+      }
+      fetchDuePayments();
+    }, []);
   useEffect(() => {
     function handleClickOutside(e) {
       if (
@@ -177,7 +186,7 @@ useEffect(() => {
 
               <div className="monthly-data">
               <div className="monthly-data-header">
-                <h2><FaChartBar className="card-icon" /> Monthly Client Data</h2>
+                <h2><FaChartBar className="card-icon" /> Monthly Data</h2>
 
                 {/* Dynamic legend */}
                 <div className="partner-container">
@@ -215,6 +224,36 @@ useEffect(() => {
                     height={300}
                     sx={{ width: '100%' }}  // ✅ let it adapt to container width
                   />
+              </div>
+
+              <div className="due-payments-list">
+                <h2><FaHourglassHalf className="card-icon" /> This Month's Due Payments</h2>
+                <div className="due-payments-items scrollable-table">
+                  {duePayments.length === 0 ? (
+                    <p>No due payments this month</p>
+                  ) : (
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Client Name</th>
+                          <th>Policy ID</th>
+                          <th>Due Date</th>
+                          <th>Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {duePayments.map((payment) => (
+                          <tr key={payment.id}>
+                            <td>{payment.client_name}</td>
+                            <td>{payment.policy_id}</td>
+                            <td>{payment.payment_date}</td>
+                            <td>{payment.amount_to_be_paid.toLocaleString(undefined, { style: 'currency', currency: 'PHP' })}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
               </div>
             </div>
 

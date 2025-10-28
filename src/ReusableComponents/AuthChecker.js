@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Outlet } from "react-router-dom";
 import { db } from "../dbServer";
 import ScreenLock from "./ScreenLock";
@@ -11,12 +12,14 @@ export default function AuthChecker() {
   const warningTimeout = useRef(null);
   const [locked, setLocked] = useState(false);
   const [lockMessage, setLockMessage] = useState("");
+   const navigate = useNavigate();
 
   useEffect(() => {
     const lockScreen = (message, showAlert = false, alertMessage = null) => {
       clearTimeout(idleTimeout.current);
       clearTimeout(warningTimeout.current);
       setLockMessage(message);
+      
       setLocked(true);
      
       if (showAlert) {
@@ -29,7 +32,8 @@ export default function AuthChecker() {
       const { data: { session }, error: sessionError } = await db.auth.getSession();
       
       if (sessionError || !session) {
-        return lockScreen("You have been logged out due to inactivity.");
+        navigate("/appinsurance", { replace: true });
+        return;
       }
 
       const userId = session.user.id;

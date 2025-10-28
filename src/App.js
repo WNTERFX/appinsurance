@@ -49,6 +49,10 @@ import ModeratorPolicyNewClientForm from "./ModeratorApp/ModeratorForms/Moderato
 import ModeratorNewPolicyController from "./ModeratorApp/ControllerModerator/ModeratorNewPolicyController";
 import ModeratorEditPolicyController from "./ModeratorApp/ControllerModerator/ModeratorEditPolicyController";
 
+// Password Reset Components
+import PasswordResetForm from "./LoginApp/ResetForm";
+import PasswordResetConfirm from "./LoginApp/PasswordResetConfirm";
+
 
 //Reusable Components
 import GlobalAlert from "./ReusableComponents/GlobalAlert";
@@ -67,6 +71,8 @@ function App() {
       <Routes>
         {/* Public route */}
         <Route path="/appinsurance" element={<LoginForm anotherLoginDetected={anotherLoginDetected} setSession={setSession} />} />
+        <Route path="/appinsurance/reset-password" element={<PasswordResetForm />} />
+        <Route path="/appinsurance/reset-password/confirm" element={<PasswordResetConfirm />} />
 
         {/* Protected routes */}
         <Route element={<AuthChecker />}>

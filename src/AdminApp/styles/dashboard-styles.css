@@ -384,6 +384,66 @@
   background-color: #f5f5f5;
 }
 
+/* Pending payments list */
+.due-payments-list {
+  grid-column: span 4; /* full width under chart */
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.08);
+}
+
+.due-payments-list h2 {
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.due-payments-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.due-payments-list th,
+.due-payments-list td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.due-payments-list th {
+  font-weight: 600;
+  color: #555;
+}
+
+.due-payments-list tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.scrollable-table {
+  max-height: 300px; /* set the height you want */
+  overflow-y: auto;
+  overflow-x: hidden; /* optional if table fits horizontally */
+}
+
+/* Optional: fix header while scrolling */
+.scrollable-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scrollable-table thead tr {
+  position: sticky;
+  top: 0;
+  background-color: #fff; /* match the card background */
+  z-index: 10;
+  box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1); /* subtle shadow for distinction */
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
   .monthly-data-header,
