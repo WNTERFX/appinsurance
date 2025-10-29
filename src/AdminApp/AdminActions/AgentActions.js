@@ -13,33 +13,33 @@ const agentColors = [
   "#4682B4", // Steel Blue
 ];
 
-export async function getAllAgentsWithAssignedColors() {
-  try {
-    const { data: agents, error } = await db
-      .from("employee_Accounts")
-      .select("id, first_name, last_name")
-      .eq("is_Admin", false);
+  export async function getAllAgentsWithAssignedColors() {
+    try {
+      const { data: agents, error } = await db
+        .from("employee_Accounts")
+        .select("id, first_name, last_name, is_Admin"); // include is_Admin
 
-    if (error) {
-      console.error("Error fetching agents:", error.message);
+      if (error) {
+        console.error("Error fetching agents:", error.message);
+        return [];
+      }
+
+      if (!agents || !Array.isArray(agents)) {
+        return [];
+      }
+
+      const agentsWithColors = agents.map((agent, index) => ({
+        ...agent,
+        borderColor: agentColors[index % agentColors.length],
+        role: agent.is_Admin ? "Admin" : "Moderator", 
+      }));
+
+      return agentsWithColors;
+    } catch (err) {
+      console.error("Unexpected error fetching agents:", err);
       return [];
     }
-
-    if (!agents || !Array.isArray(agents)) {
-      return [];
-    }
-
-    const agentsWithColors = agents.map((agent, index) => ({
-      ...agent,
-      borderColor: agentColors[index % agentColors.length],
-    }));
-
-    return agentsWithColors;
-  } catch (err) {
-    console.error("Unexpected error fetching agents:", err);
-    return [];
   }
-}
 
 // Modified getClientCountByAgent to handle null agentId for total count
 export async function getClientCountByAgent(agentId = null) { // Accept null

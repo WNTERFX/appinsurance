@@ -244,7 +244,7 @@
     /* REMOVED: overflow: hidden; */ /* No longer needed if border-left is on the main element */
   }
 
-  /* REMOVED: .agent-color-bar CSS as it's no longer needed */
+
 
 
   .agent-icon {
@@ -274,12 +274,21 @@
     gap: 8px;
   }
 
-  .agent-content p {
-    margin: 0;
-    font-size: 28px;
-    font-weight: 700;
-    color: #222;
+  
+  .agent-role {
+    font-size: 20px;          
+    color: #555;              
+    margin-top: 4px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase; 
   }
+
+  .agent-client-count{
+    font-size: 18px;
+    color: #000000;
+    font-weight: 400px;
+  }
+ 
 
   .agent-content:hover{
     transform: translateY(-3px);
@@ -294,5 +303,6 @@
     box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3); /* Optional: a glow effect */
     transform: translateY(-2px); /* Slightly lift it more */
   }
+
 
 

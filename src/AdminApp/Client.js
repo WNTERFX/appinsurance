@@ -14,7 +14,7 @@ import ProfileMenu from "../ReusableComponents/ProfileMenu";
 
 import NewClientController from "./ControllerAdmin/NewClientController";
 import EditClientController from "./ControllerAdmin/EditClientController";
-
+import "./styles/client-styles.css";
 export default function Client() {
   const navigate = useNavigate();
 
@@ -136,7 +136,8 @@ export default function Client() {
                   <FaUser className="agent-icon" />
                   {agent.first_name} {agent.last_name}
                 </h2>
-                <p>{agent.clientCount}</p> {/* This already shows the count per agent */}
+                <p className="agent-role">{agent.role}</p>
+                <p className="agent-client-count">{agent.clientCount} Clients</p>
               </div>
             </div>
           ))}
