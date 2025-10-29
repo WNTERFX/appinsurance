@@ -22,6 +22,9 @@ export default function PrintingModal({ recordType, onClose }) {
   const [partners, setPartners] = useState([]);
   const [selectedPartner, setSelectedPartner] = useState("");
   const [reportCreator, setReportCreator] = useState("");
+  const [employees, setEmployees] = useState([]);
+  const [selectedEmployee, setSelectedEmployee] = useState("");
+
 
   const safeRecordType = recordType || "client";
 
@@ -73,6 +76,23 @@ export default function PrintingModal({ recordType, onClose }) {
       }
       return sortOrder === "latest" ? dateB - dateA : dateA - dateB;
     });
+  };
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  const fetchEmployees = async () => {
+    try {
+      const { data, error } = await db
+        .from("employee_Accounts")
+        .select("id, personnel_Name, first_name, last_name")
+        .order("personnel_Name", { ascending: true });
+      if (error) throw error;
+      setEmployees(data || []);
+    } catch (err) {
+      console.error("Error fetching employees:", err);
+    }
   };
 
   useEffect(() => {
@@ -148,16 +168,16 @@ export default function PrintingModal({ recordType, onClose }) {
       let data = [];
       switch (safeRecordType) {
         case "client":
-          data = await fetchClients(null, false, from, to);
+          data = await fetchClients(selectedEmployee || null, false, from, to);
           break;
         case "policy":
-          data = await fetchPolicies(from, to, selectedPartner || null);
+          data = await fetchPolicies(from, to, selectedPartner || null, selectedEmployee || null);
           break;
         case "due":
-          data = await fetchAllDues(from, to);
+          data = await fetchAllDues(from, to, selectedEmployee || null);
           break;
         case "payment":
-          data = await fetchPaymentsWithPenalties();
+          data = await fetchPaymentsWithPenalties(selectedEmployee || null);
           break;
         default:
           data = [];
@@ -394,6 +414,27 @@ export default function PrintingModal({ recordType, onClose }) {
                     {partners.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.insurance_Name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {["policy", "due", "payment", "client"].includes(safeRecordType) && (
+                <div className="employee-filter">
+                  <label>Filter by Employee:</label>
+                  <select
+                    value={selectedEmployee}
+                    onChange={(e) => {
+                      setSelectedEmployee(e.target.value);
+                      setRecords([]);
+                      setHasSearched(false);
+                    }}
+                  >
+                    <option value="">All Employees</option>
+                    {employees.map((emp) => (
+                      <option key={emp.id} value={emp.id}>
+                        {emp.personnel_Name || `${emp.first_name} ${emp.last_name}`}
                       </option>
                     ))}
                   </select>

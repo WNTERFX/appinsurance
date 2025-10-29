@@ -24,7 +24,7 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
 
   const loadClientsData = async () => {
     const data = await fetchClients(agentId, false);
-    setClients(data || []);
+    setClients(data);
     setCurrentPage(1);
   };
 
@@ -48,13 +48,13 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
   };
 
   const handleRefreshOrViewAll = () => {
+    setSearchTerm("");        
+    setCurrentPage(1);       
     if (agentId) {
-      onViewAllClients();
+      onViewAllClients();    
     } else {
-      setSearchTerm("");
-      loadClientsData();
+      loadClientsData();      
     }
-    setCurrentPage(1);
   };
 
   // Determine the count to show in the header

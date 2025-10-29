@@ -20,6 +20,14 @@
   }
 }
 
+
+@media (min-width: 1700px) {
+  .Account-container {
+    padding-left: 70px;
+  }
+}
+
+
 /* Header */
 .Account-header {
     display: flex;

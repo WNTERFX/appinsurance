@@ -17,6 +17,12 @@
   }
 }
 
+@media (min-width: 1700px) {
+  .reports-container {
+    padding-left: 70px;
+  }
+}
+
 /* ✅ HEADER — same as client/policy/delivery */
 .reports-header {
   display: flex;

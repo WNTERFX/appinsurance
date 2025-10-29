@@ -4,25 +4,25 @@ import { db } from "../../dbServer";
 export async function fetchClients(agentId = null, isArchived = false, from = null, to = null) {
   let query = db
     .from("clients_Table")
-    .select(
-      `
+    .select(`
       *,
       employee:employee_Accounts(personnel_Name)
-    `
-    );
+    `)
+    .order("internal_id", { ascending: false }); // newest first
 
-  // Apply agent_Id filter if provided
+  // Filter by agent
   if (agentId) {
-    query = query.eq("agent_Id", agentId); // Use agent_Id (capital 'I')
+    query = query.eq("agent_Id", agentId);
   }
 
-  // Apply archive filter
+  // Filter by archive status
   if (isArchived) {
     query = query.eq("is_archived", true);
   } else {
     query = query.or("is_archived.is.null,is_archived.eq.false");
   }
 
+  // Optional date range
   if (from && to) {
     query = query.gte("client_Registered", from).lte("client_Registered", to);
   }
@@ -34,8 +34,7 @@ export async function fetchClients(agentId = null, isArchived = false, from = nu
     return [];
   }
 
-  console.log("CLIENTS DATA:", data);
-  return data;
+  return data || [];
 }
 
 export async function fetchEmployees() {

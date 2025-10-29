@@ -105,14 +105,15 @@ export default function ClientEditForm({originalData,formData,errors,onChange,on
 
             </div>
 
-            {/* Phone Number */}
+           {/* Phone Number */}
             <div className="form-group-client-update">
               <label>Phone Number *</label>
               <input
                 type="text"
                 value={originalData.phone_Number}
                 readOnly
-                className="original-value" disabled
+                className="original-value"
+                disabled
               />
               <input
                 type="text"
@@ -126,6 +127,13 @@ export default function ClientEditForm({originalData,formData,errors,onChange,on
                 }}
                 placeholder="0xxxxxxxxxx"
               />
+
+              {/* Duplicate warning */}
+              {errors.phoneExists && (
+                <p style={{ color: "red" }}>Phone number already exists</p>
+              )}
+
+              {/* Validation error */}
               {errors.phone_Number && (
                 <p style={{ color: "red" }}>{errors.phone_Number}</p>
               )}
@@ -152,32 +160,39 @@ export default function ClientEditForm({originalData,formData,errors,onChange,on
             </div>
 
             {/* Email */}
-            <div className="form-group-client-update">
-              <label>Email *</label>
-              <input
-                type="text"
-                value={originalData.email}
-                readOnly
-                className="original-value" disabled
-              />
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={onChange}
-                placeholder="example@email.com"
-              />
-              {errors.email && (
-                <p style={{ color: "red" }}>{errors.email}</p>
-              )}
-            </div>
+          <div className="form-group-client-update">
+            <label>Email *</label>
+            <input
+              type="text"
+              value={originalData.email}
+              readOnly
+              className="original-value"
+              disabled
+            />
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={onChange}
+              placeholder="example@email.com"
+            />
+
+            {/* Duplicate warning */}
+            {errors.emailExists && (
+              <p style={{ color: "red" }}>Email already exists</p>
+            )}
+
+            {/* Validation error */}
+            {errors.email && (
+              <p style={{ color: "red" }}>{errors.email}</p>
+            )}
+          </div>
 
 
 
           </div>
 
         </div>
-                   {/* Buttons */}
             <div className="client-update-controls">
               <button
                 className="cancel-btn-client-update"

@@ -76,19 +76,21 @@ export default function NavBar() {
             </div>
           </Link>
 
-          <Link to="/appinsurance/main-app/records" className={"side-bar-item" + (isActive("/appinsurance/main-app/records") ? " active" : "")}>
-            <div className="side-bar-label">
-              <LuActivity className="side-bar-icon" />
-              <span>Reports</span>
-            </div>
-          </Link>
-
           <Link to="/appinsurance/main-app/payment-records" className={"side-bar-item" + (isActive("/appinsurance/main-app/payment-records") ? " active" : "")}>
             <div className="side-bar-label">
               <LuCreditCard className="side-bar-icon" />
               <span>Payments</span>
             </div>
           </Link>
+          
+          {isAdmin && (
+           <Link to="/appinsurance/main-app/records" className={"side-bar-item" + (isActive("/appinsurance/main-app/records") ? " active" : "")}>
+            <div className="side-bar-label">
+              <LuActivity className="side-bar-icon" />
+              <span>Reports</span>
+            </div>
+          </Link>
+          )}
 
           {/* Only show this if user is ADMIN */}
           {isAdmin && (

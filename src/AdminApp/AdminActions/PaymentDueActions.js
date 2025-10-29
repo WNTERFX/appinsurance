@@ -5,7 +5,6 @@ import { fetchPenaltiesForPayments, calculateTotalDue, calculateRemainingBalance
 export async function fetchPaymentSchedule(policyId) {
   if (!policyId) throw new Error("Policy ID is required");
 
-  // 1️⃣ Fetch all payments for this policy
   const { data: payments, error: paymentsError } = await db
     .from("payment_Table")
     .select(`
@@ -20,17 +19,21 @@ export async function fetchPaymentSchedule(policyId) {
       refund_amount,
       refund_date,
       refund_reason,
-      payment_type ( payment_type_name )
+      payment_type ( payment_type_name ),
+      paymongo_transactions (
+        reference_number,
+        status,
+        checkout_url
+      )
     `)
     .eq("policy_id", policyId)
     .or("is_archive.is.null,is_archive.eq.false")
     .order("payment_date", { ascending: true });
 
   if (paymentsError) throw paymentsError;
-
   if (!payments || payments.length === 0) return [];
 
-  // 2️⃣ Fetch all penalties for these payments in a single query
+  // Penalties logic stays the same
   const paymentIds = payments.map(p => p.id);
 
   const { data: penalties, error: penaltiesError } = await db
@@ -41,19 +44,20 @@ export async function fetchPaymentSchedule(policyId) {
 
   if (penaltiesError) throw penaltiesError;
 
-  // 3️⃣ Build a map of penalties by payment_id
   const penaltiesMap = {};
   for (const p of penalties) {
     if (!penaltiesMap[p.payment_id]) penaltiesMap[p.payment_id] = [];
     penaltiesMap[p.payment_id].push(p);
   }
 
-  // 4️⃣ Merge penalties into payments
   return payments.map(p => {
     const paymentPenalties = penaltiesMap[p.id] || [];
     return {
       ...p,
       payment_type_name: p.payment_type?.payment_type_name || null,
+      paymongo_reference: p.paymongo_transactions?.[0]?.reference_number || null,
+      paymongo_status: p.paymongo_transactions?.[0]?.status || null,
+      paymongo_checkout_url: p.paymongo_transactions?.[0]?.checkout_url || null,
       penalties: paymentPenalties,
       total_due: calculateTotalDue(p, paymentPenalties),
       remaining_balance: calculateRemainingBalance(p, paymentPenalties)
@@ -292,7 +296,6 @@ export async function generatePayments(policyId, payments) {
 
 // ✅ UPDATED: Fetch all dues with payment_type_id and payment_type_name
 export async function fetchAllDues(fromDate = null, toDate = null) {
-  // 1️⃣ Fetch payments with related policy and client info
   let query = db
     .from("payment_Table")
     .select(`
@@ -303,6 +306,11 @@ export async function fetchAllDues(fromDate = null, toDate = null) {
       paid_amount,
       payment_type_id,
       payment_type ( payment_type_name ),
+      paymongo_transactions (
+        reference_number,
+        status,
+        checkout_url
+      ),
       policy_Table!inner (
         id,
         internal_id,
@@ -328,7 +336,6 @@ export async function fetchAllDues(fromDate = null, toDate = null) {
   if (paymentsError) throw paymentsError;
   if (!payments || payments.length === 0) return [];
 
-  // 2️⃣ Fetch all penalties for these payments in one query
   const paymentIds = payments.map(p => p.id);
   const { data: penalties, error: penaltiesError } = await db
     .from("payment_due_penalties")
@@ -338,19 +345,20 @@ export async function fetchAllDues(fromDate = null, toDate = null) {
 
   if (penaltiesError) throw penaltiesError;
 
-  // 3️⃣ Map penalties by payment ID
   const penaltiesMap = {};
   for (const p of penalties) {
     if (!penaltiesMap[p.payment_id]) penaltiesMap[p.payment_id] = [];
     penaltiesMap[p.payment_id].push(p);
   }
 
-  // 4️⃣ Merge penalties into payments
   return payments.map(p => {
     const paymentPenalties = penaltiesMap[p.id] || [];
     return {
       ...p,
       payment_type_name: p.payment_type?.payment_type_name || null,
+      paymongo_reference: p.paymongo_transactions?.[0]?.reference_number || null,
+      paymongo_status: p.paymongo_transactions?.[0]?.status || null,
+      paymongo_checkout_url: p.paymongo_transactions?.[0]?.checkout_url || null,
       penalties: paymentPenalties,
       total_due: calculateTotalDue(p, paymentPenalties),
       remaining_balance: calculateRemainingBalance(p, paymentPenalties)

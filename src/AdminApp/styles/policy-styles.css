@@ -18,6 +18,13 @@
   }
 }
 
+@media (min-width: 1700px) {
+  .Policy-container {
+    padding-left: 70px;
+  }
+}
+
+
 /* ✅ FIXED POLICY HEADER — identical to Client header */
 .Policy-header {
   display: flex;

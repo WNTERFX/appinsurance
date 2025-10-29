@@ -1,14 +1,14 @@
 import { db } from "../../dbServer";
 
 // ✅ UPDATED: Now accepts date range parameters and partner filter
-export async function fetchPolicies(fromDate = null, toDate = null, partnerId = null) {
-  console.log("fetchPolicies called with partnerId:", partnerId, "Type:", typeof partnerId);
-  
+export async function fetchPolicies(fromDate = null, toDate = null, partnerId = null, employeeId = null) {
+  console.log("fetchPolicies called with:", { fromDate, toDate, partnerId, employeeId });
+
   let query = db
     .from("policy_Table")
     .select(`
       *,
-      clients_Table(
+      clients_Table!inner(
         first_Name,
         middle_Name,
         family_Name,
@@ -17,7 +17,14 @@ export async function fetchPolicies(fromDate = null, toDate = null, partnerId = 
         address,
         email,
         phone_Number,
-        internal_id
+        internal_id,
+        agent_Id,
+        employee_Accounts:agent_Id (
+          personnel_Name,
+          first_name,
+          middle_name,
+          last_name
+        )
       ),
       insurance_Partners(
         insurance_Name
@@ -30,29 +37,29 @@ export async function fetchPolicies(fromDate = null, toDate = null, partnerId = 
     .or("is_archived.is.null,is_archived.eq.false")
     .is("archival_date", null);
 
-  // ✅ Add date filtering if dates are provided
   if (fromDate && toDate) {
-    query = query
-      .gte("created_at", fromDate)
-      .lte("created_at", toDate);
+    query = query.gte("created_at", fromDate).lte("created_at", toDate);
   }
 
-  // ✅ Add partner filtering if partnerId is provided
   if (partnerId) {
-    console.log("Applying partner filter:", partnerId);
     query = query.eq("partner_id", partnerId);
+  }
+
+  // ✅ Correct way to filter by employee: use the nested clients_Table.agent_Id
+  if (employeeId) {
+    query = query.eq("clients_Table.agent_Id", employeeId);
   }
 
   query = query.order("created_at", { ascending: false });
 
   const { data, error } = await query;
-  
-  console.log("Query result:", { count: data?.length, error });
-  if (data && data.length > 0) {
-    console.log("Sample policy partner_id:", data[0].partner_id);
+
+  if (error) {
+    console.error("Error fetching policies:", error.message);
+    throw error;
   }
-  
-  if (error) throw error;
+
+  console.log("Query result:", { count: data?.length || 0 });
   return data || [];
 }
 

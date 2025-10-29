@@ -105,20 +105,6 @@ export default function MonthlyData({ view, setView }) {
         </button>
       </div>
 
-      {/* RENEWALS */}
-      <div className="renewal-record-container header-with-button">
-        <p className="renewals-title">Renewals</p>
-        <button
-          className="btn btn-create"
-          onClick={() => {
-            setRecordType("renewal");
-            setOpenModal(true);
-          }}
-        >
-          Print
-        </button>
-      </div>
-
       {/* PRINTING MODAL */}
       {openModal && (
         <PrintingModal

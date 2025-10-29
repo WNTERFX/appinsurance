@@ -17,6 +17,12 @@
   }
 }
 
+@media (min-width: 1700px) {
+  .delivery-container {
+    padding-left: 70px;
+  }
+}
+
 /*  FIXED DELIVERY HEADER — same style as Client/Policy/Claims */
 .delivery-header {
     display: flex;

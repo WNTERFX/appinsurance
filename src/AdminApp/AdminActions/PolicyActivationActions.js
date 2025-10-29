@@ -2,6 +2,39 @@ import { db } from "../../dbServer";
 
 // Export all functions for use in other components
 
+
+export async function SetPolicyInceptionDate(policyId, inceptionTimestamp, expiryTimestamp) {
+  try {
+    console.log("=== SETTING POLICY INCEPTION DATE ===");
+    console.log("Policy ID:", policyId);
+    console.log("Inception (12:00 noon):", inceptionTimestamp);
+    console.log("Expiry (12:00 noon, +1 year):", expiryTimestamp);
+
+    const { data, error } = await db
+      .from("policy_Table")
+      .update({
+        policy_inception: inceptionTimestamp,
+        policy_expiry: expiryTimestamp,
+      })
+      .eq("id", policyId)
+      .select();
+
+    if (error) throw error;
+
+    console.log("✅ Inception date set successfully:", data);
+
+    return {
+      success: true,
+      policy: data,
+      inceptionTimestamp,
+      expiryTimestamp,
+    };
+  } catch (error) {
+    console.error("❌ Error setting inception date:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 export async function ActivatePolicyAndPayment(policyId, paymentTypeId, totalPremium, months) {
   try {
     // 1️⃣ Get today's date at 12:00 noon (local time)

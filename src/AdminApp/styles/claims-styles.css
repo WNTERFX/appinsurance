@@ -17,6 +17,13 @@
   }
 }
 
+@media (min-width: 1700px) {
+  .claims-container {
+    padding-left: 70px;
+  }
+}
+
+
 /* ✅ FIXED CLAIMS HEADER — same design as Client & Policy */
 .claims-header {
     display: flex;

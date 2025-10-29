@@ -17,6 +17,13 @@
   }
 }
 
+@media (min-width: 1700px) {
+  .payment-records-container {
+    padding-left: 70px;
+  }
+}
+
+
 /* ✅ HEADER */
 .payment-record-header {
     display: flex;

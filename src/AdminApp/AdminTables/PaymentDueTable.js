@@ -4,6 +4,7 @@ import "../styles/payment-table-styles.css";
 import PaymentDueController from "./TableController/PaymentDueController"
 import { useState } from "react";
 
+
 export default function PolicyWithPaymentsList() {
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -182,10 +183,16 @@ export default function PolicyWithPaymentsList() {
       )}
 
       {/* PAYMENT GENERATION MODAL */}
-      {generateModalOpen && selectedPolicy && (
-        <PaymentGenerationModal policy={selectedPolicy} onClose={() => { setGenerateModalOpen(false); setSelectedPolicy(null); }} onGenerate={handleGeneratePayments} />
+    {generateModalOpen && selectedPolicy && (
+        <PaymentGenerationModal 
+          policy={selectedPolicy} 
+          onClose={() => { 
+            setGenerateModalOpen(false); 
+            setSelectedPolicy(null); 
+          }} 
+          onGenerate={handleGeneratePayments}
+        />
       )}
-
       <div className="payments-overview-header">
         <h2>Payments Overview ({totalPoliciesCount})</h2>
         <div className="search-filter-refresh-bar">
@@ -209,6 +216,11 @@ export default function PolicyWithPaymentsList() {
           const client = policy.clients_Table;
           const clientName = client ? [client.prefix, client.first_Name, client.middle_Name ? client.middle_Name.charAt(0) + "." : "", client.family_Name, client.suffix].filter(Boolean).join(" ") : "Unknown Client";
           const clientInternalId = client?.internal_id || "N/A";
+          const agentName = client?.employee_Accounts
+            ? `${client.employee_Accounts.first_name || ""} ${client.employee_Accounts.last_name || ""}`.trim()
+            : "N/A";
+
+          const partnerName = policy.insurance_Partners?.insurance_Name || "N/A";
 
           // payments: prefer lazy-loaded store, fallback to paymentsMap (older code)
           const payments = paymentsByPolicy[policy.id] || paymentsMap[policy.id] || [];
@@ -234,6 +246,8 @@ export default function PolicyWithPaymentsList() {
                   <div className="client-info-grid">
                     <div><strong>Client Name:</strong> {clientName}</div>
                     <div><strong>Client Internal ID:</strong> {clientInternalId}</div>
+                    <div><strong>Agent:</strong> {agentName}</div>
+                    <div><strong>Partner:</strong> {partnerName}</div>
                   </div>
                 </div>
 
@@ -284,6 +298,7 @@ export default function PolicyWithPaymentsList() {
                         <th>Total Due</th>
                         <th>Paid Amount</th>
                         <th>Status</th>
+                        <th>Reference</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
@@ -337,6 +352,25 @@ export default function PolicyWithPaymentsList() {
                             <td className="total-due-cell"><strong>{isRefunded ? (<span style={{ color: '#4caf50' }}>₱0.00 (Refunded)</span>) : isVoided ? (<span style={{ color: '#f44336' }}>₱0.00 (Voided)</span>) : isCancelled ? (<span style={{ color: '#ff9800' }}>₱0.00 (Cancelled)</span>) : (totalDue.toLocaleString(undefined, { style: "currency", currency: "PHP" }))}</strong></td>
                             <td>{isRefunded ? (<span style={{ color: '#4caf50', fontWeight: '600' }}>{p.refund_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" })} (Refunded)</span>) : isVoided ? (<span style={{ color: '#f44336', fontWeight: '600' }}>₱0.00 (Voided)</span>) : isCancelled ? (<span style={{ color: '#ff9800', fontWeight: '600' }}>₱0.00 (Cancelled)</span>) : (calculateTotalPaid(p)?.toLocaleString(undefined, { style: "currency", currency: "PHP" }))}</td>
                             <td className="payment-status-cell">{isRefunded && <span className="payment-status-badge status-refunded">Refunded</span>}{isCancelled && <span className="payment-status-badge status-cancelled">Cancelled</span>}{isVoided && <span className="payment-status-badge status-voided">Voided</span>}{!isSpecialStatus && status}</td>
+                            <td>
+                              {p.paymongo_reference ? (
+                                <div style={{ display: "flex", flexDirection: "column" }}>
+                                  <span style={{ fontWeight: "500" }}>{p.paymongo_reference}</span>
+                                  {p.paymongo_checkout_url && (
+                                    <a
+                                      href={p.paymongo_checkout_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      style={{ color: "#1976d2", fontSize: "0.8em" }}
+                                    >
+                                      View Checkout
+                                    </a>
+                                  )}
+                                </div>
+                              ) : (
+                                <span style={{ color: "#aaa" }}>N/A</span>
+                              )}
+                            </td>
                             <td className="payment-actions">
                               <button disabled={disablePayment} onClick={() => handlePaymentClick({ ...p, policy_id: policy.id }, client?.phone_Number)} className={`payment-btn ${disablePayment ? "disabled-btn" : ""}`} style={{ opacity: disablePayment ? 0.5 : 1, cursor: disablePayment ? "not-allowed" : "pointer" }}>
                                 {isSpecialStatus ? status.charAt(0).toUpperCase() + status.slice(1) : status === "fully-paid" ? "Paid" : "Payment"}
