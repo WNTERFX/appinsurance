@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/appinsurance/static/css/main.ddaf2b95.css",
-    "main.js": "/appinsurance/static/js/main.bcee705a.js",
+    "main.css": "/appinsurance/static/css/main.9fe7378e.css",
+    "main.js": "/appinsurance/static/js/main.a5deb26c.js",
     "static/js/239.35c0a306.chunk.js": "/appinsurance/static/js/239.35c0a306.chunk.js",
     "static/js/977.7b6faa85.chunk.js": "/appinsurance/static/js/977.7b6faa85.chunk.js",
     "static/js/455.abdb5ecf.chunk.js": "/appinsurance/static/js/455.abdb5ecf.chunk.js",
@@ -9,14 +9,14 @@
     "static/media/logo_.png": "/appinsurance/static/media/logo_.ec1338797e69cd5ad4b7.png",
     "static/media/user-icon.png": "/appinsurance/static/media/user-icon.ad868dd5b495d80fb045.png",
     "index.html": "/appinsurance/index.html",
-    "main.ddaf2b95.css.map": "/appinsurance/static/css/main.ddaf2b95.css.map",
-    "main.bcee705a.js.map": "/appinsurance/static/js/main.bcee705a.js.map",
+    "main.9fe7378e.css.map": "/appinsurance/static/css/main.9fe7378e.css.map",
+    "main.a5deb26c.js.map": "/appinsurance/static/js/main.a5deb26c.js.map",
     "239.35c0a306.chunk.js.map": "/appinsurance/static/js/239.35c0a306.chunk.js.map",
     "977.7b6faa85.chunk.js.map": "/appinsurance/static/js/977.7b6faa85.chunk.js.map",
     "455.abdb5ecf.chunk.js.map": "/appinsurance/static/js/455.abdb5ecf.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.ddaf2b95.css",
-    "static/js/main.bcee705a.js"
+    "static/css/main.9fe7378e.css",
+    "static/js/main.a5deb26c.js"
   ]
 }
