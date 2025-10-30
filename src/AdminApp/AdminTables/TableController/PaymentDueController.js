@@ -153,7 +153,7 @@ export default function PolicyWithPaymentsController() {
   // ---------- Payment modal / update ----------
   const handlePaymentClick = (payment, clientPhone) => {
     setCurrentPayment({ ...payment, client_phone: clientPhone, policy_id: payment.policy_id });
-    setPaymentInput(String(payment?.paid_amount || ""));
+    setPaymentInput("");
     setModalOpen(true);
   };
 

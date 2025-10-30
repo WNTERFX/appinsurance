@@ -96,39 +96,81 @@ export default function PolicyWithPaymentsList() {
 
   return (
     <div className="payments-overview-section">
-      {/* PAYMENT MODAL */}
-      {modalOpen && currentPayment && (
-        <div className="payment-modal-backdrop">
-          <div className="payment-modal">
-            <h3>Enter Payment</h3>
-            <p>Payment Date: {new Date(currentPayment.payment_date).toLocaleDateString()}</p>
-            {currentPayment.payment_type_name && (
-              <p style={{
-                backgroundColor: isChequePayment(currentPayment) ? '#e3f2fd' : '#f5f5f5',
-                padding: '8px', borderRadius: '4px', marginBottom: '10px', fontWeight: '500'
-              }}>
-                <strong>Payment Type:</strong> {currentPayment.payment_type_name}
-                {isChequePayment(currentPayment) && ' (No penalties apply)'}
+          {/* PAYMENT MODAL */}
+          {modalOpen && currentPayment && (
+      <div className="payment-modal-backdrop">
+        <div className="payment-modal">
+          <h3>Enter Payment</h3>
+          <p>Payment Date: {new Date(currentPayment.payment_date).toLocaleDateString()}</p>
+          {currentPayment.payment_type_name && (
+            <p style={{
+              backgroundColor: isChequePayment(currentPayment) ? '#e3f2fd' : '#f5f5f5',
+              padding: '8px', borderRadius: '4px', marginBottom: '10px', fontWeight: '500'
+            }}>
+              <strong>Payment Type:</strong> {currentPayment.payment_type_name}
+              {isChequePayment(currentPayment) && ' (No penalties apply)'}
+            </p>
+          )}
+          
+          {/* Payment Breakdown */}
+          <div style={{ 
+            backgroundColor: '#f8f9fa', 
+            padding: '12px', 
+            borderRadius: '8px', 
+            marginBottom: '16px',
+            border: '1px solid #dee2e6'
+          }}>
+            <p style={{ marginBottom: '8px' }}>
+              <strong>Base Amount:</strong> {currentPayment.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+            </p>
+            {calculateTotalPenalties(currentPayment) > 0 && (
+              <p style={{ marginBottom: '8px' }}>
+                <strong>Penalties:</strong> {calculateTotalPenalties(currentPayment).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
               </p>
             )}
-            <p><strong>Base Amount:</strong> {currentPayment.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</p>
-            {calculateTotalPenalties(currentPayment) > 0 && (
-              <p><strong>Penalties:</strong> {calculateTotalPenalties(currentPayment).toLocaleString(undefined, { style: "currency", currency: "PHP" })}</p>
-            )}
-            <p><strong>Total Due:</strong> {calculateTotalDue(currentPayment).toLocaleString(undefined, { style: "currency", currency: "PHP" })}</p>
-            <p><strong>Minimum Payment (1%):</strong> {(calculateTotalDue(currentPayment) * 0.01)?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</p>
+            <p style={{ fontSize: '1em',  marginBottom: '8px', color: '#28a745', fontWeight: '400' }}>
+              <strong>Already Paid:</strong> {calculateTotalPaid(currentPayment).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+            </p>
+            <p style={{ 
+              marginBottom: '0', 
+              fontSize: '1em', 
+              color: '#dc3545', 
+              fontWeight: 'bold',
+              paddingTop: '8px',
+              borderTop: '2px solid #dee2e6'
+            }}>
+              <strong>Payment Remaining:</strong> {(calculateTotalDue(currentPayment) - calculateTotalPaid(currentPayment)).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+            </p>
+          </div>
 
-            <input type="text" value={paymentInput} onChange={(e) => {
+          <p style={{ fontSize: '1em', color: '#6c757d', marginBottom: '12px' }}>
+            <strong>Minimum Payment (1%):</strong> {(calculateTotalDue(currentPayment) * 0.01)?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+          </p>
+
+          <input 
+            type="text" 
+            value={paymentInput} 
+            onChange={(e) => {
               const value = e.target.value;
               if (value === '' || /^\d*(,\d{3})*(\.\d*)?$/.test(value)) setPaymentInput(value);
-            }} placeholder="Enter amount" />
-            <div className="modal-actions">
-              <button onClick={handlePaymentSave}>Save</button>
-              <button onClick={() => { setModalOpen(false); setCurrentPayment(null); setPaymentInput(""); }}>Cancel</button>
-            </div>
+            }} 
+            placeholder="Enter amount" 
+            style={{
+              width: '100%',
+              padding: '10px',
+              fontSize: '1.1em',
+              marginBottom: '12px',
+              border: '2px solid #ced4da',
+              borderRadius: '4px'
+            }}
+          />
+          <div className="modal-actions">
+            <button onClick={handlePaymentSave}>Save</button>
+            <button onClick={() => { setModalOpen(false); setCurrentPayment(null); setPaymentInput(""); }}>Cancel</button>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
       {/* PENALTY MODAL */}
       {penaltyModalOpen && selectedPaymentForPenalty && (

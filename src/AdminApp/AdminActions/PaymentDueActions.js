@@ -107,12 +107,13 @@ export async function updatePayment(paymentId, paidAmount) {
 
     for (const penalty of penalties || []) {
       if (penalty.is_paid) continue;
-      const toPay = Math.min(remaining, penalty.penalty_amount);
+      const penaltyRemaining = penalty.penalty_amount;
+      const toPay = Math.min(remaining, penaltyRemaining);
       remaining -= toPay;
 
       await db
         .from("payment_due_penalties")
-        .update({ is_paid: toPay >= penalty.penalty_amount })
+        .update({ is_paid: toPay >= penaltyRemaining })
         .eq("id", penalty.id);
 
       if (remaining <= 0) break;
@@ -120,7 +121,7 @@ export async function updatePayment(paymentId, paidAmount) {
 
     if (remaining <= 0) break;
 
-    // Apply to payment
+    // Apply to payment base amount
     const due = parseFloat(payment.amount_to_be_paid);
     const alreadyPaid = parseFloat(payment.paid_amount || 0);
     const needed = Math.max(due - alreadyPaid, 0);
@@ -128,25 +129,26 @@ export async function updatePayment(paymentId, paidAmount) {
     if (needed <= 0) continue;
 
     const applied = Math.min(remaining, needed);
-    const newPaid = alreadyPaid + applied;
+    const newPaid = alreadyPaid + applied; // FIX: Add to existing, not replace
     const isPaid = newPaid >= due;
 
     updates.push({
       id: payment.id,
       paid_amount: newPaid,
       is_paid: isPaid,
-      spillover: applied < remaining ? true : false
+      spillover: remaining > needed
     });
 
     console.log(
-      applied < remaining
-        ? `💧 Spillover applied to ${payment.payment_date}: ₱${applied.toFixed(2)}`
+      remaining > needed
+        ? `💧 Spillover: Applied ₱${applied.toFixed(2)} to ${payment.payment_date}, ₱${(remaining - applied).toFixed(2)} remaining`
         : `✅ Payment applied to ${payment.payment_date}: ₱${applied.toFixed(2)}`
     );
 
     remaining -= applied;
   }
 
+  // Apply all updates
   for (const up of updates) {
     const { error: updateErr } = await db
       .from("payment_Table")
@@ -164,7 +166,6 @@ export async function updatePayment(paymentId, paidAmount) {
 
 // ✅ UPDATED: Fetch archived payments with payment_type_id
 export async function fetchArchivedPayments() {
-  // 1️⃣ Fetch archived payments with policy and client info
   const { data: payments, error: paymentsError } = await db
     .from("payment_Table")
     .select(`
@@ -175,13 +176,24 @@ export async function fetchArchivedPayments() {
         policy_type,
         policy_is_active,
         client_id,
+        partner_id,
+        insurance_Partners (
+          id,
+          insurance_Name
+        ),
         clients_Table (
           prefix,
           first_Name,
           middle_Name,
           family_Name,
           suffix,
-          internal_id
+          internal_id,
+          agent_Id,
+          employee_Accounts!fk_clients_agent (
+            id,
+            first_name,
+            last_name
+          )
         )
       )
     `)
