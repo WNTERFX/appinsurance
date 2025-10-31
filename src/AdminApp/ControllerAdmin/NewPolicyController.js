@@ -115,7 +115,7 @@ export default function NewPolicyController() {
         getComputationValue(),
         fetchClients(),
         fetchPartners(),
-        fetchPaymentTypes() // now works
+        fetchPaymentTypes()
       ]);
       setVehicleTypes(vt || []);
       setClients(cl || []);
@@ -153,6 +153,7 @@ export default function NewPolicyController() {
   const vehicleValue = ComputationActionsVehicleValue(vehicleCost, yearInput);
   const vehicleValueRate = ComputatationRate(rateInput, vehicleValue);
   
+  // ✅ Basic Premium (without commission)
   const basicPremiumValue = ComputationActionsBasicPre(
     bodily_Injury,
     property_Damage,
@@ -182,7 +183,7 @@ export default function NewPolicyController() {
   useEffect(() => {
     setOriginalVehicleCost(vehicleCost);
     setCurrentVehicleCost(vehicleValue);
-    setClaimableAmount(vehicleValue); // Initially same as current vehicle value
+    setClaimableAmount(vehicleValue);
     setTotalVehicleValueRate(vehicleValueRate);
     setTotalPremiumCost(totalWithCommission);
     setCommissionValue(computedCommissionValue);
@@ -191,33 +192,35 @@ export default function NewPolicyController() {
   // -----------------------------------
   // Save handler
   // -----------------------------------
- const handleSaveClient = async () => {
-  // Validation
-  if (!selectedClient?.uid) {
-    alert("Please select a client");
-    return;
-  }
-  
-  if (!selectedPartner) {
-    alert("Please select a partner");
-    return;
-  }
+  const handleSaveClient = async () => {
+    // Validation
+    if (!selectedClient?.uid) {
+      alert("Please select a client");
+      return;
+    }
+    
+    if (!selectedPartner) {
+      alert("Please select a partner");
+      return;
+    }
 
-  const commissionFeeToSave = parseFloat(commissionFee) || 0;
-  
-  console.log("=== SAVING NEW POLICY ===");
-  console.log("Commission fee (%) to save:", commissionFeeToSave);
-  console.log("Commission value (₱):", computedCommissionValue);
-  console.log("Total Premium:", totalWithCommission);
-  
-  const policyData = {
-    policy_type: "Comprehensive",
-    policy_inception: null,
-    policy_expiry: null,
-    policy_is_active: false,
-    client_id: selectedClient.uid,
-    partner_id: selectedPartner  // ✅ Already a UUID string from the select
-  };
+    const commissionFeeToSave = parseFloat(commissionFee) || 0;
+    
+    console.log("=== SAVING NEW POLICY ===");
+    console.log("Basic Premium:", basicPremiumValue);
+    console.log("Commission fee (%):", commissionFeeToSave);
+    console.log("Commission value (₱):", computedCommissionValue);
+    console.log("Total Premium:", totalWithCommission);
+    
+    const policyData = {
+      policy_type: "Comprehensive",
+      policy_inception: null,
+      policy_expiry: null,
+      policy_is_active: false,
+      client_id: selectedClient.uid,
+      partner_id: selectedPartner
+    };
+
     const { success: policySuccess, data: policyRow, error: policyError } = await NewPolicyCreation(policyData);
     if (!policySuccess) return alert("Error saving policy: " + policyError);
 
@@ -239,10 +242,12 @@ export default function NewPolicyController() {
     const newVehicleResult = await NewVehicleCreation(vehicleData);
     if (!newVehicleResult.success) return alert("Error saving vehicle details");
 
+    // ✅ Include basic_Premium in computation data
     const computationData = {
       policy_id: policyId,
       original_Value: orginalVehicleCost,
       current_Value: currentVehicleValueCost,
+      basic_Premium: basicPremiumValue, // ✅ NEW: Store basic premium
       total_Premium: totalWithCommission,
       vehicle_Rate_Value: totalVehicleValueRate,
       aon_Cost: actOfNatureCost,
@@ -250,7 +255,6 @@ export default function NewPolicyController() {
       payment_type_id: Number(selectedPaymentType)
     };
 
-    // 🔧 DEBUG: Log the data being saved
     console.log("💾 Computation data being saved:", computationData);
 
     const computationResult = await NewComputationCreation(computationData);

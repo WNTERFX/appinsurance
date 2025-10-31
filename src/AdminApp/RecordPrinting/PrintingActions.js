@@ -90,3 +90,82 @@ export async function fetchPaymentsWithPenalties(policyId) {
     return [];
   }
 }
+
+export async function fetchQuotations(fromDate, toDate, insurancePartner = null) {
+  try {
+    let query = db
+      .from("quotation_Table")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    // Apply date range filter
+    if (fromDate && toDate) {
+      query = query
+        .gte("created_at", fromDate)
+        .lte("created_at", toDate);
+    }
+
+    // Apply insurance partner filter if provided
+    if (insurancePartner) {
+      query = query.eq("insurance_partner", insurancePartner);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error("Error fetching quotations:", err);
+    return [];
+  }
+}
+
+export async function fetchDeliveries(fromDate, toDate, employeeId = null) {
+  try {
+    let query = db
+      .from("delivery_Table")
+      .select(`
+        *,
+        employee_Accounts:agent_id (
+          id,
+          personnel_Name,
+          first_name,
+          last_name
+        ),
+        policy_Table:policy_id (
+          id,
+          internal_id,
+          clients_Table (
+            first_Name,
+            family_Name
+          ),
+          insurance_Partners (
+            insurance_Name
+          )
+        )
+      `)
+      .order("created_at", { ascending: false });
+
+    // Apply date range filter on delivery_date or estimated_delivery_date
+    if (fromDate && toDate) {
+      query = query.or(
+        `delivery_date.gte.${fromDate},delivery_date.lte.${toDate},` +
+        `estimated_delivery_date.gte.${fromDate},estimated_delivery_date.lte.${toDate},` +
+        `delivered_at.gte.${fromDate},delivered_at.lte.${toDate}`
+      );
+    }
+
+    // Apply employee filter if provided
+    if (employeeId) {
+      query = query.eq("agent_id", employeeId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error("Error fetching deliveries:", err);
+    return [];
+  }
+}

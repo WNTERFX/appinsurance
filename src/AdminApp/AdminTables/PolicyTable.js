@@ -613,6 +613,7 @@ export default function PolicyTable() {
                 <th>Insurance Partner</th>
                 <th>Inception Date</th>
                 <th>Expiry Date</th>
+                <th>Renewal Date</th>
                 <th>Status</th>
                 <th>Premium</th>
                 <th>Actions</th>
@@ -675,7 +676,23 @@ export default function PolicyTable() {
                             })
                           : "N/A"}
                       </td>
-                      <td>
+                    <td>
+                      {policy.renewal_table && policy.renewal_table.length > 0 ? (
+                        <span className="renewal-badge renewed">
+                          {new Date(
+                            policy.renewal_table[policy.renewal_table.length - 1].renewal_date
+                          ).toLocaleString("en-PH", {
+                            timeZone: "Asia/Manila",
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })}
+                        </span>
+                      ) : (
+                        <span className="renewal-badge not-renewed">—</span>
+                      )}
+                    </td>
+
+                      <td className="policy-status-cell">
                         <span className={policyStatus.class}>
                           {policyStatus.text}
                         </span>
@@ -719,13 +736,24 @@ export default function PolicyTable() {
                           disabled={isVoided || isCancelled}
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(
-                              `/appinsurance/main-app/policy/Edit/${policy.id}`
-                            );
+                            if (isExpired) {
+                              // Pass renewal flag in URL or state for Edit page
+                              navigate(`/appinsurance/main-app/policy/Edit/${policy.id}?mode=renewal`);
+                            } else {
+                              navigate(`/appinsurance/main-app/policy/Edit/${policy.id}`);
+                            }
                           }}
-                          title={isVoided || isCancelled ? "Cannot edit voided/cancelled policy" : ""}
+                          title={
+                            isVoided
+                              ? "Cannot edit voided policy"
+                              : isCancelled
+                              ? "Cannot edit cancelled policy"
+                              : isExpired
+                              ? "Expired — you can renew this policy"
+                              : "Edit this policy"
+                          }
                         >
-                          Edit
+                          {isExpired ? "Edit / Renew" : "Edit"}
                         </button>
                         <button
                           disabled={isVoided || isCancelled || isExpired}

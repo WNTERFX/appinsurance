@@ -161,29 +161,36 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
                   const policyCalcData = calculationData.find(cd => cd.policy_id === c.policy_id);
                   const calcData = policyCalcData?.calculation_Table;
                   
+                  // ✅ Use stored basic_Premium from database
+                  const basicPremium = c.basic_Premium || 0;
+                  
                   return (
                     <React.Fragment key={c.id}>
                       <div className="computation-info-item">
-                        <span className="info-label">VAT</span>
+                        <span className="info-label">Basic Premium</span>
+                        <span className="info-value">{formatCurrency(basicPremium)}</span>
+                      </div>
+                      <div className="computation-info-item">
+                        <span className="info-label">VAT ({calcData?.vat_Tax || 0}%)</span>
                         <span className="info-value">
-                          {formatCurrency(calculateFromPercentage(calcData?.vat_Tax || 0, c.total_Premium || 0))}
+                          {formatCurrency(calculateFromPercentage(calcData?.vat_Tax || 0, basicPremium))}
                         </span>
                       </div>
                       <div className="computation-info-item">
-                        <span className="info-label">Documentation Stamp</span>
+                        <span className="info-label">Documentation Stamp ({calcData?.docu_Stamp || 0}%)</span>
                         <span className="info-value">
-                          {formatCurrency(calculateFromPercentage(calcData?.docu_Stamp || 0, c.total_Premium || 0))}
+                          {formatCurrency(calculateFromPercentage(calcData?.docu_Stamp || 0, basicPremium))}
                         </span>
                       </div>
                       <div className="computation-info-item">
-                        <span className="info-label">Local Tax</span>
+                        <span className="info-label">Local Tax ({calcData?.local_Gov_Tax || 0}%)</span>
                         <span className="info-value">
-                          {formatCurrency(calculateFromPercentage(calcData?.local_Gov_Tax || 0, c.total_Premium || 0))}
+                          {formatCurrency(calculateFromPercentage(calcData?.local_Gov_Tax || 0, basicPremium))}
                         </span>
                       </div>
                       <hr className="total-premium-separator" />
                       <div className="total-premium-item">
-                        <span className="info-label">Premium</span>
+                        <span className="info-label">Total Premium</span>
                         <span className="info-value">{formatCurrency(c.total_Premium)}</span>
                       </div>
                     </React.Fragment>
@@ -202,8 +209,14 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
               <div className="vehicle-list-container">
                 {policyVehicles.map((v) => (
                   <InfoGrid key={v.id}>
-                    <InfoItem label="Model Make" value={v.vehicle_maker || 'N/A'} />
-                    <InfoItem label="Vehicle Name" value={v.vehicle_name || 'N/A'} />
+                    <InfoItem
+                      label="Make Model"
+                      value={
+                        v.vehicle_maker && v.vehicle_name
+                          ? `${v.vehicle_maker} ${v.vehicle_name}`
+                          : v.vehicle_maker || v.vehicle_name || 'N/A'
+                      }
+                    />
                     <InfoItem label="Year" value={v.vehicle_year || 'N/A'} />
                     <InfoItem label="Color" value={v.vehicle_color || 'N/A'} />
                     <InfoItem label="Plate Number" value={v.plate_num || 'N/A'} />

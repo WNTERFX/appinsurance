@@ -32,11 +32,13 @@ export async function fetchPolicies(fromDate = null, toDate = null, partnerId = 
       policy_Computation_Table(
         total_Premium,
         payment_type_id
+      ),
+      renewal_table(
+        renewal_date
       )
     `)
     .or("is_archived.is.null,is_archived.eq.false")
     .is("archival_date", null);
-
   if (fromDate && toDate) {
     query = query.gte("created_at", fromDate).lte("created_at", toDate);
   }
@@ -171,6 +173,52 @@ export async function fetchPartners() {
     .order("insurance_Name", { ascending: true });
   if (error) throw error;
   return data;
+}
+
+
+export async function fetchRenewals(fromDate = null, toDate = null, employeeId = null) {
+  console.log("fetchRenewals called with:", { fromDate, toDate, employeeId });
+
+  let query = db
+    .from("renewal_table")
+    .select(`
+      *,
+      policy_Table!inner(
+        internal_id,
+        policy_type,
+        created_at,
+        clients_Table(
+          first_Name,
+          family_Name,
+          agent_Id,
+          employee_Accounts:agent_Id (
+            personnel_Name,
+            first_name,
+            last_name
+          )
+        ),
+        insurance_Partners(insurance_Name)
+      )
+    `);
+
+  if (fromDate && toDate) {
+    query = query.gte("renewal_date", fromDate).lte("renewal_date", toDate);
+  }
+
+  if (employeeId) {
+    query = query.eq("policy_Table.clients_Table.agent_Id", employeeId);
+  }
+
+  query = query.order("renewal_date", { ascending: false });
+
+  const { data, error } = await query;
+  if (error) {
+    console.error("Error fetching renewals:", error.message);
+    throw error;
+  }
+
+  console.log("Renewals fetched:", data?.length || 0);
+  return data || [];
 }
 
 

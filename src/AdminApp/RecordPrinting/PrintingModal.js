@@ -2,11 +2,12 @@ import React, { useState, useEffect, useMemo } from "react";
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
 
-import { fetchClients } from "../AdminActions/ClientActions";
-import { fetchPolicies } from "../AdminActions/PolicyActions";
-import { fetchAllDues, fetchPaymentsWithPenalties } from "../AdminActions/PaymentDueActions";
-import { fetchReportCreator } from "./PrintingActions";
 import { db } from "../../dbServer";
+import { fetchClients } from "../AdminActions/ClientActions";
+import { fetchPolicies, fetchRenewals } from "../AdminActions/PolicyActions";
+import { fetchAllDues, fetchPaymentsWithPenalties } from "../AdminActions/PaymentDueActions";
+import { fetchReportCreator, fetchQuotations, fetchDeliveries } from "./PrintingActions";
+
 import "../styles/printing-record-styles.css";
 
 export default function PrintingModal({ recordType, onClose }) {
@@ -17,45 +18,43 @@ export default function PrintingModal({ recordType, onClose }) {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [currentDateRange, setCurrentDateRange] = useState({ start: null, end: null });
   const [sortOrder, setSortOrder] = useState("latest");
   const [partners, setPartners] = useState([]);
-  const [selectedPartner, setSelectedPartner] = useState("");
-  const [reportCreator, setReportCreator] = useState("");
   const [employees, setEmployees] = useState([]);
+  const [selectedPartner, setSelectedPartner] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState("");
-
+  const [reportCreator, setReportCreator] = useState("");
 
   const safeRecordType = recordType || "client";
 
+  // Load report creator
   useEffect(() => {
-    async function loadCreator() {
-      const creator = await fetchReportCreator();
-      setReportCreator(creator);
-    }
-    loadCreator();
+    fetchReportCreator().then(setReportCreator);
   }, []);
 
+  // Fetch employees
   useEffect(() => {
-    if (safeRecordType === "policy") fetchInsurancePartners();
-  }, [safeRecordType]);
+    db.from("employee_Accounts")
+      .select("id, personnel_Name, first_name, last_name")
+      .order("personnel_Name", { ascending: true })
+      .then(({ data, error }) => {
+        if (!error) setEmployees(data || []);
+      });
+  }, []);
 
-  const fetchInsurancePartners = async () => {
-    try {
-      const { data, error } = await db
-        .from("insurance_Partners")
+  // Fetch insurance partners if needed
+  useEffect(() => {
+    if (safeRecordType === "policy" || safeRecordType === "quotation") {
+      db.from("insurance_Partners")
         .select("id, insurance_Name")
-        .order("insurance_Name", { ascending: true });
-      if (error) throw error;
-      setPartners(data || []);
-    } catch (error) {
-      console.error("Error fetching insurance partners:", error);
+        .order("insurance_Name", { ascending: true })
+        .then(({ data }) => setPartners(data || []));
     }
-  };
+  }, [safeRecordType]);
 
   const sortRecords = (data) => {
     if (!Array.isArray(data)) return [];
-    return [...data].sort((a, b) => {
+    const sorted = [...data].sort((a, b) => {
       let dateA, dateB;
       switch (safeRecordType) {
         case "client":
@@ -63,6 +62,7 @@ export default function PrintingModal({ recordType, onClose }) {
           dateB = new Date(b.client_Registered);
           break;
         case "policy":
+        case "quotation":
           dateA = new Date(a.created_at);
           dateB = new Date(b.created_at);
           break;
@@ -71,33 +71,21 @@ export default function PrintingModal({ recordType, onClose }) {
           dateA = new Date(a.payment_date);
           dateB = new Date(b.payment_date);
           break;
+        case "renewal":
+          dateA = new Date(a.renewal_date);
+          dateB = new Date(b.renewal_date);
+          break;
+        case "delivery":
+          dateA = new Date(a.delivery_date || a.estimated_delivery_date || a.created_at);
+          dateB = new Date(b.delivery_date || b.estimated_delivery_date || b.created_at);
+          break;
         default:
           return 0;
       }
       return sortOrder === "latest" ? dateB - dateA : dateA - dateB;
     });
+    return sorted;
   };
-
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  const fetchEmployees = async () => {
-    try {
-      const { data, error } = await db
-        .from("employee_Accounts")
-        .select("id, personnel_Name, first_name, last_name")
-        .order("personnel_Name", { ascending: true });
-      if (error) throw error;
-      setEmployees(data || []);
-    } catch (err) {
-      console.error("Error fetching employees:", err);
-    }
-  };
-
-  useEffect(() => {
-    if (records.length > 0) setRecords(sortRecords(records));
-  }, [sortOrder]);
 
   const generateYearOptions = () => {
     const years = [];
@@ -109,6 +97,7 @@ export default function PrintingModal({ recordType, onClose }) {
   const getDateRange = () => {
     const today = new Date();
     let start, end;
+
     switch (rangeType) {
       case "weekly":
         start = new Date(today);
@@ -128,41 +117,32 @@ export default function PrintingModal({ recordType, onClose }) {
         end = new Date(selectedYear, 11, 31);
         break;
       case "custom":
+        if (!startDate || !endDate) return {};
         start = new Date(startDate);
         start.setHours(0, 0, 0, 0);
         end = new Date(endDate);
         end.setHours(23, 59, 59, 999);
         break;
       default:
-        start = null;
-        end = null;
+        return {};
     }
-    return { start, end };
-  };
 
-  const formatDateRange = (start, end) => {
-    const opt = { year: "numeric", month: "long", day: "numeric" };
-    return `${start.toLocaleDateString("en-US", opt)} - ${end.toLocaleDateString("en-US", opt)}`;
+    return { start, end };
   };
 
   const handleFetch = async () => {
     const { start, end } = getDateRange();
-    if (rangeType === "custom" && (!startDate || !endDate)) {
-      alert("Please select both start and end dates");
+    if (!start || !end) {
+      alert("Please select a valid range.");
       return;
     }
-    if (!start || !end) return;
 
-    const formatDate = (date) =>
-      `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-        date.getDate()
-      ).padStart(2, "0")}`;
-
-    const from = formatDate(start);
-    const to = formatDate(end);
+    const fmt = (d) => d.toISOString().split("T")[0];
+    const from = fmt(start);
+    const to = fmt(end);
 
     setIsLoading(true);
-    setCurrentDateRange({ start, end });
+    setHasSearched(false);
 
     try {
       let data = [];
@@ -179,17 +159,24 @@ export default function PrintingModal({ recordType, onClose }) {
         case "payment":
           data = await fetchPaymentsWithPenalties(selectedEmployee || null);
           break;
-        default:
-          data = [];
+        case "renewal":
+          data = await fetchRenewals(from, to, selectedEmployee || null);
+          break;
+        case "quotation":
+          data = await fetchQuotations(from, to, selectedPartner || null);
+          break;
+        case "delivery":
+          data = await fetchDeliveries(from, to, selectedEmployee || null);
+          break;
       }
-      setRecords(sortRecords(Array.isArray(data) ? data : []));
-      setHasSearched(true);
+
+      setRecords(sortRecords(data || []));
     } catch (err) {
-      console.error("Error fetching data:", err);
+      console.error("Fetch error:", err);
       setRecords([]);
-      setHasSearched(true);
     } finally {
       setIsLoading(false);
+      setHasSearched(true);
     }
   };
 
@@ -214,9 +201,7 @@ export default function PrintingModal({ recordType, onClose }) {
         body = records.map((p, i) => [
           i + 1,
           p.internal_id || "-",
-          p.clients_Table
-            ? `${p.clients_Table.first_Name} ${p.clients_Table.family_Name}`
-            : "-",
+          `${p.clients_Table?.first_Name || ""} ${p.clients_Table?.family_Name || ""}`,
           p.insurance_Partners?.insurance_Name || "-",
           p.policy_type || "-",
           p.policy_Computation_Table?.[0]?.total_Premium || "-",
@@ -228,9 +213,7 @@ export default function PrintingModal({ recordType, onClose }) {
         body = records.map((d, i) => [
           i + 1,
           d.policy_Table?.internal_id || "-",
-          d.policy_Table?.clients_Table
-            ? `${d.policy_Table.clients_Table.first_Name} ${d.policy_Table.clients_Table.family_Name}`
-            : "-",
+          `${d.policy_Table?.clients_Table?.first_Name || ""} ${d.policy_Table?.clients_Table?.family_Name || ""}`,
           d.payment_date ? new Date(d.payment_date).toLocaleDateString() : "-",
           `₱${d.amount_to_be_paid?.toLocaleString() || "-"}`,
           d.is_paid ? "Paid" : "Unpaid",
@@ -248,110 +231,93 @@ export default function PrintingModal({ recordType, onClose }) {
           `₱${p.totalDue.toLocaleString()}`,
         ]);
         break;
+      case "renewal":
+        headers = ["#", "Policy No", "Client", "Partner", "Policy Type", "Renewal Date", "Remarks"];
+        body = records.map((r, i) => [
+          i + 1,
+          r.policy_Table?.internal_id || "-",
+          `${r.policy_Table?.clients_Table?.first_Name || ""} ${r.policy_Table?.clients_Table?.family_Name || ""}`,
+          r.policy_Table?.insurance_Partners?.insurance_Name || "-",
+          r.policy_Table?.policy_type || "-",
+          r.renewal_date ? new Date(r.renewal_date).toLocaleDateString() : "-",
+          r.remarks || "—",
+        ]);
+        break;
+      case "quotation":
+        headers = ["#", "Quote No", "Client Name", "Vehicle", "Partner", "Total Premium", "Created"];
+        body = records.map((q, i) => [
+          i + 1,
+          q.quotation_number || "-",
+          q.client_name || `${q.firstName || ""} ${q.lastName || ""}`.trim() || "-",
+          q.vehicle_name || `${q.make || ""} ${q.model || ""}`.trim() || "-",
+          q.insurance_partner || "-",
+          q.total_premium ? `₱${q.total_premium.toLocaleString()}` : "-",
+          q.created_at ? new Date(q.created_at).toLocaleDateString() : "-",
+        ]);
+        break;
+      case "delivery":
+        headers = ["#", "Policy No", "Client", "Agent", "Est. Delivery", "Actual Delivery", "Status"];
+        body = records.map((d, i) => {
+          const agentName = d.employee_Accounts?.personnel_Name || 
+                           `${d.employee_Accounts?.first_name || ""} ${d.employee_Accounts?.last_name || ""}`.trim() || "-";
+          const clientName = `${d.policy_Table?.clients_Table?.first_Name || ""} ${d.policy_Table?.clients_Table?.family_Name || ""}`.trim() || "-";
+          const status = d.delivered_at ? "Delivered" : d.is_archived ? "Archived" : "Pending";
+          
+          return [
+            i + 1,
+            d.policy_Table?.internal_id || "-",
+            clientName,
+            agentName,
+            d.estimated_delivery_date ? new Date(d.estimated_delivery_date).toLocaleDateString() : "-",
+            d.delivered_at ? new Date(d.delivered_at).toLocaleDateString() : "-",
+            status,
+          ];
+        });
+        break;
     }
+
     return { headers, body };
   }, [records, safeRecordType]);
 
-  // ✅ UPDATED handlePrintPDF with grouping by client → policy
   const handlePrintPDF = () => {
     const doc = new jsPDF();
+    const { start, end } = getDateRange();
+
+    const formattedStart = start ? new Date(start).toLocaleDateString() : "N/A";
+    const formattedEnd = end ? new Date(end).toLocaleDateString() : "N/A";
+    const createdDate = new Date().toLocaleString();
+
+    // Count summary
+    const recordCount = records.length;
+    const typeLabel = safeRecordType.charAt(0).toUpperCase() + safeRecordType.slice(1);
+    const rangeLabel = rangeType.charAt(0).toUpperCase() + rangeType.slice(1);
+
+    // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.text("PAYMENT REPORT", 14, 15);
+    doc.text(`${typeLabel.toUpperCase()} REPORT`, 14, 15);
 
-    if (safeRecordType !== "payment") {
-      // Keep the old logic for non-payment reports
-      autoTable(doc, {
-        head: [headers],
-        body,
-        startY: 25,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [66, 139, 202] },
-      });
-      doc.save(`${safeRecordType}_report.pdf`);
-      return;
-    }
+    // Report metadata
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Created by: ${reportCreator || "System"}`, 14, 22);
+    doc.text(`Report range: ${formattedStart} — ${formattedEnd} (${rangeLabel})`, 14, 27);
+    doc.text(`Generated on: ${createdDate}`, 14, 32);
 
-    // 🔹 Group by client → policy
-    const grouped = {};
-    for (const p of records) {
-      const clientInternalId = p.policy_Table?.clients_Table?.internal_id || "N/A";
-      const clientName = p.policy_Table?.clients_Table
-        ? `${p.policy_Table.clients_Table.first_Name} ${p.policy_Table.clients_Table.family_Name}`
-        : "Unknown Client";
-      const clientKey = `${clientInternalId} - ${clientName}`;
-      const policyNum = p.policy_Table?.internal_id || "Unknown Policy";
+    // Add summary of how many records were fetched
+    doc.setFont("helvetica", "bold");
+    doc.text(`${recordCount} ${recordCount === 1 ? "record" : "records"} fetched.`, 14, 37);
 
-      if (!grouped[clientKey]) grouped[clientKey] = {};
-      if (!grouped[clientKey][policyNum]) grouped[clientKey][policyNum] = [];
-      grouped[clientKey][policyNum].push(p);
-    }
+    // Table
+    autoTable(doc, {
+      head: [headers],
+      body,
+      startY: 42,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [103, 59, 146] },
+    });
 
-    let y = 25;
-
-    for (const [client, policies] of Object.entries(grouped)) {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.text(`Client: ${client}`, 14, y);
-      y += 8;
-
-      for (const [policyNum, payments] of Object.entries(policies)) {
-        doc.setFontSize(11);
-        doc.text(`Policy: ${policyNum}`, 16, y);
-        y += 6;
-
-        const rows = payments.map((p, i) => [
-          i + 1,
-          new Date(p.payment_date).toLocaleDateString(),
-          `₱${p.amount_to_be_paid.toLocaleString()}`,
-          p.is_paid ? "Paid" : "Unpaid",
-          `₱${p.totalPenalty?.toLocaleString() || "0.00"}`,
-          `₱${p.totalDue?.toLocaleString() || "0.00"}`,
-        ]);
-
-        autoTable(doc, {
-          startY: y,
-          head: [["Month", "Payment Date", "Amount", "Status", "Penalty", "Total Due"]],
-          body: rows,
-          styles: { fontSize: 8 },
-          headStyles: { fillColor: [66, 139, 202] },
-          margin: { left: 16 },
-        });
-
-        const finalY = doc.lastAutoTable.finalY + 5;
-
-        const totalPaid = payments
-          .filter((r) => r.is_paid)
-          .reduce((sum, r) => sum + (r.paid_amount || 0), 0);
-        const totalPenalty = payments.reduce((sum, r) => sum + (r.totalPenalty || 0), 0);
-        const totalDue = payments.reduce((sum, r) => sum + (r.totalDue || 0), 0);
-
-        doc.setFontSize(9);
-        doc.text(`Total Paid: ₱${totalPaid.toLocaleString()}`, 16, finalY);
-        doc.text(`Total Penalties: ₱${totalPenalty.toLocaleString()}`, 16, finalY + 6);
-        doc.text(`Total Due: ₱${totalDue.toLocaleString()}`, 16, finalY + 12);
-
-        y = finalY + 20;
-
-        // Add a page break if near bottom
-        if (y > 270) {
-          doc.addPage();
-          y = 20;
-        }
-      }
-
-      // Add a visual separator between clients
-      doc.setDrawColor(150);
-      doc.line(14, y, 195, y);
-      y += 10;
-
-      if (y > 270) {
-        doc.addPage();
-        y = 20;
-      }
-    }
-
-    doc.save(`payment_report_${new Date().toISOString().split("T")[0]}.pdf`);
+    doc.save(`${safeRecordType}_report.pdf`);
   };
 
   return (
@@ -362,19 +328,11 @@ export default function PrintingModal({ recordType, onClose }) {
           <button onClick={onClose}>✕</button>
         </div>
 
-        {/* UI untouched */}
         <div className="printing-record-modal-body">
           <div className="left-column">
             <p>Select a timeframe:</p>
             <div className="printing-record-selection">
-              <select
-                value={rangeType}
-                onChange={(e) => {
-                  setRangeType(e.target.value);
-                  setRecords([]);
-                  setHasSearched(false);
-                }}
-              >
+              <select value={rangeType} onChange={(e) => setRangeType(e.target.value)}>
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly</option>
                 <option value="quarterly">Quarterly</option>
@@ -385,51 +343,32 @@ export default function PrintingModal({ recordType, onClose }) {
               {rangeType === "yearly" && (
                 <select
                   value={selectedYear}
-                  onChange={(e) => {
-                    setSelectedYear(Number(e.target.value));
-                    setRecords([]);
-                    setHasSearched(false);
-                  }}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
                 >
                   {generateYearOptions().map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
+                    <option key={year} value={year}>{year}</option>
                   ))}
                 </select>
               )}
 
-              {safeRecordType === "policy" && (
-                <div className="partner-filter">
+              {(safeRecordType === "policy" || safeRecordType === "quotation") && (
+                <div>
                   <label>Filter by Partner:</label>
-                  <select
-                    value={selectedPartner}
-                    onChange={(e) => {
-                      setSelectedPartner(e.target.value);
-                      setRecords([]);
-                      setHasSearched(false);
-                    }}
-                  >
+                  <select value={selectedPartner} onChange={(e) => setSelectedPartner(e.target.value)}>
                     <option value="">All Partners</option>
                     {partners.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.insurance_Name}
-                      </option>
+                      <option key={p.id} value={p.id}>{p.insurance_Name}</option>
                     ))}
                   </select>
                 </div>
               )}
 
-              {["policy", "due", "payment", "client"].includes(safeRecordType) && (
-                <div className="employee-filter">
+              {["policy", "due", "payment", "client", "renewal", "delivery"].includes(safeRecordType) && (
+                <div>
                   <label>Filter by Employee:</label>
                   <select
                     value={selectedEmployee}
-                    onChange={(e) => {
-                      setSelectedEmployee(e.target.value);
-                      setRecords([]);
-                      setHasSearched(false);
-                    }}
+                    onChange={(e) => setSelectedEmployee(e.target.value)}
                   >
                     <option value="">All Employees</option>
                     {employees.map((emp) => (
@@ -441,29 +380,16 @@ export default function PrintingModal({ recordType, onClose }) {
                 </div>
               )}
 
-              <div className="sort-controls">
-                <label>Sort by:</label>
-                <select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                >
-                  <option value="latest">Latest to Oldest</option>
-                  <option value="oldest">Oldest to Latest</option>
-                </select>
-              </div>
+              <label>Sort:</label>
+              <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+                <option value="latest">Latest to Oldest</option>
+                <option value="oldest">Oldest to Latest</option>
+              </select>
 
               {rangeType === "custom" && (
                 <>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                  />
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                  />
+                  <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                  <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                 </>
               )}
 
@@ -471,7 +397,6 @@ export default function PrintingModal({ recordType, onClose }) {
             </div>
           </div>
 
-          {/* Output preview remains unchanged */}
           <div className="right-column">
             <p>Output:</p>
             <div className="printing-record-output">
@@ -484,19 +409,11 @@ export default function PrintingModal({ recordType, onClose }) {
               ) : (
                 <table>
                   <thead>
-                    <tr>
-                      {headers.map((h, i) => (
-                        <th key={i}>{h}</th>
-                      ))}
-                    </tr>
+                    <tr>{headers.map((h, i) => <th key={i}>{h}</th>)}</tr>
                   </thead>
                   <tbody>
                     {body.map((row, i) => (
-                      <tr key={i}>
-                        {row.map((cell, j) => (
-                          <td key={j}>{cell}</td>
-                        ))}
-                      </tr>
+                      <tr key={i}>{row.map((cell, j) => <td key={j}>{cell}</td>)}</tr>
                     ))}
                   </tbody>
                 </table>
@@ -506,13 +423,9 @@ export default function PrintingModal({ recordType, onClose }) {
         </div>
 
         <div className="printing-record-modal-footer">
-          <button className="btn-cancel" onClick={onClose}>
-            Cancel
-          </button>
+          <button className="btn-cancel" onClick={onClose}>Cancel</button>
           {records.length > 0 && (
-            <button className="btn-print" onClick={handlePrintPDF}>
-              Print PDF
-            </button>
+            <button className="btn-print" onClick={handlePrintPDF}>Print PDF</button>
           )}
         </div>
       </div>

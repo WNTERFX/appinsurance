@@ -481,6 +481,31 @@ export default function PolicyNewClient({
                   </span>
                 </p>
               </strong>
+
+              {/* 🆕 Monthly Payment Breakdown */}
+              {selectedPaymentType && months > 0 && (
+                <div style={{ marginTop: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
+                  <h4 style={{ marginBottom: '12px', fontSize: '16px', color: '#333' }}>
+                    Monthly Payment Schedule ({months} months)
+                  </h4>
+                  <div style={{ maxHeight: '200px', overflowY: 'auto', fontSize: '14px' }}>
+                    {Array.from({ length: months }, (_, i) => (
+                      <div key={i} style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        padding: '6px 8px',
+                        borderBottom: '1px solid #e0e0e0',
+                        background: i % 2 === 0 ? 'white' : '#f8f9fa'
+                      }}>
+                        <span style={{ fontWeight: '500' }}>Month {i + 1}:</span>
+                        <span style={{ color: '#10b981', fontWeight: '600' }}>
+                          ₱{monthlyPayment.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="button-container-new-policy">

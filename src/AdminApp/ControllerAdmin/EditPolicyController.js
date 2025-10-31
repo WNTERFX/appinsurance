@@ -50,7 +50,6 @@ export default function EditPolicyController() {
   const [originalVehicleCost, setOriginalVehicleCost] = useState(0);
   const [vehicleOriginalValueFromDB, setVehicleOriginalValueFromDB] = useState(0);
 
-  // stored computation fields (pulled from DB)
   const [bodilyInjury, setBodilyInjury] = useState(0);
   const [propertyDamage, setPropertyDamage] = useState(0);
   const [personalAccident, setPersonalAccident] = useState(0);
@@ -58,16 +57,19 @@ export default function EditPolicyController() {
   const [docuStamp, setDocuStamp] = useState(0);
   const [localGovTax, setLocalGovTax] = useState(0);
   const [aonRate, setAonRate] = useState(0);
-  const [isAon, setIsAon] = useState(false);
+  const [isAon, setIsAoN] = useState(false);
   const [rateInput, setRateInput] = useState(0);
   
   const [commissionFee, setCommissionFee] = useState("0");
 
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
+  const [isRenewalMode, setIsRenewalMode] = useState(false);
+  const [policyInception, setPolicyInception] = useState(null);
+  const [policyExpiry, setPolicyExpiry] = useState(null);
+
   const safeNumber = (val) => (isNaN(Number(val)) ? 0 : Number(val));
 
-  // Fetch payment types function
   const fetchPaymentTypes = async () => {
     try {
       const { db } = await import("../../dbServer");
@@ -84,7 +86,6 @@ export default function EditPolicyController() {
     }
   };
 
-  // Fetch payment type for existing policy
   const fetchPolicyPaymentType = async (policyId) => {
     try {
       const { db } = await import("../../dbServer");
@@ -106,7 +107,6 @@ export default function EditPolicyController() {
     }
   };
 
-  // load lookups once
   useEffect(() => {
     (async () => {
       const [vt, cl, pt, pmt] = await Promise.all([
@@ -122,7 +122,6 @@ export default function EditPolicyController() {
     })();
   }, []);
 
-  // load policy / vehicle / computation once lookups are ready
   useEffect(() => {
     if (!policyId || !clients.length || !vehicleTypes.length) return;
     (async () => {
@@ -144,6 +143,8 @@ export default function EditPolicyController() {
           const foundClient = clients.find((c) => c.uid === policy.client_id);
           setSelectedClient(foundClient || null);
           setSelectedPartner(policy.partner_id || "");
+          setPolicyInception(policy.policy_inception);
+          setPolicyExpiry(policy.policy_expiry);
         }
 
         if (paymentTypeId) {
@@ -165,6 +166,7 @@ export default function EditPolicyController() {
           console.log("=== SETTING COMPUTATION VALUES ===");
           console.log("original_Value:", computation.original_Value);
           console.log("current_Value:", computation.current_Value);
+          console.log("basic_Premium:", computation.basic_Premium); // ✅ NEW
           console.log("total_Premium:", computation.total_Premium);
           console.log("aon_Cost:", computation.aon_Cost);
           console.log("commission_fee:", computation.commission_fee);
@@ -189,13 +191,13 @@ export default function EditPolicyController() {
           setLocalGovTax(computation.local_Gov_Tax || 0);
           setAonRate(computation.aon_Rate || 0);
           setRateInput(computation.vehicle_Rate || 0);
-          setIsAon(Boolean(computation.aon_Cost && computation.aon_Cost > 0));
+          setIsAoN(Boolean(computation.aon_Cost && computation.aon_Cost > 0));
           
           setCommissionFee(String(computation.commission_fee ?? 0));
 
-        if (computation.payment_type_id) {
+          if (computation.payment_type_id) {
             setSelectedPaymentType(String(computation.payment_type_id));
-        }
+          }
         } else {
           console.warn("No computation data found - using vehicle table values");
           setOriginalVehicleCost(vehicleOriginalValueFromDB);
@@ -215,6 +217,7 @@ export default function EditPolicyController() {
   const vehicleValue = ComputationActionsVehicleValue(originalVehicleCost, yearInput);
   const vehicleValueRate = ComputatationRate(rateInput, vehicleValue);
 
+  // ✅ Basic Premium (without commission)
   const basicPremiumValue = ComputationActionsBasicPre(
     bodilyInjury,
     propertyDamage,
@@ -249,10 +252,81 @@ export default function EditPolicyController() {
   console.log("commissionValue (₱):", commissionValue);
   console.log("totalPremiumFinal:", totalPremiumFinal);
 
-  // Update handler
+  const handleRenewPolicy = async () => {
+    try {
+      if (!selectedPaymentType) {
+        alert("Please select a payment type");
+        return;
+      }
+
+      const commissionFeeToSave = parseFloat(commissionFee) || 0;
+
+      console.log("=== RENEWING POLICY (null inception/expiry) ===");
+
+      const policyResult = await updatePolicy(policyId, {
+        client_id: selectedClient?.uid,
+        partner_id: selectedPartner,
+        policy_inception: null,
+        policy_expiry: null,
+      });
+
+      if (!policyResult.success) throw new Error(policyResult.error);
+
+      const { db } = await import("../../dbServer");
+      const renewalInsert = await db.from("renewal_table").insert({
+        policy_id: policyId,
+        renewal_date: new Date().toISOString(),
+      });
+
+      if (renewalInsert.error) throw new Error(renewalInsert.error.message);
+
+      const vehicle = await fetchVehicleByPolicyId(policyId);
+      if (!vehicle) throw new Error("Vehicle not found");
+
+      const vehicleTypeId =
+        vehicleTypes.find((v) => v.vehicle_type === selectedVehicleType)?.id || null;
+
+      const vehicleResult = await updateVehicle(vehicle.id, {
+        vehicle_name: vehicleName,
+        vehicle_maker: vehicleMaker,
+        vehicle_color: vehicleColor,
+        vin_num: vehicleVin,
+        plate_num: vehiclePlate,
+        engine_serial_no: vehicleEngine,
+        vehicle_year: yearInput,
+        original_value: originalVehicleCost,
+        vehicle_type_id: vehicleTypeId,
+      });
+
+      if (!vehicleResult.success) throw new Error(vehicleResult.error);
+
+      // ✅ Include basic_Premium
+      const computationData = {
+        original_Value: originalVehicleCost,
+        current_Value: vehicleValue,
+        basic_Premium: basicPremiumValue, // ✅ NEW
+        vehicle_Rate_Value: vehicleValueRate,
+        total_Premium: totalPremiumFinal,
+        aon_Cost: actOfNatureCost,
+        commission_fee: commissionFeeToSave,
+        payment_type_id: Number(selectedPaymentType),
+      };
+
+      console.log("💾 Computation data being saved (renewal):", computationData);
+
+      const computationResult = await updateComputation(policyId, computationData);
+      if (!computationResult.success) throw new Error(computationResult.error);
+
+      alert("Policy renewed successfully — inception and expiry cleared!");
+      navigate("/appinsurance/main-app/policy");
+    } catch (err) {
+      console.error("Error renewing policy:", err);
+      alert(`Error renewing policy: ${err.message}`);
+    }
+  };
+
   const handleUpdatePolicy = async () => {
     try {
-      // Validation
       if (!selectedPaymentType) {
         alert("Please select a payment type");
         return;
@@ -261,6 +335,7 @@ export default function EditPolicyController() {
       const commissionFeeToSave = parseFloat(commissionFee) || 0;
 
       console.log("=== SAVING UPDATES ===");
+      console.log("Basic Premium:", basicPremiumValue);
       console.log("Commission fee (%) to save:", commissionFeeToSave);
       console.log("Payment Type ID:", selectedPaymentType);
       console.log("Total Premium:", totalPremiumFinal);
@@ -289,15 +364,17 @@ export default function EditPolicyController() {
       });
       if (!vehicleResult.success) throw new Error(vehicleResult.error);
 
-     const computationData = {
-      original_Value: originalVehicleCost,
-      current_Value: vehicleValue,
-      vehicle_Rate_Value: vehicleValueRate,
-      total_Premium: totalPremiumFinal,
-      aon_Cost: actOfNatureCost,
-      commission_fee: commissionFeeToSave,
-      payment_type_id: Number(selectedPaymentType)
-    };
+      // ✅ Include basic_Premium
+      const computationData = {
+        original_Value: originalVehicleCost,
+        current_Value: vehicleValue,
+        basic_Premium: basicPremiumValue, // ✅ NEW
+        vehicle_Rate_Value: vehicleValueRate,
+        total_Premium: totalPremiumFinal,
+        aon_Cost: actOfNatureCost,
+        commission_fee: commissionFeeToSave,
+        payment_type_id: Number(selectedPaymentType)
+      };
 
       console.log("💾 Computation data being saved:", computationData);
 
@@ -312,7 +389,6 @@ export default function EditPolicyController() {
     }
   };
 
-  // Pass everything into presentational form
   return (
     <PolicyEditForm
       vehicleTypes={vehicleTypes}
@@ -326,7 +402,7 @@ export default function EditPolicyController() {
       basicPremiumValue={basicPremiumValue}
       basicPremiumWithCommission={basicPremiumWithCommission}
       isAoN={isAon}
-      setIsAoN={setIsAon}
+      setIsAoN={setIsAoN}
       setOriginalVehicleCost={setOriginalVehicleCost}
       originalVehicleCost={originalVehicleCost}
       currentVehicleValueCost={vehicleValue}
@@ -358,6 +434,10 @@ export default function EditPolicyController() {
       selectedPaymentType={selectedPaymentType}
       setSelectedPaymentType={setSelectedPaymentType}
       onSaveClient={handleUpdatePolicy}
+      onRenewPolicy={handleRenewPolicy}
+      isRenewalMode={isRenewalMode}
+      setIsRenewalMode={setIsRenewalMode}
+      policyExpiry={policyExpiry}
       navigate={navigate}
     />
   );

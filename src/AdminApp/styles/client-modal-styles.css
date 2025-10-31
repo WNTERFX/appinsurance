@@ -17,15 +17,35 @@
 .modal-content {
   position: relative;
   background: #fff;
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 12px;
-  width: 900p;
-  height: auto;
-  max-width: 90%;
+  width: 880px; /* ⬆️ was 780px */
+  max-width: 90%; /* gives it room to scale on smaller screens */
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s ease, opacity 0.2s ease;
   transform: translateY(-20px);
   animation: slideIn 0.2s forwards;
+}
+
+/* Slightly smaller screens (≤1440px) */
+@media (max-width: 1440px) {
+  .modal-content {
+    width: 840px;
+    max-width: 90%;
+    max-height: 88vh;
+  }
+}
+
+/* 💻 1080p laptops */
+@media (max-width: 1080px) {
+  .modal-content {
+    width: 800px; /* ⬆️ wider */
+    max-width: 92%;
+    max-height: 92vh; /* taller for comfort */
+    padding: 1.25rem;
+  }
 }
 
 .modal-content h2 {
