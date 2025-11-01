@@ -5,11 +5,14 @@ import { recalculateClaimableAmount } from "./ClaimableAmountActions";
 /**
  * Fetch all claims with policy and client information
  */
-export const fetchClaims = async () => {
+/**
+ * Fetch all claims with policy and client information
+ */
+export const fetchClaims = async (onlyArchived = false) => {
   console.log("Fetching claims from Supabase...");
 
-  // Step 1: Fetch all claims with their policy and client info
-  const { data: claims, error: claimsError } = await db
+  // Step 1: Fetch claims with filter applied at database level
+  let query = db
     .from('claims_Table')
     .select(`
       *,
@@ -39,6 +42,15 @@ export const fetchClaims = async () => {
     `)
     .order('created_at', { ascending: false });
 
+  // ✅ Filter by archived status at database level
+  if (onlyArchived) {
+    query = query.eq('is_archived', true);
+  } else {
+    query = query.eq('is_archived', false); // Only fetch non-archived claims by default
+  }
+
+  const { data: claims, error: claimsError } = await query;
+
   if (claimsError) throw claimsError;
 
   // Step 2: Fetch computation data separately
@@ -61,7 +73,13 @@ export const fetchClaims = async () => {
     },
   }));
 
-  console.log("Claims fetched and enriched:", enrichedClaims);
+  console.log(
+    onlyArchived
+      ? "Archived claims fetched and enriched:"
+      : "Non-archived claims fetched and enriched:",
+    enrichedClaims
+  );
+
   return enrichedClaims;
 };
 
@@ -371,3 +389,29 @@ export async function deleteClaimDocumentFromStorage(filePath) {
     throw err;
   }
 }
+
+/**
+ * Archive a claim by moving it to the archive table or flagging as archived
+ */
+export const archiveClaim = async (claimId) => {
+  console.log(`Archiving claim ${claimId}...`);
+
+  const updateData = {
+    is_archived: true,
+    archived_date: new Date().toISOString().split('T')[0],
+  };
+
+  const { data, error } = await db
+    .from('claims_Table')
+    .update(updateData)
+    .eq('id', claimId)
+    .select();
+
+  if (error) {
+    console.error(`Error archiving claim ${claimId}:`, error);
+    throw new Error(`Failed to archive claim: ${error.message}`);
+  }
+
+  console.log(`Claim ${claimId} archived successfully:`, data);
+  return data;
+};

@@ -281,7 +281,7 @@ export default function AccountManagement() {
                         </span>
                       </td>
                       
-                      {currentUser?.isAdmin && <td>{acc.is_Admin ? "Yes" : "No"}</td>}
+                      {currentUser?.isAdmin && <td>{acc.is_Admin ? "Admin" : "Moderator"}</td>}
 
                       <td className="account-table-actions">
                         <button onClick={() => handleEditClick(acc)}>Edit</button>

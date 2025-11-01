@@ -68,3 +68,29 @@ export async function archiveClient(clientUid) {
 
   return data?.[0] || null;
 }
+
+export async function updateClientNotifications(clientId, notificationSettings) {
+  try {
+    console.log(`Updating notification preferences for client ${clientId}...`, notificationSettings);
+
+    const { data, error } = await db
+      .from('clients_Table')
+      .update({
+        notification_allowed_sms: notificationSettings.notification_allowed_sms,
+        notification_allowed_email: notificationSettings.notification_allowed_email,
+      })
+      .eq('uid', clientId)
+      .select();
+
+    if (error) {
+      console.error(`Error updating notification preferences for client ${clientId}:`, error);
+      throw new Error(`Failed to update notification preferences: ${error.message}`);
+    }
+
+    console.log(`Notification preferences updated successfully for client ${clientId}:`, data);
+    return data[0];
+  } catch (err) {
+    console.error('updateClientNotifications error:', err.message);
+    throw err;
+  }
+}

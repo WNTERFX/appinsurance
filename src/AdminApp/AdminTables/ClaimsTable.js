@@ -1,9 +1,10 @@
-//admin side
+// admin side
 import { useEffect, useState } from "react";
 import { fetchPolicies } from "../AdminActions/PolicyActions";
 import {
   fetchClaims,
-  updateClaim
+  updateClaim,
+  archiveClaim
 } from "../AdminActions/ClaimsTableActions";
 import EditClaimsModal from "../AdminForms/EditClaimsModal";
 import ViewClaimModal from "../AdminForms/ViewClaimModal";
@@ -11,7 +12,8 @@ import "../styles/claims-table-styles.css";
 
 export default function ClaimsTable() {
   const [policies, setPolicies] = useState([]);
-  const [claimsMap, setClaimsMap] = useState({});
+  const [policyClaimsMap, setPolicyClaimsMap] = useState({});
+  const [loadingClaims, setLoadingClaims] = useState({});
   const [expanded, setExpanded] = useState({});
   const [editingClaim, setEditingClaim] = useState(null);
   const [viewingClaim, setViewingClaim] = useState(null);
@@ -31,49 +33,63 @@ export default function ClaimsTable() {
     setLoading(true);
     try {
       const allClaims = await fetchClaims();
-
       if (!allClaims || allClaims.length === 0) {
-        console.log("No claims data available");
         setPolicies([]);
-        setClaimsMap({});
+        setPolicyClaimsMap({});
         setLoading(false);
         return;
       }
 
-      const claimsByPolicy = {};
-      allClaims.forEach(claim => {
-        if (!claimsByPolicy[claim.policy_id]) {
-          claimsByPolicy[claim.policy_id] = [];
-        }
-        claimsByPolicy[claim.policy_id].push(claim);
-      });
+      // Filter out archived claims FIRST
+      const nonArchivedClaims = allClaims.filter(claim => !claim.is_archived);
 
-      setClaimsMap(claimsByPolicy);
-
+      // Build unique policies from non-archived claims only
       const uniquePolicies = {};
-      allClaims.forEach(claim => {
+      nonArchivedClaims.forEach(claim => {
         if (claim.policy_Table && !uniquePolicies[claim.policy_id]) {
           uniquePolicies[claim.policy_id] = {
             id: claim.policy_id,
             internal_id: claim.policy_Table.internal_id,
             clients_Table: claim.policy_Table.clients_Table,
-            policy_Table: claim.policy_Table,
           };
         }
       });
 
       setPolicies(Object.values(uniquePolicies));
-
+      setPolicyClaimsMap({});
     } catch (error) {
       console.error("Error loading claims:", error);
       setPolicies([]);
-      setClaimsMap({});
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleExpand = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
+  const loadClaimsForPolicy = async (policyId) => {
+    setLoadingClaims(prev => ({ ...prev, [policyId]: true }));
+    try {
+      const allClaims = await fetchClaims();
+      const claimsForPolicy = allClaims.filter(
+        c => c.policy_id === policyId && !c.is_archived
+      );
+      setPolicyClaimsMap(prev => ({
+        ...prev,
+        [policyId]: claimsForPolicy,
+      }));
+    } catch (err) {
+      console.error("Error fetching claims for policy:", err);
+    } finally {
+      setLoadingClaims(prev => ({ ...prev, [policyId]: false }));
+    }
+  };
+
+  const toggleExpand = async (policyId) => {
+    setExpanded(prev => ({ ...prev, [policyId]: !prev[policyId] }));
+    if (!policyClaimsMap[policyId] || policyClaimsMap[policyId].length === 0) {
+      await loadClaimsForPolicy(policyId);
+    }
+
+  };
 
   const handleClaimAction = async (claim, actionType, policyId) => {
     try {
@@ -84,16 +100,20 @@ export default function ClaimsTable() {
         }
         setEditingClaim(claim);
       } else if (actionType === 'archive') {
-        console.log(`Archiving claim ${claim.id}`);
-        alert(`Claim ${claim.id} archived! (Action Simulated)`);
-        loadClaimsData();
+        if (!window.confirm(`Are you sure you want to archive Claim ${claim.id}?`)) return;
+        try {
+          await archiveClaim(claim.id);
+          alert(`Claim ${claim.id} has been archived successfully.`);
+          loadClaimsData();
+        } catch (error) {
+          console.error("Error archiving claim:", error);
+          alert("Failed to archive claim.");
+        }
       } else if (actionType === 'view') {
         const policy = policies.find(p => p.id === policyId);
-        
-        // Show only the specific claim that was selected
         setViewingClaim({
           policy: policy,
-          claims: [claim] // Pass only the selected claim, not all claims
+          claims: [claim],
         });
       }
     } catch (error) {
@@ -120,7 +140,6 @@ export default function ClaimsTable() {
       alert('Please select a claim first.');
       return;
     }
-
     if (!window.confirm('Do you want to set this Claim to Under Review?')) return;
 
     try {
@@ -128,7 +147,6 @@ export default function ClaimsTable() {
         status: 'Under Review',
         under_review_date: new Date().toISOString().split('T')[0],
       };
-
       await updateClaim(selectedClaimId, updateData);
       await loadClaimsData();
       alert(`Claim ${selectedClaimId} set to Under Review!`);
@@ -144,7 +162,6 @@ export default function ClaimsTable() {
       alert('Please select a claim first.');
       return;
     }
-
     if (!window.confirm('Are you sure you want to reject this claim?')) return;
 
     try {
@@ -153,7 +170,6 @@ export default function ClaimsTable() {
         reject_claim_date: new Date().toISOString().split('T')[0],
         is_approved: false,
       };
-
       await updateClaim(selectedClaimId, updateData);
       await loadClaimsData();
       alert(`Claim ${selectedClaimId} has been rejected.`);
@@ -169,16 +185,12 @@ export default function ClaimsTable() {
       alert('Please select a claim first.');
       return;
     }
-
-    // Get the selected claim to access its policy_id and approved_amount
-    const claimsForPolicy = claimsMap[policyId] || [];
+    const claimsForPolicy = policyClaimsMap[policyId] || [];
     const selectedClaim = claimsForPolicy.find(c => c.id === selectedClaimId);
-    
     if (!selectedClaim) {
       alert('Selected claim not found.');
       return;
     }
-
     if (!window.confirm('Are you sure you want to approve this claim?')) return;
 
     try {
@@ -187,7 +199,6 @@ export default function ClaimsTable() {
         approved_claim_date: new Date().toISOString().split('T')[0],
         is_approved: true,
       };
-
       await updateClaim(selectedClaimId, updateData);
       await loadClaimsData();
       alert(`Claim ${selectedClaimId} has been approved!`);
@@ -203,7 +214,6 @@ export default function ClaimsTable() {
       alert('Please select a claim first.');
       return;
     }
-
     if (!window.confirm('Mark this claim as completed?')) return;
 
     try {
@@ -211,7 +221,6 @@ export default function ClaimsTable() {
         status: 'Completed',
         completed_date: new Date().toISOString().split('T')[0]
       };
-
       await updateClaim(selectedClaimId, updateData);
       await loadClaimsData();
       alert('Claim marked as completed!');
@@ -219,6 +228,19 @@ export default function ClaimsTable() {
       console.error('Error marking claim as completed:', error);
       alert('Failed to mark claim as completed.');
     }
+  };
+
+  const formatCurrency = (amount) => {
+    if (!amount) return "₱0.00";
+    return new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
+    }).format(amount);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString();
   };
 
   const filteredPolicies = policies.filter(policy => {
@@ -234,32 +256,16 @@ export default function ClaimsTable() {
     return policyId.includes(search) || clientName.includes(search);
   });
 
-  // Count only Pending, Under Review, and Approved claims (exclude Rejected and Completed)
-  const totalClaimsCount = filteredPolicies.reduce((count, policy) => {
-    const claimsForPolicy = claimsMap[policy.id] || [];
-    const activeClaims = claimsForPolicy.filter(c => 
-      c.status !== 'Completed' && c.status !== 'Rejected'
-    );
-    return count + activeClaims.length;
-  }, 0);
-
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
   const currentPolicies = filteredPolicies.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.ceil(filteredPolicies.length / rowsPerPage);
 
-  const formatCurrency = (amount) => {
-    if (!amount) return "₱0.00";
-    return new Intl.NumberFormat("en-PH", {
-      style: "currency",
-      currency: "PHP",
-    }).format(amount);
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString();
-  };
+  const totalClaimsCount = currentPolicies.reduce((count, policy) => {
+    const claimsForPolicy = policyClaimsMap[policy.id] || [];
+    const activeClaims = claimsForPolicy.filter(c => c.status !== 'Completed' && c.status !== 'Rejected');
+    return count + activeClaims.length;
+  }, 0);
 
   if (loading) {
     return (
@@ -283,6 +289,7 @@ export default function ClaimsTable() {
     );
   }
 
+
   return (
     <div className="claims-overview-section">
       <div className="claims-overview-header">
@@ -292,14 +299,20 @@ export default function ClaimsTable() {
             type="text"
             placeholder="Search by Policy ID or Client Name..."
             value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="search-input"
           />
           <div className="result-select-wrapper">
             <span>Result</span>
             <select
               value={rowsPerPage}
-              onChange={(e) => { setRowsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
               className="result-select"
             >
               <option value={15}>15</option>
@@ -308,103 +321,90 @@ export default function ClaimsTable() {
               <option value={100}>100</option>
             </select>
           </div>
-          <button className="refresh-btn" onClick={loadClaimsData}>Refresh</button>
+          <button className="refresh-btn" onClick={loadClaimsData}>
+            Refresh
+          </button>
         </div>
       </div>
 
       <div className="policies-list">
-        {currentPolicies.map(policy => {
+        {currentPolicies.map((policy) => {
           const client = policy.clients_Table;
           const clientName = client
-            ? [client.prefix, client.first_Name, client.middle_Name ? client.middle_Name.charAt(0) + "." : "", client.family_Name, client.suffix]
-              .filter(Boolean)
-              .join(" ")
+            ? [
+                client.prefix,
+                client.first_Name,
+                client.middle_Name ? client.middle_Name.charAt(0) + "." : "",
+                client.family_Name,
+                client.suffix,
+              ]
+                .filter(Boolean)
+                .join(" ")
             : "Unknown Client";
 
-          const claimsForPolicy = claimsMap[policy.id] || [];
+          const claimsForPolicy = policyClaimsMap[policy.id] || [];
           const isOpen = expanded[policy.id];
 
-          // Count only Pending, Under Review, and Approved claims for this policy
-          const activeClaimsForPolicy = claimsForPolicy.filter(c => 
-            c.status !== 'Completed' && c.status !== 'Rejected'
+          const activeClaimsForPolicy = claimsForPolicy.filter(
+            (c) => c.status !== "Completed" && c.status !== "Rejected"
           );
           const policyClaimsCount = activeClaimsForPolicy.length;
 
-          // Get selected claim for this policy
           const selectedClaimId = selectedClaims[policy.id];
-          const selectedClaim = selectedClaimId ? claimsForPolicy.find(c => c.id === selectedClaimId) : null;
+          const selectedClaim = selectedClaimId
+            ? claimsForPolicy.find((c) => c.id === selectedClaimId)
+            : null;
 
-          // Determine overall status (exclude Completed from policy card status)
-          let overallStatus = 'Pending';
-          const nonCompletedClaims = claimsForPolicy.filter(c => c.status !== 'Completed');
+          let overallStatus = "Pending";
+          const nonCompletedClaims = claimsForPolicy.filter(
+            (c) => c.status !== "Completed"
+          );
           if (nonCompletedClaims.length > 0) {
-            const statuses = nonCompletedClaims.map(c => c.status || 'Pending');
-            if (statuses.includes('Under Review')) {
-              overallStatus = 'Under Review';
-            } else if (statuses.every(s => s === 'Approved')) {
-              overallStatus = 'Approved';
-            } else if (statuses.some(s => s === 'Rejected')) {
-              overallStatus = 'Rejected';
+            const statuses = nonCompletedClaims.map((c) => c.status || "Pending");
+            if (statuses.includes("Under Review")) {
+              overallStatus = "Under Review";
+            } else if (statuses.every((s) => s === "Approved")) {
+              overallStatus = "Approved";
+            } else if (statuses.some((s) => s === "Rejected")) {
+              overallStatus = "Rejected";
             }
           }
 
-          // Button logic based on selected claim status
           const isClaimSelected = !!selectedClaim;
-          const claimStatus = selectedClaim?.status || 'Pending';
+          const claimStatus = selectedClaim?.status || "Pending";
           const approvedAmount = selectedClaim?.approved_amount || 0;
           const estimateAmount = selectedClaim?.estimate_amount || 0;
-          
-          // Check if approved amount is at least 50% of estimate amount
-          const hasValidApprovedAmount = approvedAmount > 0 && approvedAmount >= (estimateAmount * 0.5);
+          const hasValidApprovedAmount =
+            approvedAmount > 0 && approvedAmount >= estimateAmount * 0.5;
 
-          // Button states based on process flow
           let buttons = {
             viewClaim: true,
-            underReview: false, // Show or hide
-            rejectClaim: false, // Show or hide
-            approveClaim: false, // Show or hide
-            completed: false // Show or hide
+            underReview: false,
+            rejectClaim: false,
+            approveClaim: false,
+            completed: false,
           };
 
           if (isClaimSelected) {
-            if (claimStatus === 'Pending') {
-              // Pending (selected): Only Under Review enabled
+            if (claimStatus === "Pending") {
               buttons.viewClaim = true;
-              buttons.underReview = true; // Show and enabled
-              buttons.rejectClaim = true; // Show but disabled
-              buttons.approveClaim = true; // Show but disabled
-              buttons.completed = true; // Show but disabled
-            } else if (claimStatus === 'Under Review') {
-              // Under Review: View enabled, Reject/Approve shown (enabled only if approved_amount >= 50% of estimate)
+              buttons.underReview = true;
+              buttons.rejectClaim = true;
+              buttons.approveClaim = true;
+              buttons.completed = true;
+            } else if (claimStatus === "Under Review") {
               buttons.viewClaim = true;
-              buttons.underReview = false; // Hidden
-              buttons.rejectClaim = true; // Show (enabled based on hasValidApprovedAmount)
-              buttons.approveClaim = true; // Show (enabled based on hasValidApprovedAmount)
-              buttons.completed = true; // Show but disabled
-            } else if (claimStatus === 'Approved') {
-              // Approved: Only View + Completed visible
+              buttons.underReview = false;
+              buttons.rejectClaim = true;
+              buttons.approveClaim = true;
+              buttons.completed = true;
+            } else if (claimStatus === "Approved") {
               buttons.viewClaim = true;
-              buttons.underReview = false; // Hidden
-              buttons.rejectClaim = false; // Hidden
-              buttons.approveClaim = false; // Hidden
-              buttons.completed = true; // Show and enabled
-            } else if (claimStatus === 'Rejected') {
-              // Rejected: Only View visible
+              buttons.completed = true;
+            } else if (claimStatus === "Rejected" || claimStatus === "Completed") {
               buttons.viewClaim = true;
-              buttons.underReview = false; // Hidden
-              buttons.rejectClaim = false; // Hidden
-              buttons.approveClaim = false; // Hidden
-              buttons.completed = false; // Hidden
-            } else if (claimStatus === 'Completed') {
-              // Completed: Only View visible
-              buttons.viewClaim = true;
-              buttons.underReview = false; // Hidden
-              buttons.rejectClaim = false; // Hidden
-              buttons.approveClaim = false; // Hidden
-              buttons.completed = false; // Hidden
             }
           } else {
-            // No claim selected: Show all buttons but all disabled
             buttons.viewClaim = false;
             buttons.underReview = true;
             buttons.rejectClaim = true;
@@ -420,9 +420,6 @@ export default function ClaimsTable() {
                   <span className="policy-holder">Policy Holder: {clientName}</span>
                 </div>
                 <div className="policy-info-right">
-                  <span className="policy-claims-count">
-                    Claims ({policyClaimsCount})
-                  </span>
                   <button className={`expand-toggle ${isOpen ? "expanded" : ""}`}>
                     <span className="arrow">⌄</span>
                   </button>
@@ -431,7 +428,10 @@ export default function ClaimsTable() {
 
               <div className={`claim-details-table-wrapper ${isOpen ? "show" : ""}`}>
                 <h3 className="claim-details-title">Claims</h3>
-                {claimsForPolicy.length > 0 ? (
+
+                {loadingClaims[policy.id] ? (
+                  <p className="no-claims-message">Loading claims...</p>
+                ) : claimsForPolicy.length > 0 ? (
                   <table className="claims-table">
                     <thead>
                       <tr>
@@ -456,46 +456,88 @@ export default function ClaimsTable() {
                               name={`selected-claim-${policy.id}`}
                               checked={selectedClaims[policy.id] === claim.id}
                               onChange={() =>
-                                setSelectedClaims(prev => ({ ...prev, [policy.id]: claim.id }))
+                                setSelectedClaims((prev) => ({
+                                  ...prev,
+                                  [policy.id]: claim.id,
+                                }))
                               }
                             />
                           </td>
                           <td>{claim.type_of_incident || "N/A"}</td>
                           <td>{formatDate(claim.incident_date)}</td>
                           <td>{formatDate(claim.claim_date)}</td>
-                          <td>{formatCurrency(claim.policy_Table?.policy_Computation_Table?.policy_claim_amount)}</td>
+                          <td>
+                            {formatCurrency(
+                              claim.policy_Table?.policy_Computation_Table
+                                ?.policy_claim_amount
+                            )}
+                          </td>
                           <td>{formatCurrency(claim.estimate_amount)}</td>
                           <td>{formatCurrency(claim.approved_amount)}</td>
                           <td>{claim.message || "-"}</td>
                           <td>
                             <span
-                              className={`claim-status-badge ${claim.status
-                                ? claim.status.toLowerCase().replace(/\s+/g, "-")
-                                : "pending"
-                                }`}
+                              className={`claim-status-badge ${
+                                claim.status
+                                  ? claim.status.toLowerCase().replace(/\s+/g, "-")
+                                  : "pending"
+                              }`}
                             >
                               {claim.status || "Pending"}
                             </span>
                           </td>
                           <td className="claim-actions-cell">
                             <button
-                              onClick={() => handleClaimAction(claim, "edit", policy.id)}
+                              onClick={() =>
+                                handleClaimAction(claim, "edit", policy.id)
+                              }
                               className="edit-claim-btn"
-                              disabled={!isClaimSelected || selectedClaim?.id !== claim.id || claim.status === 'Pending' || claim.status === 'Approved' || claim.status === 'Rejected' || claim.status === 'Completed'}
+                              disabled={
+                                !isClaimSelected ||
+                                selectedClaim?.id !== claim.id ||
+                                claim.status === "Pending" ||
+                                claim.status === "Approved" ||
+                                claim.status === "Rejected" ||
+                                claim.status === "Completed"
+                              }
                               style={{
-                                opacity: (!isClaimSelected || selectedClaim?.id !== claim.id || claim.status === 'Pending' || claim.status === 'Approved' || claim.status === 'Rejected' || claim.status === 'Completed') ? 0.5 : 1,
-                                cursor: (!isClaimSelected || selectedClaim?.id !== claim.id || claim.status === 'Pending' || claim.status === 'Approved' || claim.status === 'Rejected' || claim.status === 'Completed') ? 'not-allowed' : 'pointer'
+                                opacity:
+                                  !isClaimSelected ||
+                                  selectedClaim?.id !== claim.id ||
+                                  claim.status === "Pending" ||
+                                  claim.status === "Approved" ||
+                                  claim.status === "Rejected" ||
+                                  claim.status === "Completed"
+                                    ? 0.5
+                                    : 1,
+                                cursor:
+                                  !isClaimSelected ||
+                                  selectedClaim?.id !== claim.id ||
+                                  claim.status === "Pending" ||
+                                  claim.status === "Approved" ||
+                                  claim.status === "Rejected" ||
+                                  claim.status === "Completed"
+                                    ? "not-allowed"
+                                    : "pointer",
                               }}
                             >
                               Edit
                             </button>
                             <button
-                              onClick={() => handleClaimAction(claim, "archive", policy.id)}
+                              onClick={() =>
+                                handleClaimAction(claim, "archive", policy.id)
+                              }
                               className="archive-claim-btn"
                               disabled={!isClaimSelected || selectedClaim?.id !== claim.id}
                               style={{
-                                opacity: (!isClaimSelected || selectedClaim?.id !== claim.id) ? 0.5 : 1,
-                                cursor: (!isClaimSelected || selectedClaim?.id !== claim.id) ? 'not-allowed' : 'pointer'
+                                opacity:
+                                  !isClaimSelected || selectedClaim?.id !== claim.id
+                                    ? 0.5
+                                    : 1,
+                                cursor:
+                                  !isClaimSelected || selectedClaim?.id !== claim.id
+                                    ? "not-allowed"
+                                    : "pointer",
                               }}
                             >
                               Archive
@@ -505,32 +547,50 @@ export default function ClaimsTable() {
                       ))}
                     </tbody>
                   </table>
-                ) : <p className="no-claims-message">No claims for this policy</p>}
+                ) : (
+                  <p className="no-claims-message">No claims for this policy</p>
+                )}
 
                 <div className="claim-summary-actions">
-                  <button
-                    className="view-claim-btn"
-                    onClick={() => handleClaimAction(selectedClaim, 'view', policy.id)}
-                    disabled={!buttons.viewClaim}
-                    style={{
-                      opacity: !buttons.viewClaim ? 0.5 : 1,
-                      cursor: !buttons.viewClaim ? 'not-allowed' : 'pointer'
-                    }}
-                    title={!buttons.viewClaim ? 'Please select a claim first' : 'View selected claim'}
-                  >
-                    View Claim
-                  </button>
+                  {buttons.viewClaim && (
+                    <button
+                      className="view-claim-btn"
+                      onClick={() => handleClaimAction(selectedClaim, "view", policy.id)}
+                      disabled={!buttons.viewClaim}
+                      style={{
+                        opacity: !buttons.viewClaim ? 0.5 : 1,
+                        cursor: !buttons.viewClaim ? "not-allowed" : "pointer",
+                      }}
+                      title={
+                        !buttons.viewClaim
+                          ? "Please select a claim first"
+                          : "View selected claim"
+                      }
+                    >
+                      View Claim
+                    </button>
+                  )}
 
                   {buttons.underReview && (
                     <button
                       className="under-review-btn"
                       onClick={() => handleUnderReview(policy.id)}
-                      disabled={!isClaimSelected || claimStatus !== 'Pending'}
+                      disabled={!isClaimSelected || claimStatus !== "Pending"}
                       style={{
-                        opacity: (!isClaimSelected || claimStatus !== 'Pending') ? 0.5 : 1,
-                        cursor: (!isClaimSelected || claimStatus !== 'Pending') ? 'not-allowed' : 'pointer'
+                        opacity:
+                          !isClaimSelected || claimStatus !== "Pending" ? 0.5 : 1,
+                        cursor:
+                          !isClaimSelected || claimStatus !== "Pending"
+                            ? "not-allowed"
+                            : "pointer",
                       }}
-                      title={!isClaimSelected ? 'Please select a claim first' : claimStatus !== 'Pending' ? 'Not available for this status' : 'Set to Under Review'}
+                      title={
+                        !isClaimSelected
+                          ? "Please select a claim first"
+                          : claimStatus !== "Pending"
+                          ? "Not available for this status"
+                          : "Set to Under Review"
+                      }
                     >
                       Under Review
                     </button>
@@ -540,16 +600,31 @@ export default function ClaimsTable() {
                     <button
                       className="reject-claim-btn"
                       onClick={() => handleRejectClaim(policy.id)}
-                      disabled={!isClaimSelected || claimStatus === 'Pending' || !hasValidApprovedAmount}
+                      disabled={
+                        !isClaimSelected || claimStatus === "Pending" || !hasValidApprovedAmount
+                      }
                       style={{
-                        opacity: (!isClaimSelected || claimStatus === 'Pending' || !hasValidApprovedAmount) ? 0.5 : 1,
-                        cursor: (!isClaimSelected || claimStatus === 'Pending' || !hasValidApprovedAmount) ? 'not-allowed' : 'pointer'
+                        opacity:
+                          !isClaimSelected ||
+                          claimStatus === "Pending" ||
+                          !hasValidApprovedAmount
+                            ? 0.5
+                            : 1,
+                        cursor:
+                          !isClaimSelected ||
+                          claimStatus === "Pending" ||
+                          !hasValidApprovedAmount
+                            ? "not-allowed"
+                            : "pointer",
                       }}
                       title={
-                        !isClaimSelected ? 'Please select a claim first' :
-                        claimStatus === 'Pending' ? 'Set to Under Review first' :
-                        !hasValidApprovedAmount ? 'Approved amount must be at least 50% of estimate amount' :
-                        'Reject selected claim'
+                        !isClaimSelected
+                          ? "Please select a claim first"
+                          : claimStatus === "Pending"
+                          ? "Set to Under Review first"
+                          : !hasValidApprovedAmount
+                          ? "Approved amount must be at least 50% of estimate amount"
+                          : "Reject selected claim"
                       }
                     >
                       Reject Claim
@@ -560,16 +635,31 @@ export default function ClaimsTable() {
                     <button
                       className="approve-claim-btn"
                       onClick={() => handleApproveClaim(policy.id)}
-                      disabled={!isClaimSelected || claimStatus === 'Pending' || !hasValidApprovedAmount}
+                      disabled={
+                        !isClaimSelected || claimStatus === "Pending" || !hasValidApprovedAmount
+                      }
                       style={{
-                        opacity: (!isClaimSelected || claimStatus === 'Pending' || !hasValidApprovedAmount) ? 0.5 : 1,
-                        cursor: (!isClaimSelected || claimStatus === 'Pending' || !hasValidApprovedAmount) ? 'not-allowed' : 'pointer'
+                        opacity:
+                          !isClaimSelected ||
+                          claimStatus === "Pending" ||
+                          !hasValidApprovedAmount
+                            ? 0.5
+                            : 1,
+                        cursor:
+                          !isClaimSelected ||
+                          claimStatus === "Pending" ||
+                          !hasValidApprovedAmount
+                            ? "not-allowed"
+                            : "pointer",
                       }}
                       title={
-                        !isClaimSelected ? 'Please select a claim first' :
-                        claimStatus === 'Pending' ? 'Set to Under Review first' :
-                        !hasValidApprovedAmount ? 'Approved amount must be at least 50% of estimate amount' :
-                        'Approve selected claim'
+                        !isClaimSelected
+                          ? "Please select a claim first"
+                          : claimStatus === "Pending"
+                          ? "Set to Under Review first"
+                          : !hasValidApprovedAmount
+                          ? "Approved amount must be at least 50% of estimate amount"
+                          : "Approve selected claim"
                       }
                     >
                       Approve Claim
@@ -580,15 +670,21 @@ export default function ClaimsTable() {
                     <button
                       className="completed-btn"
                       onClick={() => handleCompleted(policy.id)}
-                      disabled={!isClaimSelected || claimStatus !== 'Approved'}
+                      disabled={!isClaimSelected || claimStatus !== "Approved"}
                       style={{
-                        opacity: (!isClaimSelected || claimStatus !== 'Approved') ? 0.5 : 1,
-                        cursor: (!isClaimSelected || claimStatus !== 'Approved') ? 'not-allowed' : 'pointer'
+                        opacity:
+                          !isClaimSelected || claimStatus !== "Approved" ? 0.5 : 1,
+                        cursor:
+                          !isClaimSelected || claimStatus !== "Approved"
+                            ? "not-allowed"
+                            : "pointer",
                       }}
                       title={
-                        !isClaimSelected ? 'Please select a claim first' :
-                        claimStatus !== 'Approved' ? 'Only approved claims can be completed' :
-                        'Mark as completed'
+                        !isClaimSelected
+                          ? "Please select a claim first"
+                          : claimStatus !== "Approved"
+                          ? "Only approved claims can be completed"
+                          : "Mark as completed"
                       }
                     >
                       Completed
@@ -603,9 +699,21 @@ export default function ClaimsTable() {
 
       {totalPages > 1 && (
         <div className="pagination-controls">
-          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
-          <span>Page {currentPage} of {totalPages}</span>
-          <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            Next
+          </button>
         </div>
       )}
 
