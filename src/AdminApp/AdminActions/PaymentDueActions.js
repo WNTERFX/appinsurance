@@ -4,8 +4,8 @@ import { fetchPenaltiesForPayments, calculateTotalDue, calculateRemainingBalance
 // ✅ UPDATED: Fetch payment_type_id and payment_type_name to identify payment types
 export async function fetchPaymentSchedule(policyId) {
   if (!policyId) throw new Error("Policy ID is required");
-
-  const { data: payments, error: paymentsError } = await db
+  
+   const { data: payments, error: paymentsError } = await db
     .from("payment_Table")
     .select(`
       id,
@@ -14,12 +14,15 @@ export async function fetchPaymentSchedule(policyId) {
       is_paid,
       paid_amount,
       payment_type_id,
+      payment_mode_id,
+      payment_manual_reference,  
       payment_status,
       is_refunded,
       refund_amount,
       refund_date,
       refund_reason,
       payment_type ( payment_type_name ),
+      payment_mode ( payment_mode_name ),
       paymongo_transactions (
         reference_number,
         status,
@@ -29,32 +32,32 @@ export async function fetchPaymentSchedule(policyId) {
     .eq("policy_id", policyId)
     .or("is_archive.is.null,is_archive.eq.false")
     .order("payment_date", { ascending: true });
-
+  
   if (paymentsError) throw paymentsError;
   if (!payments || payments.length === 0) return [];
-
+  
   // Penalties logic stays the same
   const paymentIds = payments.map(p => p.id);
-
   const { data: penalties, error: penaltiesError } = await db
     .from("payment_due_penalties")
     .select("*")
     .in("payment_id", paymentIds)
     .order("penalty_date", { ascending: true });
-
+  
   if (penaltiesError) throw penaltiesError;
-
+  
   const penaltiesMap = {};
   for (const p of penalties) {
     if (!penaltiesMap[p.payment_id]) penaltiesMap[p.payment_id] = [];
     penaltiesMap[p.payment_id].push(p);
   }
-
+  
   return payments.map(p => {
     const paymentPenalties = penaltiesMap[p.id] || [];
     return {
       ...p,
       payment_type_name: p.payment_type?.payment_type_name || null,
+      payment_mode_name: p.payment_mode?.payment_mode_name || null,
       paymongo_reference: p.paymongo_transactions?.[0]?.reference_number || null,
       paymongo_status: p.paymongo_transactions?.[0]?.status || null,
       paymongo_checkout_url: p.paymongo_transactions?.[0]?.checkout_url || null,
@@ -66,101 +69,114 @@ export async function fetchPaymentSchedule(policyId) {
 }
 
 // Update an existing payment
-export async function updatePayment(paymentId, paidAmount) {
+export async function updatePayment(paymentId, paidAmount, paymentModeId = null, manualReference = null) {
   if (!paymentId) throw new Error("Payment ID is required");
   if (!paidAmount || paidAmount <= 0) throw new Error("Paid amount must be positive");
-
+  
   const { data: currentPayment, error: fetchError } = await db
     .from("payment_Table")
     .select("id, policy_id, payment_date, amount_to_be_paid, paid_amount, is_paid, payment_type_id")
     .eq("id", paymentId)
     .single();
-
+  
   if (fetchError) throw fetchError;
   if (!currentPayment) throw new Error("Payment not found");
-
+  
   const { policy_id } = currentPayment;
-
+  
   const { data: allPayments, error: allError } = await db
     .from("payment_Table")
     .select("id, payment_date, amount_to_be_paid, paid_amount, is_paid, payment_type_id")
     .eq("policy_id", policy_id)
     .order("payment_date", { ascending: true });
-
+  
   if (allError) throw allError;
-
+  
   const currentIndex = allPayments.findIndex(p => p.id === paymentId);
   if (currentIndex === -1) throw new Error("Payment not found in schedule");
-
+  
   let remaining = paidAmount;
   const updates = [];
-
+  
   for (let i = currentIndex; i < allPayments.length && remaining > 0; i++) {
     const payment = allPayments[i];
-
+    
     // Apply to penalties first
     const { data: penalties } = await db
       .from("payment_due_penalties")
       .select("id, penalty_amount, is_paid")
       .eq("payment_id", payment.id)
       .order("penalty_date", { ascending: true });
-
+    
     for (const penalty of penalties || []) {
       if (penalty.is_paid) continue;
       const penaltyRemaining = penalty.penalty_amount;
       const toPay = Math.min(remaining, penaltyRemaining);
       remaining -= toPay;
-
+      
       await db
         .from("payment_due_penalties")
         .update({ is_paid: toPay >= penaltyRemaining })
         .eq("id", penalty.id);
-
+      
       if (remaining <= 0) break;
     }
-
+    
     if (remaining <= 0) break;
-
+    
     // Apply to payment base amount
     const due = parseFloat(payment.amount_to_be_paid);
     const alreadyPaid = parseFloat(payment.paid_amount || 0);
     const needed = Math.max(due - alreadyPaid, 0);
-
+    
     if (needed <= 0) continue;
-
+    
     const applied = Math.min(remaining, needed);
-    const newPaid = alreadyPaid + applied; // FIX: Add to existing, not replace
+    const newPaid = alreadyPaid + applied;
     const isPaid = newPaid >= due;
-
+    
+    // Build update object
+    const updateData = {
+      paid_amount: newPaid,
+      is_paid: isPaid
+    };
+    
+    // Add payment_mode_id only for the first payment (the one being processed)
+    // and only if paymentModeId is provided
+    if (i === currentIndex && paymentModeId !== null) {
+      updateData.payment_mode_id = paymentModeId;
+    }
+    
+    // Add manual reference if provided (ONLY for the first payment)
+    if (i === currentIndex && manualReference !== null) {
+      updateData.payment_manual_reference = manualReference;
+    }
+    
     updates.push({
       id: payment.id,
-      paid_amount: newPaid,
-      is_paid: isPaid,
+      updateData,
       spillover: remaining > needed
     });
-
+    
     console.log(
       remaining > needed
         ? `💧 Spillover: Applied ₱${applied.toFixed(2)} to ${payment.payment_date}, ₱${(remaining - applied).toFixed(2)} remaining`
         : `✅ Payment applied to ${payment.payment_date}: ₱${applied.toFixed(2)}`
     );
-
+    
     remaining -= applied;
   }
-
+  
   // Apply all updates
   for (const up of updates) {
     const { error: updateErr } = await db
       .from("payment_Table")
-      .update({
-        paid_amount: up.paid_amount,
-        is_paid: up.is_paid
-      })
+      .update(up.updateData)
       .eq("id", up.id);
-
+    
     if (updateErr) throw updateErr;
   }
-
+  
   return updates.find(u => u.id === paymentId);
 }
 
@@ -170,6 +186,10 @@ export async function fetchArchivedPayments() {
     .from("payment_Table")
     .select(`
       *,
+      payment_mode (
+        id,
+        payment_mode_name
+      ),
       policy_Table!inner (
         id,
         internal_id,
@@ -225,7 +245,7 @@ export async function fetchArchivedPayments() {
     const paymentPenalties = penaltiesMap[p.id] || [];
     return {
       ...p,
-      payment_type_name: p.payment_type?.payment_type_name || null,
+      payment_mode_name: p.payment_mode?.payment_mode_name || null,
       penalties: paymentPenalties,
       total_due: calculateTotalDue(p, paymentPenalties),
       remaining_balance: calculateRemainingBalance(p, paymentPenalties)
@@ -433,4 +453,42 @@ export async function fetchPaymentsWithPenalties(policyId = null) {
     console.error("Error fetching payments with penalties:", err);
     return [];
   }
+}
+
+
+export async function fetchAllPaymentModes() {
+  const { data, error } = await db
+    .from("payment_mode")
+    .select("*")
+    .order("payment_mode_name");
+  
+  if (error) throw error;
+  return data || [];
+}
+
+export async function editPaymentDetails(paymentId, paymentModeId = null, manualReference = null) {
+  if (!paymentId) throw new Error("Payment ID is required");
+  
+  const updateData = {};
+  
+  if (paymentModeId !== null) {
+    updateData.payment_mode_id = paymentModeId;
+  }
+  
+  if (manualReference !== null) {
+    updateData.payment_manual_reference = manualReference;
+  }
+  
+  if (Object.keys(updateData).length === 0) {
+    throw new Error("No fields to update");
+  }
+  
+  const { data, error } = await db
+    .from("payment_Table")
+    .update(updateData)
+    .eq("id", paymentId)
+    .select();
+  
+  if (error) throw error;
+  return data[0];
 }

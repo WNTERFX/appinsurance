@@ -1,372 +1,54 @@
-import { useEffect, useState } from "react";
-import { fetchPolicies } from "../../AdminActions/PolicyActions";
-import {
-  fetchPaymentSchedule,
-  updatePayment,
-  generatePayments,
-  archivePayment
-} from "../../AdminActions/PaymentDueActions";
-import {
-  addPaymentPenalty,
-  calculateDailyPenalty,
-  hasPenaltyForToday
-} from "../../AdminActions/PaymentPenaltyActions";
 
-/**
- * usePolicyWithPaymentsController
- * - Contains all state, effects, and handlers previously above the return in your component.
- * - Designed to be dropped in without changing your JSX: import and destructure everything you were referencing.
- */
-export default function PolicyWithPaymentsController() {
-  // --- UI + data state ---
-  const [policies, setPolicies] = useState([]);
-  const [paymentsMap, setPaymentsMap] = useState({}); // fallback
-  const [paymentsByPolicy, setPaymentsByPolicy] = useState({}); // lazy-loaded payments
-  const [loadingPayments, setLoadingPayments] = useState({});
-  const [expanded, setExpanded] = useState({}); // visual expand flags
-  const [expandedPolicy, setExpandedPolicy] = useState(null); // single-expanded tracker
+import PaymentGenerationModal from "../PaymentGenerationModal";
+import "../styles/payment-table-styles.css";
+import PaymentDueController from "./TableController/PaymentDueController"
+import { useState } from "react";
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [currentPayment, setCurrentPayment] = useState(null);
-  const [paymentInput, setPaymentInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
-  const [penaltyModalOpen, setPenaltyModalOpen] = useState(false);
-  const [selectedPaymentForPenalty, setSelectedPaymentForPenalty] = useState(null);
-
-  const [generateModalOpen, setGenerateModalOpen] = useState(false);
-  const [selectedPolicy, setSelectedPolicy] = useState(null);
+export default function PolicyWithPaymentsList() {
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [rowsPerPage, setRowsPerPage] = useState(15);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // Archive confirmation modal state
-  const [archiveModalOpen, setArchiveModalOpen] = useState(false);
-  const [selectedPaymentForArchive, setSelectedPaymentForArchive] = useState(null);
-
-  const CHEQUE_PAYMENT_TYPE = 2;
-
-  // ---------- LOAD POLICIES ----------
-  useEffect(() => {
-    loadPolicies();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const loadPolicies = async () => {
-    try {
-      setIsLoading(true);
-      setPolicies([]);
-      setPaymentsMap({});
-
-      const allPolicies = await fetchPolicies();
-      if (!allPolicies) {
-        setPolicies([]);
-        return;
-      }
-
-      const filtered = allPolicies.filter(policy => policy.is_archived !== true);
-      setPolicies(filtered);
-
-      // reset pagination
-      setCurrentPage(1);
-    } catch (err) {
-      console.error("Error loading policies:", err);
-    } finally {
-      setIsLoading(false);
-    }
+  const calculateDailyPenalty = (baseAmount, daysOverdue) => {
+    const ratePerDay = 0.01; // or whatever logic you used before
+    return baseAmount * ratePerDay * daysOverdue;
   };
 
-  // ---------- Handle expanding a policy: lazy-load payments ----------
-  const handleExpand = async (policyId) => {
-    setExpanded(prev => ({ ...prev, [policyId]: !prev[policyId] }));
+  // if you have renderPoliciesList() inside controller, rename to renderPolicies
 
-    if (expandedPolicy === policyId) {
-      setExpandedPolicy(null);
-    } else {
-      setExpandedPolicy(policyId);
-    }
-
-    if (!paymentsByPolicy[policyId] && !loadingPayments[policyId]) {
-      setLoadingPayments(prev => ({ ...prev, [policyId]: true }));
-      try {
-        const data = await fetchPaymentSchedule(policyId);
-        const nonArchived = (data || []).filter(p => p.is_archive !== true);
-        setPaymentsByPolicy(prev => ({ ...prev, [policyId]: nonArchived }));
-      } catch (err) {
-        console.error("Error fetching payments for policy", policyId, err);
-        setPaymentsByPolicy(prev => ({ ...prev, [policyId]: [] }));
-      } finally {
-        setLoadingPayments(prev => ({ ...prev, [policyId]: false }));
-      }
-    }
-  };
-
-  const toggleExpand = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
-
-  // ---------- Helper functions ----------
-  const calculateTotalPenalties = (payment) => {
-    const penalties = payment.penalties || [];
-    return penalties.reduce((sum, p) => sum + parseFloat(p.penalty_amount || 0), 0);
-  };
-
-  const calculateTotalDue = (payment) => {
-    const baseDue = parseFloat(payment.amount_to_be_paid || 0);
-    return baseDue + calculateTotalPenalties(payment);
-  };
-
-  const isChequePayment = (payment) => payment.payment_type_id === CHEQUE_PAYMENT_TYPE;
-
-  const calculateOverdueInfo = (payment) => {
-    if (isChequePayment(payment)) return { daysOverdue: 0, penaltyPercentage: 0 };
-
-    const paymentDate = new Date(payment.payment_date);
-    const today = new Date();
-    const isPaid = getPaymentStatus(payment) === "fully-paid";
-    const penalties = payment.penalties || payment.payment_due_penalties || [];
-
-    if (isPaid) {
-      if (penalties.length > 0) {
-        const lastPenalty = penalties[penalties.length - 1];
-        const lastDaysOverdue = lastPenalty.not_paid_days || 0;
-        const penaltyPercentage = Math.min(lastDaysOverdue, 31);
-        return { daysOverdue: lastDaysOverdue, penaltyPercentage };
-      }
-      return { daysOverdue: 0, penaltyPercentage: 0 };
-    }
-
-    const daysOverdue = Math.floor((today - paymentDate) / (1000 * 60 * 60 * 24));
-    if (daysOverdue <= 0) return { daysOverdue: 0, penaltyPercentage: 0 };
-
-    const penaltyPercentage = Math.min(daysOverdue, 31);
-    return { daysOverdue, penaltyPercentage };
-  };
-
-  const calculateTotalPaid = (payment) => {
-    const basePaid = parseFloat(payment.paid_amount || 0);
-    const penaltiesPaid = (payment.penalties || [])
-      .filter(p => p.is_paid)
-      .reduce((sum, p) => sum + parseFloat(p.penalty_amount || 0), 0);
-    return basePaid + penaltiesPaid;
-  };
-
-  // ---------- Payment modal / update ----------
-  const handlePaymentClick = (payment, clientPhone) => {
-    setCurrentPayment({ ...payment, client_phone: clientPhone, policy_id: payment.policy_id });
-    setPaymentInput("");
-    setModalOpen(true);
-  };
-
-  const handlePaymentSave = async () => {
-    if (!currentPayment?.id || !currentPayment?.policy_id) return;
-    try {
-      const cleanedInput = parseFloat(paymentInput.replace(/,/g, ""));
-      if (isNaN(cleanedInput)) {
-        alert("Please enter a valid number");
-        return;
-      }
-
-      const policyId = currentPayment.policy_id;
-      const payments = paymentsByPolicy[policyId] || paymentsMap[policyId] || [];
-      const currentIndex = payments.findIndex(p => p.id === currentPayment.id);
-      if (currentIndex === -1) return;
-
-      const currentTotalDue = calculateTotalDue(currentPayment);
-      const currentPaid = calculateTotalPaid(currentPayment);
-      const currentRemaining = Math.max(currentTotalDue - currentPaid, 0);
-
-      const totalRemainingAcrossAll = payments.reduce((sum, p) => {
-        const totalDue = calculateTotalDue(p);
-        const totalPaid = calculateTotalPaid(p);
-        return sum + Math.max(totalDue - totalPaid, 0);
-      }, 0);
-
-      if (cleanedInput > totalRemainingAcrossAll + 0.0001) {
-        alert(`You cannot pay more than the total remaining balance (₱${totalRemainingAcrossAll.toLocaleString()}).`);
-        return;
-      }
-
-      if (cleanedInput <= currentRemaining + 0.0001) {
-        await updatePayment(currentPayment.id, cleanedInput, currentPayment.amount_to_be_paid);
-      } else {
-        let remainingToApply = cleanedInput;
-        for (let i = currentIndex; i < payments.length && remainingToApply > 0; i++) {
-          const p = payments[i];
-          const remaining = Math.max(calculateTotalDue(p) - calculateTotalPaid(p), 0);
-          if (remaining <= 0) continue;
-          const amountToPay = Math.min(remaining, remainingToApply);
-          await updatePayment(p.id, amountToPay, p.amount_to_be_paid);
-          remainingToApply -= amountToPay;
-        }
-      }
-
-      const updatedSchedule = await fetchPaymentSchedule(policyId);
-      setPaymentsByPolicy(prev => ({ ...prev, [policyId]: updatedSchedule }));
-      setPaymentsMap(prev => ({ ...prev, [policyId]: updatedSchedule }));
-
-      if (Math.abs(cleanedInput - totalRemainingAcrossAll) < 0.01) {
-        alert("Full payment applied across remaining months!");
-      } else if (cleanedInput > currentRemaining) {
-        alert("Payment applied with spillover across months.");
-      } else {
-        alert("Payment applied successfully!");
-      }
-
-      setModalOpen(false);
-      setCurrentPayment(null);
-      setPaymentInput("");
-    } catch (err) {
-      console.error("Error updating payment:", err);
-      alert("Failed to update payment. Check console for details.");
-    }
-  };
-
-  // ---------- Penalty flows ----------
-  const handleAddPenalty = (payment) => {
-    if (isChequePayment(payment)) {
-      alert("Cheque payments are not subject to overdue penalties.");
-      return;
-    }
-    const overdueInfo = calculateOverdueInfo(payment);
-    if (overdueInfo.daysOverdue <= 0) {
-      alert("This payment is not yet overdue. Penalties can only be added to overdue payments.");
-      return;
-    }
-    setSelectedPaymentForPenalty(payment);
-    setPenaltyModalOpen(true);
-  };
-
-  const handlePenaltySave = async () => {
-    if (!selectedPaymentForPenalty) return;
-    try {
-      const overdueInfo = calculateOverdueInfo(selectedPaymentForPenalty);
-      const { penaltyAmount } = await calculateDailyPenalty({
-        amount_to_be_paid: selectedPaymentForPenalty.amount_to_be_paid,
-        payment_date: selectedPaymentForPenalty.payment_date
-      });
-      const reason = `${overdueInfo.daysOverdue} day(s) overdue - ${overdueInfo.penaltyPercentage}% penalty (1% per day)`;
-
-      await addPaymentPenalty(
-        selectedPaymentForPenalty.id,
-        penaltyAmount,
-        reason,
-        overdueInfo.daysOverdue
-      );
-
-      const policyId = selectedPaymentForPenalty.policy_id;
-      const updated = await fetchPaymentSchedule(policyId);
-      setPaymentsByPolicy(prev => ({ ...prev, [policyId]: updated }));
-      setPaymentsMap(prev => ({ ...prev, [policyId]: updated }));
-
-      alert("Penalty added successfully!");
-      setPenaltyModalOpen(false);
-      setSelectedPaymentForPenalty(null);
-    } catch (err) {
-      console.error("Error adding penalty:", err);
-      alert("Failed to add penalty. See console for details.");
-    }
-  };
-
-  // ---------- Generate payments ----------
-  const handleGeneratePayments = async (policyId, payments) => {
-    try {
-      await generatePayments(policyId, payments);
-      if (paymentsByPolicy[policyId]) {
-        const updated = await fetchPaymentSchedule(policyId);
-        setPaymentsByPolicy(prev => ({ ...prev, [policyId]: updated }));
-        setPaymentsMap(prev => ({ ...prev, [policyId]: updated }));
-      }
-      alert("Payments generated successfully!");
-    } catch (err) {
-      console.error("Error generating payments:", err);
-      throw err;
-    }
-  };
-
-  const handleOpenGenerateModal = (policy) => {
-    setSelectedPolicy(policy);
-    setGenerateModalOpen(true);
-  };
-
-  // ---------- Archive ----------
-  const handleOpenArchiveModal = (payment) => {
-    setSelectedPaymentForArchive(payment);
-    setArchiveModalOpen(true);
-  };
-
-  const handleArchiveConfirm = async () => {
-    if (!selectedPaymentForArchive) return;
-    try {
-      if (selectedPaymentForArchive.payments) {
-        const { policy_id, payments } = selectedPaymentForArchive;
-        for (const payment of payments) await archivePayment(payment.id);
-        const updatedSchedule = await fetchPaymentSchedule(policy_id);
-        setPaymentsByPolicy(prev => ({ ...prev, [policy_id]: updatedSchedule }));
-        setPaymentsMap(prev => ({ ...prev, [policy_id]: updatedSchedule }));
-        alert(`All ${payments.length} payments archived successfully!`);
-      } else {
-        await archivePayment(selectedPaymentForArchive.id);
-        const policyId = selectedPaymentForArchive.policy_id;
-        const updatedSchedule = await fetchPaymentSchedule(policyId);
-        setPaymentsByPolicy(prev => ({ ...prev, [policyId]: updatedSchedule }));
-        setPaymentsMap(prev => ({ ...prev, [policyId]: updatedSchedule }));
-        alert("Payment archived successfully!");
-      }
-      setArchiveModalOpen(false);
-      setSelectedPaymentForArchive(null);
-    } catch (err) {
-      console.error("Error archiving payment:", err);
-      alert("Failed to archive payment. Check console for details.");
-    }
-  };
-
-  // ---------- Filtering and paging ----------
-  const filteredPolicies = policies.filter((policy) => {
-    const client = policy.clients_Table;
-    const clientName = client
-      ? [client.prefix, client.first_Name, client.middle_Name ? client.middle_Name.charAt(0) + "." : "", client.family_Name, client.suffix]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase()
-      : "";
-    const policyId = policy.internal_id?.toLowerCase() || "";
-    const search = searchTerm.toLowerCase().trim();
-    return policyId.includes(search) || clientName.includes(search);
-  });
-
-  const totalPoliciesCount = filteredPolicies.length;
-  const totalPages = Math.ceil(totalPoliciesCount / rowsPerPage);
-
-  const indexOfLast = currentPage * rowsPerPage;
-  const indexOfFirst = indexOfLast - rowsPerPage;
-  const currentPolicies = filteredPolicies.slice(indexOfFirst, indexOfLast);
-
-  const renderPolicies = currentPolicies;
-
-  return {
-    // data
+  const {
+    // --- Core data ---
     policies,
     paymentsMap,
     paymentsByPolicy,
     loadingPayments,
+    visiblePolicies,
+    sentinelRef,
 
-    // counts + pagination
+    selectedPaymentMode,
+    setSelectedPaymentMode,
+    paymentModes,
+
+
+    // --- Pagination & filtering ---
     totalPoliciesCount,
     rowsPerPage,
     setRowsPerPage,
     currentPage,
     setCurrentPage,
     totalPages,
+    filteredPolicies,
+    currentPolicies,
+    renderPoliciesList,
 
-    // ui flags + setters
+    // --- Expand / collapse ---
     expanded,
     setExpanded,
     expandedPolicy,
     setExpandedPolicy,
-    isLoading,
-    setIsLoading,
+    handleExpand,
+    toggleExpand,
 
-    // modals + selections
+    // --- Modals ---
     modalOpen,
     setModalOpen,
     currentPayment,
@@ -379,6 +61,15 @@ export default function PolicyWithPaymentsController() {
     selectedPaymentForPenalty,
     setSelectedPaymentForPenalty,
 
+    manualReference,
+    setManualReference,
+    editModalOpen,
+    setEditModalOpen,
+    paymentToEdit,
+    setPaymentToEdit,
+    handleOpenEditModal,
+    handleEditPaymentSave,
+
     generateModalOpen,
     setGenerateModalOpen,
     selectedPolicy,
@@ -389,15 +80,8 @@ export default function PolicyWithPaymentsController() {
     selectedPaymentForArchive,
     setSelectedPaymentForArchive,
 
-    // helpers & handlers
+    // --- Handlers ---
     loadPolicies,
-    handleExpand,
-    toggleExpand,
-    calculateTotalPenalties,
-    calculateTotalDue,
-    isChequePayment,
-    calculateOverdueInfo,
-    calculateTotalPaid,
     handlePaymentClick,
     handlePaymentSave,
     handleAddPenalty,
@@ -406,19 +90,624 @@ export default function PolicyWithPaymentsController() {
     handleOpenGenerateModal,
     handleOpenArchiveModal,
     handleArchiveConfirm,
+
+    // --- Helpers ---
+    calculateTotalPenalties,
+    calculateTotalDue,
+    isChequePayment,
+    calculateOverdueInfo,
+    calculateTotalPaid,
     hasPenaltyForToday,
     getPaymentStatus,
 
-    // filtered / paginated
-    filteredPolicies,
-    currentPolicies,
-    renderPoliciesList: renderPolicies,
-  };
+    // --- UI state ---
+    isLoading,
+    setIsLoading,
+  } = PaymentDueController ();
+
+   const renderPolicies = renderPoliciesList || [];
+
+
+  return (
+    <div className="payments-overview-section">
+          {/* PAYMENT MODAL */}
+        {modalOpen && currentPayment && (
+        <div className="payment-modal-backdrop">
+          <div className="payment-modal">
+            <h3>Enter Payment</h3>
+            <p>Payment Date: {new Date(currentPayment.payment_date).toLocaleDateString()}</p>
+            
+            {currentPayment.payment_type_name && (
+              <p style={{
+                backgroundColor: isChequePayment(currentPayment) ? '#e3f2fd' : '#f5f5f5',
+                padding: '8px', borderRadius: '4px', marginBottom: '10px', fontWeight: '500'
+              }}>
+                <strong>Payment Type:</strong> {currentPayment.payment_type_name}
+                {isChequePayment(currentPayment) && ' (No penalties apply)'}
+              </p>
+            )}
+
+            {/* Payment Mode Selection */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                Payment Mode: <span style={{ color: 'red' }}>*</span>
+              </label>
+              <select
+                value={selectedPaymentMode || ''}
+                onChange={(e) => setSelectedPaymentMode(e.target.value ? Number(e.target.value) : null)}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  fontSize: '1em',
+                  border: '2px solid #ced4da',
+                  borderRadius: '4px',
+                  backgroundColor: 'white'
+                }}
+              >
+                <option value="">-- Select Payment Mode --</option>
+                {paymentModes.map(mode => (
+                  <option key={mode.id} value={mode.id}>
+                    {mode.payment_mode_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Manual Reference Number */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontWeight: '600',
+                fontSize: '0.9em'
+              }}>
+                Reference Number (Optional)
+              </label>
+              <input
+                type="text"
+                value={manualReference}
+                onChange={(e) => setManualReference(e.target.value)}
+                placeholder="e.g., OR-12345, TXN-67890"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  fontSize: '1em',
+                  border: '2px solid #ced4da',
+                  borderRadius: '4px',
+                  backgroundColor: 'white'
+                }}
+              />
+              <small style={{ 
+                display: 'block', 
+                marginTop: '4px', 
+                color: '#6c757d',
+                fontSize: '0.85em'
+              }}>
+                Enter receipt number, OR number, or transaction reference
+              </small>
+            </div>
+            
+            {/* Payment Breakdown */}
+            <div style={{ 
+              backgroundColor: '#f8f9fa', 
+              padding: '12px', 
+              borderRadius: '8px', 
+              marginBottom: '16px',
+              border: '1px solid #dee2e6'
+            }}>
+              <p style={{ marginBottom: '8px' }}>
+                <strong>Base Amount:</strong> {currentPayment.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+              </p>
+              {calculateTotalPenalties(currentPayment) > 0 && (
+                <p style={{ marginBottom: '8px' }}>
+                  <strong>Penalties:</strong> {calculateTotalPenalties(currentPayment).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+                </p>
+              )}
+              <p style={{ fontSize: '1em',  marginBottom: '8px', color: '#28a745', fontWeight: '400' }}>
+                <strong>Already Paid:</strong> {calculateTotalPaid(currentPayment).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+              </p>
+              <p style={{ 
+                marginBottom: '0', 
+                fontSize: '1em', 
+                color: '#dc3545', 
+                fontWeight: 'bold',
+                paddingTop: '8px',
+                borderTop: '2px solid #dee2e6'
+              }}>
+                <strong>Payment Remaining:</strong> {(calculateTotalDue(currentPayment) - calculateTotalPaid(currentPayment)).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+              </p>
+            </div>
+
+            <p style={{ fontSize: '1em', color: '#6c757d', marginBottom: '12px' }}>
+              <strong>Minimum Payment (1%):</strong> {(calculateTotalDue(currentPayment) * 0.01)?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+            </p>
+
+            <input 
+              type="text" 
+              value={paymentInput} 
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '' || /^\d*(,\d{3})*(\.\d*)?$/.test(value)) setPaymentInput(value);
+              }} 
+              placeholder="Enter amount" 
+              style={{
+                width: '100%',
+                padding: '10px',
+                fontSize: '1.1em',
+                marginBottom: '12px',
+                border: '2px solid #ced4da',
+                borderRadius: '4px'
+              }}
+            />
+            <div className="modal-actions">
+              <button onClick={handlePaymentSave}>Save</button>
+              <button onClick={() => { 
+                setModalOpen(false); 
+                setCurrentPayment(null); 
+                setPaymentInput(""); 
+                setSelectedPaymentMode(null);
+                setManualReference("");
+              }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PENALTY MODAL */}
+      {penaltyModalOpen && selectedPaymentForPenalty && (
+        <div className="payment-modal-backdrop">
+          <div className="payment-modal">
+            <h3>Add Penalty</h3>
+            <p>Payment Date: {new Date(selectedPaymentForPenalty.payment_date).toLocaleDateString()}</p>
+            {(() => {
+              const overdueInfo = calculateOverdueInfo(selectedPaymentForPenalty);
+              const penaltyAmount = calculateDailyPenalty(selectedPaymentForPenalty.amount_to_be_paid, overdueInfo.daysOverdue);
+              return (
+                <>
+                  <p><strong>Base Amount:</strong> {selectedPaymentForPenalty.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</p>
+                  <p><strong>Days Overdue:</strong> {overdueInfo.daysOverdue} days</p>
+                  <p><strong>Penalty Rate:</strong> {overdueInfo.penaltyPercentage}%</p>
+                  <p><strong>Penalty Amount:</strong> {penaltyAmount.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</p>
+                </>
+              );
+            })()}
+            <div className="modal-actions">
+              <button onClick={handlePenaltySave}>Confirm & Add Penalty</button>
+              <button onClick={() => { setPenaltyModalOpen(false); setSelectedPaymentForPenalty(null); }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ARCHIVE CONFIRMATION MODAL */}
+      {archiveModalOpen && selectedPaymentForArchive && (
+        <div className="payment-modal-backdrop">
+          <div className="payment-modal">
+            <h3>Archive {selectedPaymentForArchive.payments ? 'All Payments' : 'Payment'}</h3>
+            <p>Are you sure you want to archive {selectedPaymentForArchive.payments ? `all ${selectedPaymentForArchive.payments.length} payments` : 'this payment'}?</p>
+            {selectedPaymentForArchive.payments ? (
+              <>
+                <p><strong>Total Payments:</strong> {selectedPaymentForArchive.payments.length}</p>
+                <p><strong>All payments are fully paid</strong></p>
+              </>
+            ) : (
+              <>
+                <p>Payment Date: {new Date(selectedPaymentForArchive.payment_date).toLocaleDateString()}</p>
+                <p>Amount: {selectedPaymentForArchive.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</p>
+              </>
+            )}
+            <p style={{ color: '#666', fontSize: '0.9em', marginTop: '10px' }}>Note: Archived payments can be restored from the archived payments section.</p>
+            <div className="modal-actions">
+              <button onClick={handleArchiveConfirm} style={{ backgroundColor: '#ff6b6b' }}>Yes, Archive</button>
+              <button onClick={() => { setArchiveModalOpen(false); setSelectedPaymentForArchive(null); }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT PAYMENT MODAL */}
+        {editModalOpen && paymentToEdit && (
+          <div className="payment-modal-backdrop">
+            <div className="payment-modal">
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                Edit Payment Details
+              </h3>
+              
+              {/* Payment Info (Read-only) */}
+              <div style={{
+                backgroundColor: '#f8f9fa',
+                padding: '12px',
+                borderRadius: '6px',
+                marginBottom: '16px',
+                border: '1px solid #dee2e6'
+              }}>
+                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                  <strong>Payment Date:</strong> {new Date(paymentToEdit.payment_date).toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                  })}
+                </p>
+                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                  <strong>Amount Paid:</strong> {paymentToEdit.paid_amount?.toLocaleString(undefined, { 
+                    style: "currency", 
+                    currency: "PHP" 
+                  })}
+                </p>
+                <p style={{ margin: '0', fontSize: '0.9em' }}>
+                  <strong>Payment Type:</strong> {paymentToEdit.payment_type_name}
+                </p>
+              </div>
+
+              {/* Editable: Payment Mode */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '8px', 
+                  fontWeight: '600',
+                  fontSize: '0.9em'
+                }}>
+                  Payment Mode: <span style={{ color: 'red' }}>*</span>
+                </label>
+                <select
+                  value={selectedPaymentMode || ''}
+                  onChange={(e) => setSelectedPaymentMode(e.target.value ? Number(e.target.value) : null)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    fontSize: '1em',
+                    border: '2px solid #ced4da',
+                    borderRadius: '4px',
+                    backgroundColor: 'white'
+                  }}
+                >
+                  <option value="">-- Select Payment Mode --</option>
+                  {paymentModes.map(mode => (
+                    <option key={mode.id} value={mode.id}>
+                      {mode.payment_mode_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Editable: Manual Reference */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '8px', 
+                  fontWeight: '600',
+                  fontSize: '0.9em'
+                }}>
+                  Reference Number (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={manualReference}
+                  onChange={(e) => setManualReference(e.target.value)}
+                  placeholder="e.g., OR-12345, TXN-67890"
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    fontSize: '1em',
+                    border: '2px solid #ced4da',
+                    borderRadius: '4px',
+                    backgroundColor: 'white'
+                  }}
+                />
+                <small style={{ 
+                  display: 'block', 
+                  marginTop: '4px', 
+                  color: '#6c757d',
+                  fontSize: '0.85em'
+                }}>
+                  Update or add a reference number for this payment
+                </small>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="modal-actions">
+                <button onClick={handleEditPaymentSave}>Save Changes</button>
+                <button onClick={() => {
+                  setEditModalOpen(false);
+                  setPaymentToEdit(null);
+                  setManualReference("");
+                  setSelectedPaymentMode(null);
+                }}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      {/* PAYMENT GENERATION MODAL */}
+      {generateModalOpen && selectedPolicy && (
+        <PaymentGenerationModal 
+          policy={selectedPolicy} 
+          onClose={() => { 
+            setGenerateModalOpen(false); 
+            setSelectedPolicy(null); 
+          }} 
+          onGenerate={handleGeneratePayments}
+        />
+      )}
+      <div className="payments-overview-header">
+        <h2>Payments Overview ({totalPoliciesCount})</h2>
+        <div className="search-filter-refresh-bar">
+          <input type="text" placeholder="Search by Policy ID or Client Name..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="search-input" />
+          <div className="result-select-wrapper">
+            <span>Result</span>
+            <select value={rowsPerPage} onChange={(e) => { setRowsPerPage(Number(e.target.value)); setCurrentPage(1); }} className="result-select">
+              <option value={15}>15</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+          <button className="refresh-btn" onClick={loadPolicies} disabled={isLoading}>{isLoading ? "Refreshing..." : "Refresh"}</button>
+        </div>
+      </div>
+
+      {/* Policies list */}
+      <div className="policies-list">
+        {renderPolicies.map(policy => {
+          const client = policy.clients_Table;
+          const clientName = client ? [client.prefix, client.first_Name, client.middle_Name ? client.middle_Name.charAt(0) + "." : "", client.family_Name, client.suffix].filter(Boolean).join(" ") : "Unknown Client";
+          const clientInternalId = client?.internal_id || "N/A";
+          const agentName = client?.employee_Accounts
+            ? `${client.employee_Accounts.first_name || ""} ${client.employee_Accounts.last_name || ""}`.trim()
+            : "N/A";
+
+          const partnerName = policy.insurance_Partners?.insurance_Name || "N/A";
+
+          // payments: prefer lazy-loaded store, fallback to paymentsMap (older code)
+          const payments = paymentsByPolicy[policy.id] || paymentsMap[policy.id] || [];
+          const isOpen = !!expanded[policy.id];
+          const isLoadingForPolicy = !!loadingPayments[policy.id];
+
+          return (
+            <div key={policy.id} className="policy-item-card">
+              <div className="policy-summary" onClick={() => handleExpand(policy.id)}>
+                <div className="policy-info-left">
+                  <span className="policy-id">Policy ID: {policy.internal_id}</span>
+                  <span className="policy-holder">Policy Holder: {clientName}</span>
+                </div>
+                <div className="policy-info-right">
+                  <span className={`status ${policy.policy_is_active ? "active" : "inactive"}`}>Status: {policy.policy_is_active ? "Active" : "Inactive"}</span>
+                  <button className={`expand-toggle ${isOpen ? "expanded" : ""}`}><span className="arrow">⌄</span></button>
+                </div>
+              </div>
+
+              <div className={`payment-details-table-wrapper ${isOpen ? "show" : ""}`}>
+                <div className="client-info-section">
+                  <h4 className="client-info-title">Client Information</h4>
+                  <div className="client-info-grid">
+                    <div><strong>Client Name:</strong> {clientName}</div>
+                    <div><strong>Client Internal ID:</strong> {clientInternalId}</div>
+                    <div><strong>Agent:</strong> {agentName}</div>
+                    <div><strong>Partner:</strong> {partnerName}</div>
+                  </div>
+                </div>
+
+                <div className="payment-header-with-button">
+                  <h3 className="payment-details-title">Payments</h3>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {(() => {
+                      if (!payments || payments.length === 0) return null;
+                      const archivableStatuses = ["fully-paid", "refunded", "cancelled", "voided"];
+                      const allArchivable = payments.every(p => archivableStatuses.includes(getPaymentStatus(p)));
+                      if (!allArchivable) return null;
+
+                      const fullyPaidCount = payments.filter(p => getPaymentStatus(p) === "fully-paid").length;
+                      const refundedCount = payments.filter(p => getPaymentStatus(p) === "refunded").length;
+                      const cancelledCount = payments.filter(p => getPaymentStatus(p) === "cancelled").length;
+                      const voidedCount = payments.filter(p => getPaymentStatus(p) === "voided").length;
+
+                      const statusParts = [];
+                      if (fullyPaidCount > 0) statusParts.push(`${fullyPaidCount} Paid`);
+                      if (refundedCount > 0) statusParts.push(`${refundedCount} Refunded`);
+                      if (cancelledCount > 0) statusParts.push(`${cancelledCount} Cancelled`);
+                      if (voidedCount > 0) statusParts.push(`${voidedCount} Voided`);
+
+                      const buttonText = `Archive All Payments (${statusParts.join(' / ')})`;
+
+                      return (
+                        <button onClick={(e) => { e.stopPropagation(); setSelectedPaymentForArchive({ policy_id: policy.id, payments }); setArchiveModalOpen(true); }} style={{ backgroundColor: '#6c757d', color: 'white', padding: '8px 16px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '500' }}>
+                          {buttonText}
+                        </button>
+                      );
+                    })()}
+                    <button onClick={(e) => { e.stopPropagation(); handleOpenGenerateModal(policy); }} className="generate-payment-btn">+ Generate Payments</button>
+                  </div>
+                </div>
+
+                {/* Loading indicator for payments */}
+                {isLoadingForPolicy && <p style={{ padding: '12px' }}>Loading payments...</p>}
+
+               {(!isLoadingForPolicy && payments && payments.length > 0) ? (
+                <table className="payments-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Type</th>
+                      <th>Mode</th> {/* NEW COLUMN */}
+                      <th>Penalty %</th>
+                      <th>Base Amount</th>
+                      <th>Penalty Amount</th>
+                      <th>Total Due</th>
+                      <th>Paid Amount</th>
+                      <th>Status</th>
+                      <th>Reference</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payments.map((p, index) => {
+                      const status = getPaymentStatus(p);
+                      const overdueInfo = calculateOverdueInfo(p);
+                      const totalPenalties = calculateTotalPenalties(p);
+                      const totalDue = calculateTotalDue(p);
+                      const remainingBalance = totalDue - calculateTotalPaid(p);
+                      const isOverdue = overdueInfo.daysOverdue > 0 && status !== "fully-paid";
+                      const isCheque = isChequePayment(p);
+
+                      const isRefunded = status === "refunded";
+                      const isCancelled = status === "cancelled";
+                      const isVoided = status === "voided";
+                      const isSpecialStatus = isRefunded || isCancelled || isVoided;
+
+                      const hasTodayPenalty = hasPenaltyForToday(p);
+
+                      const previousPaymentsPaid = payments.slice(0, index).every(pay => {
+                        const payStatus = getPaymentStatus(pay);
+                        return payStatus === "fully-paid" || payStatus === "refunded" || payStatus === "cancelled" || payStatus === "voided";
+                      });
+
+                      const disablePayment =
+                        isSpecialStatus ||
+                        status === "fully-paid" ||
+                        remainingBalance <= 0 ||
+                        (!isCheque && isOverdue && !hasTodayPenalty) ||
+                        !previousPaymentsPaid;
+
+                      const rowStyle = {
+                        backgroundColor: isRefunded ? '#e8f5e9' :
+                          isVoided ? '#ffebee' :
+                            isCancelled ? '#fff3e0' : 'white'
+                      };
+
+                      return (
+                        <tr key={p.id} className={`payment-${status} ${!isCheque && overdueInfo.daysOverdue >= 90 && !isSpecialStatus ? 'payment-void-warning' : ''}`} style={rowStyle}>
+                          <td>
+                            {new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                            {!isCheque && overdueInfo.daysOverdue >= 90 && !isSpecialStatus && <span className="void-warning-badge">⚠️ 90+ Days</span>}
+                          </td>
+                          <td>
+                            {p.payment_type_name && <span style={{ backgroundColor: isCheque ? '#e3f2fd' : '#f5f5f5', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85em', fontWeight: '500' }}>{p.payment_type_name}</span>}
+                          </td>
+                          {/* NEW: Payment Mode Column */}
+                          <td>
+                            {p.payment_mode_name ? (
+                              <span style={{ 
+                                backgroundColor: '#e8f4f8', 
+                                padding: '4px 8px', 
+                                borderRadius: '4px', 
+                                fontSize: '0.85em', 
+                                fontWeight: '500',
+                                color: '#0277bd'
+                              }}>
+                                {p.payment_mode_name}
+                              </span>
+                            ) : (
+                              <span style={{ color: '#aaa', fontSize: '0.85em' }}>N/A</span>
+                            )}
+                          </td>
+                          <td>{!isCheque && !isSpecialStatus && overdueInfo.penaltyPercentage > 0 ? <span className={`penalty-badge ${status === "fully-paid" ? "frozen" : ""}`} title={status === "fully-paid" ? "Penalty frozen after full payment" : ""}>{overdueInfo.penaltyPercentage}%</span> : "-"}</td>
+                          <td>{p.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
+                          <td>{totalPenalties > 0 ? totalPenalties.toLocaleString(undefined, { style: "currency", currency: "PHP" }) : "₱0.00"}</td>
+                          <td className="total-due-cell"><strong>{isRefunded ? (<span style={{ color: '#4caf50' }}>₱0.00 (Refunded)</span>) : isVoided ? (<span style={{ color: '#f44336' }}>₱0.00 (Voided)</span>) : isCancelled ? (<span style={{ color: '#ff9800' }}>₱0.00 (Cancelled)</span>) : (totalDue.toLocaleString(undefined, { style: "currency", currency: "PHP" }))}</strong></td>
+                          <td>{isRefunded ? (<span style={{ color: '#4caf50', fontWeight: '600' }}>{p.refund_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" })} (Refunded)</span>) : isVoided ? (<span style={{ color: '#f44336', fontWeight: '600' }}>₱0.00 (Voided)</span>) : isCancelled ? (<span style={{ color: '#ff9800', fontWeight: '600' }}>₱0.00 (Cancelled)</span>) : (calculateTotalPaid(p)?.toLocaleString(undefined, { style: "currency", currency: "PHP" }))}</td>
+                          <td className="payment-status-cell">{isRefunded && <span className="payment-status-badge status-refunded">Refunded</span>}{isCancelled && <span className="payment-status-badge status-cancelled">Cancelled</span>}{isVoided && <span className="payment-status-badge status-voided">Voided</span>}{!isSpecialStatus && status}</td>
+                       <td>
+                            {p.payment_manual_reference ? (
+                              // Show manual reference if it exists
+                              <div style={{ display: "flex", flexDirection: "column" }}>
+                                <span style={{ 
+                                  fontWeight: "500",
+                                  color: "#2c3e50",
+                                  backgroundColor: "#e8f5e9",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  fontSize: "0.85em"
+                                }}>
+                                  {p.payment_manual_reference}
+                                </span>
+                                <small style={{ color: "#6c757d", fontSize: "0.75em", marginTop: "4px" }}>
+                                  Manual Reference
+                                </small>
+                              </div>
+                            ) : p.paymongo_reference ? (
+                              // Show PayMongo reference if no manual reference
+                              <div style={{ display: "flex", flexDirection: "column" }}>
+                                <span style={{ 
+                                  fontWeight: "500",
+                                  color: "#1976d2",
+                                  backgroundColor: "#e3f2fd",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  fontSize: "0.85em"
+                                }}>
+                                  {p.paymongo_reference}
+                                </span>
+                                {p.paymongo_checkout_url && (
+                                  <a
+                                    href={p.paymongo_checkout_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ 
+                                      color: "#1976d2", 
+                                      fontSize: "0.75em",
+                                      marginTop: "4px"
+                                    }}
+                                  >
+                                    View Checkout
+                                  </a>
+                                )}
+                                <small style={{ color: "#6c757d", fontSize: "0.75em", marginTop: "2px" }}>
+                                  PayMongo
+                                </small>
+                              </div>
+                            ) : (
+                              <span style={{ color: "#aaa" }}>N/A</span>
+                            )}
+                          </td>
+                          <td className="payment-actions">
+                            <button disabled={disablePayment} onClick={() => handlePaymentClick({ ...p, policy_id: policy.id }, client?.phone_Number)} className={`payment-btn ${disablePayment ? "disabled-btn" : ""}`} style={{ opacity: disablePayment ? 0.5 : 1, cursor: disablePayment ? "not-allowed" : "pointer" }}>
+                              {isSpecialStatus ? status.charAt(0).toUpperCase() + status.slice(1) : status === "fully-paid" ? "Paid" : "Payment"}
+                            </button>
+
+                              {(status === "fully-paid" || status === "partially-paid") && !isSpecialStatus && (
+                                <button 
+                                  onClick={() => handleOpenEditModal({ ...p, policy_id: policy.id })} 
+                                  className="penalty-btn" 
+                                  title="Edit payment details"
+                                  style={{ backgroundColor: '#17a2b8' }}
+                                >
+                                   Edit
+                                </button>
+                              )}
+
+
+                            {!isCheque && !isSpecialStatus && isOverdue && !hasTodayPenalty && (
+                              <button onClick={() => handleAddPenalty({ ...p, policy_id: policy.id })} className="penalty-btn" title="Add today's penalty">+Penalty</button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (!isLoadingForPolicy && <p className="no-payments-message">No payments scheduled</p>)}
+              </div>
+            </div>
+          );
+        })}
+        {/* sentinel for infinite scroll (append more policies when visible) */}
+        <div ref={sentinelRef} style={{ height: 1 }} />
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="pagination-controls">
+          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Previous</button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+        </div>
+      )}
+    </div>
+  );
 }
 
-// helper
-export function getPaymentStatus(payment) {
-  if (!payment) return "not-paid";
+// your helper as-is
+function getPaymentStatus(payment) {
   if (payment.is_refunded || payment.payment_status === "refunded") return "refunded";
   if (payment.payment_status === "cancelled") return "cancelled";
   if (payment.payment_status === "voided") return "voided";

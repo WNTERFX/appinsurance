@@ -7,7 +7,7 @@ import { useState } from "react";
 
 export default function PolicyWithPaymentsList() {
 
-  const [searchTerm, setSearchTerm] = useState("");
+ 
   const calculateDailyPenalty = (baseAmount, daysOverdue) => {
     const ratePerDay = 0.01; // or whatever logic you used before
     return baseAmount * ratePerDay * daysOverdue;
@@ -23,6 +23,15 @@ export default function PolicyWithPaymentsList() {
     loadingPayments,
     visiblePolicies,
     sentinelRef,
+
+    selectedPaymentMode,
+    setSelectedPaymentMode,
+    paymentModes,
+
+    //search
+    searchTerm,
+    setSearchTerm,
+
 
     // --- Pagination & filtering ---
     totalPoliciesCount,
@@ -55,6 +64,15 @@ export default function PolicyWithPaymentsList() {
     setPenaltyModalOpen,
     selectedPaymentForPenalty,
     setSelectedPaymentForPenalty,
+
+    manualReference,
+    setManualReference,
+    editModalOpen,
+    setEditModalOpen,
+    paymentToEdit,
+    setPaymentToEdit,
+    handleOpenEditModal,
+    handleEditPaymentSave,
 
     generateModalOpen,
     setGenerateModalOpen,
@@ -97,80 +115,147 @@ export default function PolicyWithPaymentsList() {
   return (
     <div className="payments-overview-section">
           {/* PAYMENT MODAL */}
-          {modalOpen && currentPayment && (
-      <div className="payment-modal-backdrop">
-        <div className="payment-modal">
-          <h3>Enter Payment</h3>
-          <p>Payment Date: {new Date(currentPayment.payment_date).toLocaleDateString()}</p>
-          {currentPayment.payment_type_name && (
-            <p style={{
-              backgroundColor: isChequePayment(currentPayment) ? '#e3f2fd' : '#f5f5f5',
-              padding: '8px', borderRadius: '4px', marginBottom: '10px', fontWeight: '500'
-            }}>
-              <strong>Payment Type:</strong> {currentPayment.payment_type_name}
-              {isChequePayment(currentPayment) && ' (No penalties apply)'}
-            </p>
-          )}
-          
-          {/* Payment Breakdown */}
-          <div style={{ 
-            backgroundColor: '#f8f9fa', 
-            padding: '12px', 
-            borderRadius: '8px', 
-            marginBottom: '16px',
-            border: '1px solid #dee2e6'
-          }}>
-            <p style={{ marginBottom: '8px' }}>
-              <strong>Base Amount:</strong> {currentPayment.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}
-            </p>
-            {calculateTotalPenalties(currentPayment) > 0 && (
-              <p style={{ marginBottom: '8px' }}>
-                <strong>Penalties:</strong> {calculateTotalPenalties(currentPayment).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+        {modalOpen && currentPayment && (
+        <div className="payment-modal-backdrop">
+          <div className="payment-modal">
+            <h3>Enter Payment</h3>
+            <p>Payment Date: {new Date(currentPayment.payment_date).toLocaleDateString()}</p>
+            
+            {currentPayment.payment_type_name && (
+              <p style={{
+                backgroundColor: isChequePayment(currentPayment) ? '#e3f2fd' : '#f5f5f5',
+                padding: '8px', borderRadius: '4px', marginBottom: '10px', fontWeight: '500'
+              }}>
+                <strong>Payment Type:</strong> {currentPayment.payment_type_name}
+                {isChequePayment(currentPayment) && ' (No penalties apply)'}
               </p>
             )}
-            <p style={{ fontSize: '1em',  marginBottom: '8px', color: '#28a745', fontWeight: '400' }}>
-              <strong>Already Paid:</strong> {calculateTotalPaid(currentPayment).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
-            </p>
-            <p style={{ 
-              marginBottom: '0', 
-              fontSize: '1em', 
-              color: '#dc3545', 
-              fontWeight: 'bold',
-              paddingTop: '8px',
-              borderTop: '2px solid #dee2e6'
+
+            {/* Payment Mode Selection */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                Payment Mode: <span style={{ color: 'red' }}>*</span>
+              </label>
+              <select
+                value={selectedPaymentMode || ''}
+                onChange={(e) => setSelectedPaymentMode(e.target.value ? Number(e.target.value) : null)}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  fontSize: '1em',
+                  border: '2px solid #ced4da',
+                  borderRadius: '4px',
+                  backgroundColor: 'white'
+                }}
+              >
+                <option value="">-- Select Payment Mode --</option>
+                {paymentModes.map(mode => (
+                  <option key={mode.id} value={mode.id}>
+                    {mode.payment_mode_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Manual Reference Number */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontWeight: '600',
+                fontSize: '0.9em'
+              }}>
+                Reference Number (Optional)
+              </label>
+              <input
+                type="text"
+                value={manualReference}
+                onChange={(e) => setManualReference(e.target.value)}
+                placeholder="e.g., OR-12345, TXN-67890"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  fontSize: '1em',
+                  border: '2px solid #ced4da',
+                  borderRadius: '4px',
+                  backgroundColor: 'white'
+                }}
+              />
+              <small style={{ 
+                display: 'block', 
+                marginTop: '4px', 
+                color: '#6c757d',
+                fontSize: '0.85em'
+              }}>
+                Enter receipt number, OR number, or transaction reference
+              </small>
+            </div>
+            
+            {/* Payment Breakdown */}
+            <div style={{ 
+              backgroundColor: '#f8f9fa', 
+              padding: '12px', 
+              borderRadius: '8px', 
+              marginBottom: '16px',
+              border: '1px solid #dee2e6'
             }}>
-              <strong>Payment Remaining:</strong> {(calculateTotalDue(currentPayment) - calculateTotalPaid(currentPayment)).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+              <p style={{ marginBottom: '8px' }}>
+                <strong>Base Amount:</strong> {currentPayment.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+              </p>
+              {calculateTotalPenalties(currentPayment) > 0 && (
+                <p style={{ marginBottom: '8px' }}>
+                  <strong>Penalties:</strong> {calculateTotalPenalties(currentPayment).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+                </p>
+              )}
+              <p style={{ fontSize: '1em',  marginBottom: '8px', color: '#28a745', fontWeight: '400' }}>
+                <strong>Already Paid:</strong> {calculateTotalPaid(currentPayment).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+              </p>
+              <p style={{ 
+                marginBottom: '0', 
+                fontSize: '1em', 
+                color: '#dc3545', 
+                fontWeight: 'bold',
+                paddingTop: '8px',
+                borderTop: '2px solid #dee2e6'
+              }}>
+                <strong>Payment Remaining:</strong> {(calculateTotalDue(currentPayment) - calculateTotalPaid(currentPayment)).toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+              </p>
+            </div>
+
+            <p style={{ fontSize: '1em', color: '#6c757d', marginBottom: '12px' }}>
+              <strong>Minimum Payment (1%):</strong> {(calculateTotalDue(currentPayment) * 0.01)?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}
             </p>
-          </div>
 
-          <p style={{ fontSize: '1em', color: '#6c757d', marginBottom: '12px' }}>
-            <strong>Minimum Payment (1%):</strong> {(calculateTotalDue(currentPayment) * 0.01)?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}
-          </p>
-
-          <input 
-            type="text" 
-            value={paymentInput} 
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value === '' || /^\d*(,\d{3})*(\.\d*)?$/.test(value)) setPaymentInput(value);
-            }} 
-            placeholder="Enter amount" 
-            style={{
-              width: '100%',
-              padding: '10px',
-              fontSize: '1.1em',
-              marginBottom: '12px',
-              border: '2px solid #ced4da',
-              borderRadius: '4px'
-            }}
-          />
-          <div className="modal-actions">
-            <button onClick={handlePaymentSave}>Save</button>
-            <button onClick={() => { setModalOpen(false); setCurrentPayment(null); setPaymentInput(""); }}>Cancel</button>
+            <input 
+              type="text" 
+              value={paymentInput} 
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '' || /^\d*(,\d{3})*(\.\d*)?$/.test(value)) setPaymentInput(value);
+              }} 
+              placeholder="Enter amount" 
+              style={{
+                width: '100%',
+                padding: '10px',
+                fontSize: '1.1em',
+                marginBottom: '12px',
+                border: '2px solid #ced4da',
+                borderRadius: '4px'
+              }}
+            />
+            <div className="modal-actions">
+              <button onClick={handlePaymentSave}>Save</button>
+              <button onClick={() => { 
+                setModalOpen(false); 
+                setCurrentPayment(null); 
+                setPaymentInput(""); 
+                setSelectedPaymentMode(null);
+                setManualReference("");
+              }}>Cancel</button>
+            </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
 
       {/* PENALTY MODAL */}
       {penaltyModalOpen && selectedPaymentForPenalty && (
@@ -224,8 +309,121 @@ export default function PolicyWithPaymentsList() {
         </div>
       )}
 
+      {/* EDIT PAYMENT MODAL */}
+        {editModalOpen && paymentToEdit && (
+          <div className="payment-modal-backdrop">
+            <div className="payment-modal">
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                Edit Payment Details
+              </h3>
+              
+              {/* Payment Info (Read-only) */}
+              <div style={{
+                backgroundColor: '#f8f9fa',
+                padding: '12px',
+                borderRadius: '6px',
+                marginBottom: '16px',
+                border: '1px solid #dee2e6'
+              }}>
+                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                  <strong>Payment Date:</strong> {new Date(paymentToEdit.payment_date).toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                  })}
+                </p>
+                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                  <strong>Amount Paid:</strong> {paymentToEdit.paid_amount?.toLocaleString(undefined, { 
+                    style: "currency", 
+                    currency: "PHP" 
+                  })}
+                </p>
+                <p style={{ margin: '0', fontSize: '0.9em' }}>
+                  <strong>Payment Type:</strong> {paymentToEdit.payment_type_name}
+                </p>
+              </div>
+
+              {/* Editable: Payment Mode */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '8px', 
+                  fontWeight: '600',
+                  fontSize: '0.9em'
+                }}>
+                  Payment Mode: <span style={{ color: 'red' }}>*</span>
+                </label>
+                <select
+                  value={selectedPaymentMode || ''}
+                  onChange={(e) => setSelectedPaymentMode(e.target.value ? Number(e.target.value) : null)}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    fontSize: '1em',
+                    border: '2px solid #ced4da',
+                    borderRadius: '4px',
+                    backgroundColor: 'white'
+                  }}
+                >
+                  <option value="">-- Select Payment Mode --</option>
+                  {paymentModes.map(mode => (
+                    <option key={mode.id} value={mode.id}>
+                      {mode.payment_mode_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Editable: Manual Reference */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '8px', 
+                  fontWeight: '600',
+                  fontSize: '0.9em'
+                }}>
+                  Reference Number (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={manualReference}
+                  onChange={(e) => setManualReference(e.target.value)}
+                  placeholder="e.g., OR-12345, TXN-67890"
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    fontSize: '1em',
+                    border: '2px solid #ced4da',
+                    borderRadius: '4px',
+                    backgroundColor: 'white'
+                  }}
+                />
+                <small style={{ 
+                  display: 'block', 
+                  marginTop: '4px', 
+                  color: '#6c757d',
+                  fontSize: '0.85em'
+                }}>
+                  Update or add a reference number for this payment
+                </small>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="modal-actions">
+                <button onClick={handleEditPaymentSave}>Save Changes</button>
+                <button onClick={() => {
+                  setEditModalOpen(false);
+                  setPaymentToEdit(null);
+                  setManualReference("");
+                  setSelectedPaymentMode(null);
+                }}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+
       {/* PAYMENT GENERATION MODAL */}
-    {generateModalOpen && selectedPolicy && (
+      {generateModalOpen && selectedPolicy && (
         <PaymentGenerationModal 
           policy={selectedPolicy} 
           onClose={() => { 
@@ -328,106 +526,170 @@ export default function PolicyWithPaymentsList() {
                 {/* Loading indicator for payments */}
                 {isLoadingForPolicy && <p style={{ padding: '12px' }}>Loading payments...</p>}
 
-                {(!isLoadingForPolicy && payments && payments.length > 0) ? (
-                  <table className="payments-table">
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Penalty %</th>
-                        <th>Base Amount</th>
-                        <th>Penalty Amount</th>
-                        <th>Total Due</th>
-                        <th>Paid Amount</th>
-                        <th>Status</th>
-                        <th>Reference</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {payments.map((p, index) => {
-                        const status = getPaymentStatus(p);
-                        const overdueInfo = calculateOverdueInfo(p);
-                        const totalPenalties = calculateTotalPenalties(p);
-                        const totalDue = calculateTotalDue(p);
-                        const remainingBalance = totalDue - calculateTotalPaid(p);
-                        const isOverdue = overdueInfo.daysOverdue > 0 && status !== "fully-paid";
-                        const isCheque = isChequePayment(p);
+               {(!isLoadingForPolicy && payments && payments.length > 0) ? (
+                <table className="payments-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Type</th>
+                      <th>Mode</th> {/* NEW COLUMN */}
+                      <th>Penalty %</th>
+                      <th>Base Amount</th>
+                      <th>Penalty Amount</th>
+                      <th>Total Due</th>
+                      <th>Paid Amount</th>
+                      <th>Status</th>
+                      <th>Reference</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payments.map((p, index) => {
+                      const status = getPaymentStatus(p);
+                      const overdueInfo = calculateOverdueInfo(p);
+                      const totalPenalties = calculateTotalPenalties(p);
+                      const totalDue = calculateTotalDue(p);
+                      const remainingBalance = totalDue - calculateTotalPaid(p);
+                      const isOverdue = overdueInfo.daysOverdue > 0 && status !== "fully-paid";
+                      const isCheque = isChequePayment(p);
 
-                        const isRefunded = status === "refunded";
-                        const isCancelled = status === "cancelled";
-                        const isVoided = status === "voided";
-                        const isSpecialStatus = isRefunded || isCancelled || isVoided;
+                      const isRefunded = status === "refunded";
+                      const isCancelled = status === "cancelled";
+                      const isVoided = status === "voided";
+                      const isSpecialStatus = isRefunded || isCancelled || isVoided;
 
-                        const hasTodayPenalty = hasPenaltyForToday(p);
+                      const hasTodayPenalty = hasPenaltyForToday(p);
 
-                        const previousPaymentsPaid = payments.slice(0, index).every(pay => {
-                          const payStatus = getPaymentStatus(pay);
-                          return payStatus === "fully-paid" || payStatus === "refunded" || payStatus === "cancelled" || payStatus === "voided";
-                        });
+                      const previousPaymentsPaid = payments.slice(0, index).every(pay => {
+                        const payStatus = getPaymentStatus(pay);
+                        return payStatus === "fully-paid" || payStatus === "refunded" || payStatus === "cancelled" || payStatus === "voided";
+                      });
 
-                        const disablePayment =
-                          isSpecialStatus ||
-                          status === "fully-paid" ||
-                          remainingBalance <= 0 ||
-                          (!isCheque && isOverdue && !hasTodayPenalty) ||
-                          !previousPaymentsPaid;
+                      const disablePayment =
+                        isSpecialStatus ||
+                        status === "fully-paid" ||
+                        remainingBalance <= 0 ||
+                        (!isCheque && isOverdue && !hasTodayPenalty) ||
+                        !previousPaymentsPaid;
 
-                        const rowStyle = {
-                          backgroundColor: isRefunded ? '#e8f5e9' :
-                            isVoided ? '#ffebee' :
-                              isCancelled ? '#fff3e0' : 'white'
-                        };
+                      const rowStyle = {
+                        backgroundColor: isRefunded ? '#e8f5e9' :
+                          isVoided ? '#ffebee' :
+                            isCancelled ? '#fff3e0' : 'white'
+                      };
 
-                        return (
-                          <tr key={p.id} className={`payment-${status} ${!isCheque && overdueInfo.daysOverdue >= 90 && !isSpecialStatus ? 'payment-void-warning' : ''}`} style={rowStyle}>
-                            <td>
-                              {new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                              {!isCheque && overdueInfo.daysOverdue >= 90 && !isSpecialStatus && <span className="void-warning-badge">⚠️ 90+ Days</span>}
-                            </td>
-                            <td>
-                              {p.payment_type_name && <span style={{ backgroundColor: isCheque ? '#e3f2fd' : '#f5f5f5', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85em', fontWeight: '500' }}>{p.payment_type_name}</span>}
-                            </td>
-                            <td>{!isCheque && !isSpecialStatus && overdueInfo.penaltyPercentage > 0 ? <span className={`penalty-badge ${status === "fully-paid" ? "frozen" : ""}`} title={status === "fully-paid" ? "Penalty frozen after full payment" : ""}>{overdueInfo.penaltyPercentage}%</span> : "-"}</td>
-                            <td>{p.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
-                            <td>{totalPenalties > 0 ? totalPenalties.toLocaleString(undefined, { style: "currency", currency: "PHP" }) : "₱0.00"}</td>
-                            <td className="total-due-cell"><strong>{isRefunded ? (<span style={{ color: '#4caf50' }}>₱0.00 (Refunded)</span>) : isVoided ? (<span style={{ color: '#f44336' }}>₱0.00 (Voided)</span>) : isCancelled ? (<span style={{ color: '#ff9800' }}>₱0.00 (Cancelled)</span>) : (totalDue.toLocaleString(undefined, { style: "currency", currency: "PHP" }))}</strong></td>
-                            <td>{isRefunded ? (<span style={{ color: '#4caf50', fontWeight: '600' }}>{p.refund_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" })} (Refunded)</span>) : isVoided ? (<span style={{ color: '#f44336', fontWeight: '600' }}>₱0.00 (Voided)</span>) : isCancelled ? (<span style={{ color: '#ff9800', fontWeight: '600' }}>₱0.00 (Cancelled)</span>) : (calculateTotalPaid(p)?.toLocaleString(undefined, { style: "currency", currency: "PHP" }))}</td>
-                            <td className="payment-status-cell">{isRefunded && <span className="payment-status-badge status-refunded">Refunded</span>}{isCancelled && <span className="payment-status-badge status-cancelled">Cancelled</span>}{isVoided && <span className="payment-status-badge status-voided">Voided</span>}{!isSpecialStatus && status}</td>
-                            <td>
-                              {p.paymongo_reference ? (
-                                <div style={{ display: "flex", flexDirection: "column" }}>
-                                  <span style={{ fontWeight: "500" }}>{p.paymongo_reference}</span>
-                                  {p.paymongo_checkout_url && (
-                                    <a
-                                      href={p.paymongo_checkout_url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      style={{ color: "#1976d2", fontSize: "0.8em" }}
-                                    >
-                                      View Checkout
-                                    </a>
-                                  )}
-                                </div>
-                              ) : (
-                                <span style={{ color: "#aaa" }}>N/A</span>
+                      return (
+                        <tr key={p.id} className={`payment-${status} ${!isCheque && overdueInfo.daysOverdue >= 90 && !isSpecialStatus ? 'payment-void-warning' : ''}`} style={rowStyle}>
+                          <td>
+                            {new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                            {!isCheque && overdueInfo.daysOverdue >= 90 && !isSpecialStatus && <span className="void-warning-badge">⚠️ 90+ Days</span>}
+                          </td>
+                          <td>
+                            {p.payment_type_name && <span style={{ backgroundColor: isCheque ? '#e3f2fd' : '#f5f5f5', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85em', fontWeight: '500' }}>{p.payment_type_name}</span>}
+                          </td>
+                          {/* NEW: Payment Mode Column */}
+                          <td>
+                            {p.payment_mode_name ? (
+                              <span style={{ 
+                                backgroundColor: '#e8f4f8', 
+                                padding: '4px 8px', 
+                                borderRadius: '4px', 
+                                fontSize: '0.85em', 
+                                fontWeight: '500',
+                                color: '#0277bd'
+                              }}>
+                                {p.payment_mode_name}
+                              </span>
+                            ) : (
+                              <span style={{ color: '#aaa', fontSize: '0.85em' }}>N/A</span>
+                            )}
+                          </td>
+                          <td>{!isCheque && !isSpecialStatus && overdueInfo.penaltyPercentage > 0 ? <span className={`penalty-badge ${status === "fully-paid" ? "frozen" : ""}`} title={status === "fully-paid" ? "Penalty frozen after full payment" : ""}>{overdueInfo.penaltyPercentage}%</span> : "-"}</td>
+                          <td>{p.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
+                          <td>{totalPenalties > 0 ? totalPenalties.toLocaleString(undefined, { style: "currency", currency: "PHP" }) : "₱0.00"}</td>
+                          <td className="total-due-cell"><strong>{isRefunded ? (<span style={{ color: '#4caf50' }}>₱0.00 (Refunded)</span>) : isVoided ? (<span style={{ color: '#f44336' }}>₱0.00 (Voided)</span>) : isCancelled ? (<span style={{ color: '#ff9800' }}>₱0.00 (Cancelled)</span>) : (totalDue.toLocaleString(undefined, { style: "currency", currency: "PHP" }))}</strong></td>
+                          <td>{isRefunded ? (<span style={{ color: '#4caf50', fontWeight: '600' }}>{p.refund_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" })} (Refunded)</span>) : isVoided ? (<span style={{ color: '#f44336', fontWeight: '600' }}>₱0.00 (Voided)</span>) : isCancelled ? (<span style={{ color: '#ff9800', fontWeight: '600' }}>₱0.00 (Cancelled)</span>) : (calculateTotalPaid(p)?.toLocaleString(undefined, { style: "currency", currency: "PHP" }))}</td>
+                          <td className="payment-status-cell">{isRefunded && <span className="payment-status-badge status-refunded">Refunded</span>}{isCancelled && <span className="payment-status-badge status-cancelled">Cancelled</span>}{isVoided && <span className="payment-status-badge status-voided">Voided</span>}{!isSpecialStatus && status}</td>
+                       <td>
+                            {p.payment_manual_reference ? (
+                              // Show manual reference if it exists
+                              <div style={{ display: "flex", flexDirection: "column" }}>
+                                <span style={{ 
+                                  fontWeight: "500",
+                                  color: "#2c3e50",
+                                  backgroundColor: "#e8f5e9",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  fontSize: "0.85em"
+                                }}>
+                                  {p.payment_manual_reference}
+                                </span>
+                                <small style={{ color: "#6c757d", fontSize: "0.75em", marginTop: "4px" }}>
+                                  Manual Reference
+                                </small>
+                              </div>
+                            ) : p.paymongo_reference ? (
+                              // Show PayMongo reference if no manual reference
+                              <div style={{ display: "flex", flexDirection: "column" }}>
+                                <span style={{ 
+                                  fontWeight: "500",
+                                  color: "#1976d2",
+                                  backgroundColor: "#e3f2fd",
+                                  padding: "4px 8px",
+                                  borderRadius: "4px",
+                                  fontSize: "0.85em"
+                                }}>
+                                  {p.paymongo_reference}
+                                </span>
+                                {p.paymongo_checkout_url && (
+                                  <a
+                                    href={p.paymongo_checkout_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{ 
+                                      color: "#1976d2", 
+                                      fontSize: "0.75em",
+                                      marginTop: "4px"
+                                    }}
+                                  >
+                                    View Checkout
+                                  </a>
+                                )}
+                                <small style={{ color: "#6c757d", fontSize: "0.75em", marginTop: "2px" }}>
+                                  PayMongo
+                                </small>
+                              </div>
+                            ) : (
+                              <span style={{ color: "#aaa" }}>N/A</span>
+                            )}
+                          </td>
+                          <td className="payment-actions">
+                            <button disabled={disablePayment} onClick={() => handlePaymentClick({ ...p, policy_id: policy.id }, client?.phone_Number)} className={`payment-btn ${disablePayment ? "disabled-btn" : ""}`} style={{ opacity: disablePayment ? 0.5 : 1, cursor: disablePayment ? "not-allowed" : "pointer" }}>
+                              {isSpecialStatus ? status.charAt(0).toUpperCase() + status.slice(1) : status === "fully-paid" ? "Paid" : "Payment"}
+                            </button>
+
+                              {(status === "fully-paid" || status === "partially-paid") && !isSpecialStatus && (
+                                <button 
+                                  onClick={() => handleOpenEditModal({ ...p, policy_id: policy.id })} 
+                                  className="penalty-btn" 
+                                  title="Edit payment details"
+                                  style={{ backgroundColor: '#17a2b8' }}
+                                >
+                                   Edit
+                                </button>
                               )}
-                            </td>
-                            <td className="payment-actions">
-                              <button disabled={disablePayment} onClick={() => handlePaymentClick({ ...p, policy_id: policy.id }, client?.phone_Number)} className={`payment-btn ${disablePayment ? "disabled-btn" : ""}`} style={{ opacity: disablePayment ? 0.5 : 1, cursor: disablePayment ? "not-allowed" : "pointer" }}>
-                                {isSpecialStatus ? status.charAt(0).toUpperCase() + status.slice(1) : status === "fully-paid" ? "Paid" : "Payment"}
-                              </button>
 
-                              {!isCheque && !isSpecialStatus && isOverdue && !hasTodayPenalty && (
-                                <button onClick={() => handleAddPenalty({ ...p, policy_id: policy.id })} className="penalty-btn" title="Add today's penalty">+Penalty</button>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                ) : (!isLoadingForPolicy && <p className="no-payments-message">No payments scheduled</p>)}
+
+                            {!isCheque && !isSpecialStatus && isOverdue && !hasTodayPenalty && (
+                              <button onClick={() => handleAddPenalty({ ...p, policy_id: policy.id })} className="penalty-btn" title="Add today's penalty">+Penalty</button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (!isLoadingForPolicy && <p className="no-payments-message">No payments scheduled</p>)}
               </div>
             </div>
           );

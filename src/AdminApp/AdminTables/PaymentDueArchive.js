@@ -233,6 +233,7 @@ export default function PaymentArchiveTable() {
                         <th>Penalties</th>
                         <th>Total Due</th>
                         <th>Paid Amount</th>
+                        <th>Payment Mode</th>
                         <th>Status</th>
                       </tr>
                     </thead>
@@ -276,6 +277,7 @@ export default function PaymentArchiveTable() {
                                 currency: "PHP" 
                               })}
                             </td>
+                            <td>{p.payment_mode?.payment_mode_name || "N/A"}</td>
                             <td className="payment-status-cell">{status}</td>
                           </tr>
                         );
