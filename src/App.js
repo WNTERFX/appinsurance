@@ -70,14 +70,14 @@ function App() {
 
       <Routes>
         {/* Public route */}
-        <Route path="/" element={<LoginForm anotherLoginDetected={anotherLoginDetected} setSession={setSession} />} />
-        <Route path="/reset-password" element={<PasswordResetForm />} />
-        <Route path="/reset-password/confirm" element={<PasswordResetConfirm />} />
+        <Route path="/appinsurance" element={<LoginForm anotherLoginDetected={anotherLoginDetected} setSession={setSession} />} />
+        <Route path="/appinsurance/reset-password" element={<PasswordResetForm />} />
+        <Route path="/appinsurance/reset-password/confirm" element={<PasswordResetConfirm />} />
 
         {/* Protected routes */}
         <Route element={<AuthChecker />}>
           {/* Admin routes */}
-          <Route path="/main-app" element={<MainArea />}>
+          <Route path="/appinsurance/main-app" element={<MainArea />}>
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="client" element={<Client />} />
