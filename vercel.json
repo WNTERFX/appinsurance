@@ -1,4 +1,11 @@
 {
+   "redirects": [
+    {
+      "source": "/",
+      "destination": "/appinsurance",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/appinsurance/static/(.*)",
