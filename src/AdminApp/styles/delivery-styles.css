@@ -1,0 +1,241 @@
+* {
+  box-sizing: border-box;
+}
+
+.delivery-container {
+  background-color: #F2F5FA;
+  font-family: 'Inter', sans-serif;
+  height: auto;
+  max-width: 100%;
+  overflow-x: hidden;
+  padding-bottom: 30px;
+}
+
+@media (min-width: 3440px) {
+  .delivery-container {
+    padding-left: 100px;
+  }
+}
+
+@media (min-width: 1700px) {
+  .delivery-container {
+    padding-left: 70px;
+  }
+}
+
+/*  FIXED DELIVERY HEADER — same style as Client/Policy/Claims */
+.delivery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 90px;
+    padding: 20px 10px 10px 10px; 
+    margin-bottom: -1.5rem;
+}
+
+/* Title on the left */
+.delivery-title {
+    margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  color: #222;
+  line-height: 1.1;
+}
+
+/* ✅ Right side group (buttons + profile) */
+.right-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-create {
+  background-color: #2196f3;
+  color: white;
+}
+.btn-create:hover {
+  background-color: #1976d2;
+}
+
+.btn-archive {
+  background-color: #e0e0e0;
+  color: black;
+}
+.btn-archive:hover {
+  background-color: #bdbdbd;
+}
+
+/* ✅ Profile Menu — flush right */
+.profile-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.profile-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.profile-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+
+.profile-icon {
+  font-size: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Dropdown */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 160px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  visibility: hidden;
+  transition: opacity 160ms ease, transform 160ms ease, visibility 160ms;
+  z-index: 1000;
+}
+
+.dropdown.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  visibility: visible;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dropdown-item:hover {
+  background: #f2f2f2;
+}
+.dropdown-icon {
+  font-size: 16px;
+  color: #555;
+}
+
+/* ✅ Delivery Cards Section */
+.deliveries-container {
+  display: flex;
+  gap: 20px;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.delivery-card {
+  flex: 1 1 250px;
+  padding: 20px;
+  background-color: white;
+  font-size: 16px;
+  border-radius: 12px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+
+  /* Added accent for consistency */
+  border-left: 6px solid #7B5F97;
+}
+
+.delivery-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+}
+
+.delivery-card-icon {
+  font-size: 24px;
+  color: #222;
+}
+
+.delivery-card > p {
+  font-size: 16px;
+  margin: 15px 0;
+}
+
+/* View all deliveries button */
+.view-all-deliveries-button {
+  background-color: #F2F5FA;
+  color: #222;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.view-all-deliveries-button:hover {
+  background-color: #e0e0e0;
+}
+
+/* ✅ Table Section */
+.delivery-table-container {
+  margin-top: 20px;
+  font-size: 20px;
+  margin-right: 10px;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  background-color: white;
+  border-radius: 10px;
+}
+
+@media screen and (max-height: 1080px) {
+  .delivery-content {
+    width: 90%;
+    height: 200px;
+  }
+}

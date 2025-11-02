@@ -1,0 +1,116 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* slightly lighter */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  font-family: 'Inter', sans-serif;
+  animation: fadeIn 0.2s ease-in-out;
+  overflow-y: auto;
+}
+
+.modal-content {
+  position: relative;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  width: 880px; /* ⬆️ was 780px */
+  max-width: 90%; /* gives it room to scale on smaller screens */
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  transform: translateY(-20px);
+  animation: slideIn 0.2s forwards;
+}
+
+/* Slightly smaller screens (≤1440px) */
+@media (max-width: 1440px) {
+  .modal-content {
+    width: 840px;
+    max-width: 90%;
+    max-height: 88vh;
+  }
+}
+
+/* 💻 1080p laptops */
+@media (max-width: 1080px) {
+  .modal-content {
+    width: 800px; /* ⬆️ wider */
+    max-width: 92%;
+    max-height: 92vh; /* taller for comfort */
+    padding: 1.25rem;
+  }
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.modal-body {
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  color: black;
+  line-height: 1.5;
+}
+
+/* Close button as X */
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: #eee;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #333;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.modal-close:hover {
+  background: #ddd;
+  transform: scale(1.1);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.computation-value-modal p{
+  display: flex;
+  justify-content: space-between;
+}
+
+
+.client-info-modal{
+   border-right: 2px solid black;
+   padding-right: 20px;
+}
+.client-info-modal p{
+  display: flex;
+  justify-content: space-between;
+ 
+  
+}

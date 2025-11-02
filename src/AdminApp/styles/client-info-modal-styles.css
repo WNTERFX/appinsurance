@@ -1,0 +1,277 @@
+/* General container for modal content */
+.client-info-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two main columns for cards */
+  grid-template-rows: auto auto auto; /* Rows for cards */
+  gap: 1.5rem;
+  padding: 1.5rem;
+  box-sizing: border-box;
+  max-height: 85vh;
+  width: 87vw;
+  overflow-y: auto;
+  border-radius: 10px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  background-color: transparent;
+}
+
+/* --- 💡 Large desktop screens --- */
+@media (min-width: 1600px) {
+  .client-info-container {
+    width: 72vw;               /* Narrower for ultrawide displays */
+
+    gap: 2rem;                 /* Add more spacing */
+    padding: 2rem;
+  }
+}
+
+/* --- 📱 Tablets portrait --- */
+@media (max-width: 768px) {
+  .client-info-container {
+    width: 95vw;
+    padding: 1rem;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .client-info-container {
+    width: 100vw;
+    max-height: none;
+    border-radius: 0;
+    padding: 0.75rem;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+
+
+
+/* Card placement for the grid - Use a very subtle border/shadow */
+.client-info-card.client-information-card {
+  grid-column: 1 / 3; /* Spans both columns */
+  grid-row: 1 / 2;
+  background-color: #F0F9FF; /* Light blue background */
+  border: 1px solid #0EA5E9 !important; /* Blue border - added !important */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* Subtle shadow */
+}
+
+.client-info-card.policy-information-card {
+  grid-column: 1 / 2; /* Left column */
+  grid-row: 2 / 3;
+  background-color: #F0F9FF;
+  border: 1px solid #0EA5E9 !important; /* Blue border - added !important */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.client-info-card.vehicle-information-card {
+  grid-column: 1 / 3; /* Spans both columns */
+  grid-row: 3 / 4;
+  background-color: #F0F9FF;
+  border: 1px solid #0EA5E9 !important; /* Blue border - added !important */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.client-info-card.computation-summary-card {
+  grid-column: 2 / 3; /* Right column */
+  grid-row: 2 / 3;
+  background-color: #FEF3C7; /* Light yellow background */
+  border: 1px solid #F59E0B !important; /* Orange border - added !important */
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Base card styling */
+.client-info-card {
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+/* Card headers */
+.client-info-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  margin-top: 0;
+  margin-bottom: 0.5rem; /* Reduced margin to bring hr closer */
+  padding-bottom: 0; /* Remove padding here as hr adds its own space */
+  border-bottom: none; /* Removed border here, using new hr */
+}
+
+/* Icons within headers - DO NOT BOLD */
+.client-info-card h3 .icon-style {
+  font-size: 1.2em;
+  font-weight: normal; /* Ensure icon is not bold */
+}
+
+/* HR separator immediately after each H3 header */
+.section-header-separator {
+  border: none;
+  border-top: 1px solid #e0e0e0; /* Light grey line */
+  margin-bottom: 1rem; /* Space after the separator */
+  margin-top: 0;
+  width: 100%;
+}
+
+/* No specific hr to remove in Policy Information as per your clarification */
+
+/* --- Info Grid Layout (for Client, Policy, Vehicle) --- */
+.info-grid {
+  display: grid;
+  grid-template-columns: max-content 1fr max-content 1fr; /* Two pairs of label-value */
+  gap: 0.5rem 1.5rem; /* Vertical and horizontal gap */
+  align-items: baseline; /* Align values to the baseline of labels */
+}
+
+/* Ensure info labels are bold and info values are not */
+.info-label {
+  font-size: 0.9rem;
+  font-weight: bold; /* Bold the label */
+  color: hsl(var(--info-label));
+  white-space: nowrap; /* Prevent label from wrapping */
+}
+
+.info-value {
+  font-size: 0.95rem;
+  font-weight: normal; /* Do not bold the value */
+  color: hsl(var(--info-value));
+  white-space: normal; /* Allow wrapping for longer values */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Add ellipsis for overflow */
+}
+
+/* Currency symbol color - must be default */
+/* This depends on your global CSS for '₱'. If it's inherited from body, it should be fine.
+   If a specific color is applied to text and `₱` is part of it, this will reset. */
+/* You might need to adjust based on your --info-value color var */
+.info-value::before {
+    color: inherit; /* Ensure currency symbol color is not overridden */
+}
+
+
+/* Status values inherit normal font-weight from .info-value */
+.status-active {
+  color: #22c55e; /* Green */
+  font-weight: normal;
+}
+
+.status-inactive {
+  color: #ef4444; /* Red */
+  font-weight: normal;
+}
+
+/* --- Vehicle Information Card --- */
+.vehicle-list-container {
+  display: flex;
+  flex-direction: column; /* Stacks multiple vehicle InfoGrids if present */
+  gap: 1rem; /* Space between different vehicle InfoGrids */
+}
+
+/* Specific styling for InfoGrid inside Policy Information Card */
+.policy-information-card .info-grid {
+  grid-template-columns: max-content 1fr; /* Force single label-value pair per row for Policy */
+}
+
+
+/* --- Computation Summary Card --- */
+.computation-items-container {
+  display: flex;
+  flex-direction: column; /* Stack computation items vertically */
+  gap: 0.5rem; /* Small gap between items */
+}
+
+.computation-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.95rem;
+  color: hsl(var(--info-value));
+}
+
+/* HR before Total Premium */
+.total-premium-separator {
+  border: none;
+  border-top: 1px solid #cccccc; /* Solid line before total premium */
+  margin: 1rem 0 0.5rem 0; /* Top margin, no bottom margin, some space above total */
+  width: 100%;
+}
+
+.total-premium-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  color: hsl(var(--foreground));
+}
+
+.total-premium-item .info-label {
+  font-size: 0.9rem; /* Normal size for label */
+  font-weight: bold;
+}
+
+.total-premium-item .info-value { /* Total Premium value uses normal info-value styling */
+  font-size: 0.95rem; /* Normal size for value */
+  font-weight: normal; /* Not bold */
+}
+
+
+/* Empty state */
+.empty-state {
+  padding: 2rem;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+  background-color: hsl(var(--muted));
+  border-radius: 6px;
+  margin-top: 1rem;
+}
+
+/* Error banner */
+.error-banner {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: hsl(0 86% 97%);
+  border: 1px solid hsl(0 93% 94%);
+  border-radius: 6px;
+  color: hsl(0 72% 51%);
+}
+
+/* Loading state */
+.loading-state {
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .client-info-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  .client-info-card {
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+  .info-grid {
+    grid-template-columns: max-content 1fr; /* Collapse to single label-value column on smaller screens */
+    gap: 0.5rem 1rem;
+  }
+}
+
+/* Modal header */
+.info-modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+

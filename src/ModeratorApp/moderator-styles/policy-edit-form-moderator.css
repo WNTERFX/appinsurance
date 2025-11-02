@@ -1,0 +1,230 @@
+/* Container */
+.new-client-policy-edit-moderator {
+  width: 100%;
+  max-width: 1500px;
+  border-radius: 25px;
+  padding: 40px 50px;
+  font-family: "Segoe UI" , Arial, sans-serif;
+}
+
+/* Form Card */
+.form-card-policy-edit-moderator h2{
+  font-size: 26px;
+  margin-bottom: 35px;
+}
+
+.form-group-policy-edit-moderator input,
+.form-group-policy-edit-moderator select{
+ 
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  border-radius: 11px;
+  outline: none;
+  background: white;
+}
+.form-group-policy-edit-moderator input:focus{
+  border-color: #000;
+}
+
+.form-group-policy-edit-moderator label{
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+}
+
+.form-group-policy-edit-moderator{
+   display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+  
+}
+
+.form-group-policy-edit-moderator input[type="checkbox"]{
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.form-group-policy-edit-moderator:has(input[type="checkbox"]){
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+}
+
+
+@media (min-width: 1366px) and (max-width: 1920px) {
+  .new-client-policy-edit-moderator {
+    max-width: 1200px;
+    margin-left: 30px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .new-client-policy-edit-moderator {
+    max-width: 1300px;
+    margin: 1rem auto;
+  }
+}
+
+@media (min-width: 2000px) {
+  .new-client-policy-edit-moderator {
+    max-width: 1800px;
+  }
+}
+
+.new-client-policy-edit-moderator h2{
+  margin-bottom: 1rem;
+}
+
+/* Form Card */
+.form-card-policy-edit-moderator {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 25px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+
+/* Grid: default stacked layout for most screens */
+.form-grid-policy-edit-moderator {
+  display: grid;
+  grid-template-columns: 1fr; /* stack fields above calculation */
+  gap: 2rem;
+}
+
+.form-left-column-policy-edit-moderator{
+ display: grid;
+ grid-template-columns: repeat(3, 1fr);
+ gap:1rem;
+
+}
+
+.form-left-column-policy-edit-moderator{
+  width: 100%;
+}
+
+@media (min-width: 1200px){
+.form-left-column-policy-edit-moderator{
+  grid-template-columns: repeat(2, 1fr);
+ }
+}
+
+@media (min-width: 1200px) {
+  .form-left-column-policy-edit-moderator {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.form-right-column-policy-edit-moderator{
+  display: flex;
+  flex-direction: column;
+}
+
+/* ========== Calculation Summary ========== */
+
+.form-right-column-policy-edit-moderator{
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.calculation-card-policy-edit-moderator{
+  background-color: #f0f7ff;
+  border: 1px solid #cce0ff;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.calculation-card-policy-edit-moderator h3{
+ font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #1a3d7c;
+  border-bottom: 1px solid #b0c9f7;
+  padding-bottom: 8px;
+}
+
+.calculation-card-policy-edit-moderator p{
+    font-size: 0.95rem;
+  margin: 8px 0;
+  display: flex;
+  justify-content: space-between;
+  color: #333;
+}
+
+.calculation-card-policy-edit-moderator span{
+font-weight: 600;
+color: #000;
+}
+
+.calculation-card-policy-edit-moderator hr{
+  border:none;
+  border-top: 1px solid #ccc;
+  margin: 15px 0;
+}
+
+/* ========== Buttons ========== */
+.button-container-policy-edit-moderator{
+   display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.cancel-btn-policy-edit-moderator{
+   background-color: #F86B6B;      
+  color: white;
+  padding: 12px 0;               
+  width: 160px;                 
+  text-align: center;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.cancel-btn-policy-edit-moderator:hover{
+    transform: scale(1.05);               /* slight grow */
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  background-color: #F25353;
+  color: white;
+}
+
+.confirm-btn-policy-edit-moderator{
+    background-color: #007BFF;      
+  color: white;
+  padding: 12px 0;               
+  width: 160px;                 
+  text-align: center;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.confirm-btn-policy-edit-moderator:hover{
+  transform: scale(1.05);               /* slight grow */
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  background-color: #0056B3;
+  color: white;
+}
+
+.cancel-btn-policy-edit-moderator,
+.confirm-btn-policy-edit-moderator{
+  transform: scale(0.97);               /* slight press */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2) inset;
+}
+
+/* ========== Responsive ========== */
+@media (max-width: 1100px) {
+  .form-grid-policy-edit-moderator {
+    grid-template-columns: 1fr;
+  }
+
+  .form-right-column-policy-edit-moderator {
+    margin-top: 25px;
+  }
+}

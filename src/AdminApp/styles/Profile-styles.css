@@ -1,0 +1,37 @@
+.about-page {
+  display: flex;
+  justify-content: center;    /* center horizontally */
+  align-items: center;        /* center vertically */
+  height: 100vh;              /* full viewport height */
+  width: 100%;
+  background-color: #f0f2f5;  /* soft neutral background */
+  font-family: 'Inter', sans-serif;
+}
+
+.about-card {
+  background: #ffffff;
+  padding: 50px 80px;
+  border-radius: 25px;         /* rounded corners */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* subtle shadow */
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Optional: nice hover animation */
+.about-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.about-title {
+  font-size: 42px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.about-card p {
+  font-size: 20px;
+  color: #555;
+  margin: 8px 0;
+}

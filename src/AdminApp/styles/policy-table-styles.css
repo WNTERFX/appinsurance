@@ -1,0 +1,542 @@
+/* --------------------------- */
+/* Container + Header          */
+/* --------------------------- */
+.policy-table-container {
+  width: 100%;
+  margin: 0 auto;
+  font-family: sans-serif;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.policy-table-header {
+  display: flex;
+  justify-content: space-between; /* Puts first child left, second child right */
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.policy-table-container h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  display: flex; /* Keeps the title and count together */
+  align-items: center;
+  gap: 0.25rem; /* Reduced gap slightly for a more natural text flow */
+}
+
+
+
+/* ------------------------------------- */
+/* Group for all right-aligned controls */
+/* ------------------------------------- */
+.policy-controls-right-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* Space between the individual controls within this group */
+  flex-wrap: wrap; /* Allow controls to wrap on smaller screens */
+  justify-content: flex-end; /* Align controls to the right within the group */
+}
+
+
+/* --------------------------- */
+/* Controls (search)           */
+/* --------------------------- */
+.policy-search-input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  width: 250px;
+  min-width: 180px;
+}
+
+/* Status Filter Dropdown Styling */
+.policy-status-filter-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.policy-status-filter-dropdown label {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.policy-status-filter-dropdown select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.6-6.4H18.9c-5%200-9.6%202-13.6%206.4-4%204-6.4%209.6-6.4%2014.1%200%204.6%202.5%2010%206.4%2014.1l127.9%20128c4%204%209.6%206.4%2013.6%206.4s9.6-2%2013.6-6.4l127.9-128c4-4%206.4-9.5%206.4-14.1.1-4.6-2.4-10.1-6.3-14.1z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px;
+  padding-right: 25px;
+}
+
+.policy-partner-filter-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.policy-partner-filter-dropdown label {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.policy-partner-filter-dropdown select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.6-6.4H18.9c-5%200-9.6%202-13.6%206.4-4%204-6.4%209.6-6.4%2014.1%200%204.6%202.5%2010%206.4%2014.1l127.9%20128c4%204%209.6%206.4%2013.6%206.4s9.6-2%2013.6-6.4l127.9-128c4-4%206.4-9.5%206.4-14.1.1-4.6-2.4-10.1-6.3-14.1z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px;
+  padding-right: 25px;
+}
+
+
+.rows-per-page-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rows-per-page-inline select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: white;
+  cursor: pointer;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.6-6.4H18.9c-5%200-9.6%202-13.6%206.4-4%204-6.4%209.6-6.4%2014.1%200%204.6%202.5%2010%206.4%2014.1l127.9%20128c4%204%209.6%206.4%2013.6%206.4s9.6-2%2013.6-6.4l127.9-128c4-4%206.4-9.5%206.4-14.1.1-4.6-2.4-10.1-6.3-14.1z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px;
+  padding-right: 25px;
+}
+
+
+/* --------------------------- */
+/* Table Wrapper + Scroll      */
+/* --------------------------- */
+.policy-table-wrapper {
+   flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.policy-table-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  scroll-behavior: smooth;
+}
+
+.policy-table-scroll > table {
+  width: 100%;
+  min-width: 1200px;
+  border-collapse: collapse;
+}
+
+/* --------------------------- */
+/* Table Headings + Cells      */
+/* --------------------------- */
+.policy-table-scroll > table > thead > tr > th {
+  padding: 16px 15px;
+  text-align: left;
+  background-color: #f2f5fa;
+  white-space: nowrap;
+  min-width: 150px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.policy-table-scroll > table > tbody > tr > td {
+  padding: 14px 15px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+
+/* Policy ID column */
+.policy-table-scroll > table th:first-child,
+.policy-table-scroll > table td:first-child {
+  min-width: 80px;
+  max-width: 100px;
+  width: 80px;
+  text-align: center;
+}
+
+
+/* Status */
+.policy-table-wrapper table th:nth-child(7),
+.policy-table-wrapper table td:nth-child(7) {
+  width: 100px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+
+/* Responsive scaling */
+@media (max-width: 1920px) and (min-width: 1366px) {
+  .policy-table-scroll > table > thead > tr > th,
+  .policy-table-scroll > table > tbody > tr > td {
+    font-size: 0.8rem;
+  }
+}
+
+/* --------------------------- */
+/* Row Hover + Clickable       */
+/* --------------------------- */
+tr:hover {
+  background-color: #f9fafb;
+}
+
+.policy-table-clickable-row {
+  cursor: pointer;
+}
+
+.policy-table-clickable-row:hover {
+  background-color: #e6f7ff;
+}
+
+/* --------------------------- */
+/* Status Badges               */
+/* --------------------------- */
+.policy-status-active,
+.policy-status-inactive {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.policy-status-active {
+  color: #065f46;
+  background-color: #d1fae5;
+}
+
+.policy-status-inactive {
+  color: #991b1b;
+  background-color: #fee2e2;
+}
+
+/* --------------------------- */
+/* Actions                     */
+/* --------------------------- */
+.policy-table-actions button {
+  padding: 5px 10px;
+  margin: 0 3px;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #f3f4f6;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.policy-table-actions button:hover {
+  background-color: #e5e7eb;
+}
+
+/* --------------------------- */
+/* Pagination                  */
+/* --------------------------- */
+.pagination-controls {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.pagination-controls button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background-color: #d1d5db;
+}
+
+.pagination-controls button:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+/* --------------------------- */
+/* Scrollbar Styling           */
+/* --------------------------- */
+.policy-table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.policy-table-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.policy-table-scroll::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.policy-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.reset-btn-policy {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: #e5e7eb;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.reset-btn-policy:hover {
+  background-color: #d1d5db;
+}
+
+.premium-cell {
+  white-space: nowrap;
+  text-align: right;
+  width: 1%;
+}
+
+/* Expired policy row styling */
+.policy-row-expired {
+  background-color: #ffebee !important;
+  border-left: 4px solid #d32f2f;
+}
+
+.policy-row-expired:hover {
+  background-color: #ffcdd2 !important;
+}
+
+/* Expired status badge */
+.policy-status-expired {
+  background-color: #d32f2f;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* Expired policy row styling */
+.policy-row-expired {
+  background-color: #ffebee !important;
+  border-left: 4px solid #d32f2f;
+}
+
+.policy-row-expired:hover {
+  background-color: #ffcdd2 !important;
+}
+
+/* Voided policy row styling */
+.policy-row-voided {
+  background-color: #fce4ec !important;
+  border-left: 4px solid #c2185b;
+  opacity: 0.85;
+}
+
+.policy-row-voided:hover {
+  background-color: #f8bbd0 !important;
+}
+
+/* Cancelled policy row styling */
+.policy-row-cancelled {
+  background-color: #fff3e0 !important;
+  border-left: 4px solid #f57c00;
+  opacity: 0.85;
+}
+
+.policy-row-cancelled:hover {
+  background-color: #ffe0b2 !important;
+}
+
+/* Expired status badge */
+.policy-status-expired {
+  background-color: #d32f2f;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* Voided status badge */
+.policy-status-voided {
+  background-color: #c2185b;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* Cancelled status badge */
+.policy-status-cancelled {
+  background-color: #f57c00;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* Action buttons - Fix for white buttons */
+.policy-table-actions button {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.policy-table-actions button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+  border-color: #bbb;
+}
+
+.policy-table-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f5f5f5;
+}
+
+/* Void button specific styling */
+.policy-table-actions .void-btn {
+  background-color: #c2185b !important;
+  color: white !important;
+  border-color: #c2185b !important;
+}
+
+.policy-table-actions .void-btn:hover:not(:disabled) {
+  background-color: #880e4f !important;
+  border-color: #880e4f !important;
+}
+
+.policy-table-actions .cancel-btn {
+  background-color: #f57c00 !important;
+  color: white !important;
+  border-color: #f57c00 !important;
+}
+
+.policy-table-actions .cancel-btn:hover:not(:disabled) {
+  background-color: #e65100 !important;
+  border-color: #e65100 !important;
+}
+
+.policy-row-overdue-90 {
+  background-color: #fff3f3 !important;
+  border-left: 4px solid #ff4444 !important;
+}
+
+.policy-row-overdue-90:hover {
+  background-color: #ffe8e8 !important;
+}
+
+.overdue-check-btn {
+  padding: 3px 8px;
+  background: linear-gradient(135deg, #201616 0%, #d84417 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.overdue-check-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #d84417 0%, #201616 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+  transform: translateY(-2px);
+}
+
+.overdue-check-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+}
+
+.overdue-check-btn:disabled {
+  background: linear-gradient(135deg, #a0aec0 0%, #cbd5e0 100%);
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.7;
+}
+
+.renewal-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 2px solid transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+.renewal-badge.renewed {
+  border-color: #16a34a; /* green */
+  color: #16a34a;
+  background-color: #f0fdf4;
+}
+
+.renewal-badge.not-renewed {
+  border-color: #9ca3af; /* gray */
+  color: #6b7280;
+  background-color: #f9fafb;
+}
+
+.policy-status-cell {
+  width: 90px; /* smaller column width */
+  text-align: center;
+  padding: 4px 0; /* less vertical padding for a tighter look */
+}
+
+.policy-status-cell span {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+  text-transform: capitalize;
+}

@@ -1,0 +1,57 @@
+.VehicleDetails-container-moderator {
+    max-width: 900px;
+    margin: 2rem auto;
+    font-family: sans-serif;
+  }
+  
+  h2 {
+    margin-bottom: 1rem;
+  }
+  
+  .form-card-moderator  {
+    background-color: #dcdcdc;
+    padding: 2rem;
+    border-radius: 8px;
+  }
+  
+  .form-grid-moderator  {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  
+  .form-group-moderator  {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-group-moderator  label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  
+  .form-group-moderator  input {
+    padding: 0.5rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    outline: none;
+    border: 1px solid #ccc;
+  }
+  
+  .button-containers-moderator  {
+    margin-top: 1rem;
+    text-align: right;
+  }
+  
+  .Submit-btn-moderator  {
+    padding: 0.6rem 1.5rem;
+    background-color: #ccc;
+    border: none;
+    border-radius: 20px;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  
+  .Submit-btn-moderator:hover {
+    background-color: #aaa;
+  }

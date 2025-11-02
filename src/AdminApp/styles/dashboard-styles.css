@@ -1,0 +1,467 @@
+* {
+  box-sizing: border-box;
+}
+/*  Dashboard Container */
+.dashboard-container {
+  background-color: #F2F5FA;
+  font-family: 'Inter', sans-serif;
+  max-width: 100%;
+  overflow-x: hidden;
+  padding-bottom: 30px;
+}
+
+@media (min-width: 3440px) {
+ .dashboard-container {
+    padding-left: 100px;
+  }
+}
+
+@media (min-width: 1700px) {
+ .dashboard-container {
+    padding-left: 100px;
+  }
+}
+
+
+
+
+/*  Header */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 90px;
+  padding: 20px 10px 10px 10px; 
+}
+
+
+.dashboard-title-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* centers text vertically within header */
+  height: 100%; /* fills the entire header height */
+}
+
+.dashboard-title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  color: #222;
+  line-height: 1.1;
+}
+
+.welcome-text {
+  margin: 4px 0 0 0;
+  font-size: 17px;
+  color: #6E6E6E;
+}
+
+.right-actions,
+.left-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ✅ Optional tweak: make search and profile vertically aligned */
+.Dashboard-search {
+  padding: 8px 14px;
+  font-size: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 230px;
+  align-self: center;
+}
+
+/* Profile Menu */
+.profile-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  padding: 0;
+  margin-right: 0;
+}
+.profile-button {
+   background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  margin-right: 0;
+  padding-right: 0;
+}
+.profile-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+}
+.profile-icon {
+   font-size: 32px;
+  color: gray;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 160px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  visibility: hidden;
+  transition: opacity 160ms ease, transform 160ms ease, visibility 160ms;
+  z-index: 1000;
+}
+.dropdown.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  visibility: visible;
+}
+.dropdown-item {
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dropdown-item:hover {
+  background: #f2f2f2;
+}
+.dropdown-icon {
+  font-size: 16px;
+  color: #555;
+}
+
+
+.dashboard-content {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 equal columns */
+  gap: 18px;
+  margin-top: 20px;
+}
+
+/* Top 4 small metric cards (outer wrapper) */
+.active-clients,
+.active-policy,
+.delivered-policy,
+.payment {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.08);
+  border-left: 6px solid transparent; /* colored per-card below */
+  min-height:200px;                   /* gives room for top + bottom spacing */
+  display: flex;                       /* make child stretch to full height */
+  align-items: stretch;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+/* Icon next to h2 text */
+.card-icon {
+  margin-right: 8px;
+  vertical-align: middle;
+  font-size: 20px;
+}
+
+/* inner container - where we pin header to top and value to bottom */
+.active-clients .active-clients-data,
+.active-policy .active-policy-data,
+.delivered-policy .delivered-policy-data,
+.payment .payment-data {
+  width: 100%;
+  padding: 18px 20px;        /* change padding safely here */
+  display: flex;
+  flex-direction: column;    /* stack h2 / p vertically */
+  justify-content: space-between; /* pushes h2 to top, p to bottom */
+  height: 100%;              /* stretch to parent's min-height */
+  box-sizing: border-box;
+}
+
+/* accent colors (left thick border) */
+.active-clients { border-left-color: #7B5F97; }     /* violet */
+.active-policy { border-left-color: #4b0082; }        /* indigo */
+.delivered-policy { border-left-color: #f5a623; } /* orange */
+.payment { border-left-color: #28a745; }   /* green */
+
+/* headings & numbers — no margin surprises */
+.active-clients h2, .active-policy h2, .delivered-policy h2, .payment h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.1;
+    display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.active-clients p, .active-policy p, .delivered-policy p, .payment p {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #222;
+  /* if you want bottom-left indentation, use padding on the inner container instead */
+}
+
+/* Hover effect */
+.active-clients:hover,
+.active-policy:hover,
+.delivered-policy:hover,
+.payment:hover {
+  transform: translateY(-3px);
+  box-shadow: 4px 6px 18px rgba(0,0,0,0.12);
+  background-color: #EFF6FF;
+}
+
+/* ---------- Bottom row: Monthly Data (wider) + Pending Claims (smaller) ---------- */
+/* Ensure parent grid has 4 columns; monthly takes more columns than pending */
+.monthly-data {
+  grid-column: span 3;
+  min-height: 540px;
+  padding: 10px 22px 22px 22px;
+  border-radius: 8px;
+  background: #fff;
+  border-left: 6px solid #4b0082;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* ⬅ pushes header up, chart down */
+}
+
+.monthly-data-chart {
+  flex-grow: 1;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;          /* ✅ ensures it stays inside parent */
+  overflow: hidden;     /* ✅ hides any accidental overflow */
+}
+
+.monthly-data-chart canvas {
+  max-width: 100% !important; /* ✅ prevents overflow */
+  height: auto !important;
+}
+
+.pending-claims {
+  grid-column: span 1;
+  min-height: 540px;
+  padding: 10px 25px 25px 25px; /* ⬅ Reduced top padding */
+  border-radius: 8px;
+  background: #fff;
+  border-left: 6px solid #f5a623;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* ⬅ align content to top */
+  align-items: flex-start;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Monthly / Pending heading styles */
+.monthly-data h2,
+.pending-claims h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+   line-height: 1.1;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 1024px) {
+  .dashboard-content {
+    grid-template-columns: 1fr; /* single column stack */
+  }
+
+  .monthly-data,
+  .pending-claims {
+    grid-column: span 1;
+    min-height: 260px;
+  }
+}
+
+/*        fgfg                      */
+
+/* ---------- Monthly Data Header ---------- */
+.monthly-data-header {
+  flex-shrink: 0; /* keep header fixed height */
+}
+
+
+
+/* Legend container styled like in the picture */
+.partner-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+  padding: 4px 0 10px 0;     /* ⬅ add bottom padding for scrollbar space */
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: thin;      /* for Firefox */
+}
+
+/* Optional: subtle custom scrollbar */
+.partner-container::-webkit-scrollbar {
+  height: 6px;
+}
+.partner-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
+}
+.partner-container::-webkit-scrollbar-track {
+  background: transparent;
+  margin-top: 2px;           /* ⬅ adds a little gap between chips & scrollbar */
+}
+
+.partner {
+  font-size: 20px;
+  font-weight: 500;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+
+}
+
+.partner::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.partner.merchantile::before { background-color: #4B7BE5; }
+.partner.standard::before { background-color: #7BB1F9; }
+.partner.stronghold::before { background-color: #443C9E; }
+.partner.cocogen::before { background-color: #A58AC8; }
+
+/* ---------- Pending Claims Header ---------- */
+.pending-claims-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;               /* ⬅ remove gap */
+  width: 100%;             /* ⬅ span entire box */
+}
+
+.pending-claims-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Button styled exactly like in image */
+.view-claims-btn {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+
+.view-claims-btn:hover {
+  background-color: #f5f5f5;
+}
+
+/* Pending payments list */
+.due-payments-list {
+  grid-column: span 4; /* full width under chart */
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.08);
+}
+
+.due-payments-list h2 {
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.due-payments-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.due-payments-list th,
+.due-payments-list td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.due-payments-list th {
+  font-weight: 600;
+  color: #555;
+}
+
+.due-payments-list tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.scrollable-table {
+  max-height: 300px; /* set the height you want */
+  overflow-y: auto;
+  overflow-x: hidden; /* optional if table fits horizontally */
+}
+
+/* Optional: fix header while scrolling */
+.scrollable-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scrollable-table thead tr {
+  position: sticky;
+  top: 0;
+  background-color: #fff; /* match the card background */
+  z-index: 10;
+  box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1); /* subtle shadow for distinction */
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .monthly-data-header,
+  .pending-claims-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .partner-container {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}

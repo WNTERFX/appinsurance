@@ -1,0 +1,329 @@
+.delivery-table-container-moderator{
+  width: 100%;
+  margin: 0 auto;
+  font-family: sans-serif;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.delivery-table-header-moderator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 7px;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.delivery-table-container-moderator h2 {
+  margin: 10;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.delivery-header-controls-moderator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.delivery-search-input-moderator {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.rows-per-page-inline-moderator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rows-per-page-inline-moderator label{
+  font-size: medium;
+}
+
+.delivery-header-controls-moderator button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.delivery-header-control-moderator button:hover {
+  background-color: #d1d5db;
+}
+
+.delivery-table-wrapper-moderator {
+   flex: 1;
+  overflow-y: auto; /* so rows scroll instead of shrinking */
+  min-height: 0;
+}
+
+.delivery-table-scroll-moderator {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  scroll-behavior: smooth;
+}
+
+.delivery-table-scroll-moderator > table {
+  width: 100%;
+  min-width: 1200px;
+  border-collapse: collapse;
+}
+
+.delivery-table-scroll-moderator > table > thead > tr > th {
+  padding: 16px 15px;
+  text-align: left;
+  background-color: #f2f5fa;
+  white-space: nowrap;
+  min-width: 150px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.delivery-table-scroll-moderator > table > tbody > tr > td {
+  padding: 14px 15px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+.delivery-table-clickable-row-moderator {
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.delivery-table-clickable-row-moderator > td {
+  padding: 12px;
+}
+
+@media (max-width: 1920px) and (min-width: 1366px) {
+  .delivery-table-clickable-row-moderator {
+    font-size: 0.8rem;  /* smaller font */
+  }
+
+  .delivery-table-scroll-moderator > table > thead > tr > th {
+    padding: 20px 6px;
+    text-align: left;
+    background-color: #F2F5FA;
+    white-space: nowrap;
+    min-width: 150px;
+    font-size: 1rem;
+  }
+}
+
+
+@media (max-width: 1920px) and (min-width: 1366px) {
+  .delivery-table-scroll-moderator > table > thead > tr > th,
+  .delivery-table-scroll-moderator > table > tbody > tr > td {
+    font-size: 0.8rem;
+  }
+}
+
+.delivery-table-clickable-row-moderator:hover {
+  background-color: #e6f7ff;
+}
+
+.delivery-table-scroll-moderator::-webkit-scrollbar {
+  height: 8px;
+}
+
+.delivery-table-scroll-moderator::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.delivery-table-scroll-moderator::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.delivery-table-scroll-moderator::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.delivery-table-actions-moderator button {
+  margin-right: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.delivery-table-actions-moderator button:hover {
+  background-color: #f0f0f0;
+}
+
+.pagination-controls-moderator {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  align-items: center;
+}
+
+.pagination-controls-moderator select {
+  padding: 5px 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.pagination-controls-moderator button {
+  padding: 5px 12px;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.pagination-controls-moderator button:disabled {
+  background: #e0e0e0;
+  cursor: not-allowed;
+}
+
+
+
+.reset-btn-delivery-moderator {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  font-size: 14px;
+}
+
+.reset-btn-delivery-moderator:hover {
+  background-color: #f0f0f0;
+}
+
+.delivery-table-clickable-row-moderator.not-delivered {
+  background-color: #ffe6e6;
+  border-left: 4px solid #ff4d4f;
+}
+
+.delivery-table-clickable-row-moderator.not-delivered:hover {
+  background-color: #ffd6d6;
+}
+
+/* Optional: Add a subtle text color change for not delivered rows */
+.delivery-table-clickable-row-moderator.not-delivered td {
+  color: #cc0000;
+}
+
+/* Keep delivered rows with normal styling */
+.delivery-table-clickable-row-moderator:not(.not-delivered):hover {
+  background-color: #e6f7ff;
+}
+
+.delivery-table-clickable-row-moderator.delivered {
+  background-color: #e6f7e6;
+  border-left: 4px solid #2d9d4d;
+}
+
+.delivery-table-clickable-row-moderator.delivered:hover {
+  background-color: #d6f0d6;
+}
+
+.delivery-table-clickable-row.delivered-moderator td {
+  color: #2d9d4d;
+}
+
+/* Style for the Mark As Delivered button */
+.delivered-btn-delivery-moderator {
+  background-color: #2d9d4d;
+  color: white;
+  border: 1px solid #2d9d4d;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.delivered-btn-delivery-moderator:hover {
+  background-color: #238a3a;
+  border-color: #238a3a;
+}
+
+/* Override the default button hover for the green button */
+.delivery-table-actions-moderator .delivered-btn-delivery-moderator:hover {
+  background-color: #238a3a;
+  color: white;
+}
+
+.delivery-table-scroll-moderator > table > tbody > tr > td.remarks-moderator,
+.delivery-table-scroll-moderator > table > thead > tr > th.remarks-moderator {
+  /* allow wrapping (override previous 'white-space: nowrap') */
+  white-space: normal !important;
+  /* let the column shrink if needed */
+  min-width: 0 !important;
+  max-width: 300px;                 /* adjust width as you like */
+  overflow-wrap: anywhere;          /* modern, robust break for long words */
+  word-break: break-word;           /* break long words if necessary */
+  vertical-align: top;
+  padding: 12px 15px;               /* spacing like other tds */
+  vertical-align: middle; 
+}
+
+
+/* inner content (keeps manual line breaks and wraps) */
+.remarks-moderator .remarks-content,
+td.remarks-moderator .remarks-content {
+  white-space: pre-wrap;   /* preserve user line breaks, still wrap lines */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  display: block;
+  max-width: 100%;
+   text-align: center;
+}
+
+/* responsive tweaks */
+@media (max-width: 1366px) {
+  .delivery-table-scroll-moderator > table > tbody > tr > td.remarks-moderator {
+    max-width: 220px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .delivery-table-scroll-moderator > table > tbody > tr > td.remarks-moderator {
+    max-width: 160px;
+    font-size: 0.85rem;
+  }
+}
+
+
+.delivery-status-filter-dropdown-moderator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.delivery-status-filter-dropdown-moderator label {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.delivery-status-filter-dropdown-moderator select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: white;
+  cursor: pointer;
+  appearance: none; /* Remove default browser arrow */
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.6-6.4H18.9c-5%200-9.6%202-13.6%206.4-4%204-6.4%209.6-6.4%2014.1%200%204.6%202.5%2010%206.4%2014.1l127.9%20128c4%204%209.6%206.4%2013.6%206.4s9.6-2%2013.6-6.4l127.9-128c4-4%206.4-9.5%206.4-14.1.1-4.6-2.4-10.1-6.3-14.1z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px;
+  padding-right: 25px; /* Make space for the custom arrow */
+}

@@ -1,0 +1,50 @@
+.client-table {
+    width: 100%;
+    margin: 0 auto;
+    padding: 5px 0 0 0;
+    border-radius: 10px;
+   
+}
+
+.client-table > table {
+    width: 100%;
+    padding: 20px 5px 10px 5px;
+    
+}
+
+.client-table > table > thead {
+    background-color: #F2F5FA;
+   
+ 
+}
+
+.client-table > table > thead > tr {
+    background-color: #F2F5FA;
+    
+}
+
+.client-table > table > thead > tr > th {
+    padding: 10px;
+    text-align: left;
+    font-size: 20px;
+    color: #222;
+    
+}
+
+@media (max-width: 1920px) and (min-width: 1366px) {
+    .client-table > table > thead > tr > th {
+  
+        text-align: left;
+        padding: 15px 10px; /* smaller padding */
+        font-size: 0.9rem;  /* smaller font */
+        color: #222;
+    
+    }
+}
+
+@media screen and (max-height: 1080px) {
+    .Due-content {
+        width: 90%;
+        height: 200px;
+    }
+}

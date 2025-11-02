@@ -1,0 +1,96 @@
+* {
+  box-sizing: border-box;
+}
+
+.payment-records-container-moderator{
+     background-color: #F2F5FA;
+  font-family: 'Inter', sans-serif;
+  height: auto;
+  max-width: 100%;
+  overflow-x: hidden;
+  padding-bottom: 30px;
+    
+
+}
+
+@media (min-width: 3440px) {
+  .payment-records-container-moderator {
+    padding-left: 100px;
+  }
+}
+
+
+.payment-record-header-moderator {
+ display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 90px;
+    padding: 20px 10px 10px 10px;
+
+}
+
+.Payment-title-moderator{
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  color: #222;
+  line-height: 1.1;
+}
+
+
+
+.record-search-moderator {
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    width: 250px;
+}
+
+.policy-data-field-moderator {
+    padding: 20px 5px 10px 5px;
+    background-color: white;;
+}
+.client-payment-table-moderator {
+    width: 100%;
+    margin: 0 auto;
+    padding: 5px 0 0 0;
+    border-radius: 10px;
+}
+
+.client-payment-table-moderator > table {
+    width: 100%;
+    padding: 20px 5px 10px 5px;
+    
+}
+
+
+
+.client-payment-table-moderator > table > thead > tr > th {
+    padding: 10px;
+    text-align: left;
+    font-size: 20px;
+    background-color: #F2F5FA;
+  
+   
+}
+
+.client-payment-table-moderator > table > tbody > tr > td {
+    background-color: white;
+    text-align: left;
+    padding: 20px 5px 10px 5px;
+  
+    
+}   
+
+.actions-right-moderator {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.left-actions-moderator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

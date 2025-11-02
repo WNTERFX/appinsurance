@@ -1,0 +1,364 @@
+/* --------------------------- */
+/* Container + Header          */
+/* --------------------------- */
+.delivery-table-container{
+  width: 100%;
+  margin: 0 auto;
+  font-family: sans-serif;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.delivery-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap; /* Allow controls to wrap on smaller screens */
+  gap: 0.75rem; /* Space between the main title and the controls group */
+}
+
+.delivery-table-container h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  display: flex; /* Keeps the title and count together */
+  align-items: center;
+  gap: 0.5rem; /* Space between "Active Deliveries" and the count */
+}
+
+
+/* ------------------------------------- */
+/* Group for all right-aligned controls */
+/* ------------------------------------- */
+.delivery-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Space between search, filter, results, and refresh */
+  flex-wrap: wrap; /* Allow controls to wrap on smaller screens */
+  justify-content: flex-end; /* Align controls to the right */
+}
+
+/* --------------------------- */
+/* Controls (search)           */
+/* --------------------------- */
+.delivery-search-input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  width: 250px; /* Adjust width as needed */
+  min-width: 180px;
+}
+
+/* New: Style for the new delivery status filter dropdown */
+.delivery-status-filter-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.delivery-status-filter-dropdown label {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.delivery-status-filter-dropdown select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: white;
+  cursor: pointer;
+  appearance: none; /* Remove default browser arrow */
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13.6-6.4H18.9c-5%200-9.6%202-13.6%206.4-4%204-6.4%209.6-6.4%2014.1%200%204.6%202.5%2010%206.4%2014.1l127.9%20128c4%204%209.6%206.4%2013.6%206.4s9.6-2%2013.6-6.4l127.9-128c4-4%206.4-9.5%206.4-14.1.1-4.6-2.4-10.1-6.3-14.1z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px;
+  padding-right: 25px; /* Make space for the custom arrow */
+}
+
+
+.rows-per-page-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rows-per-page-inline label{
+  font-size: medium;
+}
+
+/* General button styling within header controls */
+.delivery-header-controls button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.delivery-header-controls button:hover {
+  background-color: #d1d5db;
+}
+
+/* --------------------------- */
+/* Table Wrapper + Scroll      */
+/* --------------------------- */
+.delivery-table-wrapper {
+   flex: 1;
+  overflow-y: auto; /* so rows scroll instead of shrinking */
+  min-height: 0;
+}
+
+.delivery-table-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  scroll-behavior: smooth;
+}
+
+.delivery-table-scroll > table {
+  width: 100%;
+  min-width: 1200px; /* Ensure table doesn't get too small */
+  border-collapse: collapse;
+}
+
+/* --------------------------- */
+/* Table Headings + Cells      */
+/* --------------------------- */
+.delivery-table-scroll > table > thead > tr > th {
+  padding: 16px 15px;
+  text-align: left;
+  background-color: #f2f5fa;
+  white-space: nowrap;
+  min-width: 150px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.delivery-table-scroll > table > tbody > tr > td {
+  padding: 14px 15px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+/* Responsive scaling for table cells */
+@media (max-width: 1920px) and (min-width: 1366px) {
+  .delivery-table-clickable-row {
+    font-size: 0.8rem;  /* smaller font */
+  }
+
+  .delivery-table-scroll > table > thead > tr > th {
+    padding: 20px 6px;
+    text-align: left;
+    background-color: #F2F5FA;
+    white-space: nowrap;
+    min-width: 150px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 1920px) and (min-width: 1366px) {
+  .delivery-table-scroll > table > thead > tr > th,
+  .delivery-table-scroll > table > tbody > tr > td {
+    font-size: 0.8rem;
+  }
+}
+
+/* --------------------------- */
+/* Row Hover + Clickable       */
+/* --------------------------- */
+.delivery-table-clickable-row {
+  cursor: pointer;
+  font-size: 20px; /* This seems large, consider if intended */
+}
+
+.delivery-table-clickable-row:hover {
+  background-color: #e6f7ff;
+}
+
+/* --------------------------- */
+/* Scrollbar Styling           */
+/* --------------------------- */
+.delivery-table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.delivery-table-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.delivery-table-scroll::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.delivery-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* --------------------------- */
+/* Actions                     */
+/* --------------------------- */
+.delivery-table-actions button {
+  margin-right: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.delivery-table-actions button:hover {
+  background-color: #f0f0f0;
+}
+
+/* --------------------------- */
+/* Pagination                  */
+/* --------------------------- */
+.pagination-controls {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  align-items: center;
+}
+
+.pagination-controls select {
+  padding: 5px 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.pagination-controls button {
+  padding: 5px 12px;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.pagination-controls button:disabled {
+  background: #e0e0e0;
+  cursor: not-allowed;
+}
+
+/* --------------------------- */
+/* Other Buttons               */
+/* --------------------------- */
+.reset-btn-delivery {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  font-size: 14px;
+}
+
+.reset-btn-delivery:hover {
+  background-color: #f0f0f0;
+}
+
+/* --------------------------- */
+/* Delivery Status Styling     */
+/* --------------------------- */
+.delivery-table-clickable-row.not-delivered {
+  background-color: #ffe6e6; /* Light red background */
+  border-left: 4px solid #ff4d4f; /* Red left border */
+}
+
+.delivery-table-clickable-row.not-delivered:hover {
+  background-color: #ffd6d6;
+}
+
+.delivery-table-clickable-row.not-delivered td {
+  color: #cc0000; /* Darker red text */
+}
+
+.delivery-table-clickable-row:not(.not-delivered):hover {
+  background-color: #e6f7ff;
+}
+
+.delivery-table-clickable-row.delivered {
+  background-color: #e6f7e6; /* Light green background */
+  border-left: 4px solid #2d9d4d; /* Green left border */
+}
+
+.delivery-table-clickable-row.delivered:hover {
+  background-color: #d6f0d6;
+}
+
+.delivery-table-clickable-row.delivered td {
+  color: #2d9d4d; /* Darker green text */
+}
+
+/* Style for the Mark As Delivered button */
+.delivered-btn-delivery {
+  background-color: #2d9d4d;
+  color: white;
+  border: 1px solid #2d9d4d;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.delivered-btn-delivery:hover {
+  background-color: #238a3a;
+  border-color: #238a3a;
+}
+
+/* Override the default button hover for the green button */
+.delivery-table-actions .delivered-btn-delivery:hover {
+  background-color: #238a3a;
+  color: white;
+}
+
+/* --------------------------- */
+/* Remarks Column Styling      */
+/* --------------------------- */
+.delivery-table-scroll > table > tbody > tr > td.remarks,
+.delivery-table-scroll > table > thead > tr > th.remarks {
+  white-space: normal !important; /* Allow wrapping (override previous 'white-space: nowrap') */
+  min-width: 0 !important; /* Let the column shrink if needed */
+  max-width: 300px;                 /* Adjust width as you like */
+  overflow-wrap: anywhere;          /* Modern, robust break for long words */
+  word-break: break-word;           /* Break long words if necessary */
+  vertical-align: top;
+  padding: 12px 15px;               /* Spacing like other tds */
+   vertical-align: middle;
+}
+
+/* Inner content (keeps manual line breaks and wraps) */
+.remarks .remarks-content,
+td.remarks .remarks-content {
+  white-space: pre-wrap;   /* Preserve user line breaks, still wrap lines */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  display: block;
+  max-width: 100%;
+ text-align: center;
+}
+
+/* Responsive tweaks for remarks column */
+@media (max-width: 1366px) {
+  .delivery-table-scroll > table > tbody > tr > td.remarks {
+    max-width: 220px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .delivery-table-scroll > table > tbody > tr > td.remarks {
+    max-width: 160px;
+    font-size: 0.85rem;
+  }
+}

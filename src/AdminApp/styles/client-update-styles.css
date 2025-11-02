@@ -1,0 +1,158 @@
+/* === Card === */
+.form-card-client-update {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 1100px;
+  border-radius: 25px;
+  padding: 40px 50px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.form-card-client-update h2 {
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 35px;
+  color: #000;
+}
+
+/* === Grid === */
+.form-grid-client-update {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  gap: 22px 24px; /* row-gap column-gap */
+}
+
+.form-left-column-client-update{
+  display: contents; /* Let child groups fill the grid */
+}
+
+.form-group-client-update {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group-client-update label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #000;
+}
+
+/* === Inputs === */
+.form-group-client-update input {
+  padding: 14px;
+  border: 1px solid #d0d0d0;      
+  border-radius: 12px;             
+  background-color: #ffffff;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.form-group-client-update input:focus {
+  border-color: #000;        
+
+}
+
+/* === Wide Fields (Home Address + Email) === */
+.form-group-client-update:nth-child(7),
+.form-group-client-update:nth-child(8) {
+  grid-column: span 3; /* full width row */
+}
+
+/* === Controls === */
+.client-update-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+
+.client-update-controls .cancel-btn-client-update{
+  background-color: #F86B6B;      
+  color: white;
+  padding: 12px 0;               
+  width: 160px;                 
+  text-align: center;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.client-update-controls .submit-btn-client-update{
+  background-color: #007BFF;      
+  color: white;
+  padding: 12px 0;               
+  width: 160px;                 
+  text-align: center;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+
+/* === Hover Effect === */
+.submit-btn-client-update:hover {
+  transform: scale(1.05);               /* slight grow */
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  background-color: #0056B3;
+  color: white;
+}
+
+.cancel-btn-client-update:hover{
+  transform: scale(1.05);               /* slight grow */
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  background-color: #F25353;
+  color: white;
+}
+
+/* === Active (Click) Effect === */
+.cancel-btn-client-update:active,
+.submit-btn-client-update:active {
+  transform: scale(0.97);               /* slight press */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2) inset;
+
+}
+
+/* === Responsive Tweaks === */
+@media (max-width: 1024px) {
+  .form-grid-client-update {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .form-grid-client-update {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.client-creation-modal-overlay-moderator {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.client-creation-modal-content-moderator {
+
+  
+  padding: 0;
+  width: 100%;
+  max-width: 1100px;
+  border-radius: 25px;
+
+  
+}

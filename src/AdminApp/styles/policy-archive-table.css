@@ -1,0 +1,221 @@
+/* --------------------------- */
+/* Container + Header          */
+/* --------------------------- */
+.policy-archive-table-container {
+  width: 100%;
+  margin: 0 auto;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+}
+
+.policy-archive-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.policy-archive-table-container h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+/* --------------------------- */
+/* Controls (search, refresh)  */
+/* --------------------------- */
+.policy-archive-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.policy-archive-search-input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.policy-archive-header-controls button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.policy-archive-header-controls button:hover {
+  background-color: #d1d5db;
+}
+
+/* --------------------------- */
+/* Table Wrapper + Scroll      */
+/* --------------------------- */
+.policy-archive-table-wrapper {
+  flex: 1;
+  overflow-y: auto; /* so rows scroll instead of shrinking */
+  min-height: 0;
+}
+
+.policy-archive-table-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  scroll-behavior: smooth;
+}
+
+.policy-archive-table-scroll > table {
+  width: 100%;
+  min-width: 1200px;
+  border-collapse: collapse;
+}
+
+/* --------------------------- */
+/* Table Headings + Cells      */
+/* --------------------------- */
+.policy-archive-table-scroll > table > thead > tr > th {
+  padding: 16px 15px;
+  text-align: left;
+  background-color: #f2f5fa;
+  white-space: nowrap;
+  min-width: 150px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.policy-archive-table-scroll > table > tbody > tr > td {
+  padding: 14px 15px;
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+/* Policy ID column */
+.policy-id-column {
+  min-width: 80px;
+  max-width: 100px;
+  width: 80px;
+  text-align: center;
+}
+
+/* Status */
+.policy-archive-table-wrapper table th:nth-child(7),
+.policy-archive-table-wrapper table td:nth-child(7) {
+  width: 100px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Responsive scaling */
+@media (max-width: 1920px) and (min-width: 1366px) {
+  .policy-archive-table-scroll > table > thead > tr > th,
+  .policy-archive-table-scroll > table > tbody > tr > td {
+    font-size: 0.8rem;
+  }
+}
+
+/* --------------------------- */
+/* Row Hover + Clickable       */
+/* --------------------------- */
+.policy-archive-table-clickable-row {
+  cursor: pointer;
+}
+
+.policy-archive-table-clickable-row:hover {
+  background-color: #e6f7ff;
+}
+
+/* --------------------------- */
+/* Status Badges               */
+/* --------------------------- */
+.policy-status-active,
+.policy-status-inactive {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.policy-status-active {
+  color: #065f46;
+  background-color: #d1fae5;
+}
+
+.policy-status-inactive {
+  color: #991b1b;
+  background-color: #fee2e2;
+}
+
+/* --------------------------- */
+/* Actions                     */
+/* --------------------------- */
+.policy-table-actions button {
+  padding: 5px 10px;
+  margin: 0 3px;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #f3f4f6;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.policy-table-actions button:hover {
+  background-color: #e5e7eb;
+}
+
+/* --------------------------- */
+/* Scrollbar Styling           */
+/* --------------------------- */
+.policy-archive-table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.policy-archive-table-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.policy-archive-table-scroll::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.policy-archive-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* --------------------------- */
+/* Refresh button styling       */
+/* --------------------------- */
+.reset-btn-policy {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  font-size: 14px;
+}
+
+.reset-btn-policy:hover {
+  background-color: #f0f0f0;
+}
+
+/* Premium cell alignment */
+.premium-cell-policy {
+  white-space: nowrap;   
+  text-align: right;     
+  width: 1%;             
+}

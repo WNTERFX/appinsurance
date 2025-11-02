@@ -1,0 +1,308 @@
+  /* Client Container */
+  .Client-container {
+    background-color: #F2F5FA;
+    font-family: 'Inter', sans-serif;
+    height: auto;
+    max-width: 100%;
+    overflow-x: hidden;
+    padding-bottom: 30px;
+  }
+
+  @media (min-width: 3440px) {
+    .Client-container {
+      padding-left: 100px;
+    }
+  }
+
+   @media (min-width: 1700px) {
+    .Client-container {
+      padding-left: 70px;
+    }
+  }
+
+  /*  FIXED CLIENT HEADER */
+  .Client-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 90px;
+    padding: 20px 10px 10px 10px; 
+  }
+
+  /* Title on the left */
+.right-actions .client-title {
+    margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  color: #222;
+  line-height: 1.1;
+}
+
+
+  /*  Right side: buttons + profile aligned flush right */
+  .left-actions { /* Renamed from .actions-right-client to match your JS */
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 20px;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Buttons */
+  .btn-create-client { /* This class is not used in your JS for create button, but keeping for reference */
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .btn-create {
+    background-color: #2196f3;
+    color: white;
+  }
+  .btn-create:hover {
+    background-color: #1976d2;
+  }
+
+  .btn-archive {
+    background-color: #e0e0e0;
+    color: black;
+  }
+  .btn-archive:hover {
+    background-color: #bdbdbd;
+  }
+
+  /* Profile Menu — fixed to end */
+  .profile-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .profile-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .profile-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .profile-icon {
+    font-size: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Dropdown */
+  .dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 160px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+    visibility: hidden;
+    transition: opacity 160ms ease, transform 160ms ease, visibility 160ms;
+    z-index: 1000;
+  }
+
+  .dropdown.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    visibility: visible;
+  }
+
+  .dropdown-item {
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    background: none;
+    text-align: left;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dropdown-item:hover {
+    background: #f2f2f2;
+  }
+  .dropdown-icon {
+    font-size: 16px;
+    color: #555;
+  }
+
+  /* Left side group (if you have filters or search) */
+  .left-actions-client { /* This class is not used in your JS */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Client Data Fields */
+  .Client-container > div.client-data-field {
+    margin-top: 20px;
+    background-color: white;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    padding: 20px 5px 10px 5px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Grid layout for client content */
+  .Client-content { /* This class is not used, `agent-cards-container` is */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 1400px;
+    height: 200px;
+  }
+
+  @media screen and (max-height: 1080px) {
+    .Client-content {
+      width: 90%;
+      height: 200px;
+    }
+  }
+
+  /* Data table wrapper */
+  .client-data-field {
+    margin-top: 20px;
+    font-size: 20px;
+    margin-right: 10px;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    background-color: white;
+    border-radius: 10px;
+  }
+
+  /* Agent cards container */
+  .agent-cards-container {
+    display: flex;
+    flex-wrap: nowrap; /* Keep cards in a single row */
+    overflow-x: auto; /* Enable horizontal scrolling */
+    overflow-y: hidden;
+    gap: 20px; /* Space between cards */
+    margin-bottom: 24px;
+    padding-bottom: 10px; /* Space for scroll bar */
+    scroll-behavior: smooth;
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: #ccc transparent; /* Firefox */
+  }
+
+  /* Optional: style the scrollbar for WebKit browsers */
+  .agent-cards-container::-webkit-scrollbar {
+    height: 8px;
+  }
+  .agent-cards-container::-webkit-scrollbar-thumb {
+    background-color: #bbb;
+    border-radius: 4px;
+  }
+  .agent-cards-container::-webkit-scrollbar-thumb:hover {
+    background-color: #888;
+  }
+
+  .agent-content {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.08);
+    flex: 0 0 260px; /* fixed width for each card */
+    border-left: 6px solid; /* Thickness and style, color set by inline style */
+    min-height: 150px;
+    display: flex;
+    align-items: stretch; /* This is key for border-left to span full height */
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+    /* REMOVED: overflow: hidden; */ /* No longer needed if border-left is on the main element */
+  }
+
+
+
+
+  .agent-icon {
+    margin-right: 8px;
+    vertical-align: middle;
+    font-size: 20px;
+  }
+
+  .agent-content .agent-data {
+    width: 100%;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+    box-sizing: border-box;
+  }
+
+  .agent-content h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  
+  .agent-role {
+    font-size: 20px;          
+    color: #555;              
+    margin-top: 4px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase; 
+  }
+
+  .agent-client-count{
+    font-size: 18px;
+    color: #000000;
+    font-weight: 400px;
+  }
+ 
+
+  .agent-content:hover{
+    transform: translateY(-3px);
+    box-shadow: 4px 6px 18px rgba(0,0,0,0.12);
+    background-color: #EFF6FF;
+  }
+
+  /* Moderator modal styles (keeping as is) */
+
+  .agent-content.agent-selected {
+    border: 2px solid #2196f3; /* Example: blue border to show selection */
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3); /* Optional: a glow effect */
+    transform: translateY(-2px); /* Slightly lift it more */
+  }
+
+
+

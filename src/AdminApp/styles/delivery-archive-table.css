@@ -1,0 +1,193 @@
+/* 🔹 Container */
+.delivery-archive-table-container {
+  padding: 5px;
+}
+
+/* 🔹 Header */
+.delivery-archive-table-header {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  margin: 0 10px 12px 10px; 
+}
+
+.delivery-archive-table-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.delivery-archive-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 🔹 Table Wrapper */
+.delivery-archive-table-wrapper {
+  width: 100%;
+  margin: 0 auto;
+  padding: 15px 0 0 0;
+  border-radius: 10px;
+}
+
+/* 🔹 Scrollable Table */
+.delivery-archive-table-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  scroll-behavior: smooth;
+}
+
+.delivery-archive-table-scroll > table {
+  width: 100%;
+  min-width: 1200px;
+  padding: 20px 5px 10px 5px;
+  border-collapse: collapse;
+}
+
+.delivery-archive-table-scroll > table > thead > tr > th {
+  padding: 20px 15px;
+  text-align: left;
+  background-color: #F2F5FA;
+  white-space: nowrap;
+  min-width: 150px;
+}
+
+.delivery-archive-table-scroll > table > tbody > tr > td {
+  text-align: left;
+  padding: 25px 15px 40px;
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+/* 🔹 Clickable Rows */
+.delivery-archive-table-clickable-row {
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.delivery-archive-table-clickable-row > td {
+  padding: 12px;
+}
+
+.delivery-archive-table-clickable-row:hover {
+  background-color: #e6f7ff;
+}
+
+/* 🔹 Responsive Adjustment */
+@media (max-width: 1920px) and (min-width: 1366px) {
+  .delivery-archive-table-clickable-row {
+    font-size: 0.8rem; 
+  }
+
+  .delivery-archive-table-scroll > table > thead > tr > th {
+    padding: 20px 6px;
+    font-size: 1rem;
+  }
+}
+
+/* 🔹 Scrollbar */
+.delivery-archive-table-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.delivery-archive-table-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.delivery-archive-table-scroll::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.delivery-archive-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 🔹 Action Buttons */
+.delivery-archive-table-actions button {
+  margin-right: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.delivery-archive-table-actions button:hover {
+  background-color: #f0f0f0;
+}
+
+/* 🔹 Search Input */
+.delivery-archive-search-input {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 180px;
+}
+
+/* 🔹 Refresh Button */
+.reset-btn-delivery-archive {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  background-color: #f9f9f9;
+  font-size: 14px;
+}
+
+.reset-btn-delivery-archive:hover {
+  background-color: #f0f0f0;
+}
+
+/* 🔹 Pagination Controls */
+.pagination-controls-delivery-archive {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  align-items: center;
+}
+
+.pagination-controls-delivery-archive select {
+  padding: 5px 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.pagination-controls-delivery-archive button {
+  padding: 5px 12px;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.pagination-controls-delivery-archive button:disabled {
+  background: #e0e0e0;
+  cursor: not-allowed;
+}
+
+/* 🔹 Rows Per Page */
+.rows-per-page-inline-delivery-archive {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rows-per-page-inline-delivery-archive label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.rows-per-page-inline-delivery-archive select {
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}

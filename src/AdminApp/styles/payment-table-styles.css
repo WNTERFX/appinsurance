@@ -1,0 +1,755 @@
+/* General Body and Page Layout */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background-color: #f4f7f6; /* Light gray background for the entire page */
+    color: #333;
+}
+
+/* Main Payments Overview Section */
+.payments-overview-section {
+    padding: 20px;
+    box-sizing: border-box;
+    margin-top: -23px; 
+    margin-bottom: 20px; 
+    background-color: #ffffff; /* White background for this section */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05); /* Subtle shadow */
+}
+
+.payments-overview-header {
+    display: flex;
+    justify-content: space-between; /* Puts H2 on left, search controls on right */
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eeeeee; /* Separator line below the header area */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 15px; /* Gap between the H2 and the search bar block */
+}
+
+.payments-overview-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap; /* Prevent heading from wrapping */
+}
+
+.search-filter-refresh-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between input, select, button */
+    flex-wrap: wrap; /* Allow controls to wrap */
+    justify-content: flex-end; /* Align to the right if space allows */
+}
+
+.search-input {
+    padding: 8px 12px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    width: 280px; /* Default width */
+    min-width: 180px; /* Minimum width */
+    font-size: 14px;
+    outline: none;
+}
+.search-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
+}
+
+.result-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: #555;
+    white-space: nowrap;
+}
+
+.result-select {
+    padding: 8px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+.result-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
+}
+
+.refresh-btn {
+    padding: 8px 15px;
+    background-color: #f0f0f0;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+}
+.refresh-btn:hover {
+    background-color: #e0e0e0;
+}
+
+
+/* Policy Item Card (for each policy overview) */
+.policy-item-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 15px;  
+    overflow: hidden; /* Ensures inner content respects border-radius */
+    background-color: #ffffff;
+}
+
+.policy-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #f9f9f9; /* Lighter background for summary */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid #eeeeee; /* Add a bottom border for separation between summary rows */
+}
+/* For the last policy summary, remove the bottom border */
+.policy-item-card:last-child .policy-summary {
+    border-bottom: none;
+}
+.policy-item-card:last-child .policy-details-table-wrapper.show {
+    border-bottom: none; /* Also remove if the last expanded item */
+}
+
+
+.policy-summary:hover {
+    background-color: #f0f0f0;
+}
+
+.policy-info-left {
+    display: flex;
+    gap: 25px;
+    font-size: 15px;
+}
+
+.policy-id {
+    font-weight: bold;
+    color: #333;
+}
+
+.policy-holder {
+    color: #666;
+}
+
+.policy-info-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Status Badges within policy summary */
+.status {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.status.active {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status.inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Expand Toggle Button (the ⌄ arrow) */
+.expand-toggle {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 5px;
+    margin-left: 5px;
+    transition: transform 0.3s ease;
+    color: #555;
+    outline: none;
+}
+
+.expand-toggle .arrow {
+    display: block;
+    line-height: 1;
+}
+
+.expand-toggle.expanded .arrow {
+    transform: rotate(180deg);
+}
+
+
+/* Payment Details Table Wrapper (the expandable section) */
+.payment-details-table-wrapper {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+    background-color: #ffffff;
+    padding: 0 20px;
+}
+
+.payment-details-table-wrapper.show {
+    max-height: 600px; /* Enough for client info + 6 payment rows */
+    padding: 15px 20px;
+    border-bottom: 1px solid #eeeeee;
+    overflow-y: auto; /* Add vertical scroll when content exceeds */
+}
+
+
+.payment-details-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #444;
+}
+
+.no-payments-message {
+    padding: 10px 0;
+    color: #666;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Inner Payments Table */
+.payments-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.payments-table th,
+.payments-table td {
+    border: 1px solid #e0e0e0;
+    padding: 10px 12px;
+    text-align: left;
+}
+
+.payments-table th {
+    background-color: #f2f2f2;
+    font-weight: 600;
+    color: #555;
+}
+
+.payments-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9; /* RE-ADDED: Light background for even rows */
+}
+
+/* Reverted to OLD Payment Status Row Coloring */
+.payment-not-paid td {
+  background-color: #ffcccc; /* light red */
+  color: #b30000;
+}
+
+.payment-partially-paid td {
+  background-color: #fff3cd; /* light yellow */
+  color: #856404;
+}
+
+.payment-fully-paid td {
+  background-color: #d4edda; /* light green */
+  color: #155724;
+}
+
+.payment-status-cell {
+    text-transform: capitalize;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.payment-actions button {
+    padding: 6px 12px;
+    border: 1px solid #007bff;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.payment-actions button:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+
+/* Pagination Controls */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 25px;
+    gap: 15px;
+    font-size: 14px;
+    color: #555;
+}
+
+.pagination-controls button {
+    padding: 8px 15px;
+    border: 1px solid #cccccc;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    transition: background-color 0.2s ease;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+    background-color: #e0e0e0;
+}
+
+.pagination-controls button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* Modal Styles */
+.payment-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.payment-modal {
+  background: #fff;
+  padding: 20px 25px;
+  border-radius: 8px;
+  width: 300px;
+  max-width: 90%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-modal input {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.modal-actions button {
+  padding: 8px 15px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: #e0e0e0;
+  transition: background 0.2s ease;
+  font-weight: 500;
+}
+
+.modal-actions button:hover {
+  background-color: #d0d0d0;
+}
+.modal-actions button:first-child {
+    background-color: #007bff;
+    color: white;
+}
+.modal-actions button:first-child:hover {
+    background-color: #0056b3;
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .payments-overview-section {
+        padding: 15px;
+        margin: 15px 0; /* Adjust margin for smaller screens, full width */
+        max-width: unset; /* Remove max-width on small screens */
+    }
+
+    .payments-overview-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding-bottom: 10px;
+    }
+    .payments-overview-header h2 {
+        font-size: 18px;
+        width: 100%; /* Ensure heading takes full width if wrapping */
+    }
+
+    .search-filter-refresh-bar {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%; /* Take full width of its parent */
+        gap: 8px;
+    }
+    .search-input {
+        width: 100%;
+    }
+    .result-select-wrapper {
+        justify-content: space-between;
+        width: 100%;
+    }
+    .refresh-btn {
+        width: 100%;
+    }
+
+    .policy-summary {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 12px 15px;
+    }
+    .policy-info-left {
+        flex-direction: column;
+        gap: 5px;
+        width: 100%;
+    }
+    .policy-info-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .payments-table th, .payments-table td {
+        font-size: 0.85rem;
+        padding: 8px 10px;
+    }
+
+    .payment-details-table-wrapper.show {
+        padding: 10px 15px;
+    }
+
+    .payment-details-title {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+}
+
+
+/* Additional styles for Payment Generation Feature */
+
+/* Payment Header with Generate Button */
+.payment-header-with-button {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.generate-payment-btn {
+    padding: 8px 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.generate-payment-btn:hover {
+    background-color: #218838;
+}
+
+/* Payment Generation Modal Specific Styles */
+.payment-generation-modal {
+    width: 400px;
+    max-width: 90%;
+}
+
+.modal-policy-info {
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+.modal-form-group {
+    margin-bottom: 20px;
+}
+
+.modal-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+}
+
+.modal-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: white;
+}
+
+.monthly-preview {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Adjust modal actions buttons order for payment generation */
+.payment-generation-modal .modal-actions button:first-child {
+    order: 2; /* Generate button on right */
+    background-color: #007bff !important;
+    color: white !important;
+}
+
+.payment-generation-modal .modal-actions button:first-child:hover {
+    background-color: #0056b3 !important;
+}
+
+.payment-generation-modal .modal-actions button:last-child {
+    order: 1; /* Cancel button on left */
+    background-color: #6c757d !important;
+    color: white !important;
+    border: 1px solid #6c757d;
+}
+
+.payment-generation-modal .modal-actions button:last-child:hover {
+    background-color: #5a6268 !important;
+    border-color: #5a6268;
+}
+
+.payment-generation-modal .modal-actions button:disabled {
+    background-color: #cccccc !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Responsive adjustments for payment generation */
+@media (max-width: 768px) {
+    .payment-header-with-button {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .generate-payment-btn {
+        width: 100%;
+    }
+    
+    .payment-generation-modal {
+        width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+/* Client Information Section */
+.client-info-section {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+}
+
+.client-info-title {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #444;
+}
+
+.client-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    font-size: 20px;
+    color: #333;
+}
+
+.client-info-grid strong {
+    color: #555;
+    font-weight: 600;
+}
+
+/* Responsive adjustments for client info */
+@media (max-width: 768px) {
+    .client-info-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .client-info-section {
+        padding: 12px;
+        margin-bottom: 15px;
+    }
+}
+
+.sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #555;
+}
+
+.sort-controls label {
+    font-weight: 500;
+}
+
+.sort-controls select {
+    padding: 8px 10px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    background-color: #ffffff;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sort-controls select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
+}
+
+button.disabled-btn {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+
+@media (max-width: 768px) {
+    .sort-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+    .sort-controls select {
+        width: 100%;
+    }
+}
+
+.payment-refunded {
+  background-color: #e8f5e9 !important;
+  border-left: 4px solid #4caf50;
+}
+
+.payment-cancelled {
+  background-color: #fff3e0 !important;
+  border-left: 4px solid #ff9800;
+  opacity: 0.85;
+}
+
+.payment-voided {
+  background-color: #ffebee !important;
+  border-left: 4px solid #f44336;
+  opacity: 0.7;
+}
+
+/* Payment status badges */
+.payment-status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-refunded {
+  background-color: #4caf50;
+  color: white;
+}
+
+.status-cancelled {
+  background-color: #ff9800;
+  color: white;
+}
+
+.status-voided {
+  background-color: #f44336;
+  color: white;
+}
+
+/* Refund amount styling */
+.refund-amount {
+  color: #4caf50;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.refund-amount::before {
+  content: "↩";
+  font-size: 1.2em;
+}
+
+/* Disabled state for special status payments */
+.payment-refunded .payment-btn,
+.payment-cancelled .payment-btn,
+.payment-voided .payment-btn {
+  background-color: #e0e0e0;
+  color: #9e9e9e;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Strikethrough for voided payments */
+.payment-voided td {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.payment-voided .payment-status-badge {
+  text-decoration: none;
+}
+
+/* Archive all button styling */
+.archive-all-btn {
+  background-color: #6c757d;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.archive-all-btn:hover {
+  background-color: #5a6268;
+}
+
+.archive-all-btn:disabled {
+  background-color: #d6d8db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}

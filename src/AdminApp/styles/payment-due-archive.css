@@ -1,0 +1,230 @@
+/* --------------------------- */
+/* Container + Card            */
+/* --------------------------- */
+.payment-due-archive-list {
+  padding: 20px;
+  background-color: #F2F5FA;
+  font-family: 'Inter', sans-serif;
+}
+
+.payment-due-archive-card {
+  background-color: #fff;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  padding: 20px;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.08);
+}
+
+/* --------------------------- */
+/* Card Header                 */
+/* --------------------------- */
+
+.payment-due-archive-header {
+  margin-bottom: 15px;
+  padding: 12px;
+  border-radius: 6px;
+  background-color: #fef3c7;   /* 🔸 light orange header */
+  color: #000;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+
+
+
+.payment-due-archive-header p {
+  margin: 4px 0;
+  font-size: 15px;
+}
+
+.payment-due-archive-header strong {
+  font-weight: 600;
+}
+
+/* Status Badges */
+.payment-due-archive-status-active {
+  color: #2d9d4d;
+  font-weight: 600;
+}
+
+.payment-due-archive-status-inactive {
+  color: #d9534f;
+  font-weight: 600;
+}
+
+/* --------------------------- */
+/* Payments Area               */
+/* --------------------------- */
+.payment-due-archive-schedule {
+  margin-top: 10px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  opacity: 0;
+}
+
+.payment-due-archive-schedule.open {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.payment-due-archive-schedule h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #444;
+}
+
+/* --------------------------- */
+/* Table Styling               */
+/* --------------------------- */
+.payment-due-archive-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 15px;
+}
+
+.payment-due-archive-table th,
+.payment-due-archive-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.payment-due-archive-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Payment Row Status Colors */
+.payment-due-archive-not-paid td {
+  background-color: #ffcccc;
+  color: #b30000;
+}
+
+.payment-due-archive-partially-paid td {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.payment-due-archive-fully-paid td {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.payment-due-archive-status-cell {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+/* --------------------------- */
+/* Modal                        */
+/* --------------------------- */
+.payment-due-archive-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.payment-due-archive-modal {
+  background: #fff;
+  padding: 20px 25px;
+  border-radius: 8px;
+  width: 300px;
+  max-width: 90%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-due-archive-modal input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.payment-due-archive-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.payment-due-archive-modal-actions button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: #f3f4f6;
+  transition: background 0.2s ease;
+}
+
+.payment-due-archive-modal-actions button:hover {
+  background-color: #e5e7eb;
+}
+
+/* --------------------------- */
+/* Payment Edit Button         */
+/* --------------------------- */
+.payment-due-archive-btn {
+  margin-bottom: 10px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: #e0f7fa;
+  transition: background 0.2s ease;
+}
+
+.payment-due-archive-btn:hover {
+  background-color: #b2ebf2;
+}
+
+/* --------------------------- */
+/* Drawer Toggle Arrow         */
+/* --------------------------- */
+.payment-due-archive-drawer-toggle {
+  display: block;          
+  text-align: center;     
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+}
+
+/* --------------------------- */
+/* Responsive                  */
+/* --------------------------- */
+@media (max-width: 768px) {
+  .payment-due-archive-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .payment-due-archive-drawer-toggle {
+    align-self: flex-end;
+  }
+
+  .payment-due-archive-table th, 
+  .payment-due-archive-table td {
+    font-size: 0.85rem;
+    padding: 8px 10px;
+  }
+
+  .payment-due-archive-modal {
+    width: 90%;
+  }
+}
