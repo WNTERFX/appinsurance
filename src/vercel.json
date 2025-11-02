@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/appinsurance/:match*",
       "destination": "/index.html"
     }
   ]
