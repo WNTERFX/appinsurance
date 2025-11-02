@@ -70,7 +70,7 @@ function App() {
 
       <Routes>
         {/* Public route */}
-        <Route path="/appinsurance" element={<LoginForm anotherLoginDetected={anotherLoginDetected} setSession={setSession} />} />
+        <Route path="/" element={<LoginForm anotherLoginDetected={anotherLoginDetected} setSession={setSession} />} />
         <Route path="/appinsurance/reset-password" element={<PasswordResetForm />} />
         <Route path="/appinsurance/reset-password/confirm" element={<PasswordResetConfirm />} />
 
