@@ -260,6 +260,14 @@ export default function CronJobsTab({ controller }) {
                           {job.enabled ? "Disable" : "Enable"}
                         </button>
                         <button
+                          onClick={() => controller.handleTestCron(job.jobId)}
+                          className="admin-controller-btn admin-controller-btn-secondary"
+                          disabled={controller.loadingCron}
+                          style={{ marginRight: "5px" }}
+                        >
+                          Test
+                        </button>
+                        <button
                           onClick={() => controller.handleDeleteCron(job.jobId)}
                           className="admin-controller-btn admin-controller-btn-delete"
                           disabled={controller.loadingCron}
