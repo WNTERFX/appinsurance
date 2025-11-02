@@ -174,7 +174,7 @@ export default function PolicyEditForm({
             </div>
 
             <div className={`form-group-policy-edit ${errors.vehicleMaker ? "error" : ""}`}>
-              <label>Make Model <span style={{ color: "red" }}>*</span></label>
+              <label>Maker <span style={{ color: "red" }}>*</span></label>
               <input
                 type="text"
                 value={vehicleMaker}
@@ -188,7 +188,7 @@ export default function PolicyEditForm({
             </div>
 
             <div className={`form-group-policy-edit ${errors.vehicleName ? "error" : ""}`}>
-              <label>Vehicle Name <span style={{ color: "red" }}>*</span></label>
+              <label>Model <span style={{ color: "red" }}>*</span></label>
               <input
                 type="text"
                 value={vehicleName}

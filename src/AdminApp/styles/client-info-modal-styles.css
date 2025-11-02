@@ -7,11 +7,45 @@
   padding: 1.5rem;
   box-sizing: border-box;
   max-height: 85vh;
+  width: 87vw;
   overflow-y: auto;
   border-radius: 10px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   background-color: transparent;
 }
+
+/* --- 💡 Large desktop screens --- */
+@media (min-width: 1600px) {
+  .client-info-container {
+    width: 72vw;               /* Narrower for ultrawide displays */
+
+    gap: 2rem;                 /* Add more spacing */
+    padding: 2rem;
+  }
+}
+
+/* --- 📱 Tablets portrait --- */
+@media (max-width: 768px) {
+  .client-info-container {
+    width: 95vw;
+    padding: 1rem;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .client-info-container {
+    width: 100vw;
+    max-height: none;
+    border-radius: 0;
+    padding: 0.75rem;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+
+
 
 /* Card placement for the grid - Use a very subtle border/shadow */
 .client-info-card.client-information-card {
@@ -240,3 +274,4 @@
   margin-bottom: 1.5rem;
   text-align: left;
 }
+
