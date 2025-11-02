@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/appinsurance/:path*",
-      "destination": "/appinsurance/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
