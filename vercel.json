@@ -1,14 +1,11 @@
 {
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/appinsurance",
-      "permanent": false
-    }
-  ],
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/appinsurance/:match*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/appinsurance",
       "destination": "/index.html"
     }
   ]
