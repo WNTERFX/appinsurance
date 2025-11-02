@@ -65,6 +65,13 @@ export default function PolicyWithPaymentsList() {
     selectedPaymentForPenalty,
     setSelectedPaymentForPenalty,
 
+    deleteModalOpen,
+    setDeleteModalOpen,
+    selectedPaymentForDelete,
+    setSelectedPaymentForDelete,
+    handleOpenDeleteModal,
+    handleDeleteConfirm,
+
     manualReference,
     setManualReference,
     editModalOpen,
@@ -304,6 +311,40 @@ export default function PolicyWithPaymentsList() {
             <div className="modal-actions">
               <button onClick={handleArchiveConfirm} style={{ backgroundColor: '#ff6b6b' }}>Yes, Archive</button>
               <button onClick={() => { setArchiveModalOpen(false); setSelectedPaymentForArchive(null); }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ ADD: DELETE CONFIRMATION MODAL */}
+      {deleteModalOpen && selectedPaymentForDelete && (
+        <div className="payment-modal-backdrop">
+          <div className="payment-modal">
+            <h3>Delete Payment</h3>
+            <p>Are you sure you want to <strong>permanently delete</strong> this payment?</p>
+            <p style={{ color: '#dc3545', fontWeight: 'bold' }}>This action cannot be undone.</p>
+            
+            <div style={{ 
+              backgroundColor: '#f8f9fa', 
+              padding: '12px', 
+              borderRadius: '8px', 
+              margin: '16px 0', 
+              border: '1px solid #dee2e6' 
+            }}>
+              <p style={{ margin: 0 }}>
+                <strong>Payment Date:</strong> {new Date(selectedPaymentForDelete.payment_date).toLocaleDateString()}
+              </p>
+              <p style={{ margin: '8px 0 0 0' }}>
+                <strong>Amount:</strong> {selectedPaymentForDelete.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}
+              </p>
+              <p style={{ margin: '8px 0 0 0' }}>
+                <strong>Status:</strong> {getPaymentStatus(selectedPaymentForDelete)}
+              </p>
+            </div>
+      
+            <div className="modal-actions">
+              <button onClick={handleDeleteConfirm} style={{ backgroundColor: '#dc3545' }}>Yes, Delete Permanently</button>
+              <button onClick={() => { setDeleteModalOpen(false); setSelectedPaymentForDelete(null); }}>Cancel</button>
             </div>
           </div>
         </div>
@@ -676,6 +717,19 @@ export default function PolicyWithPaymentsList() {
                                   style={{ backgroundColor: '#17a2b8' }}
                                 >
                                    Edit
+                                </button>
+                              )}
+
+                              {/* Delete button */}
+                              {/* We only allow deleting 'not-paid' items to prevent data loss */}
+                              {status === "not-paid" && !isSpecialStatus && (
+                                <button
+                                  onClick={() => handleOpenDeleteModal({ ...p, policy_id: policy.id })}
+                                  className="penalty-btn"
+                                  title="Delete this payment"
+                                  style={{ backgroundColor: '#dc3545', color: 'white' }} 
+                                >
+                                  Delete
                                 </button>
                               )}
 

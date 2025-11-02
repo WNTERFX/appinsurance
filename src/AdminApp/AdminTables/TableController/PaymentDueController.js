@@ -6,7 +6,8 @@ import {
   generatePayments,
   archivePayment,
   fetchAllPaymentModes,
-  editPaymentDetails
+  editPaymentDetails,
+  deletePayment
 } from "../../AdminActions/PaymentDueActions";
 import {
   addPaymentPenalty,
@@ -36,6 +37,9 @@ export default function PolicyWithPaymentsController() {
   const [currentPayment, setCurrentPayment] = useState(null);
   const [paymentInput, setPaymentInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedPaymentForDelete, setSelectedPaymentForDelete] = useState(null);
 
   const [penaltyModalOpen, setPenaltyModalOpen] = useState(false);
   const [selectedPaymentForPenalty, setSelectedPaymentForPenalty] = useState(null);
@@ -265,6 +269,35 @@ export default function PolicyWithPaymentsController() {
     }
   };
 
+  const handleOpenDeleteModal = (payment) => {
+    setSelectedPaymentForDelete(payment);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedPaymentForDelete) return;
+    try {
+      // Call the delete function from your actions
+      await deletePayment(selectedPaymentForDelete.id);
+
+      const policyId = selectedPaymentForDelete.policy_id;
+      
+      // Refresh the payment schedule for this policy
+      const updatedSchedule = await fetchPaymentSchedule(policyId);
+      const nonArchived = (updatedSchedule || []).filter(p => p.is_archive !== true);
+      
+      setPaymentsByPolicy(prev => ({ ...prev, [policyId]: nonArchived }));
+      setPaymentsMap(prev => ({ ...prev, [policyId]: nonArchived }));
+
+      alert("Payment deleted successfully!");
+      setDeleteModalOpen(false);
+      setSelectedPaymentForDelete(null);
+    } catch (err) {
+      console.error("Error deleting payment:", err);
+      alert("Failed to delete payment. Check console for details.");
+    }
+  };
+
   const handleEditPaymentSave = async () => {
     if (!paymentToEdit?.id || !paymentToEdit?.policy_id) return;
     
@@ -458,6 +491,11 @@ export default function PolicyWithPaymentsController() {
     paymentInput,
     setPaymentInput,
 
+    deleteModalOpen,
+    setDeleteModalOpen,
+    selectedPaymentForDelete,
+    setSelectedPaymentForDelete,
+
     //edit modal
     manualReference,
     setManualReference,
@@ -502,6 +540,8 @@ export default function PolicyWithPaymentsController() {
     handleArchiveConfirm,
     hasPenaltyForToday,
     getPaymentStatus,
+    handleOpenDeleteModal,
+    handleDeleteConfirm,
 
     // filtered / paginated
     filteredPolicies,
