@@ -58,7 +58,7 @@ export default function PasswordResetConfirm() {
       // Sign out to force fresh login
       await db.auth.signOut();
       
-      navigate("/appinsurance");
+      navigate("/");
     } catch (error) {
       console.error("Password update error:", error);
       alert("Failed to reset password: " + error.message);

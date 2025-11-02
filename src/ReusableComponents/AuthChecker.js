@@ -32,7 +32,7 @@ export default function AuthChecker() {
       const { data: { session }, error: sessionError } = await db.auth.getSession();
       
       if (sessionError || !session) {
-        navigate("/appinsurance", { replace: true });
+        navigate("/", { replace: true });
         return;
       }
 
