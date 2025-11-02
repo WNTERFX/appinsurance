@@ -1,7 +1,15 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/appinsurance/static/(.*)",
+      "destination": "/static/$1"
+    },
+    {
+      "source": "/appinsurance/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/appinsurance",
       "destination": "/index.html"
     }
   ]
