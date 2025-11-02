@@ -29,7 +29,7 @@ export default function PasswordResetForm() {
 
       alert(`Password reset link has been sent to ${email}. Please check your email.`);
       // Supabase sends email with link, so we can go back to login
-      navigate("/appinsurance/login");
+      navigate("/");
     } catch (error) {
       console.error("Password reset request error:", error);
       alert("Failed to send reset email: " + error.message);
@@ -62,7 +62,7 @@ export default function PasswordResetForm() {
       if (error) throw error;
 
       alert("Password reset successful! You can now log in with your new password.");
-      navigate("/appinsurance");
+      navigate("/");
     } catch (error) {
       console.error("Password update error:", error);
       alert("Failed to reset password: " + error.message);
@@ -116,7 +116,7 @@ export default function PasswordResetForm() {
                 className="back-link"
                 onClick={(e) => { 
                   e.preventDefault(); 
-                  navigate("/appinsurance/login");
+                  navigate("/");
                 }}
               >
                 Back to Login

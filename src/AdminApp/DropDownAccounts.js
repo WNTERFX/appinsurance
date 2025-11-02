@@ -22,7 +22,7 @@ export default function ProfileDropdown({ open, onClose, onDarkMode }) {
   async function handleLogout() {
     const error = await logoutUser();
     if (!error) {
-      navigate("/appinsurance"); // redirect after logout
+      navigate("/"); // redirect after logout
     } else {
       console.error("Logout failed:", error.message);
     }
