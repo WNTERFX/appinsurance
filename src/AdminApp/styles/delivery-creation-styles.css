@@ -28,6 +28,10 @@
   flex-direction: column;
 }
 
+.form-group-delivery-creation.grid-span-3 {
+  grid-column: span 3;
+}
+
 .form-group-delivery-creation label{
   margin-bottom: 6px;
   font-size: 14px;

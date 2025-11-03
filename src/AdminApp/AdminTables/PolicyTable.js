@@ -707,7 +707,7 @@ export default function PolicyTable() {
                       </td>
                       <td className="policy-table-actions">
                         <button
-                          disabled={isVoided || isCancelled}
+                          disabled={isVoided || isCancelled || policy.policy_is_active}
                           onClick={(e) => {
                             e.stopPropagation();
                             const client = policy.clients_Table;
@@ -726,6 +726,7 @@ export default function PolicyTable() {
                             setShowInceptionModal(true);
                           }}
                           title={
+                            policy.policy_is_active ? "Cannot set inception for an active policy":
                             isVoided ? "Cannot set inception for voided policy" :
                             isCancelled ? "Cannot set inception for cancelled policy" : ""
                           }

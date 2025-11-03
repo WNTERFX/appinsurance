@@ -183,7 +183,7 @@ export default function NewPolicyController() {
   useEffect(() => {
     setOriginalVehicleCost(vehicleCost);
     setCurrentVehicleCost(vehicleValue);
-    setClaimableAmount(vehicleValue);
+    setClaimableAmount(vehicleValue); // Claimable amount is set to current vehicle value
     setTotalVehicleValueRate(vehicleValueRate);
     setTotalPremiumCost(totalWithCommission);
     setCommissionValue(computedCommissionValue);
@@ -211,6 +211,7 @@ export default function NewPolicyController() {
     console.log("Commission fee (%):", commissionFeeToSave);
     console.log("Commission value (₱):", computedCommissionValue);
     console.log("Total Premium:", totalWithCommission);
+    console.log("Claimable Amount:", claimableAmount);
     
     const policyData = {
       policy_type: "Comprehensive",
@@ -242,12 +243,13 @@ export default function NewPolicyController() {
     const newVehicleResult = await NewVehicleCreation(vehicleData);
     if (!newVehicleResult.success) return alert("Error saving vehicle details");
 
-    // ✅ Include basic_Premium in computation data
+    // ✅ Include basic_Premium and claimable amount in computation data
     const computationData = {
       policy_id: policyId,
       original_Value: orginalVehicleCost,
       current_Value: currentVehicleValueCost,
-      basic_Premium: basicPremiumValue, // ✅ NEW: Store basic premium
+      policy_claim_amount: claimableAmount, // ✅ Store claimable amount
+      basic_Premium: basicPremiumValue, // ✅ Store basic premium
       total_Premium: totalWithCommission,
       vehicle_Rate_Value: totalVehicleValueRate,
       aon_Cost: actOfNatureCost,
