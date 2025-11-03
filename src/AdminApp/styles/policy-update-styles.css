@@ -322,3 +322,19 @@ color: #000;
 .renew-btn-policy-edit:hover {
   background: #059669;
 }
+
+
+.tooltip-icon {
+  cursor: help;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  color: #666;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  user-select: none; /* Prevents selecting the '?' text */
+}

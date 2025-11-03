@@ -276,7 +276,18 @@ export default function PolicyNewClient({
             </div>
 
             <div className={`form-group ${errors.selectedPaymentType ? 'error' : ''}`}>
-              <label>Payment Type <span style={{ color: 'red' }}>*</span></label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                Payment Type 
+                <span style={{ color: 'red' }}>*</span>
+                 <span 
+                      title="This is to set the default value of the payment type, this can be changed later in the payment generation."
+                      className="tooltip-icon" 
+                    >
+                      ?
+                </span>
+                </label>
+                  
+               
               <select
                 value={selectedPaymentType}
                 onChange={(e) => {

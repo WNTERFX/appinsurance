@@ -10,7 +10,7 @@ export default function SessionMonitor({ session }) {
         const { data: { session: currentSession } } = await db.auth.getSession();
         
         if (!currentSession) {
-          console.warn("No active Supabase session");
+          console.warn("No active Account session");
           return;
         }
 

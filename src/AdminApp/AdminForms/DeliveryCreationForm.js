@@ -27,8 +27,8 @@ export default function DeliveryCreationForm({
         <h2>Delivery Creation Form</h2>
 
         <div className="form-grid-delivery-creation">
-          {/* Policy Selection */}
-          <div className="form-group-delivery-creation">
+          {/* Policy Selection (Now spans 3 columns) */}
+          <div className="form-group-delivery-creation grid-span-3">
             <label>Policy *</label>
             <select
               name="policyId"
@@ -84,8 +84,8 @@ export default function DeliveryCreationForm({
             />
           </div>
 
-          {/* Remarks */}
-          <div className="form-group-delivery-creation">
+          {/* Remarks (Now spans 3 columns) */}
+          <div className="form-group-delivery-creation grid-span-3">
             <label>Remarks</label>
             <textarea
               name="remarks"

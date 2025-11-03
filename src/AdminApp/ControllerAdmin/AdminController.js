@@ -1,4 +1,3 @@
-// AdminController.js
 import { useState, useEffect } from "react";
 import {
   fetchAllCalculations,
@@ -65,23 +64,23 @@ export const useAdminController = () => {
 
   //CronJobs
   const [cronJobs, setCronJobs] = useState([]);
-const [isCreatingCron, setIsCreatingCron] = useState(false);
-const [loadingCron, setLoadingCron] = useState(false);
-const [cronApiKey, setCronApiKey] = useState("");
-const [cronApiKeyInput, setCronApiKeyInput] = useState("");
+  const [isCreatingCron, setIsCreatingCron] = useState(false);
+  const [loadingCron, setLoadingCron] = useState(false);
+  const [cronApiKey, setCronApiKey] = useState("");
+  const [cronApiKeyInput, setCronApiKeyInput] = useState("");
 
-// Cron form fields
-const [cronUrl, setCronUrl] = useState("");
-const [cronTitle, setCronTitle] = useState("");
-const [cronEnabled, setCronEnabled] = useState(true);
-const [cronTimezone, setCronTimezone] = useState("UTC");
-const [cronMinutes, setCronMinutes] = useState("0");
-const [cronHours, setCronHours] = useState("-1");
-const [cronMdays, setCronMdays] = useState("-1");
-const [cronMonths, setCronMonths] = useState("-1");
-const [cronWdays, setCronWdays] = useState("-1");
+  // Cron form fields
+  const [cronUrl, setCronUrl] = useState("");
+  const [cronTitle, setCronTitle] = useState("");
+  const [cronEnabled, setCronEnabled] = useState(true);
+  const [cronTimezone, setCronTimezone] = useState("UTC");
+  const [cronMinutes, setCronMinutes] = useState("0");
+  const [cronHours, setCronHours] = useState("-1");
+  const [cronMdays, setCronMdays] = useState("-1");
+  const [cronMonths, setCronMonths] = useState("-1");
+  const [cronWdays, setCronWdays] = useState("-1");
 
-const CRON_ENDPOINT = "https://api.cron-job.org";
+  const CRON_ENDPOINT = "https://api.cron-job.org";
 
   // Fetch all calculations
   const loadCalculations = async () => {
@@ -354,70 +353,70 @@ const CRON_ENDPOINT = "https://api.cron-job.org";
       await deleteInsurancePartner(id);
       showMessage("Insurance partner deleted successfully", "success");
       loadPartners();
-    } catch (error) {
+    } catch (error) { // ✅ SYNTAX FIX HERE
       console.error("Error deleting insurance partner:", error);
       showMessage("Error deleting insurance partner", "error");
     }
   };
 
-    const parseCronValue = (value) => {
+  const parseCronValue = (value) => {
     if (!value || value.trim() === "-1") return [-1];
     return value.split(",").map(v => parseInt(v.trim())).filter(v => !isNaN(v));
-    };
+  };
 
-    // Save API Key
-    const saveCronApiKey = () => {
+  // Save API Key
+  const saveCronApiKey = () => {
     if (!cronApiKeyInput.trim()) {
-        showMessage("Please enter an API key", "error");
-        return;
+      showMessage("Please enter an API key", "error");
+      return;
     }
     setCronApiKey(cronApiKeyInput.trim());
     showMessage("API key saved successfully", "success");
     loadCronJobs();
-    };
+  };
 
-    // Clear API Key
-    const clearCronApiKey = () => {
+  // Clear API Key
+  const clearCronApiKey = () => {
     if (!window.confirm("Are you sure you want to clear the API key?")) return;
     setCronApiKey("");
     setCronApiKeyInput("");
     setCronJobs([]);
     showMessage("API key cleared", "success");
-    };
+  };
 
-    // Fetch all cron jobs
-    const loadCronJobs = async () => {
+  // Fetch all cron jobs
+  const loadCronJobs = async () => {
     if (!cronApiKey) {
-        showMessage("Please configure your API key first", "error");
-        return;
+      showMessage("Please configure your API key first", "error");
+      return;
     }
 
     setLoadingCron(true);
     try {
-        const response = await fetch(`${CRON_ENDPOINT}/jobs`, {
+      const response = await fetch(`${CRON_ENDPOINT}/jobs`, {
         headers: {
-            'Authorization': `Bearer ${cronApiKey}`,
-            'Content-Type': 'application/json'
+          'Authorization': `Bearer ${cronApiKey}`,
+          'Content-Type': 'application/json'
         }
-        });
+      });
 
-        if (!response.ok) {
+      if (!response.ok) {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
-        }
+      }
 
-        const data = await response.json();
-        setCronJobs(data.jobs || []);
-        showMessage("Cron jobs loaded successfully", "success");
+      const data = await response.json();
+      setCronJobs(data.jobs || []);
+      showMessage("Cron jobs loaded successfully", "success");
     } catch (error) {
-        console.error("Error fetching cron jobs:", error);
-        showMessage(error.message || "Error fetching cron jobs", "error");
+      console.error("Error fetching cron jobs:", error);
+      showMessage(error.message || "Error fetching cron jobs", "error");
     } finally {
-        setLoadingCron(false);
+      setLoadingCron(false);
     }
-    };
+  };
 
-    // Reset cron form
-    const resetCronForm = () => {
+  // Reset cron form
+  const resetCronForm = () => {
     setCronUrl("");
     setCronTitle("");
     setCronEnabled(true);
@@ -428,130 +427,162 @@ const CRON_ENDPOINT = "https://api.cron-job.org";
     setCronMonths("-1");
     setCronWdays("-1");
     setIsCreatingCron(false);
-    };
+  };
 
-    // Show create form
-    const showCreateCronForm = () => {
+  // Show create form
+  const showCreateCronForm = () => {
     resetCronForm();
     setIsCreatingCron(true);
-    };
+  };
 
-    // Handle cron job submit
-    const handleCronSubmit = async (e) => {
+  // Handle cron job submit
+  const handleCronSubmit = async (e) => {
     e.preventDefault();
     
     if (!cronUrl.trim()) {
-        showMessage("Please enter a job URL", "error");
-        return;
+      showMessage("Please enter a job URL", "error");
+      return;
     }
 
     setLoadingCron(true);
 
     const jobData = {
-        job: {
+      job: {
         url: cronUrl.trim(),
         enabled: cronEnabled,
         title: cronTitle.trim() || undefined,
         saveResponses: true,
         schedule: {
-            timezone: cronTimezone,
-            expiresAt: 0,
-            hours: parseCronValue(cronHours),
-            mdays: parseCronValue(cronMdays),
-            minutes: parseCronValue(cronMinutes),
-            months: parseCronValue(cronMonths),
-            wdays: parseCronValue(cronWdays)
+          timezone: cronTimezone,
+          expiresAt: 0,
+          hours: parseCronValue(cronHours),
+          mdays: parseCronValue(cronMdays),
+          minutes: parseCronValue(cronMinutes),
+          months: parseCronValue(cronMonths),
+          wdays: parseCronValue(cronWdays)
         }
-        }
+      }
     };
 
     try {
-        const response = await fetch(`${CRON_ENDPOINT}/jobs`, {
+      const response = await fetch(`${CRON_ENDPOINT}/jobs`, {
         method: 'PUT',
         headers: {
-            'Authorization': `Bearer ${cronApiKey}`,
-            'Content-Type': 'application/json'
+          'Authorization': `Bearer ${cronApiKey}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(jobData)
-        });
+      });
 
-        if (!response.ok) {
+      if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
-        }
+      }
 
-        showMessage("Cron job created successfully", "success");
-        resetCronForm();
-        await loadCronJobs();
+      showMessage("Cron job created successfully", "success");
+      resetCronForm();
+      await loadCronJobs();
     } catch (error) {
-        console.error("Error creating cron job:", error);
-        showMessage(error.message || "Error creating cron job", "error");
+      console.error("Error creating cron job:", error);
+      showMessage(error.message || "Error creating cron job", "error");
     } finally {
-        setLoadingCron(false);
+      setLoadingCron(false);
     }
-    };
+  };
 
-    // Toggle cron job enabled/disabled
-    const toggleCronJob = async (jobId, currentState) => {
+  // Toggle cron job enabled/disabled
+  const toggleCronJob = async (jobId, currentState) => {
     setLoadingCron(true);
 
     try {
-        const response = await fetch(`${CRON_ENDPOINT}/jobs/${jobId}`, {
+      const response = await fetch(`${CRON_ENDPOINT}/jobs/${jobId}`, {
         method: 'PATCH',
         headers: {
-            'Authorization': `Bearer ${cronApiKey}`,
-            'Content-Type': 'application/json'
+          'Authorization': `Bearer ${cronApiKey}`,
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            job: {
+          job: {
             enabled: !currentState
-            }
+          }
         })
-        });
+      });
 
-        if (!response.ok) {
+      if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
-        }
+      }
 
-        showMessage(`Cron job ${!currentState ? 'enabled' : 'disabled'} successfully`, "success");
-        await loadCronJobs();
+      showMessage(`Cron job ${!currentState ? 'enabled' : 'disabled'} successfully`, "success");
+      await loadCronJobs();
     } catch (error) {
-        console.error("Error toggling cron job:", error);
-        showMessage(error.message || "Error toggling cron job", "error");
+      console.error("Error toggling cron job:", error);
+      showMessage(error.message || "Error toggling cron job", "error");
     } finally {
-        setLoadingCron(false);
+      setLoadingCron(false);
     }
-    };
+  };
 
-    // Delete cron job
-    const handleDeleteCron = async (jobId) => {
+  // Delete cron job
+  const handleDeleteCron = async (jobId) => {
     if (!window.confirm("Are you sure you want to delete this cron job?")) {
-        return;
+      return;
     }
 
     setLoadingCron(true);
 
     try {
-        const response = await fetch(`${CRON_ENDPOINT}/jobs/${jobId}`, {
+      const response = await fetch(`${CRON_ENDPOINT}/jobs/${jobId}`, {
         method: 'DELETE',
         headers: {
-            'Authorization': `Bearer ${cronApiKey}`,
-            'Content-Type': 'application/json'
+          'Authorization': `Bearer ${cronApiKey}`,
+          'Content-Type': 'application/json'
         }
-        });
+      });
 
-        if (!response.ok) {
+      if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
-        }
+      }
 
-        showMessage("Cron job deleted successfully", "success");
-        await loadCronJobs();
+      showMessage("Cron job deleted successfully", "success");
+      await loadCronJobs();
     } catch (error) {
-        console.error("Error deleting cron job:", error);
-        showMessage(error.message || "Error deleting cron job", "error");
+      console.error("Error deleting cron job:", error);
+      showMessage(error.message || "Error deleting cron job", "error");
     } finally {
-        setLoadingCron(false);
+      setLoadingCron(false);
     }
-    };
+  };
+
+  // ✅ NEW: Added the cron test function
+  const handleTestCron = async (jobId) => {
+    setLoadingCron(true);
+    console.log(`Attempting to test job: ${jobId}`);
+
+    try {
+      const response = await fetch(`${CRON_ENDPOINT}/jobs/${jobId}/run`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${cronApiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
+        throw new Error(errorData.message || `API request failed with status ${response.status}`);
+      }
+
+      const result = await response.json(); 
+      console.log("Test run successfully triggered:", result);
+      
+      alert(`Successfully triggered test run for job ${jobId}.`);
+
+    } catch (error) {
+      console.error("Failed to test cron job:", error);
+      alert(`Error triggering job: ${error.message}`);
+    } finally {
+      setLoadingCron(false);
+    }
+  };
 
   return {
     // Tab state
@@ -624,7 +655,6 @@ const CRON_ENDPOINT = "https://api.cron-job.org";
     handleEditPartner,
     handleDeletePartner,
 
-
     //Cron Jobs
     cronJobs,
     isCreatingCron,
@@ -658,5 +688,6 @@ const CRON_ENDPOINT = "https://api.cron-job.org";
     resetCronForm,
     toggleCronJob,
     handleDeleteCron,
+    handleTestCron, // ✅ NEW: Added to the return object
   };
 };

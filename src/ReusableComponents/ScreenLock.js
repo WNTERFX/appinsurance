@@ -13,7 +13,7 @@ export default function ScreenLock({ message }) {
 
   const handleClick = () => {
     localStorage.clear();
-    navigate("/appinsurance");
+    navigate("/");
   };
 
   return (
