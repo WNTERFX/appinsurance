@@ -162,7 +162,7 @@ export async function CancelPolicyAndRefund(policyId) {
         // 3️⃣ Check for existing payments
         let { data: paymentsToUse, error: payError } = await db
             .from("payment_Table")
-            .select("id, amount_to_be_paid")
+            .select("id, amount_to_be_paid, is_paid, paid_amount, payment_status")
             .eq("policy_id", policyId)
             .order("payment_date", { ascending: true });
         
@@ -198,7 +198,7 @@ export async function CancelPolicyAndRefund(policyId) {
             const { data: insertedPayments, error: insertError } = await db
                 .from("payment_Table")
                 .insert(paymentRows)
-                .select("id, amount_to_be_paid");
+                .select("id, amount_to_be_paid, is_paid, paid_amount, payment_status");
 
             if (insertError) throw insertError;
             paymentsToUse = insertedPayments;
@@ -209,43 +209,85 @@ export async function CancelPolicyAndRefund(policyId) {
             throw new Error("Failed to generate or retrieve payments necessary for cancellation.");
         }
 
-        // 5️⃣ REFUND the first payment (mark as refunded, not just paid)
-        const firstPayment = paymentsToUse[0];
-        const cancellationReason = "Policy cancelled by user/admin. First payment refunded.";
-        
-        const { error: refundError } = await db
-            .from("payment_Table")
-            .update({
-                is_paid: false,                              // NOT paid, it's refunded
-                paid_amount: 0,                              // Reset paid amount since it's refunded
-                is_refunded: true,                           // Mark as refunded
-                refund_amount: firstPayment.amount_to_be_paid, // Full refund amount
-                refund_date: new Date().toISOString(),
-                refund_reason: cancellationReason,
-                payment_status: "refunded",                  // Status: refunded
-            })
-            .eq("id", firstPayment.id);
-            
-        if (refundError) throw refundError;
-        console.log(`✅ Refunded first payment (ID: ${firstPayment.id})`);
+        // 5️⃣ Helper function to determine payment status
+        function getPaymentStatus(payment) {
+            if (!payment) return "not-paid";
+            if (payment.is_refunded || payment.payment_status === "refunded") return "refunded";
+            if (payment.payment_status === "cancelled") return "cancelled";
+            if (payment.payment_status === "voided") return "voided";
+            const paid = parseFloat(payment.paid_amount || 0);
+            const due = parseFloat(payment.amount_to_be_paid || 0);
+            if (paid <= 0) return "not-paid";
+            if (paid < due) return "partially-paid";
+            if (paid >= due) return "fully-paid";
+            return "not-paid";
+        }
 
-        // 6️⃣ CANCEL (not archive) the remaining payments
-        const remainingIds = paymentsToUse.slice(1).map((p) => p.id);
-        if (remainingIds.length > 0) {
+        // 6️⃣ Categorize payments by status
+        const paymentsWithRefund = []; // fully-paid or partially-paid
+        const paymentsToCancel = [];   // not-paid
+        
+        paymentsToUse.forEach(payment => {
+            const status = getPaymentStatus(payment);
+            
+            if (status === "fully-paid" || status === "partially-paid") {
+                paymentsWithRefund.push(payment);
+            } else if (status === "not-paid") {
+                paymentsToCancel.push(payment);
+            }
+            // Skip already refunded, cancelled, or voided payments
+        });
+
+        // 7️⃣ CHECK: If no payments with money to refund exist, throw error
+        if (paymentsWithRefund.length === 0) {
+            throw new Error("Cannot cancel policy: No paid or partially paid payments found to refund. Client hasn't made any payments yet.");
+        }
+
+        console.log(`Found ${paymentsWithRefund.length} payment(s) with funds to refund.`);
+
+        // 8️⃣ REFUND ALL paid/partially-paid payments
+        const cancellationReason = "Policy cancelled by user/admin. Payment refunded.";
+        const refundDate = new Date().toISOString();
+        
+        // Refund each payment individually to handle the refund_amount correctly
+        for (const payment of paymentsWithRefund) {
+            const refundAmount = parseFloat(payment.paid_amount || 0);
+            
+            const { error: refundError } = await db
+                .from("payment_Table")
+                .update({
+                    is_paid: false,                    // NOT paid, it's refunded
+                    is_refunded: true,                 // Mark as refunded
+                    refund_amount: refundAmount,       // Refund the exact amount that was paid
+                    paid_amount: 0,                    // Reset paid amount since it's refunded
+                    refund_date: refundDate,
+                    refund_reason: cancellationReason,
+                    payment_status: "refunded",        // Status: refunded
+                })
+                .eq("id", payment.id);
+                
+            if (refundError) throw refundError;
+        }
+        
+        console.log(`✅ Refunded ${paymentsWithRefund.length} payment(s).`);
+
+        // 9️⃣ CANCEL the unpaid/pending payments
+        if (paymentsToCancel.length > 0) {
+            const unpaidPaymentIds = paymentsToCancel.map(p => p.id);
+            
             const { error: cancelError } = await db
                 .from("payment_Table")
                 .update({
-                    payment_status: "cancelled",             // Status: cancelled
-                    is_archive: false,                       // DO NOT archive
-                    // archival_date is not set
+                    payment_status: "cancelled",   // Status: cancelled
+                    is_archive: false,             // DO NOT archive
                 })
-                .in("id", remainingIds);
+                .in("id", unpaidPaymentIds);
                 
             if (cancelError) throw cancelError;
-            console.log(`✅ Cancelled ${remainingIds.length} remaining payments.`);
+            console.log(`✅ Cancelled ${paymentsToCancel.length} unpaid payment(s).`);
         }
 
-        // 7️⃣ Cancel the policy (Final Step)
+        // 🔟 Cancel the policy (Final Step)
         const { error: policyUpdateError } = await db
             .from("policy_Table")
             .update({
@@ -262,7 +304,7 @@ export async function CancelPolicyAndRefund(policyId) {
         
         return { 
             success: true,
-            message: "Policy cancelled. First payment refunded, remaining payments cancelled."
+            message: `Policy cancelled. ${paymentsWithRefund.length} payment(s) refunded, ${paymentsToCancel.length} payment(s) cancelled.`
         };
     } catch (err) {
         console.error("❌ CancelPolicyAndRefund error:", err);

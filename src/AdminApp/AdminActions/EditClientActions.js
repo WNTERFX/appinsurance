@@ -1,29 +1,47 @@
 import { db } from "../../dbServer";
 
-export async function editClient (clientId, updatePrefix, updateFirst, updateMiddle, updateFamily, updateSuffix, updateAddress, updatePhoneNum, updateEmail) {
-
-    const {data, error} = await db 
+export async function editClient(
+  clientId, 
+  updatePrefix, 
+  updateFirst, 
+  updateMiddle, 
+  updateFamily, 
+  updateSuffix, 
+  updateAddress, 
+  updateBarangay,     
+  updateCity,         
+  updateProvince,     
+  updateRegion,       
+  updatePhoneNum, 
+  updateEmail,
+  updateZipCode // ADDED
+) {
+  const { data, error } = await db 
     .from("clients_Table")
     .update({ 
-      prefix : updatePrefix,
+      prefix: updatePrefix,
       first_Name: updateFirst,
       middle_Name: updateMiddle,
       family_Name: updateFamily,
       suffix: updateSuffix,
       address: updateAddress,
+      barangay_address: updateBarangay,     
+      city_address: updateCity,           
+      province_address: updateProvince,     
+      region_address: updateRegion,       
       phone_Number: updatePhoneNum,
-      email: updateEmail
+      email: updateEmail,
+      zip_code: updateZipCode // ADDED
     })
-    .eq("uid", clientId)
-
+    .eq("uid", clientId);
 
   if (error) {
     console.error("Error updating client:", error.message);
     return [];
   }
+  
   return data;
 }
-
 
 export async function fetchClients() {
   const { data, error } = await db

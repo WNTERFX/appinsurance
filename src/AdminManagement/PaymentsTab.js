@@ -7,9 +7,10 @@ export default function PaymentTypesTab() {
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     payment_type_name: "",
-    months_payment: ""
+    months_payment: "",
   });
   const [message, setMessage] = useState({ text: "", type: "" });
+  const [isSaving, setIsSaving] = useState(false); // Added for disabling save button
 
   useEffect(() => {
     loadPaymentTypes();
@@ -17,10 +18,8 @@ export default function PaymentTypesTab() {
 
   const loadPaymentTypes = async () => {
     try {
-      const { data, error } = await db
-        .from("payment_type")
-        .select("*")
-        .order("months_payment", { ascending: true });
+      // 1. Call the new RPC function
+      const { data, error } = await db.rpc("get_payment_types_with_usage");
 
       if (error) throw error;
       setPaymentTypes(data || []);
@@ -46,7 +45,7 @@ export default function PaymentTypesTab() {
     setIsAdding(false);
     setFormData({
       payment_type_name: paymentType.payment_type_name,
-      months_payment: paymentType.months_payment
+      months_payment: paymentType.months_payment,
     });
   };
 
@@ -58,26 +57,29 @@ export default function PaymentTypesTab() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSaving(true); // Disable button on submit
 
     if (!formData.payment_type_name.trim()) {
       showMessage("Payment type name is required", "error");
+      setIsSaving(false);
       return;
     }
 
     if (!formData.months_payment || formData.months_payment <= 0) {
       showMessage("Months must be greater than 0", "error");
+      setIsSaving(false);
       return;
     }
 
     try {
       if (isAdding) {
         // Add new payment type
-        const { error } = await db
-          .from("payment_type")
-          .insert([{
+        const { error } = await db.from("payment_type").insert([
+          {
             payment_type_name: formData.payment_type_name.trim(),
-            months_payment: parseInt(formData.months_payment)
-          }]);
+            months_payment: parseInt(formData.months_payment),
+          },
+        ]);
 
         if (error) throw error;
         showMessage("Payment type added successfully", "success");
@@ -87,7 +89,7 @@ export default function PaymentTypesTab() {
           .from("payment_type")
           .update({
             payment_type_name: formData.payment_type_name.trim(),
-            months_payment: parseInt(formData.months_payment)
+            months_payment: parseInt(formData.months_payment),
           })
           .eq("id", editingId);
 
@@ -95,11 +97,13 @@ export default function PaymentTypesTab() {
         showMessage("Payment type updated successfully", "success");
       }
 
-      loadPaymentTypes();
+      await loadPaymentTypes(); // Reload data with usage counts
       handleCancel();
     } catch (error) {
       console.error("Error saving payment type:", error);
       showMessage("Error saving payment type: " + error.message, "error");
+    } finally {
+      setIsSaving(false); // Re-enable button
     }
   };
 
@@ -109,14 +113,19 @@ export default function PaymentTypesTab() {
     }
 
     try {
-      const { error } = await db
-        .from("payment_type")
-        .delete()
-        .eq("id", id);
+      const { error } = await db.from("payment_type").delete().eq("id", id);
 
-      if (error) throw error;
-      showMessage("Payment type deleted successfully", "success");
-      loadPaymentTypes();
+      if (error) {
+        // 2. Add specific error handling for foreign key violation
+        if (error.code === "23503") {
+          showMessage("Cannot delete: This type is still in use by payments.", "error");
+        } else {
+          throw error;
+        }
+      } else {
+        showMessage("Payment type deleted successfully", "success");
+        await loadPaymentTypes(); // Reload data
+      }
     } catch (error) {
       console.error("Error deleting payment type:", error);
       showMessage("Error deleting payment type: " + error.message, "error");
@@ -212,21 +221,24 @@ export default function PaymentTypesTab() {
             <div style={{ display: "flex", gap: "10px" }}>
               <button
                 type="submit"
+                disabled={isSaving}
                 style={{
                   padding: "10px 20px",
                   background: "#007bff",
                   color: "white",
                   border: "none",
                   borderRadius: "4px",
-                  cursor: "pointer",
-                  fontWeight: "bold"
+                  cursor: isSaving ? "not-allowed" : "pointer",
+                  fontWeight: "bold",
+                  opacity: isSaving ? 0.7 : 1
                 }}
               >
-                {isAdding ? "Add" : "Update"}
+                {isSaving ? (isAdding ? "Adding..." : "Updating...") : (isAdding ? "Add" : "Update")}
               </button>
               <button
                 type="button"
                 onClick={handleCancel}
+                disabled={isSaving}
                 style={{
                   padding: "10px 20px",
                   background: "#6c757d",
@@ -291,16 +303,24 @@ export default function PaymentTypesTab() {
                     >
                       Edit
                     </button>
+                    {/* 3. Add disabled prop, title, and conditional styles */}
                     <button
                       onClick={() => handleDelete(paymentType.id)}
+                      disabled={paymentType.usage_count > 0}
+                      title={
+                        paymentType.usage_count > 0
+                          ? "Cannot delete: This type is in use."
+                          : "Delete payment type"
+                      }
                       style={{
-                        padding: "6px 12px",
+                        padding: "6px 1F2px",
                         background: "#dc3545",
                         color: "white",
                         border: "none",
                         borderRadius: "4px",
-                        cursor: "pointer",
-                        fontWeight: "bold"
+                        fontWeight: "bold",
+                        cursor: paymentType.usage_count > 0 ? "not-allowed" : "pointer",
+                        opacity: paymentType.usage_count > 0 ? 0.5 : 1
                       }}
                     >
                       Delete

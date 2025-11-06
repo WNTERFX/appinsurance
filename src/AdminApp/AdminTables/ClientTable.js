@@ -80,12 +80,12 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
   };
 
   const handleRefreshOrViewAll = () => {
-    setSearchTerm("");        
+    setSearchTerm("");       
     setCurrentPage(1);       
     if (agentId) {
       onViewAllClients();    
     } else {
-      loadClientsData();      
+      loadClientsData();       
     }
   };
 
@@ -95,6 +95,41 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
       return selectedAgent ? `(${selectedAgent.clientCount})` : `(${filteredClients.length})`;
     }
     return `(${allClientsCount})`;
+  };
+
+  // MODIFIED: Helper function to format address with Region and Zip Code
+  const formatAddress = (client) => {
+    const parts = [];
+    
+    // Part 1: Street Address
+    if (client.address) {
+      parts.push(client.address);
+    }
+    
+    // Part 2: Barangay, City
+    const line2Parts = [];
+    if (client.barangay_address) line2Parts.push(client.barangay_address);
+    if (client.city_address) line2Parts.push(client.city_address);
+    if (line2Parts.length > 0) {
+      parts.push(line2Parts.join(", "));
+    }
+    
+    // Part 3: Province, Region, Zip Code
+    const line3Parts = [];
+    if (client.province_address) {
+      line3Parts.push(client.province_address);
+    }
+    if (client.region_address) { // ADDED
+      line3Parts.push(client.region_address);
+    }
+    if (client.zip_code) { // ADDED
+      line3Parts.push(client.zip_code);
+    }
+    if (line3Parts.length > 0) {
+      parts.push(line3Parts.join(", "));
+    }
+    
+    return parts.length > 0 ? parts.join(", ") : "N/A";
   };
 
   const indexOfLast = currentPage * rowsPerPage;
@@ -158,7 +193,7 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
                   <th>Client ID</th>
                   <th>Client Name</th>
                   <th>Agent</th>
-                  <th>Address</th>
+                  <th className="address-col">Address</th>
                   <th>Phone Number</th>
                   <th>Email Address</th>
                   <th>Action</th>
@@ -185,7 +220,8 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
                           .join(" ")}
                       </td>
                       <td>{client.employee?.personnel_Name || "Unknown"}</td>
-                      <td>{client.address}</td>
+                      {/* MODIFIED: This now uses the updated function */}
+                      <td>{formatAddress(client)}</td>
                       <td>{client.phone_Number}</td>
                       <td>{client.email}</td>
                       <td className="client-table-actions">

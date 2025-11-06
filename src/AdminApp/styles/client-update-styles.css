@@ -1,16 +1,29 @@
+/* === Base Font === */
+.form-card-client-update,
+.form-group-client-update input,
+.form-group-client-update select, /* ADDED select */
+.client-update-controls button {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
 /* === Card === */
 .form-card-client-update {
   background-color: #ffffff;
   width: 100%;
   max-width: 1100px;
+  max-height: 85vh; /* ADDED: Limit height to 85% of viewport */
+  overflow-y: auto; /* ADDED: Make it scrollable */
   border-radius: 25px;
   padding: 40px 50px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  margin: 40px auto;
 }
 
 .form-card-client-update h2 {
   font-size: 26px;
   font-weight: 600;
+  margin-top: 0;
   margin-bottom: 35px;
   color: #000;
 }
@@ -18,12 +31,12 @@
 /* === Grid === */
 .form-grid-client-update {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 columns */
-  gap: 22px 24px; /* row-gap column-gap */
+  grid-template-columns: repeat(2, 1fr); /* MODIFIED: Changed from 3 to 2 columns like creation form */
+  gap: 22px 24px;
 }
 
-.form-left-column-client-update{
-  display: contents; /* Let child groups fill the grid */
+.form-left-column-client-update {
+  display: contents;
 }
 
 .form-group-client-update {
@@ -38,26 +51,77 @@
   color: #000;
 }
 
-/* === Inputs === */
-.form-group-client-update input {
+/* Add subtle text before original value */
+.form-group-client-update input.original-value::before {
+  content: "Current: ";
+  color: #999;
+  font-size: 11px;
+}
+
+/* === Inputs & Selects === */
+.form-group-client-update input,
+.form-group-client-update select { /* ADDED select */
   padding: 14px;
-  border: 1px solid #d0d0d0;      
-  border-radius: 12px;             
+  border: 1px solid #d0d0d0;
+  border-radius: 12px;
   background-color: #ffffff;
   font-size: 15px;
   outline: none;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.form-group-client-update input:focus {
-  border-color: #000;        
-
+/* Style for the original, non-editable data */
+.form-group-client-update input.original-value {
+  background-color: #f9f9f9;
+  color: #666;
+  border-color: #e5e5e5;
+  font-size: 13px;
+  padding: 10px 14px;
+  margin-bottom: 6px;
+  cursor: not-allowed;
 }
 
-/* === Wide Fields (Home Address + Email) === */
+/* Editable input (second input in each group) */
+.form-group-client-update input:not(.original-value),
+.form-group-client-update select { /* ADDED select */
+  border: 2px solid #d0d0d0;
+}
+
+/* --- ADDED: Select-specific styles --- */
+.form-group-client-update select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23333' d='M1.41 0L6 4.59L10.59 0L12 1.41l-6 6l-6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+}
+
+.form-group-client-update select:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+/* --- END ADDED --- */
+
+.form-group-client-update input:not(.original-value):focus,
+.form-group-client-update select:focus { /* ADDED select */
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* === Error Message Styling === */
+.form-error-message {
+  color: #d93025;
+  font-size: 13px;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+/* MODIFIED: Email (7th) and Street Address (8th) span full width */
 .form-group-client-update:nth-child(7),
 .form-group-client-update:nth-child(8) {
-  grid-column: span 3; /* full width row */
+  grid-column: span 2;
 }
 
 /* === Controls === */
@@ -68,78 +132,216 @@
   margin-top: 40px;
 }
 
-
-.client-update-controls .cancel-btn-client-update{
-  background-color: #F86B6B;      
+.client-update-controls .cancel-btn-client-update {
+  background-color: #f86b6b;
   color: white;
-  padding: 12px 0;               
-  width: 160px;                 
+  padding: 12px 0;
+  width: 160px;
   text-align: center;
   border: none;
   border-radius: 25px;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
-.client-update-controls .submit-btn-client-update{
-  background-color: #007BFF;      
+.client-update-controls .submit-btn-client-update {
+  background-color: #007bff;
   color: white;
-  padding: 12px 0;               
-  width: 160px;                 
+  padding: 12px 0;
+  width: 160px;
   text-align: center;
   border: none;
   border-radius: 25px;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
+/* === Disabled Button State === */
+.submit-btn-client-update:disabled,
+.cancel-btn-client-update:disabled {
+  background-color: #c0c0c0;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
 
 /* === Hover Effect === */
-.submit-btn-client-update:hover {
-  transform: scale(1.05);               /* slight grow */
-  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-  background-color: #0056B3;
-  color: white;
+.submit-btn-client-update:not(:disabled):hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  background-color: #0056b3;
 }
 
-.cancel-btn-client-update:hover{
-  transform: scale(1.05);               /* slight grow */
-  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-  background-color: #F25353;
-  color: white;
+.cancel-btn-client-update:not(:disabled):hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  background-color: #f25353;
 }
 
 /* === Active (Click) Effect === */
-.cancel-btn-client-update:active,
-.submit-btn-client-update:active {
-  transform: scale(0.97);               /* slight press */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2) inset;
-
+.cancel-btn-client-update:not(:disabled):active,
+.submit-btn-client-update:not(:disabled):active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) inset;
 }
 
 /* === Responsive Tweaks === */
+@media (max-width: 1920px) {
+  .form-card-client-update {
+    max-width: 900px;
+    max-height: 85vh; /* ADDED: Maintain scroll on smaller screens */
+    padding: 25px 35px;
+  }
+  
+  .form-card-client-update h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+  
+  .form-grid-client-update {
+    gap: 16px 20px;
+  }
+  
+  .form-group-client-update label {
+    font-size: 13px;
+    margin-bottom: 5px;
+  }
+  
+  .form-group-client-update input,
+  .form-group-client-update select { /* ADDED select */
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  
+  /* ADDED: Preserve select padding */
+  .form-group-client-update select {
+    padding-right: 40px;
+  }
+
+  .client-update-controls {
+    margin-top: 25px;
+  }
+  
+  .client-update-controls .cancel-btn-client-update,
+  .client-update-controls .submit-btn-client-update {
+    width: 140px;
+    padding: 10px 0;
+    font-size: 15px;
+  }
+}
+
+/* === Laptops 1080p (15.6" screens) === */
+@media (max-width: 1440px) {
+  .form-card-client-update {
+    max-width: 800px;
+    max-height: 85vh; /* ADDED: Maintain scroll on laptops */
+    padding: 20px 30px;
+    margin: 20px auto;
+  }
+  
+  .form-card-client-update h2 {
+    font-size: 20px;
+    margin-bottom: 18px;
+  }
+  
+  .form-grid-client-update {
+    gap: 14px 18px;
+  }
+  
+  .form-group-client-update label {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  
+  .form-group-client-update input,
+  .form-group-client-update select { /* ADDED select */
+    padding: 9px 11px;
+    font-size: 13px;
+  }
+  
+  /* ADDED: Preserve select padding */
+  .form-group-client-update select {
+    padding-right: 40px;
+  }
+  
+  .client-update-controls {
+    margin-top: 20px;
+  }
+  
+  .client-update-controls .cancel-btn-client-update,
+  .client-update-controls .submit-btn-client-update {
+    width: 130px;
+    padding: 9px 0;
+    font-size: 14px;
+  }
+}
+
 @media (max-width: 1024px) {
   .form-grid-client-update {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
+  }
+  /* FIX: Reset full-width fields to single column */
+  .form-group-client-update:nth-child(7),
+  .form-group-client-update:nth-child(8) {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 900px) {
+  .form-card-client-update {
+    margin: 20px 0px 20px 0px;
+    width: 95%;
+  }
+  
+  .form-grid-client-update {
+    grid-template-columns: 1fr;
+  }
+
+  /* FIX: Reset full-width fields to single column */
+  .form-group-client-update:nth-child(7),
+  .form-group-client-update:nth-child(8) {
+    grid-column: span 1;
   }
 }
 
 @media (max-width: 700px) {
+  .form-card-client-update {
+    padding: 20px 25px;
+  }
+  
   .form-grid-client-update {
     grid-template-columns: 1fr;
   }
+  
+  /* FIX: Reset full-width fields to single column */
+  .form-group-client-update:nth-child(7),
+  .form-group-client-update:nth-child(8) {
+    grid-column: span 1;
+  }
+  
+  .client-update-controls {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .client-update-controls .cancel-btn-client-update,
+  .client-update-controls .submit-btn-client-update {
+    width: 100%;
+  }
 }
 
-
+/* === Modal Styles === */
 .client-creation-modal-overlay-moderator {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.45);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -147,12 +349,8 @@
 }
 
 .client-creation-modal-content-moderator {
-
-  
   padding: 0;
   width: 100%;
   max-width: 1100px;
   border-radius: 25px;
-
-  
 }

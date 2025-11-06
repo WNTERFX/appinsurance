@@ -5,23 +5,53 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { loginFunction } from "./LoginFormActions";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { CustomAlert } from "../ReusableComponents/CustomAlert";
 
 export default function LoginForm({ anotherLoginDetected }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  let navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  
+  
+  
+  
+  // Add alert state
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState("");
+  
+  let navigate = useNavigate();
   
   const togglePassword = () => {
     setPasswordVisible(!passwordVisible);
   };
   
+  // Helper function to show alerts
+  const showAlert = (message, type) => {
+    setAlertMessage(message);
+    setAlertType(type);
+    setTimeout(() => {
+      setAlertMessage("");
+      setAlertType("");
+    }, 5000);
+  };
+  
+  const closeAlert = () => {
+    setAlertMessage("");
+    setAlertType("");
+  };
+
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    
+    // Clear any existing alerts
+    setAlertMessage("");
+    setAlertType("");
+    
     const result = await loginFunction(email, password);
     
     if (!result.success) {
-      alert("Login failed: " + result.error);
+      showAlert("Login failed: " + result.error, "error");
       return;
     }
     
@@ -30,14 +60,18 @@ export default function LoginForm({ anotherLoginDetected }) {
     localStorage.setItem("session_token", result.accessToken);
     localStorage.setItem("is_admin", result.isAdmin ? "true" : "false");
     
-    // ✅ Navigate after saving session
-    if (result.isAdmin) {
-      navigate("/appinsurance/main-app/dashboard");
-    } else {
-      navigate("/appinsurance/main-app/dashboard");
-    }
+    showAlert("Login successful!", "success");
+    
+    // ✅ Navigate after saving session (with small delay to show success message)
+    setTimeout(() => {
+      if (result.isAdmin) {
+        navigate("/appinsurance/main-app/dashboard");
+      } else {
+        navigate("/appinsurance/main-app/dashboard");
+      }
+    }, 1000);
   };
-
+  
   return (
     <div className="login-page">
       <div className="login-box">
@@ -52,7 +86,16 @@ export default function LoginForm({ anotherLoginDetected }) {
             alt="silverstar_insurance_inc_Logo" 
           />
         </div>
-              
+        
+        {/* Add CustomAlert here */}
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            type={alertType} 
+            onClose={closeAlert}
+          />
+        )}
+        
         <form className="login-form" onSubmit={handleLogin}>
           <label>Email Address</label>
           <input

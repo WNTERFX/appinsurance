@@ -117,6 +117,21 @@
   font-size: 0.9rem;
 }
 
+
+.client-table-scroll table .address-col {
+  /* Set a max-width. Adjust as needed. */
+  max-width: 250px; 
+
+  /* This is the magic combo for truncation */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  /* These are good for fallback */
+  word-break: keep-all; 
+  overflow-wrap: normal;
+}
+
 /* Responsive scaling */
 @media (max-width: 1920px) and (min-width: 1366px) {
   .client-table-scroll > table > thead > tr > th,
