@@ -12,7 +12,8 @@ import {
 import {
   addPaymentPenalty,
   calculateDailyPenalty,
-  hasPenaltyForToday
+  hasPenaltyForToday,
+  notifyClientOfPenalty
 } from "../../AdminActions/PaymentPenaltyActions";
 
 /**
@@ -346,11 +347,13 @@ export default function PolicyWithPaymentsController() {
 
   const handlePenaltySave = async () => {
     if (!selectedPaymentForPenalty) return;
+
     try {
+      // --- Step 1: Calculate and add the penalty ---
       const overdueInfo = calculateOverdueInfo(selectedPaymentForPenalty);
       const { penaltyAmount } = await calculateDailyPenalty({
         amount_to_be_paid: selectedPaymentForPenalty.amount_to_be_paid,
-        payment_date: selectedPaymentForPenalty.payment_date
+        payment_date: selectedPaymentForPenalty.payment_date,
       });
       const reason = `${overdueInfo.daysOverdue} day(s) overdue - ${overdueInfo.penaltyPercentage}% penalty (1% per day)`;
 
@@ -361,14 +364,32 @@ export default function PolicyWithPaymentsController() {
         overdueInfo.daysOverdue
       );
 
+      // --- Step 2: Trigger the notification (NEW) ---
+      // We wrap this in a separate try/catch so that a
+      // notification failure doesn't hide the success of adding the penalty.
+      try {
+        console.log(`Attempting to notify client for penalty on payment ${selectedPaymentForPenalty.id}...`);
+        await notifyClientOfPenalty(selectedPaymentForPenalty.id);
+        console.log("Client notification function invoked.");
+      } catch (notifyError) {
+        // Log the error, but don't stop the rest of the flow.
+        // The penalty was added successfully.
+        console.warn("Penalty notification failed to send:", notifyError.message);
+        // Optionally, you could alert this, but it's often better
+        // to just log it for background services.
+        // alert("Penalty added, but client notification failed.");
+      }
+
+      // --- Step 3: Refresh local state and close modal ---
       const policyId = selectedPaymentForPenalty.policy_id;
       const updated = await fetchPaymentSchedule(policyId);
-      setPaymentsByPolicy(prev => ({ ...prev, [policyId]: updated }));
-      setPaymentsMap(prev => ({ ...prev, [policyId]: updated }));
+      setPaymentsByPolicy((prev) => ({ ...prev, [policyId]: updated }));
+      setPaymentsMap((prev) => ({ ...prev, [policyId]: updated }));
 
       alert("Penalty added successfully!");
       setPenaltyModalOpen(false);
       setSelectedPaymentForPenalty(null);
+      
     } catch (err) {
       console.error("Error adding penalty:", err);
       alert("Failed to add penalty. See console for details.");

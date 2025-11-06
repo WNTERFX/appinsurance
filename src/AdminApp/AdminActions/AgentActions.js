@@ -31,7 +31,7 @@ const agentColors = [
       const agentsWithColors = agents.map((agent, index) => ({
         ...agent,
         borderColor: agentColors[index % agentColors.length],
-        role: agent.is_Admin ? "Admin" : "Moderator", 
+        role: agent.is_Admin ? "Admin" : "Sales Agent", 
       }));
 
       return agentsWithColors;

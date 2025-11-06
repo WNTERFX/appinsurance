@@ -61,6 +61,9 @@ export default function PolicyNewClient({
   
   const [errors, setErrors] = useState({});
 
+  const startYear = new Date().getFullYear();
+  const years = Array.from({ length: 50 }, (_, i) => startYear - i)
+
   // Calculate monthly payment based on selected payment type
   const selectedPaymentTypeObj = paymentTypes?.find(pt => pt.id === Number(selectedPaymentType));
   const months = selectedPaymentTypeObj?.months_payment || 0;
@@ -240,17 +243,27 @@ export default function PolicyNewClient({
             </div>          
 
             <div className={`form-group ${errors.yearInput ? 'error' : ''}`}>
-              <label>Vehicle Year <span style={{ color: 'red' }}>*</span></label>
-              <input 
-                type="text" 
-                value={yearInput || ""}
+              <label>
+                Vehicle Year <span style={{ color: 'red' }}>*</span>
+              </label>
+              <select
+                value={yearInput || ''} // yearInput will be 0 if not set, so this becomes ""
                 onChange={(e) => {
-                  setYearInput(Number(e.target.value));
-                  setErrors(prev => ({ ...prev, yearInput: false }));
+                  setYearInput(Number(e.target.value)); // Number("") is 0
+                  setErrors((prev) => ({ ...prev, yearInput: false }));
                 }}
                 style={{ borderColor: errors.yearInput ? 'red' : '' }}
-              />
-              {errors.yearInput && <small style={{ color: 'red' }}>Vehicle Year is required</small>}
+              >
+                <option value="">-- Select Vehicle Year --</option>
+                {years.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+              {errors.yearInput && (
+                <small style={{ color: 'red' }}>Vehicle Year is required</small>
+              )}
             </div>
 
             <div className={`form-group ${errors.selectedPartner ? 'error' : ''}`}>

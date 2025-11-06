@@ -115,9 +115,9 @@ export async function calculateAutomaticPenalty(paymentId) {
     return { shouldAddPenalty: false, shouldVoidPolicy: false, reason: "Payment already marked as paid" };
   }
   
-  const paymentDate = new Date(payment.payment_date);
-  const today = new Date();
-  const daysOverdue = Math.floor((today - paymentDate) / (1000 * 60 * 60 * 24));
+  // === MODIFIED LOGIC ===
+  // Call the daily penalty calculator first to get all info
+  const { daysOverdue, penaltyAmount, penaltyPercentage } = await calculateDailyPenalty(payment);
   
   // No penalty if not overdue yet
   if (daysOverdue <= 0) {
@@ -132,7 +132,7 @@ export async function calculateAutomaticPenalty(paymentId) {
     .from("payment_due_penalties")
     .select("id")
     .eq("payment_id", paymentId)
-    .eq("penalty_date", today.toISOString().split('T')[0])
+    .eq("penalty_date", new Date().toISOString().split('T')[0])
     .maybeSingle();
   
   if (existingPenalty) {
@@ -145,15 +145,14 @@ export async function calculateAutomaticPenalty(paymentId) {
     };
   }
   
-  const penaltyAmount = calculateDailyPenalty(payment.amount_to_be_paid, daysOverdue);
-  
+  // ✅ RETURN THE CORRECTED VALUES
   return {
     shouldAddPenalty: true,
     shouldVoidPolicy,
     penaltyAmount,
     daysOverdue,
     policyId: payment.policy_id,
-    reason: `${daysOverdue} day(s) overdue - ${daysOverdue}% penalty (1% per day)`
+    reason: `${daysOverdue} day(s) overdue - ${penaltyPercentage}% penalty (1% per day)`
   };
 }
 
@@ -202,6 +201,7 @@ export async function applyAutomaticPenalties() {
   const policiesToVoid = new Set();
   
   for (const payment of overduePayments || []) {
+    // This call is now fixed because of the change above
     const calc = await calculateAutomaticPenalty(payment.id);
     
     // Track policies that need to be voided
@@ -211,12 +211,24 @@ export async function applyAutomaticPenalties() {
     
     if (calc.shouldAddPenalty) {
       try {
+        // Step 1: Add the penalty
         const penalty = await addPaymentPenalty(
           payment.id,
           calc.penaltyAmount,
           calc.reason,
           calc.daysOverdue
         );
+
+        // === ✅ ADD NOTIFICATION HERE ===
+        try {
+          console.log(`Notifying client for automatic penalty on payment ${payment.id}`);
+          await notifyClientOfPenalty(payment.id);
+        } catch (notifyErr) {
+          console.warn(`Failed to send penalty notification for payment ${payment.id}:`, notifyErr.message);
+          // Do not block the batch; just log the warning.
+        }
+        // ===============================
+        
         results.push({ 
           success: true, 
           payment_id: payment.id, 
@@ -350,3 +362,29 @@ export function hasPenaltyForToday(payment) {
     return penaltyDate === today;
   });
 }
+
+// invoke notification for penalties applied
+export const notifyClientOfPenalty = async (payment_id) => {
+  if (!payment_id) {
+    throw new Error("Payment ID is required to send notification.");
+  }
+
+  // 'payment_penalty_notify' is the name of your Edge Function
+  const { data, error } = await db.functions.invoke(
+    "payment_penalty_notify",
+    {
+      body: { payment_id: payment_id },
+    }
+  );
+
+  if (error) {
+    console.error("Error invoking penalty notification function:", error);
+    // We throw the error so the UI can be aware, but
+    // this is often handled in a 'fire-and-forget' manner
+    // where we just log the error and don't block the user.
+    throw error;
+  }
+
+  console.log("Penalty notification function response:", data);
+  return data;
+};

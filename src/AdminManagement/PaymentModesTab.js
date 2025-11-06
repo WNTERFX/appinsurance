@@ -15,10 +15,8 @@ export default function PaymentModesTab() {
 
   const loadPaymentModes = async () => {
     try {
-      const { data, error } = await db
-        .from("payment_mode")
-        .select("*")
-        .order("id", { ascending: true });
+      // 1. Call the new RPC function
+      const { data, error } = await db.rpc("get_payment_modes_with_usage");
 
       if (error) throw error;
       setPaymentModes(data || []);
@@ -90,7 +88,7 @@ export default function PaymentModesTab() {
         showMessage("Payment mode updated successfully", "success");
       }
 
-      await loadPaymentModes();
+      await loadPaymentModes(); // Reload data with usage counts
       handleCancel();
     } catch (error) {
       console.error("Error saving payment mode:", error);
@@ -107,9 +105,17 @@ export default function PaymentModesTab() {
 
     try {
       const { error } = await db.from("payment_mode").delete().eq("id", id);
-      if (error) throw error;
-      showMessage("Payment mode deleted successfully", "success");
-      loadPaymentModes();
+      if (error) {
+        // Handle foreign key constraint error specifically if needed
+        if (error.code === "23503") {
+           showMessage("Cannot delete: This mode is still in use by payments.", "error");
+        } else {
+           throw error;
+        }
+      } else {
+        showMessage("Payment mode deleted successfully", "success");
+        loadPaymentModes(); // Reload data
+      }
     } catch (error) {
       console.error("Error deleting payment mode:", error);
       showMessage("Error deleting payment mode: " + error.message, "error");
@@ -262,13 +268,23 @@ export default function PaymentModesTab() {
                 </button>
                 <button
                   onClick={() => handleDelete(mode.id)}
+                  // 2. Add disabled prop based on usage_count
+                  disabled={mode.usage_count > 0}
+                  // 4. Add title for accessibility
+                  title={
+                    mode.usage_count > 0
+                      ? "Cannot delete: This mode is in use."
+                      : "Delete payment mode"
+                  }
                   style={{
                     padding: "5px 10px",
                     background: "#dc3545",
                     color: "white",
                     border: "none",
                     borderRadius: "4px",
-                    cursor: "pointer",
+                    // 3. Update style based on disabled state
+                    cursor: mode.usage_count > 0 ? "not-allowed" : "pointer",
+                    opacity: mode.usage_count > 0 ? 0.5 : 1,
                   }}
                 >
                   Delete
@@ -278,7 +294,7 @@ export default function PaymentModesTab() {
           ))}
           {paymentModes.length === 0 && (
             <tr>
-              <td colSpan="3" style={{ textAlign: "center", padding: "15px" }}>
+              <td colSpan="4" style={{ textAlign: "center", padding: "15px" }}>
                 No payment modes found.
               </td>
             </tr>

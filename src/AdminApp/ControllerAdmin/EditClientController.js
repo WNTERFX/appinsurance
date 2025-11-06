@@ -16,6 +16,11 @@ export default function EditClientController({ client, onClose, onUpdateSuccess 
     family_Name: client?.family_Name || "",
     suffix: client?.suffix || "",
     address: client?.address || "",
+    barangay_address: client?.barangay_address || "",
+    city_address: client?.city_address || "",
+    province_address: client?.province_address || "",
+    region_address: client?.region_address || "",
+    zip_code: client?.zip_code ?? "", // ADDED (use ?? "" to handle null/undefined)
     phone_Number: client?.phone_Number || "",
     email: client?.email || "",
   };
@@ -27,7 +32,7 @@ export default function EditClientController({ client, onClose, onUpdateSuccess 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [`${name}Exists`]: false })); // clear duplicate error when typing
+    setErrors((prev) => ({ ...prev, [`${name}Exists`]: false })); 
   };
 
   const validate = () => {
@@ -35,7 +40,6 @@ export default function EditClientController({ client, onClose, onUpdateSuccess 
 
     if (!formData.first_Name?.trim())
       newErrors.first_Name = "First Name is required";
-
     if (!formData.family_Name?.trim())
       newErrors.family_Name = "Last Name is required";
 
@@ -46,13 +50,21 @@ export default function EditClientController({ client, onClose, onUpdateSuccess 
 
     if (!formData.phone_Number?.trim())
       newErrors.phone_Number = "Phone number is required";
+    // ... (rest of phone validation)
     else if (!/^\d+$/.test(formData.phone_Number))
       newErrors.phone_Number = "Phone number must contain only digits";
     else if (formData.phone_Number.length !== 11)
       newErrors.phone_Number = "Phone number must be exactly 11 digits";
+    else if (!/^09\d{9}$/.test(formData.phone_Number))
+      newErrors.phone_Number = "Phone number must start with '09'";
 
     if (!formData.address?.trim())
-      newErrors.address = "Home Address is required";
+      newErrors.address = "Street Address is required";
+
+    // ADDED: Zip code validation (optional field, but must be 4 digits if present)
+    if (formData.zip_code && !/^\d{4}$/.test(formData.zip_code)) {
+      newErrors.zip_code = "Zip code must be 4 digits, if provided";
+    }
 
     return newErrors;
   };
@@ -67,12 +79,11 @@ export default function EditClientController({ client, onClose, onUpdateSuccess 
 
     let duplicateErrors = {};
 
-    // ✅ Check for duplicates only if value changed
+    // ... (duplicate email/phone checks are unchanged) ...
     if (formData.email !== originalData.email) {
       const emailExists = await checkIfEmailExists(formData.email);
       if (emailExists) duplicateErrors.emailExists = true;
     }
-
     if (formData.phone_Number !== originalData.phone_Number) {
       const phoneExists = await checkIfPhoneExists(formData.phone_Number);
       if (phoneExists) duplicateErrors.phoneExists = true;
@@ -80,10 +91,14 @@ export default function EditClientController({ client, onClose, onUpdateSuccess 
 
     if (Object.keys(duplicateErrors).length > 0) {
       setErrors((prev) => ({ ...prev, ...duplicateErrors }));
-      return; // stop submission if duplicate found
+      return; 
     }
 
+    // ADDED: Coerce zip code to integer or null for DB
+    const zipCodePayload = formData.zip_code ? parseInt(formData.zip_code, 10) : null;
+
     try {
+      // MODIFIED: Updated editClient call
       await editClient(
         formData.uid,
         formData.prefix,
@@ -91,9 +106,14 @@ export default function EditClientController({ client, onClose, onUpdateSuccess 
         formData.middle_Name,
         formData.family_Name,
         formData.suffix,
-        formData.address,
+        formData.address, 
+        formData.barangay_address,
+        formData.city_address,
+        formData.province_address,
+        formData.region_address,
         formData.phone_Number,
-        formData.email
+        formData.email,
+        zipCodePayload // ADDED
       );
 
       alert("Client updated successfully!");

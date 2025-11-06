@@ -298,135 +298,53 @@ export default function PolicyTable() {
     if (!reason || !reason.trim()) return;
 
     const confirmCancel = window.confirm(
-      `Cancel this policy?\n\nThis will:\n- Refund the first payment\n- Cancel all remaining payments\n- Mark the policy as CANCELLED\n\nReason: ${reason}`
+      `Cancel this policy?\n\nThis will:\n- Refund ALL paid/partially-paid payments\n- Cancel all unpaid payments\n- Mark the policy as CANCELLED\n\nReason: ${reason}`
     );
     if (!confirmCancel) return;
 
     try {
-      const { db } = await import("../../dbServer");
+      // Call your CancelPolicyAndRefund function
+      const result = await CancelPolicyAndRefund(policy.id);
 
-      // 1️⃣ Get computation info
-      const computation = policy.policy_Computation_Table?.[0];
-      if (!computation || !computation.total_Premium) {
-        alert("No computation found for this policy.");
-        return;
-      }
-
-      // 2️⃣ Get payment type info (same logic as activation)
-      const paymentType = await fetchPolicyPaymentType(policy.id);
-      if (!paymentType) {
-        alert("No payment type found for this policy. Please edit the policy and select one.");
-        return;
-      }
-
-      const totalPremium = computation.total_Premium;
-      const months = paymentType.months_payment;
-      const paymentTypeId = paymentType.id;
-
-      console.log("=== CANCELLING POLICY ===");
-      console.log("Policy ID:", policy.id);
-      console.log("Payment Type:", paymentType.payment_type_name);
-      console.log("Months:", months);
-      console.log("Total Premium:", totalPremium);
-
-      // 3️⃣ Check if there are existing payments
-      const { data: existingPayments, error: payError } = await db
-        .from("payment_Table")
-        .select("*")
-        .eq("policy_id", policy.id);
-
-      if (payError) throw payError;
-
-      let paymentsToUse = existingPayments;
-
-      // 4️⃣ If no payments exist, generate them (copy from activation)
-      if (!paymentsToUse || paymentsToUse.length === 0) {
-        console.log("No existing payments — generating before refund/cancel...");
-        const now = new Date();
-        const monthlyAmount = Number((totalPremium / months).toFixed(2));
-
-        const paymentRows = Array.from({ length: months }, (_, i) => {
-          const paymentDate = new Date(now);
-          paymentDate.setMonth(paymentDate.getMonth() + i);
-          return {
-            payment_date: paymentDate.toISOString().split("T")[0],
-            amount_to_be_paid: monthlyAmount,
-            is_paid: false,
-            paid_amount: 0,
-            policy_id: policy.id,
-            payment_type_id: paymentTypeId,
-          };
-        });
-
-        const { data: inserted, error: insertError } = await db
-          .from("payment_Table")
-          .insert(paymentRows)
-          .select();
-
-        if (insertError) throw insertError;
-        console.log("✅ Generated payments:", inserted.length);
-        paymentsToUse = inserted;
-      }
-
-      // 5️⃣ Refund first payment
-      const firstPayment = paymentsToUse[0];
-      await db
-        .from("payment_Table")
-        .update({
-          is_paid: false,
-          paid_amount: 0,
-          is_refunded: true,
-          refund_amount: firstPayment.amount_to_be_paid,
-          refund_date: new Date().toISOString(),
-          refund_reason: reason,
-          payment_status: "refunded",
-        })
-        .eq("id", firstPayment.id);
-
-      // 6️⃣ Cancel remaining payments (not archive)
-      if (paymentsToUse.length > 1) {
-        const remainingIds = paymentsToUse.slice(1).map((p) => p.id);
-        await db
-          .from("payment_Table")
+      if (result.success) {
+        // Update the policy with cancellation details
+        const { db } = await import("../../dbServer");
+        const { error: policyError } = await db
+          .from("policy_Table")
           .update({
-            payment_status: "cancelled",
-            is_archive: false,
+            cancellation_reason: reason,
           })
-          .in("id", remainingIds);
+          .eq("id", policy.id);
+
+        if (policyError) {
+          console.error("Error updating cancellation reason:", policyError);
+        }
+
+        // Update UI
+        setPolicies((prev) =>
+          prev.map((p) =>
+            p.id === policy.id
+              ? {
+                  ...p,
+                  policy_status: "cancelled",
+                  cancellation_reason: reason,
+                  cancellation_date: new Date().toISOString(),
+                  policy_is_active: false,
+                }
+              : p
+          )
+        );
+
+        alert(`✅ ${result.message}\n\nReason: ${reason}`);
+        
+        // Optionally reload policies to ensure UI is in sync
+        await loadPolicies();
+      } else {
+        alert("❌ Cancellation Error:\n\n" + result.error);
       }
-
-      // 7️⃣ Update policy as cancelled
-      const { error: policyError } = await db
-        .from("policy_Table")
-        .update({
-          policy_status: "cancelled",
-          cancellation_reason: reason,
-          cancellation_date: new Date().toISOString(),
-          policy_is_active: false,
-        })
-        .eq("id", policy.id);
-
-      if (policyError) throw policyError;
-
-      // 8️⃣ Update UI
-      setPolicies((prev) =>
-        prev.map((p) =>
-          p.id === policy.id
-            ? {
-                ...p,
-                policy_status: "cancelled",
-                cancellation_reason: reason,
-                cancellation_date: new Date().toISOString(),
-                policy_is_active: false,
-              }
-            : p
-        )
-      );
-
-      alert("✅ Policy cancelled successfully. First payment refunded, remaining payments cancelled.");
     } catch (error) {
       console.error("Error cancelling policy:", error);
-      alert("Error cancelling policy: " + error.message);
+      alert("❌ Error cancelling policy:\n\n" + error.message);
     }
   };
 

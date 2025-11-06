@@ -1,25 +1,29 @@
-
 /***card ****/
-.form-card-client-creation{
+.form-card-client-creation {
   background-color: #ffffff;
   width: 100%;
+  /* 1. Base styles for large desktops (like 3440x1440) */
   max-width: 1100px;
+  max-height: 85vh; /* ADDED: Limit height to 85% of viewport */
+  overflow-y: auto; /* ADDED: Make it scrollable */
   border-radius: 25px;
   padding: 40px 50px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  /* Added margin for centering/spacing */
+  margin: 40px auto; 
 }
 
-.form-card-client-creation h2{
+.form-card-client-creation h2 {
   font-size: 26px;
   font-weight: 600;
   margin-bottom: 35px;
   color: #000;
 }
 
-.form-grid-client-creation{
+.form-grid-client-creation {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 columns */
-  gap: 22px 24px; /* row-gap column-gap */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px 24px;
 }
 
 .form-left-column-creation {
@@ -27,34 +31,59 @@
 }
 
 .form-group-client-creation {
-  display:flex;
+  display: flex;
   flex-direction: column;
 }
 
-.form-group-client-creation label{
+.form-group-client-creation label {
   margin-bottom: 6px;
   font-size: 14px;
   font-weight: 500;
   color: #000;
 }
 
-.form-group-client-creation input{
+.form-group-client-creation input {
   padding: 14px;
-  border: 1px solid #d0d0d0;      
-  border-radius: 12px;             
+  border: 1px solid #d0d0d0;
+  border-radius: 12px;
   background-color: #ffffff;
   font-size: 15px;
   outline: none;
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.form-group-client-creation input:focus {
+/* ADDED: Style for select dropdowns */
+.form-group-client-creation select {
+  padding: 14px;
+  border: 1px solid #d0d0d0;
+  border-radius: 12px;
+  background-color: #ffffff;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23333' d='M1.41 0L6 4.59L10.59 0L12 1.41l-6 6l-6-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+}
+
+.form-group-client-creation select:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.form-group-client-creation input:focus,
+.form-group-client-creation select:focus {
   border-color: #000;
 }
 
+/* This targets Email (7th) and Street Address (8th) */
 .form-group-client-creation:nth-child(7),
-.form-group-client-creation:nth-child(8){
-  grid-column: span 3;
+.form-group-client-creation:nth-child(8) {
+  grid-column: span 2;
 }
 
 .client-creation-controls {
@@ -112,21 +141,148 @@
   box-shadow: 0 4px 8px rgba(0,0,0,0.2) inset;
 }
 
-@media (max-width :1024px){
+@media (max-width: 1920px) {
+  .form-card-client-creation {
+    max-width: 900px;
+    max-height: 85vh; /* ADDED: Maintain scroll on smaller screens */
+    padding: 25px 35px;
+  }
+  
+  .form-card-client-creation h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+  
+  .form-grid-client-creation {
+    gap: 16px 20px;
+  }
+  
+  .form-group-client-creation label {
+    font-size: 13px;
+    margin-bottom: 5px;
+  }
+  
+  .form-group-client-creation input {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  
+  .client-creation-controls {
+    margin-top: 25px;
+  }
+  
+  .client-creation-controls .client-creation-cancel-btn,
+  .client-creation-controls .client-creation-submit-btn {
+    width: 140px;
+    padding: 10px 0;
+    font-size: 15px;
+  }
+}
+
+/*
+ * ===============================================
+ * Laptops 1080p (15.6" screens)
+ * ===============================================
+ */
+@media (max-width: 1440px) {
+  .form-card-client-creation {
+    max-width: 800px;
+    max-height: 85vh; /* ADDED: Maintain scroll on laptops */
+    padding: 20px 30px;
+    margin: 20px auto;
+  }
+  
+  .form-card-client-creation h2 {
+    font-size: 20px;
+    margin-bottom: 18px;
+  }
+  
+  .form-grid-client-creation {
+    gap: 14px 18px;
+  }
+  
+  .form-group-client-creation label {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  
+  .form-group-client-creation input {
+    padding: 9px 11px;
+    font-size: 13px;
+  }
+  
+  .client-creation-controls {
+    margin-top: 20px;
+  }
+  
+  .client-creation-controls .client-creation-cancel-btn,
+  .client-creation-controls .client-creation-submit-btn {
+    width: 130px;
+    padding: 9px 0;
+    font-size: 14px;
+  }
+}
+
+/*
+ * ===============================================
+ * Tablet Query
+ * ===============================================
+ */
+@media (max-width: 1024px) {
   .form-grid-client-creation {
     grid-template-columns: 1fr;
   }
-}
-
-@media (max-width: 700px){
-  .form-grid-client-creation{
-    grid-template-columns: 1fr;
+  
+  /* FIX: Resets full-width fields to single column */
+  .form-group-client-creation:nth-child(7),
+  .form-group-client-creation:nth-child(8) {
+    grid-column: span 1;
   }
 }
 
+/*
+ * ===============================================
+ * YOUR NEW Smaller Tablet Query
+ * ===============================================
+ */
+@media (max-width: 900px) {
+  .form-card-client-creation {
+    /* This adds the vertical margin you wanted */
+    margin: 20px 0px 20px 0px;
+    
+    /* Ensure card doesn't touch edges */
+    width: 95%; 
+  }
+  
+  .form-grid-client-creation {
+    grid-template-columns: 1fr;
+  }
 
+  /* FIX: Resets full-width fields to single column */
+  .form-group-client-creation:nth-child(7),
+  .form-group-client-creation:nth-child(8) {
+    grid-column: span 1;
+  }
+}
 
+/*
+ * ===============================================
+ * Mobile Query
+ * ===============================================
+ */
+@media (max-width: 700px) {
+  .form-grid-client-creation {
+    grid-template-columns: 1fr;
+  }
+  
+  /* FIX: Resets full-width fields to single column */
+  .form-group-client-creation:nth-child(7),
+  .form-group-client-creation:nth-child(8) {
+    grid-column: span 1;
+  }
 
-
-
-
+  .form-card-client-creation {
+    /* Make padding smaller for phones */
+    padding: 20px 25px;
+  }
+}
