@@ -4,8 +4,8 @@ import { fetchPenaltiesForPayments, calculateTotalDue, calculateRemainingBalance
 // ✅ UPDATED: Fetch payment_type_id and payment_type_name to identify payment types
 export async function fetchPaymentSchedule(policyId) {
   if (!policyId) throw new Error("Policy ID is required");
-  
-   const { data: payments, error: paymentsError } = await db
+
+  const { data: payments, error: paymentsError } = await db
     .from("payment_Table")
     .select(`
       id,
@@ -15,7 +15,7 @@ export async function fetchPaymentSchedule(policyId) {
       paid_amount,
       payment_type_id,
       payment_mode_id,
-      payment_manual_reference,  
+      payment_manual_reference,
       payment_status,
       is_refunded,
       refund_amount,
@@ -27,31 +27,32 @@ export async function fetchPaymentSchedule(policyId) {
         reference_number,
         status,
         checkout_url
-      )
+      ),
+      receipts:payment_receipts ( * )
     `)
     .eq("policy_id", policyId)
     .or("is_archive.is.null,is_archive.eq.false")
     .order("payment_date", { ascending: true });
-  
+
   if (paymentsError) throw paymentsError;
   if (!payments || payments.length === 0) return [];
-  
-  // Penalties logic stays the same
+
+  // Fetch penalties
   const paymentIds = payments.map(p => p.id);
   const { data: penalties, error: penaltiesError } = await db
     .from("payment_due_penalties")
     .select("*")
     .in("payment_id", paymentIds)
     .order("penalty_date", { ascending: true });
-  
+
   if (penaltiesError) throw penaltiesError;
-  
+
   const penaltiesMap = {};
   for (const p of penalties) {
     if (!penaltiesMap[p.payment_id]) penaltiesMap[p.payment_id] = [];
     penaltiesMap[p.payment_id].push(p);
   }
-  
+
   return payments.map(p => {
     const paymentPenalties = penaltiesMap[p.id] || [];
     return {
@@ -62,8 +63,9 @@ export async function fetchPaymentSchedule(policyId) {
       paymongo_status: p.paymongo_transactions?.[0]?.status || null,
       paymongo_checkout_url: p.paymongo_transactions?.[0]?.checkout_url || null,
       penalties: paymentPenalties,
+      receipts: p.receipts || [],
       total_due: calculateTotalDue(p, paymentPenalties),
-      remaining_balance: calculateRemainingBalance(p, paymentPenalties)
+      remaining_balance: calculateRemainingBalance(p, paymentPenalties),
     };
   });
 }
