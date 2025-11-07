@@ -121,6 +121,23 @@ export default function PolicyWithPaymentsList() {
     hasPenaltyForToday,
     getPaymentStatus,
 
+
+    //reciept payment attachments
+    receiptModalOpen,
+    setReceiptModalOpen,
+    selectedPaymentForReceipt,
+    setSelectedPaymentForReceipt,
+    uploadingReceipt,
+    handleOpenReceiptModal,
+    handleUploadReceipt,
+    receiptViewerOpen,
+    setReceiptViewerOpen,
+    viewingReceipts,
+    currentReceiptIndex,
+    setCurrentReceiptIndex,
+    handleViewReceipts,
+    handleDeleteReceiptFromViewer,
+
     // --- UI state ---
     isLoading,
     setIsLoading,
@@ -582,6 +599,249 @@ export default function PolicyWithPaymentsList() {
           onGenerate={handleGeneratePayments}
         />
       )}
+
+       {/* RECEIPT UPLOAD MODAL */}
+        {receiptModalOpen && selectedPaymentForReceipt && (
+          <div className="payment-modal-backdrop">
+            <div className="payment-modal">
+              <h3>Attach Receipt</h3>
+              
+              <div style={{
+                backgroundColor: '#f8f9fa',
+                padding: '12px',
+                borderRadius: '6px',
+                marginBottom: '16px',
+                border: '1px solid #dee2e6'
+              }}>
+                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                  <strong>Payment Date:</strong> {new Date(selectedPaymentForReceipt.payment_date).toLocaleDateString('en-US', { 
+                    month: 'long', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                  })}
+                </p>
+                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                  <strong>Amount:</strong> {selectedPaymentForReceipt.amount_to_be_paid?.toLocaleString(undefined, { 
+                    style: "currency", 
+                    currency: "PHP" 
+                  })}
+                </p>
+                {selectedPaymentForReceipt.receipts && selectedPaymentForReceipt.receipts.length > 0 && (
+                  <p style={{ margin: '0', fontSize: '0.9em', color: '#28a745' }}>
+                    <strong>Existing Receipts:</strong> {selectedPaymentForReceipt.receipts.length}
+                  </p>
+                )}
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ 
+                  display: 'block', 
+                  marginBottom: '8px', 
+                  fontWeight: '600',
+                  fontSize: '0.9em'
+                }}>
+                  Upload Receipt (PDF or Image): <span style={{ color: 'red' }}>*</span>
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,.webp"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      handleUploadReceipt(file);
+                    }
+                  }}
+                  disabled={uploadingReceipt}
+                  style={{
+                    width: '100%',
+                    padding: '10px',
+                    fontSize: '1em',
+                    border: '2px solid #ced4da',
+                    borderRadius: '4px',
+                    backgroundColor: 'white'
+                  }}
+                />
+                <small style={{ 
+                  display: 'block', 
+                  marginTop: '4px', 
+                  color: '#6c757d',
+                  fontSize: '0.85em'
+                }}>
+                  Accepted formats: PDF, JPEG, PNG, WebP (Max 10MB)
+                </small>
+              </div>
+
+              {uploadingReceipt && (
+                <div style={{ 
+                  padding: '12px', 
+                  backgroundColor: '#e3f2fd', 
+                  borderRadius: '4px',
+                  marginBottom: '16px',
+                  textAlign: 'center'
+                }}>
+                  <p style={{ margin: 0, color: '#1976d2' }}>Uploading receipt...</p>
+                </div>
+              )}
+
+              <div className="modal-actions">
+                <button onClick={() => {
+                  setReceiptModalOpen(false);
+                  setSelectedPaymentForReceipt(null);
+                }}>Close</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* RECEIPT VIEWER MODAL */}
+        {receiptViewerOpen && viewingReceipts && viewingReceipts.length > 0 && (
+          <div className="payment-modal-backdrop" onClick={() => setReceiptViewerOpen(false)}>
+            <div className="payment-modal" style={{ maxWidth: '900px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ margin: 0 }}>Receipt Viewer ({currentReceiptIndex + 1} of {viewingReceipts.length})</h3>
+                <button 
+                  onClick={() => setReceiptViewerOpen(false)}
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    fontSize: '24px', 
+                    cursor: 'pointer',
+                    color: '#666'
+                  }}
+                >×</button>
+              </div>
+
+              {/* Receipt Info */}
+              <div style={{
+                backgroundColor: '#f8f9fa',
+                padding: '12px',
+                borderRadius: '6px',
+                marginBottom: '16px',
+                border: '1px solid #dee2e6'
+              }}>
+                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                  <strong>File Name:</strong> {viewingReceipts[currentReceiptIndex].file_name}
+                </p>
+                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                  <strong>Uploaded:</strong> {new Date(viewingReceipts[currentReceiptIndex].created_at).toLocaleString('en-US', { 
+                    month: 'long', 
+                    day: 'numeric', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+                <p style={{ margin: '0', fontSize: '0.9em' }}>
+                  <strong>Size:</strong> {(viewingReceipts[currentReceiptIndex].file_size / 1024).toFixed(2)} KB
+                </p>
+              </div>
+
+              {/* Receipt Display */}
+              <div style={{ 
+                backgroundColor: '#f5f5f5', 
+                padding: '20px', 
+                borderRadius: '8px',
+                marginBottom: '16px',
+                minHeight: '400px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                {viewingReceipts[currentReceiptIndex].file_type === 'application/pdf' ? (
+                  <iframe
+                    src={viewingReceipts[currentReceiptIndex].file_url}
+                    style={{ 
+                      width: '100%', 
+                      height: '500px', 
+                      border: 'none',
+                      borderRadius: '4px'
+                    }}
+                    title="Receipt PDF"
+                  />
+                ) : (
+                  <img
+                    src={viewingReceipts[currentReceiptIndex].file_url}
+                    alt="Receipt"
+                    style={{ 
+                      maxWidth: '100%', 
+                      maxHeight: '500px',
+                      objectFit: 'contain',
+                      borderRadius: '4px'
+                    }}
+                  />
+                )}
+              </div>
+
+      {/* Navigation */}
+      {viewingReceipts.length > 1 && (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          gap: '12px',
+          marginBottom: '16px'
+        }}>
+          <button
+            onClick={() => setCurrentReceiptIndex(i => Math.max(0, i - 1))}
+            disabled={currentReceiptIndex === 0}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: currentReceiptIndex === 0 ? '#ccc' : '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: currentReceiptIndex === 0 ? 'not-allowed' : 'pointer'
+            }}
+          >
+            ← Previous
+          </button>
+          <button
+            onClick={() => setCurrentReceiptIndex(i => Math.min(viewingReceipts.length - 1, i + 1))}
+            disabled={currentReceiptIndex === viewingReceipts.length - 1}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: currentReceiptIndex === viewingReceipts.length - 1 ? '#ccc' : '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: currentReceiptIndex === viewingReceipts.length - 1 ? 'not-allowed' : 'pointer'
+            }}
+          >
+            Next →
+          </button>
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="modal-actions">
+        <a
+          href={viewingReceipts[currentReceiptIndex].file_url}
+          download
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#28a745',
+            color: 'white',
+            textDecoration: 'none',
+            borderRadius: '4px',
+            display: 'inline-block'
+          }}
+        >
+          Download
+        </a>
+        <button 
+          onClick={() => handleDeleteReceiptFromViewer(viewingReceipts[currentReceiptIndex].id)}
+          style={{ backgroundColor: '#dc3545' }}
+        >
+          Delete
+        </button>
+        <button onClick={() => setReceiptViewerOpen(false)}>Close</button>
+      </div>
+    </div>
+  </div>
+)} 
+
+
       <div className="payments-overview-header">
         <h2>Payments Overview ({totalPoliciesCount})</h2>
         <div className="search-filter-refresh-bar">
@@ -850,6 +1110,30 @@ export default function PolicyWithPaymentsList() {
                                 >
                                   Delete
                                 </button>
+                              )}
+
+                               {(status === "fully-paid" || status === "partially-paid") && !isSpecialStatus && (
+                                <>
+                                  <button
+                                    onClick={() => handleOpenReceiptModal({ ...p, policy_id: policy.id })}
+                                    className="penalty-btn"
+                                    title="Attach receipt"
+                                    style={{ backgroundColor: '#6f42c1', color: 'white' }}
+                                  >
+                                    📎 Attach
+                                  </button>
+                                  
+                                  {p.receipts && p.receipts.length > 0 && (
+                                    <button
+                                      onClick={() => handleViewReceipts({ ...p, policy_id: policy.id })}
+                                      className="penalty-btn"
+                                      title={`View ${p.receipts.length} receipt(s)`}
+                                      style={{ backgroundColor: '#20c997', color: 'white' }}
+                                    >
+                                      📄 View ({p.receipts.length})
+                                    </button>
+                                  )}
+                                </>
                               )}
 
 
