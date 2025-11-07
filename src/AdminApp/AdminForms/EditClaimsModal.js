@@ -21,8 +21,9 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [approvedAmountError, setApprovedAmountError] = useState('');
 
-  const isFinalized = claim?.status === 'Approved' || claim?.status === 'Rejected';
+  const isFinalized = claim?.status === 'Approved' || claim?.status === 'Rejected' || claim?.status === 'Completed';
 
   useEffect(() => {
     if (claim) {
@@ -31,8 +32,6 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
         phone_number: claim.phone_number || '',
         estimate_amount: claim.estimate_amount || '',
         approved_amount: claim.approved_amount || '',
-        //location_of_incident: claim.location_of_incident || '',
-        //description_of_incident: claim.description_of_incident || '',
         incident_date: claim.incident_date ? new Date(claim.incident_date).toISOString().split('T')[0] : '',
         claim_date: claim.claim_date ? new Date(claim.claim_date).toISOString().split('T')[0] : '',
         message: claim.message || ''
@@ -72,6 +71,27 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Validate approved amount when it changes
+    if (name === 'approved_amount') {
+      validateApprovedAmount(value, formData.estimate_amount);
+    }
+  };
+
+  const validateApprovedAmount = (approvedAmount, estimateAmount) => {
+    const approved = parseFloat(approvedAmount);
+    const estimate = parseFloat(estimateAmount);
+
+    if (approvedAmount && estimate) {
+      const minRequired = estimate * 0.5;
+      if (approved < minRequired) {
+        setApprovedAmountError(`Approved amount must be at least 50% of estimate amount (₱${minRequired.toLocaleString('en-PH', { minimumFractionDigits: 2 })})`);
+      } else {
+        setApprovedAmountError('');
+      }
+    } else {
+      setApprovedAmountError('');
+    }
   };
 
   const handleCheckboxChange = (type) => {
@@ -99,7 +119,7 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
           ...formData,
           incident_date: formData.incident_date ? new Date(formData.incident_date).toISOString() : null,
           claim_date: formData.claim_date ? new Date(formData.claim_date).toISOString() : null,
-          approved_amount: formData.approved_amount === '' ? null : formData.approved_amount,
+          approved_amount: formData.approved_amount === '' ? null : parseFloat(formData.approved_amount),
           documents: updatedDocs.map(doc => ({
             path: doc.path,
             name: doc.name,
@@ -132,11 +152,24 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
     setError(null);
     setSuccessMessage(null);
 
+    // Validate approved amount before submission
+    const approved = parseFloat(formData.approved_amount);
+    const estimate = parseFloat(formData.estimate_amount);
+
+    if (formData.approved_amount && estimate) {
+      const minRequired = estimate * 0.5;
+      if (approved < minRequired) {
+        setError(`Approved amount must be at least 50% of estimate amount (₱${minRequired.toLocaleString('en-PH', { minimumFractionDigits: 2 })})`);
+        return;
+      }
+    }
+
     const updatedData = {
       ...formData,
       incident_date: formData.incident_date ? new Date(formData.incident_date).toISOString() : null,
       claim_date: formData.claim_date ? new Date(formData.claim_date).toISOString() : null,
-      approved_amount: formData.approved_amount === '' ? null : formData.approved_amount,
+      approved_amount: formData.approved_amount === '' ? null : parseFloat(formData.approved_amount),
+      estimate_amount: formData.estimate_amount === '' ? null : parseFloat(formData.estimate_amount),
       documents: documents.map(doc => ({
         path: doc.path,
         name: doc.name,
@@ -224,17 +257,6 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
               </div>
             </div>
 
-           {/* <div className="edit-claims-field">
-              <label>Phone Number</label>
-              <input
-                type="tel"
-                name="phone_number"
-                value={formData.phone_number}
-                onChange={handleChange}
-                disabled={isFinalized}
-              />
-            </div>*/}
-
             <div className="edit-claims-field">
               <label>Estimate Amount</label>
               <input
@@ -243,6 +265,8 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
                 value={formData.estimate_amount}
                 onChange={handleChange}
                 disabled={isFinalized}
+                min="0"
+                step="0.01"
               />
             </div>
 
@@ -265,7 +289,32 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
                 value={formData.approved_amount}
                 onChange={handleChange}
                 disabled={isFinalized}
+                min="0"
+                step="0.01"
+                style={{
+                  borderColor: approvedAmountError ? '#dc2626' : undefined
+                }}
               />
+              {approvedAmountError && (
+                <span style={{ 
+                  color: '#dc2626', 
+                  fontSize: '12px', 
+                  marginTop: '4px',
+                  display: 'block'
+                }}>
+                  {approvedAmountError}
+                </span>
+              )}
+              {formData.estimate_amount && (
+                <span style={{ 
+                  color: '#6b7280', 
+                  fontSize: '12px', 
+                  marginTop: '4px',
+                  display: 'block'
+                }}>
+                  Minimum: ₱{(parseFloat(formData.estimate_amount) * 0.5).toLocaleString('en-PH', { minimumFractionDigits: 2 })} (50% of estimate)
+                </span>
+              )}
             </div>
 
             <div className="edit-claims-field">
@@ -278,28 +327,6 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
                 disabled={isFinalized}
               />
             </div>
-
-           {/*<div className="edit-claims-field edit-claims-full-width">
-              <label>Location of Incident:</label>
-              <textarea
-                name="location_of_incident"
-                value={formData.location_of_incident}
-                onChange={handleChange}
-                rows={3}
-                disabled={isFinalized}
-              />
-            </div>
-
-            <div className="edit-claims-field edit-claims-full-width">
-              <label>Description of Incident:</label>
-              <textarea
-                name="description_of_incident"
-                value={formData.description_of_incident}
-                onChange={handleChange}
-                rows={3}
-                disabled={isFinalized}
-              />
-            </div>*/}
 
             <div className="edit-claims-field edit-claims-full-width">
               <label>Supporting Documents:</label>
@@ -318,14 +345,13 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
                         className="edit-claims-document-link"
                         title="Click to open document in new tab"
                         onClick={(e) => {
-                          // Prevent any parent handlers
                           e.stopPropagation();
                         }}
                       >
                         <FileText size={16} />
                         <span>{doc.name}</span>
                       </a>
-                      {(!isFinalized && claim?.status !== 'Approved' && claim?.status !== 'Rejected') && (
+                      {!isFinalized && (
                         <button
                           className="edit-claims-delete-doc-btn"
                           onClick={(e) => {
@@ -361,6 +387,11 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
           <button
             className="edit-claims-submit-btn"
             onClick={handleSubmit}
+            disabled={!!approvedAmountError}
+            style={{
+              opacity: approvedAmountError ? 0.5 : 1,
+              cursor: approvedAmountError ? 'not-allowed' : 'pointer'
+            }}
           >
             Submit
           </button>
