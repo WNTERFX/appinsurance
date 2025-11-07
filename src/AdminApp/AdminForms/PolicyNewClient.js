@@ -169,22 +169,34 @@ export default function PolicyNewClient({
 
             <div className={`form-group ${errors.vehicleVinNumber ? 'error' : ''}`}>
               <label>Vehicle VIN Number <span style={{ color: 'red' }}>*</span></label>
-              <input 
-                type="text"
-                value={vehicleVinNumber || ""}
-                maxLength={17} 
-                onChange={(e) => {
-                  setVinNumber(e.target.value);
-                  setErrors(prev => ({ ...prev, vehicleVinNumber: false }));
-                }}
-                style={{ 
-                  borderColor: errors.vehicleVinNumber ? 'red' : '',
-                  textTransform: 'uppercase' 
-                }}
-                required
-              />
+                <input 
+                  type="text"
+                  value={vehicleVinNumber || ""}
+                  maxLength={17} 
+                  onChange={(e) => {
+                    // 1. Get value, force to uppercase, and trim whitespace
+                    const upperValue = e.target.value.toUpperCase().trim();
+                    
+                    // 2. Define regex for invalid VIN characters (anything NOT A-H, J-N, P, R-Z, or 0-9)
+                    const invalidCharsRegex = /[^0-9A-HJKNPR-Z]/g;
+                    
+                    // 3. Clean the value by replacing invalid chars with an empty string
+                    const cleanedValue = upperValue.replace(invalidCharsRegex, '');
+
+                    // 4. Set the cleaned value into state
+                    setVinNumber(cleanedValue);
+                    
+                    // 5. Clear the error as the user is fixing it
+                    setErrors(prev => ({ ...prev, vehicleVinNumber: false }));
+                  }}
+                  style={{ 
+                    borderColor: errors.vehicleVinNumber ? 'red' : '',
+                    textTransform: 'uppercase' // This is still good for visual feedback
+                  }}
+                  required
+                />
               <small style={{ color: vehicleVinNumber?.length >= 17 ? "green" : errors.vehicleVinNumber ? "red" : "gray" }}>
-                {vehicleVinNumber?.length || 0}/17 characters {errors.vehicleVinNumber && '- Must be 17 characters'}
+                {vehicleVinNumber?.length || 0}/17 characters {errors.vehicleVinNumber && '- Must be exactly 17 valid characters'}
               </small>
             </div>
 
@@ -207,22 +219,25 @@ export default function PolicyNewClient({
 
             <div className={`form-group ${errors.vehiclePlateNumber ? 'error' : ''}`}>
               <label>Vehicle Plate Number <span style={{ color: 'red' }}>*</span></label>
-              <input 
-                type="text"
-                value={vehiclePlateNumber || ""}
-                onChange={(e) => {
-                  setPlateNumber(e.target.value);
-                  setErrors(prev => ({ ...prev, vehiclePlateNumber: false }));
-                }}
-                maxLength={8}
-                style={{ 
-                  borderColor: errors.vehiclePlateNumber ? 'red' : '',
-                  textTransform: 'uppercase'
-                }}
-              />
-              <small style={{ color: vehiclePlateNumber?.length >= 8 ? "green" : errors.vehiclePlateNumber ? "red" : "gray" }}>
-                {vehiclePlateNumber?.length || 0}/8 characters {errors.vehiclePlateNumber && '- Required'}
-              </small>
+                <input 
+                  type="text"
+                  value={vehiclePlateNumber || ""}
+                  onChange={(e) => {
+                    const upperValue = e.target.value.toUpperCase().trim();
+                    const invalidCharsRegex = /[^A-Z0-9]/g;
+                    const cleanedValue = upperValue.replace(invalidCharsRegex, '');
+                    setPlateNumber(cleanedValue);
+                    setErrors(prev => ({ ...prev, vehiclePlateNumber: false }));
+                  }}
+                  maxLength={8}
+                  style={{ 
+                    borderColor: errors.vehiclePlateNumber ? 'red' : '',
+                    textTransform: 'uppercase'
+                  }}
+                />
+                <small style={{ color: vehiclePlateNumber?.length >= 8 ? "green" : errors.vehiclePlateNumber ? "red" : "gray" }}>
+                  {vehiclePlateNumber?.length || 0}/8 characters {errors.vehiclePlateNumber && '- Required'}
+                </small>
             </div>
 
             <div className={`form-group ${errors.vehicleColor ? 'error' : ''}`}>

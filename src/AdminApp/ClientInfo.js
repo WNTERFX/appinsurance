@@ -124,7 +124,20 @@ export default function ClientInfo({ selectedPolicy, onClose }) {
             <hr className="section-header-separator" />
             <InfoGrid>
               <InfoItem label="Name" value={formatClientName(client)} />
-              <InfoItem label="Address" value={client.address || 'N/A'} />
+              <InfoItem
+                label="Address"
+                value={
+                  [
+                    client.address, // street-level
+                    client.barangay_address,
+                    client.city_address,
+                    client.province_address,
+                    client.zip_code ? client.zip_code : ""
+                  ]
+                    .filter(Boolean)
+                    .join(", ") || "N/A"
+                }
+              />
               <InfoItem label="Phone" value={client.phone_Number || 'N/A'} />
               <InfoItem label="Email" value={client.email || 'N/A'} />
               <InfoItem label="Agent" value={client.employee?.personnel_Name || 'N/A'} />

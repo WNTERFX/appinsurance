@@ -28,6 +28,16 @@ export default function PolicyWithPaymentsList() {
     setSelectedPaymentMode,
     paymentModes,
 
+    //Edit Payment
+    updateModalOpen,
+    setUpdateModalOpen,
+    paymentToUpdate,
+    setPaymentToUpdate,
+    updateAmountInput,
+    setUpdateAmountInput,
+    handleOpenUpdateModal,
+    handleUpdatePaymentAmount,
+
     //search
     searchTerm,
     setSearchTerm,
@@ -349,6 +359,104 @@ export default function PolicyWithPaymentsList() {
           </div>
         </div>
       )}
+
+         {/* UPDATE PAYMENT AMOUNT MODAL */}
+              {updateModalOpen && paymentToUpdate && (
+                <div className="payment-modal-backdrop">
+                  <div className="payment-modal">
+                    <h3>Update Payment Amount</h3>
+                    
+                    <div style={{ 
+                      backgroundColor: '#fff3cd', 
+                      padding: '12px', 
+                      borderRadius: '8px', 
+                      marginBottom: '16px',
+                      border: '1px solid #ffc107'
+                    }}>
+                      <p style={{ margin: 0, fontSize: '0.9em', color: '#856404' }}>
+                        <strong>Note:</strong> Updating the amount will automatically recalculate any existing penalties based on the new amount.
+                      </p>
+                    </div>
+                    
+                    <div style={{
+                      backgroundColor: '#f8f9fa',
+                      padding: '12px',
+                      borderRadius: '6px',
+                      marginBottom: '16px',
+                      border: '1px solid #dee2e6'
+                    }}>
+                      <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                        <strong>Payment Date:</strong> {new Date(paymentToUpdate.payment_date).toLocaleDateString('en-US', { 
+                          month: 'long', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}
+                      </p>
+                      <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                        <strong>Current Amount:</strong> {paymentToUpdate.amount_to_be_paid?.toLocaleString(undefined, { 
+                          style: "currency", 
+                          currency: "PHP" 
+                        })}
+                      </p>
+                      {paymentToUpdate.penalties && paymentToUpdate.penalties.length > 0 && (
+                        <p style={{ margin: '0', fontSize: '0.9em', color: '#dc3545' }}>
+                          <strong>Current Penalties:</strong> {calculateTotalPenalties(paymentToUpdate).toLocaleString(undefined, { 
+                            style: "currency", 
+                            currency: "PHP" 
+                          })} ({paymentToUpdate.penalties.length} penalty/penalties)
+                        </p>
+                      )}
+                    </div>
+
+                    <div style={{ marginBottom: '16px' }}>
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '8px', 
+                        fontWeight: '600',
+                        fontSize: '0.9em'
+                      }}>
+                        New Payment Amount: <span style={{ color: 'red' }}>*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={updateAmountInput}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '' || /^\d*(,\d{3})*(\.\d*)?$/.test(value)) {
+                            setUpdateAmountInput(value);
+                          }
+                        }}
+                        placeholder="Enter new amount"
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          fontSize: '1.1em',
+                          border: '2px solid #ced4da',
+                          borderRadius: '4px',
+                          backgroundColor: 'white'
+                        }}
+                      />
+                      <small style={{ 
+                        display: 'block', 
+                        marginTop: '4px', 
+                        color: '#6c757d',
+                        fontSize: '0.85em'
+                      }}>
+                        Enter the corrected payment amount (e.g., 22000 instead of 12000)
+                      </small>
+                    </div>
+
+                    <div className="modal-actions">
+                      <button onClick={handleUpdatePaymentAmount}>Update Amount</button>
+                      <button onClick={() => {
+                        setUpdateModalOpen(false);
+                        setPaymentToUpdate(null);
+                        setUpdateAmountInput("");
+                      }}>Cancel</button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
       {/* EDIT PAYMENT MODAL */}
         {editModalOpen && paymentToEdit && (
@@ -717,6 +825,17 @@ export default function PolicyWithPaymentsList() {
                                   style={{ backgroundColor: '#17a2b8' }}
                                 >
                                    Edit
+                                </button>
+                              )}
+
+                              {status === "not-paid" && !isSpecialStatus && (
+                                <button
+                                  onClick={() => handleOpenUpdateModal({ ...p, policy_id: policy.id })}
+                                  className="penalty-btn"
+                                  title="Update payment amount"
+                                  style={{ backgroundColor: '#ffc107', color: '#000' }}
+                                >
+                                  Update
                                 </button>
                               )}
 
