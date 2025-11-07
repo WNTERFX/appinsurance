@@ -284,12 +284,39 @@ export async function unArchivePayment(paymentId) {
 // Delete a payment permanently
 export async function deletePayment(paymentId) {
   if (!paymentId) throw new Error("Payment ID is required");
- 
+  
+  // Get payment details
+  const { data: payment, error: fetchError } = await db
+    .from("payment_Table")
+    .select("paid_amount, is_paid")
+    .eq("id", paymentId)
+    .single();
+  
+  if (fetchError) throw fetchError;
+  
+  // Prevent deletion if payment has been paid
+  if (payment.is_paid || (payment.paid_amount && payment.paid_amount > 0)) {
+    throw new Error("Cannot delete a payment that has already been paid. Please use refund instead.");
+  }
+  
+  // Check if payment has any penalties
+  const { data: penalties, error: penaltyCheckError } = await db
+    .from("payment_due_penalties")
+    .select("id, is_paid")
+    .eq("payment_id", paymentId);
+  
+  if (penaltyCheckError) throw penaltyCheckError;
+  
+  if (penalties && penalties.length > 0) {
+    throw new Error("Cannot delete payment with associated penalties. Please remove penalties first or update the payment amount instead.");
+  }
+  
+  // Delete the payment
   const { error } = await db
     .from("payment_Table")
     .delete()
     .eq("id", paymentId);
- 
+  
   if (error) throw error;
   return true;
 }
@@ -490,5 +517,55 @@ export async function editPaymentDetails(paymentId, paymentModeId = null, manual
     .select();
   
   if (error) throw error;
+  return data[0];
+}
+
+export async function updatePaymentAmount(paymentId, newAmount) {
+  if (!paymentId) throw new Error("Payment ID is required");
+  if (!newAmount || newAmount <= 0) throw new Error("Amount must be positive");
+  
+  // Check if payment has any penalties
+  const { data: penalties, error: penaltyCheckError } = await db
+    .from("payment_due_penalties")
+    .select("id, penalty_amount, is_paid, not_paid_days")
+    .eq("payment_id", paymentId);
+  
+  if (penaltyCheckError) throw penaltyCheckError;
+  
+  // Get current payment details
+  const { data: payment, error: fetchError } = await db
+    .from("payment_Table")
+    .select("amount_to_be_paid, payment_date, paid_amount")
+    .eq("id", paymentId)
+    .single();
+  
+  if (fetchError) throw fetchError;
+  
+  // Update the payment amount
+  const { data, error } = await db
+    .from("payment_Table")
+    .update({ amount_to_be_paid: newAmount })
+    .eq("id", paymentId)
+    .select();
+  
+  if (error) throw error;
+  
+  // Recalculate penalties if they exist
+  if (penalties && penalties.length > 0) {
+    const PENALTY_RATE = 0.01; // 1% per day
+    
+    for (const penalty of penalties) {
+      if (!penalty.is_paid) {
+        const daysOverdue = penalty.not_paid_days || 0;
+        const newPenaltyAmount = newAmount * PENALTY_RATE * daysOverdue;
+        
+        await db
+          .from("payment_due_penalties")
+          .update({ penalty_amount: newPenaltyAmount })
+          .eq("id", penalty.id);
+      }
+    }
+  }
+  
   return data[0];
 }

@@ -7,7 +7,8 @@ import {
   archivePayment,
   fetchAllPaymentModes,
   editPaymentDetails,
-  deletePayment
+  deletePayment,
+  updatePaymentAmount
 } from "../../AdminActions/PaymentDueActions";
 import {
   addPaymentPenalty,
@@ -33,6 +34,10 @@ export default function PolicyWithPaymentsController() {
   const [manualReference, setManualReference] = useState("");
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [paymentToEdit, setPaymentToEdit] = useState(null);
+
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [paymentToUpdate, setPaymentToUpdate] = useState(null);
+  const [updateAmountInput, setUpdateAmountInput] = useState("");
 
   const [modalOpen, setModalOpen] = useState(false);
   const [currentPayment, setCurrentPayment] = useState(null);
@@ -75,6 +80,44 @@ export default function PolicyWithPaymentsController() {
     setPaymentModes([]);
   }
 };
+
+  // ---------- EDIT PAYMENT AMOUNT MODAL ----------
+
+  const handleOpenUpdateModal = (payment) => {
+    setPaymentToUpdate(payment);
+    setUpdateAmountInput(payment.amount_to_be_paid.toString());
+    setUpdateModalOpen(true);
+  };
+
+
+  const handleUpdatePaymentAmount = async () => {
+    if (!paymentToUpdate?.id || !paymentToUpdate?.policy_id) return;
+    
+    try {
+      const newAmount = parseFloat(updateAmountInput.replace(/,/g, ""));
+      if (isNaN(newAmount) || newAmount <= 0) {
+        alert("Please enter a valid amount");
+        return;
+      }
+      
+      await updatePaymentAmount(paymentToUpdate.id, newAmount);
+      
+      const policyId = paymentToUpdate.policy_id;
+      const updatedSchedule = await fetchPaymentSchedule(policyId);
+      const nonArchived = (updatedSchedule || []).filter(p => p.is_archive !== true);
+      
+      setPaymentsByPolicy(prev => ({ ...prev, [policyId]: nonArchived }));
+      setPaymentsMap(prev => ({ ...prev, [policyId]: nonArchived }));
+      
+      alert("Payment amount updated successfully! Penalties have been recalculated.");
+      setUpdateModalOpen(false);
+      setPaymentToUpdate(null);
+      setUpdateAmountInput("");
+    } catch (err) {
+      console.error("Error updating payment amount:", err);
+      alert(err.message || "Failed to update payment amount. Check console for details.");
+    }
+  };
 
   // ---------- LOAD POLICIES ----------
   useEffect(() => {
@@ -483,6 +526,16 @@ export default function PolicyWithPaymentsController() {
     paymentModes,
     selectedPaymentMode,
     setSelectedPaymentMode,
+
+    //Edit Payment
+    updateModalOpen,
+    setUpdateModalOpen,
+    paymentToUpdate,
+    setPaymentToUpdate,
+    updateAmountInput,
+    setUpdateAmountInput,
+    handleOpenUpdateModal,
+    handleUpdatePaymentAmount,
 
     // counts + pagination
     totalPoliciesCount,

@@ -30,6 +30,7 @@ export default function PolicyTable() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showInceptionModal, setShowInceptionModal] = useState(false);
   const [selectedPolicyForInception, setSelectedPolicyForInception] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
   const navigate = useNavigate();
 
   // Helper function to check if policy is expired
@@ -173,6 +174,42 @@ export default function PolicyTable() {
     window.debugCheckPolicy = DebugCheckPolicy;
     console.log("💡 Debug helper available: window.debugCheckPolicy(policyId)");
   }, []);
+
+  const handleCopyClick = (e, textToCopy) => {
+    // Stop the row's onClick event from firing
+    e.stopPropagation();
+
+    // Create a temporary textarea element to hold the text
+    const textarea = document.createElement("textarea");
+    textarea.value = textToCopy;
+
+    // Position it off-screen
+    textarea.style.position = "fixed";
+    textarea.style.top = "-9999px";
+    textarea.style.left = "-9999px";
+
+    document.body.appendChild(textarea);
+    textarea.select(); // Select the text
+
+    try {
+      // Use the legacy execCommand
+      document.execCommand("copy");
+
+      // Set feedback state
+      setCopiedId(textToCopy);
+
+      // Clear feedback after 2 seconds
+      setTimeout(() => {
+        setCopiedId(null);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy text: ", err);
+    }
+
+    // Clean up the temporary element
+    document.body.removeChild(textarea);
+  };
+
 
   const handleRowClick = (policy) => {
     setSelectedPolicy({
@@ -572,7 +609,24 @@ export default function PolicyTable() {
                       }`}
                       onClick={() => handleRowClick(policy)}
                     >
-                      <td>{policy.internal_id}</td>
+                      
+                        <td
+                          onClick={(e) => handleCopyClick(e, policy.internal_id)}
+                          title="Click to copy Policy ID"
+                          style={{
+                            cursor: "pointer",
+                            color: copiedId === policy.internal_id ? "#155724" : "#007bff",
+                            backgroundColor:
+                              copiedId === policy.internal_id ? "#d4edda" : "transparent",
+                             borderRadius: "4px",
+                            padding: "8px",
+                            transition: "all 0.2s",
+                            textAlign: "center",
+                            verticalAlign: "middle",
+                          }}
+                        >
+                          {copiedId === policy.internal_id ? "Copied!" : policy.internal_id}
+                      </td>
                       <td>{policy.policy_type}</td>
                       <td>{clientName}</td>
                       <td>{partner?.insurance_Name || "No Partner"}</td>
