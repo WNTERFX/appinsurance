@@ -17,11 +17,13 @@ import {
   notifyClientOfPenalty
 } from "../../AdminActions/PaymentPenaltyActions";
 
-/**
- * usePolicyWithPaymentsController
- * - Contains all state, effects, and handlers previously above the return in your component.
- * - Designed to be dropped in without changing your JSX: import and destructure everything you were referencing.
- */
+import {
+  uploadReceiptFile,
+  fetchPaymentReceipts,
+  deleteReceipt
+} from "../../AdminActions/PaymentReceiptActions";
+
+
 export default function PolicyWithPaymentsController() {
   // --- UI + data state ---
   const [policies, setPolicies] = useState([]);
@@ -64,6 +66,17 @@ export default function PolicyWithPaymentsController() {
   // Payment Modes
   const [paymentModes, setPaymentModes] = useState([]);
   const [selectedPaymentMode, setSelectedPaymentMode] = useState(null);
+
+  //attachment receipt payments
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+  const [selectedPaymentForReceipt, setSelectedPaymentForReceipt] = useState(null);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+
+  //receipt viewer modal state
+  const [receiptViewerOpen, setReceiptViewerOpen] = useState(false);
+  const [viewingReceipts, setViewingReceipts] = useState([]);
+  const [currentReceiptIndex, setCurrentReceiptIndex] = useState(0);
+    
 
   const CHEQUE_PAYMENT_TYPE = 2;
   // payment modes 
@@ -515,6 +528,79 @@ export default function PolicyWithPaymentsController() {
 
   const renderPolicies = currentPolicies;
 
+  // Reciept attachments and viewing functions
+  const handleOpenReceiptModal = (payment) => {
+    setSelectedPaymentForReceipt(payment);
+    setReceiptModalOpen(true);
+  };
+
+  const handleUploadReceipt = async (file) => {
+    if (!selectedPaymentForReceipt?.id || !selectedPaymentForReceipt?.policy_id) return;
+    
+    try {
+      setUploadingReceipt(true);
+      await uploadReceiptFile(selectedPaymentForReceipt.id, file);
+      
+      // Refresh payment schedule to include new receipt
+      const policyId = selectedPaymentForReceipt.policy_id;
+      const updatedSchedule = await fetchPaymentSchedule(policyId);
+      const nonArchived = (updatedSchedule || []).filter(p => p.is_archive !== true);
+      
+      setPaymentsByPolicy(prev => ({ ...prev, [policyId]: nonArchived }));
+      setPaymentsMap(prev => ({ ...prev, [policyId]: nonArchived }));
+      
+      alert("Receipt uploaded successfully!");
+    } catch (err) {
+      console.error("Error uploading receipt:", err);
+      alert(err.message || "Failed to upload receipt. Check console for details.");
+    } finally {
+      setUploadingReceipt(false);
+    }
+  };
+
+  const handleViewReceipts = (payment) => {
+    if (payment.receipts && payment.receipts.length > 0) {
+      setSelectedPaymentForReceipt(payment);
+      setViewingReceipts(payment.receipts);
+      setCurrentReceiptIndex(0);
+      setReceiptViewerOpen(true);
+    }
+  };
+
+  const handleDeleteReceiptFromViewer = async (receiptId) => {
+    if (!window.confirm("Are you sure you want to delete this receipt?")) return;
+    
+    try {
+      await deleteReceipt(receiptId);
+      
+      // Refresh receipts
+      const updatedReceipts = viewingReceipts.filter(r => r.id !== receiptId);
+      setViewingReceipts(updatedReceipts);
+      
+      if (updatedReceipts.length === 0) {
+        setReceiptViewerOpen(false);
+      } else if (currentReceiptIndex >= updatedReceipts.length) {
+        setCurrentReceiptIndex(updatedReceipts.length - 1);
+      }
+      
+      // Refresh payment schedule
+      const payment = selectedPaymentForReceipt || viewingReceipts[0];
+      if (payment?.payment_id) {
+        const policyId = payment.policy_id;
+        const updatedSchedule = await fetchPaymentSchedule(policyId);
+        const nonArchived = (updatedSchedule || []).filter(p => p.is_archive !== true);
+        
+        setPaymentsByPolicy(prev => ({ ...prev, [policyId]: nonArchived }));
+        setPaymentsMap(prev => ({ ...prev, [policyId]: nonArchived }));
+      }
+      
+      alert("Receipt deleted successfully!");
+    } catch (err) {
+      console.error("Error deleting receipt:", err);
+      alert("Failed to delete receipt. Check console for details.");
+    }
+  };
+
   return {
     // data
     policies,
@@ -621,6 +707,27 @@ export default function PolicyWithPaymentsController() {
     filteredPolicies,
     currentPolicies,
     renderPoliciesList: renderPolicies,
+
+
+    // receipt attachments + viewing
+     // Receipt modal
+  receiptModalOpen,
+  setReceiptModalOpen,
+  selectedPaymentForReceipt,
+  setSelectedPaymentForReceipt,
+  uploadingReceipt,
+  handleOpenReceiptModal,
+  handleUploadReceipt,
+  
+  // Receipt viewer
+  receiptViewerOpen,
+  setReceiptViewerOpen,
+  viewingReceipts,
+  setViewingReceipts,
+  currentReceiptIndex,
+  setCurrentReceiptIndex,
+  handleViewReceipts,
+  handleDeleteReceiptFromViewer
   };
 }
 
