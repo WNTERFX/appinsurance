@@ -69,10 +69,12 @@ export default function PolicyWithPaymentsController() {
   const [paymentModes, setPaymentModes] = useState([]);
   const [selectedPaymentMode, setSelectedPaymentMode] = useState(null);
 
+  //attachment receipt payments
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const [selectedPaymentForReceipt, setSelectedPaymentForReceipt] = useState(null);
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
 
+  //receipt viewer modal state
   const [receiptViewerOpen, setReceiptViewerOpen] = useState(false);
   const [viewingReceipts, setViewingReceipts] = useState([]);
   const [currentReceiptIndex, setCurrentReceiptIndex] = useState(0);
@@ -597,6 +599,7 @@ export default function PolicyWithPaymentsController() {
     setSelectedPaymentMode,
 
     //Edit Payment
+<<<<<<< HEAD
     updateModalOpen,
     setUpdateModalOpen,
     paymentToUpdate,
@@ -606,6 +609,8 @@ export default function PolicyWithPaymentsController() {
     handleOpenUpdateModal,
     handleUpdatePaymentAmount,
 
+=======
+>>>>>>> 0ba9d56960ed614b8b6f2cc5db336801ad217262
     updateModalOpen,
     setUpdateModalOpen,
     paymentToUpdate,
@@ -615,6 +620,7 @@ export default function PolicyWithPaymentsController() {
     handleOpenUpdateModal,
     handleUpdatePaymentAmount,
 
+    // counts + pagination
     totalPoliciesCount,
     rowsPerPage,
     setRowsPerPage,
