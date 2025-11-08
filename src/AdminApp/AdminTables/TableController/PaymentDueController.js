@@ -108,50 +108,16 @@ export default function PolicyWithPaymentsController() {
   }, []);
 
   const loadPaymentModes = async () => {
-    try {
-      const modes = await fetchAllPaymentModes();
-      setPaymentModes(modes);
-    } catch (err) {
-      console.error("Error loading payment modes:", err);
-      setPaymentModes([]);
-    }
-  };
+  try {
+    const modes = await fetchAllPaymentModes();
+    setPaymentModes(modes);
+  } catch (err) {
+    console.error("Error loading payment modes:", err);
+    setPaymentModes([]);
+  }
+};
 
-  const handleOpenUpdateModal = (payment) => {
-    setPaymentToUpdate(payment);
-    setUpdateAmountInput(payment.amount_to_be_paid.toString());
-    setUpdateModalOpen(true);
-  };
-
-  const handleUpdatePaymentAmount = async () => {
-    if (!paymentToUpdate?.id || !paymentToUpdate?.policy_id) return;
-    
-    try {
-      const newAmount = parseFloat(updateAmountInput.replace(/,/g, ""));
-      if (isNaN(newAmount) || newAmount <= 0) {
-        alert("Please enter a valid amount");
-        return;
-      }
-      
-      await updatePaymentAmount(paymentToUpdate.id, newAmount);
-      
-      const policyId = paymentToUpdate.policy_id;
-      const updatedSchedule = await fetchPaymentSchedule(policyId);
-      const nonArchived = (updatedSchedule || []).filter(p => p.is_archive !== true);
-      
-      setPaymentsByPolicy(prev => ({ ...prev, [policyId]: nonArchived }));
-      setPaymentsMap(prev => ({ ...prev, [policyId]: nonArchived }));
-      
-      alert("Payment amount updated successfully! Penalties have been recalculated.");
-      setUpdateModalOpen(false);
-      setPaymentToUpdate(null);
-      setUpdateAmountInput("");
-    } catch (err) {
-      console.error("Error updating payment amount:", err);
-      alert(err.message || "Failed to update payment amount. Check console for details.");
-    }
-  };
-
+  // ---------- LOAD POLICIES ----------
   useEffect(() => {
     loadPolicies();
   }, []);
@@ -263,6 +229,10 @@ export default function PolicyWithPaymentsController() {
     setSelectedPaymentMode(payment.payment_mode_id || null);
     setManualReference(payment.payment_manual_reference || "");
     setEditModalOpen(true);
+    setPaymentToEdit(payment);
+    setSelectedPaymentMode(payment.payment_mode_id || null);
+    setManualReference(payment.payment_manual_reference || "");
+    setEditModalOpen(true);
   };
 
   const handlePaymentSave = async () => {
@@ -331,6 +301,7 @@ export default function PolicyWithPaymentsController() {
       setCurrentPayment(null);
       setPaymentInput("");
       setSelectedPaymentMode(null);
+      setManualReference("");
       setManualReference("");
     } catch (err) {
       console.error("Error updating payment:", err);
@@ -542,6 +513,7 @@ export default function PolicyWithPaymentsController() {
 
   const renderPolicies = currentPolicies;
 
+  // Reciept attachments and viewing functions
   const handleOpenReceiptModal = (payment) => {
     setSelectedPaymentForReceipt(payment);
     setReceiptModalOpen(true);
@@ -554,6 +526,7 @@ export default function PolicyWithPaymentsController() {
       setUploadingReceipt(true);
       await uploadReceiptFile(selectedPaymentForReceipt.id, file);
       
+      // Refresh payment schedule to include new receipt
       const policyId = selectedPaymentForReceipt.policy_id;
       const updatedSchedule = await fetchPaymentSchedule(policyId);
       const nonArchived = (updatedSchedule || []).filter(p => p.is_archive !== true);
@@ -585,6 +558,7 @@ export default function PolicyWithPaymentsController() {
     try {
       await deleteReceipt(receiptId);
       
+      // Refresh receipts
       const updatedReceipts = viewingReceipts.filter(r => r.id !== receiptId);
       setViewingReceipts(updatedReceipts);
       
@@ -594,6 +568,7 @@ export default function PolicyWithPaymentsController() {
         setCurrentReceiptIndex(updatedReceipts.length - 1);
       }
       
+      // Refresh payment schedule
       const payment = selectedPaymentForReceipt || viewingReceipts[0];
       if (payment?.payment_id) {
         const policyId = payment.policy_id;
@@ -621,6 +596,16 @@ export default function PolicyWithPaymentsController() {
     selectedPaymentMode,
     setSelectedPaymentMode,
 
+    //Edit Payment
+    updateModalOpen,
+    setUpdateModalOpen,
+    paymentToUpdate,
+    setPaymentToUpdate,
+    updateAmountInput,
+    setUpdateAmountInput,
+    handleOpenUpdateModal,
+    handleUpdatePaymentAmount,
+
     updateModalOpen,
     setUpdateModalOpen,
     paymentToUpdate,
@@ -639,6 +624,14 @@ export default function PolicyWithPaymentsController() {
 
     searchTerm,
     setSearchTerm,
+
+    // NEW: Filter exports
+    selectedAgent,
+    setSelectedAgent,
+    selectedPartner,
+    setSelectedPartner,
+    uniqueAgents,
+    uniquePartners,
 
     // NEW: Filter exports
     selectedAgent,
@@ -715,6 +708,23 @@ export default function PolicyWithPaymentsController() {
     filteredPolicies,
     currentPolicies,
     renderPoliciesList: renderPolicies,
+
+    receiptModalOpen,
+    setReceiptModalOpen,
+    selectedPaymentForReceipt,
+    setSelectedPaymentForReceipt,
+    uploadingReceipt,
+    handleOpenReceiptModal,
+    handleUploadReceipt,
+    
+    receiptViewerOpen,
+    setReceiptViewerOpen,
+    viewingReceipts,
+    setViewingReceipts,
+    currentReceiptIndex,
+    setCurrentReceiptIndex,
+    handleViewReceipts,
+    handleDeleteReceiptFromViewer,
 
     receiptModalOpen,
     setReceiptModalOpen,
