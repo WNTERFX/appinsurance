@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { fetchPolicies } from "../../AdminActions/PolicyActions";
 import {
   fetchPaymentSchedule,
@@ -27,11 +27,11 @@ import {
 export default function PolicyWithPaymentsController() {
   // --- UI + data state ---
   const [policies, setPolicies] = useState([]);
-  const [paymentsMap, setPaymentsMap] = useState({}); // fallback
-  const [paymentsByPolicy, setPaymentsByPolicy] = useState({}); // lazy-loaded payments
+  const [paymentsMap, setPaymentsMap] = useState({});
+  const [paymentsByPolicy, setPaymentsByPolicy] = useState({});
   const [loadingPayments, setLoadingPayments] = useState({});
-  const [expanded, setExpanded] = useState({}); // visual expand flags
-  const [expandedPolicy, setExpandedPolicy] = useState(null); // single-expanded tracker
+  const [expanded, setExpanded] = useState({});
+  const [expandedPolicy, setExpandedPolicy] = useState(null);
 
   const [manualReference, setManualReference] = useState("");
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -59,11 +59,13 @@ export default function PolicyWithPaymentsController() {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Archive confirmation modal state
+  // NEW: Filter states
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [selectedPartner, setSelectedPartner] = useState(null);
+
   const [archiveModalOpen, setArchiveModalOpen] = useState(false);
   const [selectedPaymentForArchive, setSelectedPaymentForArchive] = useState(null);
 
-  // Payment Modes
   const [paymentModes, setPaymentModes] = useState([]);
   const [selectedPaymentMode, setSelectedPaymentMode] = useState(null);
 
@@ -79,29 +81,49 @@ export default function PolicyWithPaymentsController() {
     
 
   const CHEQUE_PAYMENT_TYPE = 2;
-  // payment modes 
-    useEffect(() => {
+
+  // NEW: Extract unique agents and partners from policies
+  const uniqueAgents = useMemo(() => {
+    const agents = policies
+      .map(policy => {
+        const client = policy.clients_Table;
+        if (!client?.employee_Accounts) return null;
+        const firstName = client.employee_Accounts.first_name || "";
+        const lastName = client.employee_Accounts.last_name || "";
+        return `${firstName} ${lastName}`.trim();
+      })
+      .filter(agent => agent && agent !== "");
+    
+    return [...new Set(agents)].sort();
+  }, [policies]);
+
+  const uniquePartners = useMemo(() => {
+    const partners = policies
+      .map(policy => policy.insurance_Partners?.insurance_Name)
+      .filter(partner => partner);
+    
+    return [...new Set(partners)].sort();
+  }, [policies]);
+
+  useEffect(() => {
     loadPaymentModes();
   }, []);
 
   const loadPaymentModes = async () => {
-  try {
-    const modes = await fetchAllPaymentModes();
-    setPaymentModes(modes);
-  } catch (err) {
-    console.error("Error loading payment modes:", err);
-    setPaymentModes([]);
-  }
-};
-
-  // ---------- EDIT PAYMENT AMOUNT MODAL ----------
+    try {
+      const modes = await fetchAllPaymentModes();
+      setPaymentModes(modes);
+    } catch (err) {
+      console.error("Error loading payment modes:", err);
+      setPaymentModes([]);
+    }
+  };
 
   const handleOpenUpdateModal = (payment) => {
     setPaymentToUpdate(payment);
     setUpdateAmountInput(payment.amount_to_be_paid.toString());
     setUpdateModalOpen(true);
   };
-
 
   const handleUpdatePaymentAmount = async () => {
     if (!paymentToUpdate?.id || !paymentToUpdate?.policy_id) return;
@@ -135,7 +157,6 @@ export default function PolicyWithPaymentsController() {
   // ---------- LOAD POLICIES ----------
   useEffect(() => {
     loadPolicies();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadPolicies = async () => {
@@ -153,7 +174,6 @@ export default function PolicyWithPaymentsController() {
       const filtered = allPolicies.filter(policy => policy.is_archived !== true);
       setPolicies(filtered);
 
-      // reset pagination
       setCurrentPage(1);
     } catch (err) {
       console.error("Error loading policies:", err);
@@ -162,7 +182,6 @@ export default function PolicyWithPaymentsController() {
     }
   };
 
-  // ---------- Handle expanding a policy: lazy-load payments ----------
   const handleExpand = async (policyId) => {
     setExpanded(prev => ({ ...prev, [policyId]: !prev[policyId] }));
 
@@ -189,7 +208,6 @@ export default function PolicyWithPaymentsController() {
 
   const toggleExpand = (id) => setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
 
-  // ---------- Helper functions ----------
   const calculateTotalPenalties = (payment) => {
     const penalties = payment.penalties || [];
     return penalties.reduce((sum, p) => sum + parseFloat(p.penalty_amount || 0), 0);
@@ -235,7 +253,6 @@ export default function PolicyWithPaymentsController() {
     return basePaid + penaltiesPaid;
   };
 
-  // ---------- Payment modal / update ----------
   const handlePaymentClick = (payment, clientPhone) => {
     setCurrentPayment({ ...payment, client_phone: clientPhone, policy_id: payment.policy_id });
     setPaymentInput("");
@@ -245,10 +262,10 @@ export default function PolicyWithPaymentsController() {
   };
 
   const handleOpenEditModal = (payment) => {
-  setPaymentToEdit(payment);
-  setSelectedPaymentMode(payment.payment_mode_id || null);
-  setManualReference(payment.payment_manual_reference || "");
-  setEditModalOpen(true);
+    setPaymentToEdit(payment);
+    setSelectedPaymentMode(payment.payment_mode_id || null);
+    setManualReference(payment.payment_manual_reference || "");
+    setEditModalOpen(true);
   };
 
   const handlePaymentSave = async () => {
@@ -286,7 +303,6 @@ export default function PolicyWithPaymentsController() {
         return;
       }
 
-      // Update with manual reference
       if (cleanedInput <= currentRemaining + 0.0001) {
         await updatePayment(currentPayment.id, cleanedInput, selectedPaymentMode, manualReference || null);
       } else {
@@ -296,7 +312,6 @@ export default function PolicyWithPaymentsController() {
           const remaining = Math.max(calculateTotalDue(p) - calculateTotalPaid(p), 0);
           if (remaining <= 0) continue;
           const amountToPay = Math.min(remaining, remainingToApply);
-          // Only add reference to the first payment
           const ref = i === currentIndex ? (manualReference || null) : null;
           await updatePayment(p.id, amountToPay, selectedPaymentMode, ref);
           remainingToApply -= amountToPay;
@@ -319,7 +334,7 @@ export default function PolicyWithPaymentsController() {
       setCurrentPayment(null);
       setPaymentInput("");
       setSelectedPaymentMode(null);
-      setManualReference(""); // Clear reference
+      setManualReference("");
     } catch (err) {
       console.error("Error updating payment:", err);
       alert("Failed to update payment. Check console for details.");
@@ -334,12 +349,10 @@ export default function PolicyWithPaymentsController() {
   const handleDeleteConfirm = async () => {
     if (!selectedPaymentForDelete) return;
     try {
-      // Call the delete function from your actions
       await deletePayment(selectedPaymentForDelete.id);
 
       const policyId = selectedPaymentForDelete.policy_id;
       
-      // Refresh the payment schedule for this policy
       const updatedSchedule = await fetchPaymentSchedule(policyId);
       const nonArchived = (updatedSchedule || []).filter(p => p.is_archive !== true);
       
@@ -386,7 +399,6 @@ export default function PolicyWithPaymentsController() {
     }
   };
 
-  // ---------- Penalty flows ----------
   const handleAddPenalty = (payment) => {
     if (isChequePayment(payment)) {
       alert("Cheque payments are not subject to overdue penalties.");
@@ -405,7 +417,6 @@ export default function PolicyWithPaymentsController() {
     if (!selectedPaymentForPenalty) return;
 
     try {
-      // --- Step 1: Calculate and add the penalty ---
       const overdueInfo = calculateOverdueInfo(selectedPaymentForPenalty);
       const { penaltyAmount } = await calculateDailyPenalty({
         amount_to_be_paid: selectedPaymentForPenalty.amount_to_be_paid,
@@ -420,23 +431,14 @@ export default function PolicyWithPaymentsController() {
         overdueInfo.daysOverdue
       );
 
-      // --- Step 2: Trigger the notification (NEW) ---
-      // We wrap this in a separate try/catch so that a
-      // notification failure doesn't hide the success of adding the penalty.
       try {
         console.log(`Attempting to notify client for penalty on payment ${selectedPaymentForPenalty.id}...`);
         await notifyClientOfPenalty(selectedPaymentForPenalty.id);
         console.log("Client notification function invoked.");
       } catch (notifyError) {
-        // Log the error, but don't stop the rest of the flow.
-        // The penalty was added successfully.
         console.warn("Penalty notification failed to send:", notifyError.message);
-        // Optionally, you could alert this, but it's often better
-        // to just log it for background services.
-        // alert("Penalty added, but client notification failed.");
       }
 
-      // --- Step 3: Refresh local state and close modal ---
       const policyId = selectedPaymentForPenalty.policy_id;
       const updated = await fetchPaymentSchedule(policyId);
       setPaymentsByPolicy((prev) => ({ ...prev, [policyId]: updated }));
@@ -452,7 +454,6 @@ export default function PolicyWithPaymentsController() {
     }
   };
 
-  // ---------- Generate payments ----------
   const handleGeneratePayments = async (policyId, payments) => {
     try {
       await generatePayments(policyId, payments);
@@ -473,7 +474,6 @@ export default function PolicyWithPaymentsController() {
     setGenerateModalOpen(true);
   };
 
-  // ---------- Archive ----------
   const handleOpenArchiveModal = (payment) => {
     setSelectedPaymentForArchive(payment);
     setArchiveModalOpen(true);
@@ -505,19 +505,36 @@ export default function PolicyWithPaymentsController() {
     }
   };
 
-  // ---------- Filtering and paging ----------
-  const filteredPolicies = policies.filter((policy) => {
-    const client = policy.clients_Table;
-    const clientName = client
-      ? [client.prefix, client.first_Name, client.middle_Name ? client.middle_Name.charAt(0) + "." : "", client.family_Name, client.suffix]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase()
-      : "";
-    const policyId = policy.internal_id?.toLowerCase() || "";
-    const search = searchTerm.toLowerCase().trim();
-    return policyId.includes(search) || clientName.includes(search);
-  });
+  // NEW: Enhanced filtering with agent and partner
+  const filteredPolicies = useMemo(() => {
+    return policies.filter((policy) => {
+      const client = policy.clients_Table;
+      
+      // Client name and policy ID search
+      const clientName = client
+        ? [client.prefix, client.first_Name, client.middle_Name ? client.middle_Name.charAt(0) + "." : "", client.family_Name, client.suffix]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase()
+        : "";
+      
+      const policyId = policy.internal_id?.toLowerCase() || "";
+      const search = searchTerm.toLowerCase().trim();
+      const matchesSearch = clientName.includes(search) || policyId.includes(search);
+      
+      // Agent filter
+      const agentName = client?.employee_Accounts
+        ? `${client.employee_Accounts.first_name || ""} ${client.employee_Accounts.last_name || ""}`.trim()
+        : "";
+      const matchesAgent = !selectedAgent || agentName === selectedAgent;
+      
+      // Partner filter
+      const partnerName = policy.insurance_Partners?.insurance_Name || "";
+      const matchesPartner = !selectedPartner || partnerName === selectedPartner;
+      
+      return matchesSearch && matchesAgent && matchesPartner;
+    });
+  }, [policies, searchTerm, selectedAgent, selectedPartner]);
 
   const totalPoliciesCount = filteredPolicies.length;
   const totalPages = Math.ceil(totalPoliciesCount / rowsPerPage);
@@ -602,13 +619,11 @@ export default function PolicyWithPaymentsController() {
   };
 
   return {
-    // data
     policies,
     paymentsMap,
     paymentsByPolicy,
     loadingPayments,
 
-    // Payment Modes
     paymentModes,
     selectedPaymentMode,
     setSelectedPaymentMode,
@@ -631,11 +646,17 @@ export default function PolicyWithPaymentsController() {
     setCurrentPage,
     totalPages,
 
-    //search
     searchTerm,
     setSearchTerm,
 
-    // ui flags + setters
+    // NEW: Filter exports
+    selectedAgent,
+    setSelectedAgent,
+    selectedPartner,
+    setSelectedPartner,
+    uniqueAgents,
+    uniquePartners,
+
     expanded,
     setExpanded,
     expandedPolicy,
@@ -643,7 +664,6 @@ export default function PolicyWithPaymentsController() {
     isLoading,
     setIsLoading,
 
-    // modals + selections
     modalOpen,
     setModalOpen,
     currentPayment,
@@ -656,7 +676,6 @@ export default function PolicyWithPaymentsController() {
     selectedPaymentForDelete,
     setSelectedPaymentForDelete,
 
-    //edit modal
     manualReference,
     setManualReference,
     editModalOpen,
@@ -681,7 +700,6 @@ export default function PolicyWithPaymentsController() {
     selectedPaymentForArchive,
     setSelectedPaymentForArchive,
 
-    // helpers & handlers
     loadPolicies,
     handleExpand,
     toggleExpand,
@@ -703,35 +721,29 @@ export default function PolicyWithPaymentsController() {
     handleOpenDeleteModal,
     handleDeleteConfirm,
 
-    // filtered / paginated
     filteredPolicies,
     currentPolicies,
     renderPoliciesList: renderPolicies,
 
-
-    // receipt attachments + viewing
-     // Receipt modal
-  receiptModalOpen,
-  setReceiptModalOpen,
-  selectedPaymentForReceipt,
-  setSelectedPaymentForReceipt,
-  uploadingReceipt,
-  handleOpenReceiptModal,
-  handleUploadReceipt,
-  
-  // Receipt viewer
-  receiptViewerOpen,
-  setReceiptViewerOpen,
-  viewingReceipts,
-  setViewingReceipts,
-  currentReceiptIndex,
-  setCurrentReceiptIndex,
-  handleViewReceipts,
-  handleDeleteReceiptFromViewer
+    receiptModalOpen,
+    setReceiptModalOpen,
+    selectedPaymentForReceipt,
+    setSelectedPaymentForReceipt,
+    uploadingReceipt,
+    handleOpenReceiptModal,
+    handleUploadReceipt,
+    
+    receiptViewerOpen,
+    setReceiptViewerOpen,
+    viewingReceipts,
+    setViewingReceipts,
+    currentReceiptIndex,
+    setCurrentReceiptIndex,
+    handleViewReceipts,
+    handleDeleteReceiptFromViewer
   };
 }
 
-// helper
 export function getPaymentStatus(payment) {
   if (!payment) return "not-paid";
   if (payment.is_refunded || payment.payment_status === "refunded") return "refunded";

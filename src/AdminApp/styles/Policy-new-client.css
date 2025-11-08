@@ -4,80 +4,55 @@
   max-width: 1500px;
   border-radius: 25px;
   padding: 40px 50px;
-  font-family: "Segoe UI" , Arial, sans-serif;
+  font-family: "Segoe UI", Arial, sans-serif;
 }
 
-/* Form Card */
+/* Headings */
 .form-cardh2{
   font-size: 26px;
   margin-bottom: 35px;
 }
+.new-client-container h2{
+  margin-bottom: 1rem;
+}
 
+/* Inputs */
 .form-group input,
 .form-group select{
- 
   padding: 0.5rem;
   font-size: 1rem;
-  border-radius: 4px;
-  border: 1px solid #ccc;
   border-radius: 11px;
+  border: 1px solid #ccc;
   outline: none;
   background: white;
 }
-.form-group input:focus{
+.form-group input:focus,
+.form-group select:focus{
   border-color: #000;
 }
 
+/* Labels / groups */
 .form-group label{
   margin-bottom: 0.4rem;
   font-weight: 500;
 }
-
 .form-group{
-   display: flex;
+  display: flex;
   flex-direction: column;
   margin-bottom: 1rem;
-  
 }
-
 .form-group input[type="checkbox"]{
   width: 18px;
   height: 18px;
   cursor: pointer;
 }
-
 .form-group:has(input[type="checkbox"]){
   flex-direction: row;
   align-items: center;
   gap: 1rem;
 }
 
-
-@media (min-width: 1366px) and (max-width: 1920px) {
-  .new-client-container {
-    max-width: 1200px;
-    margin-left: 30px;
-  }
-}
-
-@media (min-width: 1600px) {
-  .new-client-container {
-    max-width: 1300px;
-    margin: 1rem auto;
-  }
-}
-
-@media (min-width: 2000px) {
-  .new-client-container {
-    max-width: 1800px;
-  }
-}
-
-.new-client-container h2{
-  margin-bottom: 1rem;
-}
-
-/* Form Card */
+/* Card */
 .form-card {
   background-color: #ffffff;
   padding: 2rem;
@@ -85,233 +60,149 @@
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 
-
-/* Grid: default stacked layout for most screens */
+/* Grid */
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr; /* stack fields above calculation */
+  grid-template-columns: 1fr;
   gap: 2rem;
 }
-
 .form-left-column{
- display: grid;
- grid-template-columns: repeat(3, 1fr);
- gap:1rem;
-
-}
-
-.form-left-column{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:1rem;
   width: 100%;
 }
-
 @media (min-width: 1200px){
-.form-left-column{
-  grid-template-columns: repeat(2, 1fr);
- }
+  .form-left-column{ grid-template-columns: repeat(2, 1fr); }
 }
-
 @media (min-width: 1200px) {
-  .form-left-column{
-    grid-template-columns: repeat(3, 1fr);
-  }
+  .form-left-column{ grid-template-columns: repeat(3, 1fr); }
 }
-
-.form-right-column{
-  display: flex;
-  flex-direction: column;
-}
-
-/* ========== Calculation Summary ========== */
-
 .form-right-column{
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
+
+/* Calculation Summary Card (keep the main card subtle) */
 .calculation-card{
   background-color: #f0f7ff;
   border: 1px solid #cce0ff;
   padding: 20px;
   border-radius: 12px;
 }
-
 .calculation-card h3{
- font-size: 1.3rem;
+  font-size: 1.3rem;
   font-weight: 600;
   margin-bottom: 15px;
   color: #1a3d7c;
   border-bottom: 1px solid #b0c9f7;
   padding-bottom: 8px;
 }
-
 .calculation-card p{
-    font-size: 0.95rem;
+  font-size: 0.95rem;
   margin: 8px 0;
   display: flex;
   justify-content: space-between;
   color: #333;
 }
-
 .calculation-card span{
-font-weight: 600;
-color: #000;
+  font-weight: 600;
+  color: #000;
 }
-
 .calculation-card hr{
   border:none;
   border-top: 1px solid #ccc;
   margin: 15px 0;
 }
 
-/* ========== Monthly Payment Section ========== */
-.monthly-payment-section {
-  margin-top: 10px;
-  padding-top: 15px;
-  background-color: #e8f4ff;
-  padding: 15px;
-  border-radius: 8px;
-  border: 2px solid #4a90e2;
+/* REMOVE colored strips inside the summary */
+.vehicle-val,
+.own-tax,
+.basic-prem,
+.local-tax{
+  background-color: transparent !important;
+  border: none !important;
+  padding: 5px 0 !important;
+  border-radius: 0 !important;
+  font-weight: normal !important;
 }
 
-.monthly-payment-label {
-  font-size: 0.95rem;
-  color: #1a3d7c;
-  font-weight: 500;
-  margin-bottom: 8px;
-  display: block;
-}
-
-.monthly-payment-amount {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #007BFF;
-  text-align: center;
-  margin: 0;
-  padding: 8px 0;
-  display: block;
-}
-
-/* ========== Buttons ========== */
+/* Buttons */
 .button-container-new-policy{
-   display: flex;
+  display: flex;
   justify-content: flex-end;
   gap: 15px;
   margin-top: 20px;
 }
-
 .cancel-btn-new-policy{
-   background-color: #F86B6B;      
+  background-color: #F86B6B;
   color: white;
-  padding: 12px 0;               
-  width: 160px;                 
+  padding: 12px 0;
+  width: 160px;
   text-align: center;
   border: none;
   border-radius: 25px;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
-
 .cancel-btn-new-policy:hover{
-    transform: scale(1.05);               /* slight grow */
+  transform: scale(1.05);
   box-shadow: 0 6px 12px rgba(0,0,0,0.15);
   background-color: #F25353;
   color: white;
 }
-
 .confirm-btn-new-policy{
-    background-color: #007BFF;      
+  background-color: #007BFF;
   color: white;
-  padding: 12px 0;               
-  width: 160px;                 
+  padding: 12px 0;
+  width: 160px;
   text-align: center;
   border: none;
   border-radius: 25px;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 .confirm-btn-new-policy:hover{
-  transform: scale(1.05);               /* slight grow */
+  transform: scale(1.05);
   box-shadow: 0 6px 12px rgba(0,0,0,0.15);
   background-color: #0056B3;
   color: white;
 }
-
 .cancel-btn-new-policy,
 .confirm-btn-policy-edit-moderator{
-  transform: scale(0.97);               /* slight press */
+  transform: scale(0.97);
   box-shadow: 0 4px 8px rgba(0,0,0,0.2) inset;
 }
 
-/* ========== Responsive ========== */
+/* Responsive */
 @media (max-width: 1100px) {
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .form-right-column {
-    margin-top: 25px;
-  }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-right-column { margin-top: 25px; }
 }
-
-/* -------------------------- */
-/* Ultra-wide screens: side-by-side layout */
 @media (min-width: 2000px) {
   .form-grid {
-    grid-template-columns: 1fr 1fr; /* left + right side by side */
+    grid-template-columns: 1fr 1fr;
     gap: 2rem;
   }
-
   .form-grid > .form-right-column {
     border-left: 1px solid #ccc;
     padding-left: 1rem;
-    margin-top: 0; /* remove stacked spacing */
+    margin-top: 0;
   }
 }
 
+/* react-select width */
 .client-select__control {
-  min-width: 350px; /* adjust to how wide you want */
-  max-width: 100%; /* prevents it from overflowing */
+  min-width: 350px;
+  max-width: 100%;
 }
 
-
-.vehicle-val {
-  background-color: #b0c9f7;
-  border: 1px solid #b0c9f7;
-  padding: 5px;
-  border-radius: 15px 15px;
-  font-weight: bold;
-  
-}
-
-.own-tax {
-  background-color: #e3e4b6;
-  border: 1px solid #e3e4b6;
-  padding: 5px;
-  border-radius: 15px 15px;
-  font-weight: bold;
-}
-
-.basic-prem {
-  background-color: #e7b4d0;
-  border: 1px solid #e7b4d0;
-  padding: 5px;
-  border-radius: 15px 15px;
-  font-weight: bold;
-}
-
-.local-tax {
-  background-color: #b1f1b9;
-  border: 1px solid #b1f1b9;
-  padding: 5px;
-  border-radius: 15px 15px;
-  font-weight: bold;
-}
-
-
+/* Tooltip */
 .tooltip-icon {
   cursor: help;
   border-radius: 50%;
@@ -324,5 +215,5 @@ color: #000;
   justify-content: center;
   font-size: 12px;
   font-weight: bold;
-  user-select: none; /* Prevents selecting the '?' text */
+  user-select: none;
 }
