@@ -137,6 +137,14 @@ export default function PolicyWithPaymentsList() {
     setCurrentReceiptIndex,
     handleViewReceipts,
     handleDeleteReceiptFromViewer,
+    
+    // search 
+    selectedAgent,
+    setSelectedAgent,
+    selectedPartner,
+    setSelectedPartner,
+    uniqueAgents,
+    uniquePartners,
 
     // --- UI state ---
     isLoading,
@@ -844,21 +852,108 @@ export default function PolicyWithPaymentsList() {
 
       <div className="payments-overview-header">
         <h2>Payments Overview ({totalPoliciesCount})</h2>
-        <div className="search-filter-refresh-bar">
-          <input type="text" placeholder="Search by Policy ID or Client Name..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="search-input" />
-          <div className="result-select-wrapper">
+        
+        {/* UPDATED FILTER BAR */}
+        <div className="search-filter-refresh-bar" style={{ 
+          display: 'flex', 
+          gap: '12px', 
+          alignItems: 'center', 
+          flexWrap: 'wrap' 
+        }}>
+          {/* Search Input - keeps Policy ID and Client Name search */}
+          <input 
+            type="text" 
+            placeholder="Search by Policy ID or Client Name..." 
+            value={searchTerm} 
+            onChange={(e) => { 
+              setSearchTerm(e.target.value); 
+              setCurrentPage(1); 
+            }} 
+            className="search-input"
+            style={{ flex: '1 1 200px', minWidth: '200px' }}
+          />
+
+          {/* Agent Filter */}
+          <div style={{ flex: '0 0 auto' }}>
+            <select
+              value={selectedAgent || ''}
+              onChange={(e) => {
+                setSelectedAgent(e.target.value || null);
+                setCurrentPage(1);
+              }}
+              style={{
+                padding: '8px 12px',
+                fontSize: '0.95em',
+                border: '1px solid #ced4da',
+                borderRadius: '4px',
+                backgroundColor: 'white',
+                minWidth: '180px'
+              }}
+            >
+              <option value="">All Agents</option>
+              {uniqueAgents.map((agent, index) => (
+                <option key={index} value={agent}>
+                  {agent}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Partner Filter (NEW - replaces Policy ID dropdown) */}
+          <div style={{ flex: '0 0 auto' }}>
+            <select
+              value={selectedPartner || ''}
+              onChange={(e) => {
+                setSelectedPartner(e.target.value || null);
+                setCurrentPage(1);
+              }}
+              style={{
+                padding: '8px 12px',
+                fontSize: '0.95em',
+                border: '1px solid #ced4da',
+                borderRadius: '4px',
+                backgroundColor: 'white',
+                minWidth: '180px'
+              }}
+            >
+              <option value="">All Partners</option>
+              {uniquePartners.map((partner, index) => (
+                <option key={index} value={partner}>
+                  {partner}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Results per page */}
+          <div className="result-select-wrapper" style={{ flex: '0 0 auto' }}>
             <span>Result</span>
-            <select value={rowsPerPage} onChange={(e) => { setRowsPerPage(Number(e.target.value)); setCurrentPage(1); }} className="result-select">
+            <select 
+              value={rowsPerPage} 
+              onChange={(e) => { 
+                setRowsPerPage(Number(e.target.value)); 
+                setCurrentPage(1); 
+              }} 
+              className="result-select"
+            >
               <option value={15}>15</option>
               <option value={25}>25</option>
               <option value={50}>50</option>
               <option value={100}>100</option>
             </select>
           </div>
-          <button className="refresh-btn" onClick={loadPolicies} disabled={isLoading}>{isLoading ? "Refreshing..." : "Refresh"}</button>
+
+          {/* Refresh Button */}
+          <button 
+            className="refresh-btn" 
+            onClick={loadPolicies} 
+            disabled={isLoading}
+            style={{ flex: '0 0 auto' }}
+          >
+            {isLoading ? "Refreshing..." : "Refresh"}
+          </button>
         </div>
       </div>
-
       {/* Policies list */}
       <div className="policies-list">
         {renderPolicies.map(policy => {
