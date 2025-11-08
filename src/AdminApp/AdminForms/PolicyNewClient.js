@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Select from 'react-select';
 import '../styles/Policy-new-client.css';
 
@@ -8,16 +8,16 @@ export default function PolicyNewClient({
   setSelected,
   vehicleDetails,
   yearInput,
-  setYearInput,   
+  setYearInput,
   vehicleCost,
-  setVehicleCost,  
-  basicPremiumValue, 
-  basicPremiumWithCommissionValue,        
- 
+  setVehicleCost,
+  basicPremiumValue,
+  basicPremiumWithCommissionValue,
+
   isAoN,
   setIsAoN,
 
-  //VehicleValue
+  // VehicleValue
   orginalVehicleCost,
   currentVehicleValueCost,
   claimableAmount,
@@ -26,9 +26,8 @@ export default function PolicyNewClient({
   actOfNatureCost,
   commissionFee,
   setCommissionFee,
-  commissionValue, 
+  commissionValue,
 
-  
   setSelectedPartner,
   vehicleMaker,
   setVehicleMaker,
@@ -43,31 +42,34 @@ export default function PolicyNewClient({
   vehicleEngineNumber,
   setEngineNumber,
 
-  paymentTypes,             
-  selectedPaymentType,     
-  setSelectedPaymentType,   
-  
+  paymentTypes,
+  selectedPaymentType,
+  setSelectedPaymentType,
 
   clients,
   selectedClient,
   setSelectedClient,
-      
+
   partners,
   selectedPartner,
   onSaveClient,
   navigate
-})  {
-  console.log("Selected Partner:", selectedPartner);
-  
+}) {
   const [errors, setErrors] = useState({});
 
   const startYear = new Date().getFullYear();
-  const years = Array.from({ length: 50 }, (_, i) => startYear - i)
+  const years = useMemo(() => Array.from({ length: 50 }, (_, i) => startYear - i), [startYear]);
+
+  // Maker options (Select list)
+  const makerOptions = [
+    'Toyota','Mitsubishi','Honda','Ford','Nissan','Hyundai','Isuzu','Suzuki','Subaru','Geely',
+    'Yamaha','Kawasaki','KTM','DUCATI','CFMOTO'
+  ];
 
   // Calculate monthly payment based on selected payment type
   const selectedPaymentTypeObj = paymentTypes?.find(pt => pt.id === Number(selectedPaymentType));
   const months = selectedPaymentTypeObj?.months_payment || 0;
-  const monthlyPayment = months > 0 ? (totalPremiumCost / months) : 0;
+  const monthlyPayment = months > 0 ? (Number(totalPremiumCost || 0) / months) : 0;
 
   const validateForm = () => {
     const newErrors = {};
@@ -88,19 +90,19 @@ export default function PolicyNewClient({
   };
 
   const handleConfirm = () => {
-    if (validateForm()) {
-      onSaveClient();
-    }
+    if (validateForm()) onSaveClient();
   };
 
   return (
     <div className="new-client-container">
       <div className="form-card">
         <h2>Policy Creation Form</h2>
+
         <form className="form-grid">
-          
+          {/* LEFT */}
           <div className="form-left-column">
 
+            {/* Client */}
             <div className={`form-group ${errors.selectedClient ? 'error' : ''}`}>
               <label>Client <span style={{ color: 'red' }}>*</span></label>
               <Select
@@ -139,24 +141,30 @@ export default function PolicyNewClient({
               {errors.selectedClient && <small style={{ color: 'red' }}>Client is required</small>}
             </div>
 
+            {/* Maker (changed to select) */}
             <div className={`form-group ${errors.vehicleMaker ? 'error' : ''}`}>
-              <label>Maker <span style={{ color: 'red' }}>*</span></label>
-              <input 
-                type="text" 
-                value={vehicleMaker}
+              <label>Make <span style={{ color: 'red' }}>*</span></label>
+              <select
+                value={vehicleMaker || ''}
                 onChange={(e) => {
                   setVehicleMaker(e.target.value);
                   setErrors(prev => ({ ...prev, vehicleMaker: false }));
                 }}
                 style={{ borderColor: errors.vehicleMaker ? 'red' : '' }}
-              />
-              {errors.vehicleMaker && <small style={{ color: 'red' }}>Make Model is required</small>}
+              >
+                <option value="">-- Select Maker --</option>
+                {makerOptions.map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+              {errors.vehicleMaker && <small style={{ color: 'red' }}>Maker is required</small>}
             </div>
 
+            {/* Model */}
             <div className={`form-group ${errors.vehicleName ? 'error' : ''}`}>
               <label>Model <span style={{ color: 'red' }}>*</span></label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={vehicleName}
                 onChange={(e) => {
                   setVehicleName(e.target.value);
@@ -167,49 +175,42 @@ export default function PolicyNewClient({
               {errors.vehicleName && <small style={{ color: 'red' }}>Vehicle Name is required</small>}
             </div>
 
+            {/* VIN */}
             <div className={`form-group ${errors.vehicleVinNumber ? 'error' : ''}`}>
               <label>Vehicle VIN Number <span style={{ color: 'red' }}>*</span></label>
-                <input 
-                  type="text"
-                  value={vehicleVinNumber || ""}
-                  maxLength={17} 
-                  onChange={(e) => {
-                    // 1. Get value, force to uppercase, and trim whitespace
-                    const upperValue = e.target.value.toUpperCase().trim();
-                    
-                    // 2. Define regex for invalid VIN characters (anything NOT A-H, J-N, P, R-Z, or 0-9)
-                    const invalidCharsRegex = /[^0-9A-HJKNPR-Z]/g;
-                    
-                    // 3. Clean the value by replacing invalid chars with an empty string
-                    const cleanedValue = upperValue.replace(invalidCharsRegex, '');
-
-                    // 4. Set the cleaned value into state
-                    setVinNumber(cleanedValue);
-                    
-                    // 5. Clear the error as the user is fixing it
-                    setErrors(prev => ({ ...prev, vehicleVinNumber: false }));
-                  }}
-                  style={{ 
-                    borderColor: errors.vehicleVinNumber ? 'red' : '',
-                    textTransform: 'uppercase' // This is still good for visual feedback
-                  }}
-                  required
-                />
+              <input
+                type="text"
+                value={vehicleVinNumber || ""}
+                maxLength={17}
+                onChange={(e) => {
+                  const upperValue = e.target.value.toUpperCase().trim();
+                  const invalidCharsRegex = /[^0-9A-HJKNPR-Z]/g;
+                  const cleanedValue = upperValue.replace(invalidCharsRegex, '');
+                  setVinNumber(cleanedValue);
+                  setErrors(prev => ({ ...prev, vehicleVinNumber: false }));
+                }}
+                style={{
+                  borderColor: errors.vehicleVinNumber ? 'red' : '',
+                  textTransform: 'uppercase'
+                }}
+                required
+              />
               <small style={{ color: vehicleVinNumber?.length >= 17 ? "green" : errors.vehicleVinNumber ? "red" : "gray" }}>
                 {vehicleVinNumber?.length || 0}/17 characters {errors.vehicleVinNumber && '- Must be exactly 17 valid characters'}
               </small>
             </div>
 
+            {/* Engine Serial */}
             <div className={`form-group ${errors.vehicleEngineNumber ? 'error' : ''}`}>
               <label>Vehicle Engine Serial <span style={{ color: 'red' }}>*</span></label>
-              <input 
+              <input
                 type="text"
                 value={vehicleEngineNumber || ""}
                 onChange={(e) => {
                   setEngineNumber(e.target.value);
                   setErrors(prev => ({ ...prev, vehicleEngineNumber: false }));
                 }}
-                style={{ 
+                style={{
                   borderColor: errors.vehicleEngineNumber ? 'red' : '',
                   textTransform: 'uppercase'
                 }}
@@ -217,32 +218,34 @@ export default function PolicyNewClient({
               {errors.vehicleEngineNumber && <small style={{ color: 'red' }}>Engine Serial is required</small>}
             </div>
 
+            {/* Plate */}
             <div className={`form-group ${errors.vehiclePlateNumber ? 'error' : ''}`}>
               <label>Vehicle Plate Number <span style={{ color: 'red' }}>*</span></label>
-                <input 
-                  type="text"
-                  value={vehiclePlateNumber || ""}
-                  onChange={(e) => {
-                    const upperValue = e.target.value.toUpperCase().trim();
-                    const invalidCharsRegex = /[^A-Z0-9]/g;
-                    const cleanedValue = upperValue.replace(invalidCharsRegex, '');
-                    setPlateNumber(cleanedValue);
-                    setErrors(prev => ({ ...prev, vehiclePlateNumber: false }));
-                  }}
-                  maxLength={8}
-                  style={{ 
-                    borderColor: errors.vehiclePlateNumber ? 'red' : '',
-                    textTransform: 'uppercase'
-                  }}
-                />
-                <small style={{ color: vehiclePlateNumber?.length >= 8 ? "green" : errors.vehiclePlateNumber ? "red" : "gray" }}>
-                  {vehiclePlateNumber?.length || 0}/8 characters {errors.vehiclePlateNumber && '- Required'}
-                </small>
+              <input
+                type="text"
+                value={vehiclePlateNumber || ""}
+                onChange={(e) => {
+                  const upperValue = e.target.value.toUpperCase().trim();
+                  const invalidCharsRegex = /[^A-Z0-9]/g;
+                  const cleanedValue = upperValue.replace(invalidCharsRegex, '');
+                  setPlateNumber(cleanedValue);
+                  setErrors(prev => ({ ...prev, vehiclePlateNumber: false }));
+                }}
+                maxLength={8}
+                style={{
+                  borderColor: errors.vehiclePlateNumber ? 'red' : '',
+                  textTransform: 'uppercase'
+                }}
+              />
+              <small style={{ color: vehiclePlateNumber?.length >= 8 ? "green" : errors.vehiclePlateNumber ? "red" : "gray" }}>
+                {vehiclePlateNumber?.length || 0}/8 characters {errors.vehiclePlateNumber && '- Required'}
+              </small>
             </div>
 
+            {/* Color */}
             <div className={`form-group ${errors.vehicleColor ? 'error' : ''}`}>
               <label>Vehicle Color <span style={{ color: 'red' }}>*</span></label>
-              <input 
+              <input
                 type="text"
                 value={vehicleColor || ""}
                 onChange={(e) => {
@@ -252,40 +255,36 @@ export default function PolicyNewClient({
                 style={{
                   borderColor: errors.vehicleColor ? 'red' : '',
                   textTransform: 'uppercase'
-                 }}
+                }}
               />
               {errors.vehicleColor && <small style={{ color: 'red' }}>Vehicle Color is required</small>}
-            </div>          
+            </div>
 
+            {/* Year */}
             <div className={`form-group ${errors.yearInput ? 'error' : ''}`}>
-              <label>
-                Vehicle Year <span style={{ color: 'red' }}>*</span>
-              </label>
+              <label>Vehicle Year <span style={{ color: 'red' }}>*</span></label>
               <select
-                value={yearInput || ''} // yearInput will be 0 if not set, so this becomes ""
+                value={yearInput || ''}
                 onChange={(e) => {
-                  setYearInput(Number(e.target.value)); // Number("") is 0
+                  setYearInput(Number(e.target.value));
                   setErrors((prev) => ({ ...prev, yearInput: false }));
                 }}
                 style={{ borderColor: errors.yearInput ? 'red' : '' }}
               >
                 <option value="">-- Select Vehicle Year --</option>
                 {years.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
+                  <option key={year} value={year}>{year}</option>
                 ))}
               </select>
-              {errors.yearInput && (
-                <small style={{ color: 'red' }}>Vehicle Year is required</small>
-              )}
+              {errors.yearInput && <small style={{ color: 'red' }}>Vehicle Year is required</small>}
             </div>
 
+            {/* Partner */}
             <div className={`form-group ${errors.selectedPartner ? 'error' : ''}`}>
               <label>Partners <span style={{ color: 'red' }}>*</span></label>
               <select
                 id="company-select"
-                value={selectedPartner}
+                value={selectedPartner || ''}
                 onChange={(e) => {
                   setSelectedPartner(e.target.value);
                   setErrors(prev => ({ ...prev, selectedPartner: false }));
@@ -303,21 +302,20 @@ export default function PolicyNewClient({
               {errors.selectedPartner && <small style={{ color: 'red' }}>Partner is required</small>}
             </div>
 
+            {/* Payment Type */}
             <div className={`form-group ${errors.selectedPaymentType ? 'error' : ''}`}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                Payment Type 
+                Payment Type
                 <span style={{ color: 'red' }}>*</span>
-                 <span 
-                      title="This is to set the default value of the payment type, this can be changed later in the payment generation."
-                      className="tooltip-icon" 
-                    >
-                      ?
+                <span
+                  title="This is to set the default value of the payment type, this can be changed later in the payment generation."
+                  className="tooltip-icon"
+                >
+                  ?
                 </span>
-                </label>
-                  
-               
+              </label>
               <select
-                value={selectedPaymentType}
+                value={selectedPaymentType || ''}
                 onChange={(e) => {
                   setSelectedPaymentType(e.target.value);
                   setErrors(prev => ({ ...prev, selectedPaymentType: false }));
@@ -335,11 +333,12 @@ export default function PolicyNewClient({
               {errors.selectedPaymentType && <small style={{ color: 'red' }}>Payment Type is required</small>}
             </div>
 
+            {/* Vehicle Type */}
             <div className={`form-group ${errors.selected ? 'error' : ''}`}>
               <label>Vehicle Type <span style={{ color: 'red' }}>*</span></label>
               <select
                 id="vehicle-type-select"
-                value={selected}
+                value={selected || ''}
                 onChange={(e) => {
                   setSelected(e.target.value);
                   setErrors(prev => ({ ...prev, selected: false }));
@@ -356,13 +355,15 @@ export default function PolicyNewClient({
               {errors.selected && <small style={{ color: 'red' }}>Vehicle Type is required</small>}
             </div>
 
+            {/* Original Value */}
             <div className={`form-group ${errors.vehicleCost ? 'error' : ''}`}>
               <label>Original Value of Vehicle <span style={{ color: 'red' }}>*</span></label>
-              <input 
-                type="text" 
+              <input
+                type="number"
                 value={vehicleCost || ""}
                 onChange={(e) => {
-                  setVehicleCost(Number(e.target.value));
+                  const val = e.target.value === '' ? '' : Number(e.target.value);
+                  setVehicleCost(val);
                   setErrors(prev => ({ ...prev, vehicleCost: false }));
                 }}
                 style={{ borderColor: errors.vehicleCost ? 'red' : '' }}
@@ -370,46 +371,28 @@ export default function PolicyNewClient({
               {errors.vehicleCost && <small style={{ color: 'red' }}>Vehicle Cost is required</small>}
             </div>
 
+            {/* Static rates */}
             <div className="form-group">
               <label>VAT Tax</label>
-              <input 
-                type="text" 
-                value={vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "0%"} 
-                readOnly 
-              />
+              <input type="text" value={vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "0%"} readOnly />
             </div>
-
             <div className="form-group">
               <label>Documentary Stamp</label>
-              <input 
-                type="text" 
-                value={vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "0%"} 
-                readOnly 
-              />
+              <input type="text" value={vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "0%"} readOnly />
             </div>
-
             <div className="form-group">
               <label>Local Gov Tax</label>
-              <input 
-                type="text" 
-                value={vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "0%"} 
-                readOnly 
-              />
+              <input type="text" value={vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "0%"} readOnly />
             </div>
-
             <div className="form-group">
               <label>Rate</label>
-              <input 
-                type="text" 
-                value={vehicleDetails?.vehicle_Rate ? `${vehicleDetails.vehicle_Rate}%` : "0%"} 
-                readOnly 
-              />
+              <input type="text" value={vehicleDetails?.vehicle_Rate ? `${vehicleDetails.vehicle_Rate}%` : "0%"} readOnly />
             </div>
 
             <div className="form-group">
               <label>Commission Fee (%)</label>
               <input
-                type="text"
+                type="number"
                 value={commissionFee}
                 onChange={(e) => setCommissionFee(e.target.value)}
               />
@@ -417,33 +400,31 @@ export default function PolicyNewClient({
 
             <div className="form-group aon-row">
               <label>AoN (Act of Nature)</label>
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 checked={isAoN}
                 onChange={(e) => setIsAoN(e.target.checked)}
               />
             </div>
-
           </div>
 
+          {/* RIGHT */}
           <div className="form-right-column">
             <div className="calculation-card">
               <h3>Calculation Summary</h3>
 
               <div className="vehicle-val">
-                <p>Original Vehicle Cost: 
+                <p>Original Vehicle Cost:
                   <span>
                     ₱ {orginalVehicleCost.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
                   </span>
                 </p>
-
-                <p>Current Vehicle Value: 
+                <p>Current Vehicle Value:
                   <span>
                     ₱ {currentVehicleValueCost.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
                   </span>
                 </p>
-
-                <p>Total Vehicle Value Rate: 
+                <p>Total Vehicle Value Rate:
                   <span>
                     ₱ {totalVehicleValueRate.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
                   </span>
@@ -451,77 +432,56 @@ export default function PolicyNewClient({
               </div>
 
               <div className="own-tax">
-                <p>Bodily Injury 
-                  <span>
-                    ₱ {vehicleDetails?.bodily_Injury ? vehicleDetails.bodily_Injury.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
-                  </span>
+                <p>Bodily Injury
+                  <span>₱ {vehicleDetails?.bodily_Injury ? vehicleDetails.bodily_Injury.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}</span>
                 </p>
-
-                <p>Property Damage: 
-                  <span>
-                    ₱ {vehicleDetails?.property_Damage ? vehicleDetails.property_Damage.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
-                  </span>
+                <p>Property Damage:
+                  <span>₱ {vehicleDetails?.property_Damage ? vehicleDetails.property_Damage.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}</span>
                 </p>
-
-                <p>Personal Accident: 
-                  <span>
-                    ₱ {vehicleDetails?.personal_Accident ? vehicleDetails.personal_Accident.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
-                  </span>
+                <p>Personal Accident:
+                  <span>₱ {vehicleDetails?.personal_Accident ? vehicleDetails.personal_Accident.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}</span>
                 </p>
               </div>
 
               <div className="basic-prem">
-                <p>Basic Premium: 
-                  <span>
-                    ₱ {basicPremiumValue ? basicPremiumValue.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
-                  </span>
+                <p>Basic Premium:
+                  <span>₱ {basicPremiumValue ? basicPremiumValue.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}</span>
                 </p>
-
-                <p>Basic Premium (with Commission): 
-                  <span>
-                    ₱ {basicPremiumWithCommissionValue ? basicPremiumWithCommissionValue.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
-                  </span>
+                <p>Basic Premium (with Commission):
+                  <span>₱ {basicPremiumWithCommissionValue ? basicPremiumWithCommissionValue.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}</span>
                 </p>
               </div>
 
               <div className="local-tax">
-                <p>Local Government Tax: 
+                <p>Local Government Tax:
                   <span>{vehicleDetails?.local_Gov_Tax ? `${vehicleDetails.local_Gov_Tax}%` : "—"}</span>
                 </p>
-
-                <p>VAT: 
+                <p>VAT:
                   <span>{vehicleDetails?.vat_Tax ? `${vehicleDetails.vat_Tax}%` : "—"}</span>
                 </p>
-
-                <p>Documentary Stamp: 
+                <p>Documentary Stamp:
                   <span>{vehicleDetails?.docu_Stamp ? `${vehicleDetails.docu_Stamp}%` : "—"}</span>
                 </p>
-
-                <p>Commission Amount: 
-                  <span>
-                    ₱ {commissionValue ? commissionValue.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}
-                  </span>
+                <p>Commission Amount:
+                  <span>₱ {commissionValue ? commissionValue.toLocaleString("en-PH", { minimumFractionDigits: 2 }) : "—"}</span>
                 </p>
               </div>
 
               {isAoN && (
-                <p>AoN (Act of Nature): 
+                <p>AoN (Act of Nature):
                   <span>₱ {actOfNatureCost.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
                 </p>
               )}
               <hr />
               <strong>
-                <p>Total Premium: 
-                  <span>₱ {totalPremiumCost.toLocaleString("en-PH")}</span>
+                <p>Claimable Amount:
+                  <span>₱ {claimableAmount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
                 </p>
-                <p>Claimable Amount: 
-                  <span>
-                    ₱ {currentVehicleValueCost.toLocaleString("en-PH", { minimumFractionDigits: 3, maximumFractionDigits: 4 })}
-                  </span>
+                <p>Total Premium:
+                  <span>₱ {totalPremiumCost.toLocaleString("en-PH")}</span>
                 </p>
               </strong>
 
-              {/* 🆕 Monthly Payment Breakdown */}
               {selectedPaymentType && months > 0 && (
                 <div style={{ marginTop: '20px', padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
                   <h4 style={{ marginBottom: '12px', fontSize: '16px', color: '#333' }}>
@@ -529,13 +489,16 @@ export default function PolicyNewClient({
                   </h4>
                   <div style={{ maxHeight: '200px', overflowY: 'auto', fontSize: '14px' }}>
                     {Array.from({ length: months }, (_, i) => (
-                      <div key={i} style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        padding: '6px 8px',
-                        borderBottom: '1px solid #e0e0e0',
-                        background: i % 2 === 0 ? 'white' : '#f8f9fa'
-                      }}>
+                      <div
+                        key={i}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          padding: '6px 8px',
+                          borderBottom: '1px solid #e0e0e0',
+                          background: i % 2 === 0 ? 'white' : '#f8f9fa'
+                        }}
+                      >
                         <span style={{ fontWeight: '500' }}>Month {i + 1}:</span>
                         <span style={{ color: '#10b981', fontWeight: '600' }}>
                           ₱{monthlyPayment.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
