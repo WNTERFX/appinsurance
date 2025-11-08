@@ -69,10 +69,12 @@ export default function PolicyWithPaymentsController() {
   const [paymentModes, setPaymentModes] = useState([]);
   const [selectedPaymentMode, setSelectedPaymentMode] = useState(null);
 
+  //attachment receipt payments
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const [selectedPaymentForReceipt, setSelectedPaymentForReceipt] = useState(null);
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
 
+  //receipt viewer modal state
   const [receiptViewerOpen, setReceiptViewerOpen] = useState(false);
   const [viewingReceipts, setViewingReceipts] = useState([]);
   const [currentReceiptIndex, setCurrentReceiptIndex] = useState(0);
@@ -152,6 +154,7 @@ export default function PolicyWithPaymentsController() {
     }
   };
 
+  // ---------- LOAD POLICIES ----------
   useEffect(() => {
     loadPolicies();
   }, []);
@@ -542,6 +545,7 @@ export default function PolicyWithPaymentsController() {
 
   const renderPolicies = currentPolicies;
 
+  // Reciept attachments and viewing functions
   const handleOpenReceiptModal = (payment) => {
     setSelectedPaymentForReceipt(payment);
     setReceiptModalOpen(true);
@@ -554,6 +558,7 @@ export default function PolicyWithPaymentsController() {
       setUploadingReceipt(true);
       await uploadReceiptFile(selectedPaymentForReceipt.id, file);
       
+      // Refresh payment schedule to include new receipt
       const policyId = selectedPaymentForReceipt.policy_id;
       const updatedSchedule = await fetchPaymentSchedule(policyId);
       const nonArchived = (updatedSchedule || []).filter(p => p.is_archive !== true);
@@ -585,6 +590,7 @@ export default function PolicyWithPaymentsController() {
     try {
       await deleteReceipt(receiptId);
       
+      // Refresh receipts
       const updatedReceipts = viewingReceipts.filter(r => r.id !== receiptId);
       setViewingReceipts(updatedReceipts);
       
@@ -594,6 +600,7 @@ export default function PolicyWithPaymentsController() {
         setCurrentReceiptIndex(updatedReceipts.length - 1);
       }
       
+      // Refresh payment schedule
       const payment = selectedPaymentForReceipt || viewingReceipts[0];
       if (payment?.payment_id) {
         const policyId = payment.policy_id;
@@ -621,6 +628,7 @@ export default function PolicyWithPaymentsController() {
     selectedPaymentMode,
     setSelectedPaymentMode,
 
+    //Edit Payment
     updateModalOpen,
     setUpdateModalOpen,
     paymentToUpdate,
@@ -630,6 +638,7 @@ export default function PolicyWithPaymentsController() {
     handleOpenUpdateModal,
     handleUpdatePaymentAmount,
 
+    // counts + pagination
     totalPoliciesCount,
     rowsPerPage,
     setRowsPerPage,
