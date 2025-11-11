@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo  } from "react";
 import { 
   fetchArchivedPayments, 
   unArchivePayment, 
@@ -33,6 +33,10 @@ export default function PaymentArchiveController() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
 
+  // --- Filtering ---
+  const [selectedAgent, setSelectedAgent] = useState(null);
+  const [selectedPartner, setSelectedPartner] = useState(null);
+
   // --- Infinite scroll ---
   const sentinelRef = useRef(null);
 
@@ -41,6 +45,50 @@ export default function PaymentArchiveController() {
     loadPolicies();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+
+  const uniqueAgents = useMemo(() => {
+    const agents = policies
+      .map(policy => {
+        const client = policy.clients_Table;
+        if (!client?.employee_Accounts) return null;
+        
+        // Handle both array and object
+        const agentAccounts = client.employee_Accounts;
+        let firstName = "";
+        let lastName = "";
+        
+        if (Array.isArray(agentAccounts) && agentAccounts.length > 0) {
+          firstName = agentAccounts[0].first_name || "";
+          lastName = agentAccounts[0].last_name || "";
+        } else if (agentAccounts && !Array.isArray(agentAccounts)) {
+          firstName = agentAccounts.first_name || "";
+          lastName = agentAccounts.last_name || "";
+        }
+        
+        return `${firstName} ${lastName}`.trim();
+      })
+      .filter(agent => agent && agent !== "");
+    
+    return [...new Set(agents)].sort();
+  }, [policies]);
+
+  const uniquePartners = useMemo(() => {
+    const partners = policies
+      .map(policy => {
+        const insurancePartners = policy.insurance_Partners;
+        if (Array.isArray(insurancePartners) && insurancePartners.length > 0) {
+          return insurancePartners[0].insurance_Name;
+        } else if (insurancePartners && !Array.isArray(insurancePartners)) {
+          return insurancePartners.insurance_Name;
+        }
+        return null;
+      })
+      .filter(partner => partner);
+    
+    return [...new Set(partners)].sort();
+  }, [policies]);
+
 
   /**
    * Load ONLY policy headers (no payment data at all)
@@ -247,18 +295,46 @@ export default function PaymentArchiveController() {
   };
 
   // ---------- FILTERING & PAGINATION ----------
-  const filteredPolicies = policies.filter((policy) => {
-    const client = policy.clients_Table;
-    const clientName = client
-      ? [client.prefix, client.first_Name, client.middle_Name ? client.middle_Name.charAt(0) + "." : "", client.family_Name, client.suffix]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase()
-      : "";
-    const policyId = policy.internal_id?.toLowerCase() || "";
-    const search = searchTerm.toLowerCase().trim();
-    return policyId.includes(search) || clientName.includes(search);
-  });
+  const filteredPolicies = useMemo(() => {
+    return policies.filter((policy) => {
+      const client = policy.clients_Table;
+      
+      // Client name and policy ID search
+      const clientName = client
+        ? [client.prefix, client.first_Name, client.middle_Name ? client.middle_Name.charAt(0) + "." : "", client.family_Name, client.suffix]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase()
+        : "";
+      
+      const policyId = policy.internal_id?.toLowerCase() || "";
+      const search = searchTerm.toLowerCase().trim();
+      const matchesSearch = policyId.includes(search) || clientName.includes(search);
+      
+      // Agent filter
+      const agentAccounts = client?.employee_Accounts;
+      let agentName = "";
+      if (Array.isArray(agentAccounts) && agentAccounts.length > 0) {
+        const agent = agentAccounts[0];
+        agentName = `${agent.first_name || ""} ${agent.last_name || ""}`.trim();
+      } else if (agentAccounts && !Array.isArray(agentAccounts)) {
+        agentName = `${agentAccounts.first_name || ""} ${agentAccounts.last_name || ""}`.trim();
+      }
+      const matchesAgent = !selectedAgent || agentName === selectedAgent;
+      
+      // Partner filter
+      const insurancePartners = policy.insurance_Partners;
+      let partnerName = "";
+      if (Array.isArray(insurancePartners) && insurancePartners.length > 0) {
+        partnerName = insurancePartners[0].insurance_Name || "";
+      } else if (insurancePartners && !Array.isArray(insurancePartners)) {
+        partnerName = insurancePartners.insurance_Name || "";
+      }
+      const matchesPartner = !selectedPartner || partnerName === selectedPartner;
+      
+      return matchesSearch && matchesAgent && matchesPartner;
+    });
+  }, [policies, searchTerm, selectedAgent, selectedPartner]);
 
   const totalPoliciesCount = filteredPolicies.length;
   const totalPages = Math.ceil(totalPoliciesCount / rowsPerPage);
@@ -288,6 +364,13 @@ export default function PaymentArchiveController() {
     currentPolicies,
     searchTerm,
     setSearchTerm,
+    selectedAgent,
+    setSelectedAgent,
+    selectedPartner,
+    setSelectedPartner,
+    uniqueAgents,
+    uniquePartners,
+    
 
     // --- Expand / collapse ---
     expanded,

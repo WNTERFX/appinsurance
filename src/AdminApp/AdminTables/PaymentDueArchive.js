@@ -18,6 +18,12 @@ export default function PaymentArchiveTable() {
     currentPolicies,
     searchTerm,
     setSearchTerm,
+    selectedAgent,
+    setSelectedAgent,
+    selectedPartner,
+    setSelectedPartner,
+    uniqueAgents,
+    uniquePartners,
 
     // --- Expand / collapse ---
     expanded,
@@ -89,43 +95,108 @@ export default function PaymentArchiveTable() {
 
       {/* Header */}
       <div className="payments-overview-header">
-        <h2>Archived Payments ({totalPoliciesCount})</h2>
-        <div className="search-filter-refresh-bar">
-          <input
-            type="text"
-            placeholder="Search by Policy ID or Client Name..."
-            value={searchTerm}
+      <h2>Archived Payments ({totalPoliciesCount})</h2>
+      
+      <div className="search-filter-refresh-bar" style={{ 
+        display: 'flex', 
+        gap: '12px', 
+        alignItems: 'center', 
+        flexWrap: 'wrap' 
+      }}>
+        {/* Search Input */}
+        <input
+          type="text"
+          placeholder="Search by Policy ID or Client Name..."
+          value={searchTerm}
+          onChange={(e) => { 
+            setSearchTerm(e.target.value); 
+            setCurrentPage(1); 
+          }}
+          className="search-input"
+          style={{ flex: '1 1 200px', minWidth: '200px' }}
+        />
+        
+        {/* Agent Filter */}
+        <div style={{ flex: '0 0 auto' }}>
+          <select
+            value={selectedAgent || ''}
+            onChange={(e) => {
+              setSelectedAgent(e.target.value || null);
+              setCurrentPage(1);
+            }}
+            style={{
+              padding: '8px 12px',
+              fontSize: '0.95em',
+              border: '1px solid #ced4da',
+              borderRadius: '4px',
+              backgroundColor: 'white',
+              minWidth: '180px'
+            }}
+          >
+            <option value="">All Agents</option>
+            {uniqueAgents.map((agent, index) => (
+              <option key={index} value={agent}>
+                {agent}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        {/* Partner Filter */}
+        <div style={{ flex: '0 0 auto' }}>
+          <select
+            value={selectedPartner || ''}
+            onChange={(e) => {
+              setSelectedPartner(e.target.value || null);
+              setCurrentPage(1);
+            }}
+            style={{
+              padding: '8px 12px',
+              fontSize: '0.95em',
+              border: '1px solid #ced4da',
+              borderRadius: '4px',
+              backgroundColor: 'white',
+              minWidth: '180px'
+            }}
+          >
+            <option value="">All Partners</option>
+            {uniquePartners.map((partner, index) => (
+              <option key={index} value={partner}>
+                {partner}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        {/* Results per page */}
+        <div className="result-select-wrapper" style={{ flex: '0 0 auto' }}>
+          <span>Result</span>
+          <select
+            value={rowsPerPage}
             onChange={(e) => { 
-              setSearchTerm(e.target.value); 
+              setRowsPerPage(Number(e.target.value)); 
               setCurrentPage(1); 
             }}
-            className="search-input"
-          />
-          <div className="result-select-wrapper">
-            <span>Result</span>
-            <select
-              value={rowsPerPage}
-              onChange={(e) => { 
-                setRowsPerPage(Number(e.target.value)); 
-                setCurrentPage(1); 
-              }}
-              className="result-select"
-            >
-              <option value={15}>15</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </div>
-          <button 
-            className="refresh-btn" 
-            onClick={loadPolicies} 
-            disabled={isLoading}
+            className="result-select"
           >
-            {isLoading ? "Refreshing..." : "Refresh"}
-          </button>
+            <option value={15}>15</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
         </div>
+        
+        {/* Refresh Button */}
+        <button 
+          className="refresh-btn" 
+          onClick={loadPolicies} 
+          disabled={isLoading}
+          style={{ flex: '0 0 auto' }}
+        >
+          {isLoading ? "Refreshing..." : "Refresh"}
+        </button>
       </div>
+    </div>
 
       {/* Policies List */}
       <div className="policies-list">

@@ -15,6 +15,8 @@ import {
   DebugCheckPolicy                      
 } from "../AdminActions/PolicyActivationActions";
 
+import { CustomAlert } from '../../ReusableComponents/CustomAlert';
+
 import PolicyInceptionModal from "../PolicyInceptionModal";
 
 export default function PolicyTable() {
@@ -32,6 +34,22 @@ export default function PolicyTable() {
   const [selectedPolicyForInception, setSelectedPolicyForInception] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
   const navigate = useNavigate();
+
+  // custom alert and prompt states
+  const [customAlert, setCustomAlert] = useState(null);
+  const [voidReason, setVoidReason] = useState('');
+  const [cancelReason, setCancelReason] = useState('');
+  const [showVoidDialog, setShowVoidDialog] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [policyToVoid, setPolicyToVoid] = useState(null);
+  const [policyToCancel, setPolicyToCancel] = useState(null);
+
+  // helper for custom alerts/prompts
+  const showCustomAlert = (message, type = 'success') => {
+    setCustomAlert({ message, type });
+  };
+
+
 
   // Helper function to check if policy is expired
   const isPolicyExpired = (expiryDate) => {
@@ -289,59 +307,68 @@ export default function PolicyTable() {
   };
 
   const handleVoidClick = async (policy) => {
-    const reason = prompt("Enter reason for voiding this policy:");
-    if (!reason || !reason.trim()) return;
+    setPolicyToVoid(policy);
+    setVoidReason('');
+    setShowVoidDialog(true);
+  };
 
-    const confirmVoid = window.confirm(
-      `Void this policy?\n\nThis will:\n- Mark policy as VOIDED\n- Cancel all associated payments\n- Deactivate the policy\n- Prevent any claims or payments\n\nReason: ${reason}`
-    );
-    if (!confirmVoid) return;
+  const confirmVoid = async () => {
+    if (!voidReason || !voidReason.trim()) {
+      showCustomAlert('Please enter a reason for voiding this policy.', 'error');
+      return;
+    }
 
     try {
-      const result = await VoidPolicyAndPayments(policy.id, reason.trim());
+      const result = await VoidPolicyAndPayments(policyToVoid.id, voidReason.trim());
 
       if (result.success) {
         // Update UI
         setPolicies((prev) =>
           prev.map((p) =>
-            p.id === policy.id
+            p.id === policyToVoid.id
               ? {
                   ...p,
                   policy_status: "voided",
                   policy_is_active: false,
-                  void_reason: reason.trim(),
+                  void_reason: voidReason.trim(),
                   voided_date: new Date().toISOString(),
                 }
               : p
           )
         );
 
-        alert(
-          `✅ ${result.message}\n\n` +
-          `Payments cancelled: ${result.paymentsCancelled}\n` +
-          `Reason: ${reason}`
+        showCustomAlert(
+          `✅ ${result.message}\n\nPayments cancelled: ${result.paymentsCancelled}\nReason: ${voidReason}`,
+          'success'
         );
+        
+        setShowVoidDialog(false);
+        setPolicyToVoid(null);
+        setVoidReason('');
       } else {
-        alert("❌ Void Error:\n\n" + result.error);
+        showCustomAlert(`❌ Void Error:\n\n${result.error}`, 'error');
       }
     } catch (error) {
       console.error("Error voiding policy:", error);
-      alert("❌ Error voiding policy:\n\n" + error.message);
+      showCustomAlert(`❌ Error voiding policy:\n\n${error.message}`, 'error');
     }
   };
 
-  const handleCancelClick = async (policy) => {
-    const reason = prompt("Enter reason for cancelling this policy:");
-    if (!reason || !reason.trim()) return;
 
-    const confirmCancel = window.confirm(
-      `Cancel this policy?\n\nThis will:\n- Refund ALL paid/partially-paid payments\n- Cancel all unpaid payments\n- Mark the policy as CANCELLED\n\nReason: ${reason}`
-    );
-    if (!confirmCancel) return;
+  const handleCancelClick = async (policy) => {
+    setPolicyToCancel(policy);
+    setCancelReason('');
+    setShowCancelDialog(true);
+  };
+
+  const confirmCancel = async () => {
+    if (!cancelReason || !cancelReason.trim()) {
+      showCustomAlert('Please enter a reason for cancelling this policy.', 'error');
+      return;
+    }
 
     try {
-      // Call your CancelPolicyAndRefund function
-      const result = await CancelPolicyAndRefund(policy.id);
+      const result = await CancelPolicyAndRefund(policyToCancel.id);
 
       if (result.success) {
         // Update the policy with cancellation details
@@ -349,9 +376,9 @@ export default function PolicyTable() {
         const { error: policyError } = await db
           .from("policy_Table")
           .update({
-            cancellation_reason: reason,
+            cancellation_reason: cancelReason.trim(),
           })
-          .eq("id", policy.id);
+          .eq("id", policyToCancel.id);
 
         if (policyError) {
           console.error("Error updating cancellation reason:", policyError);
@@ -360,11 +387,11 @@ export default function PolicyTable() {
         // Update UI
         setPolicies((prev) =>
           prev.map((p) =>
-            p.id === policy.id
+            p.id === policyToCancel.id
               ? {
                   ...p,
                   policy_status: "cancelled",
-                  cancellation_reason: reason,
+                  cancellation_reason: cancelReason.trim(),
                   cancellation_date: new Date().toISOString(),
                   policy_is_active: false,
                 }
@@ -372,16 +399,19 @@ export default function PolicyTable() {
           )
         );
 
-        alert(`✅ ${result.message}\n\nReason: ${reason}`);
+        showCustomAlert(`✅ ${result.message}\n\nReason: ${cancelReason}`, 'success');
         
-        // Optionally reload policies to ensure UI is in sync
+        setShowCancelDialog(false);
+        setPolicyToCancel(null);
+        setCancelReason('');
+        
         await loadPolicies();
       } else {
-        alert("❌ Cancellation Error:\n\n" + result.error);
+        showCustomAlert(`❌ Cancellation Error:\n\n${result.error}`, 'error');
       }
     } catch (error) {
       console.error("Error cancelling policy:", error);
-      alert("❌ Error cancelling policy:\n\n" + error.message);
+      showCustomAlert(`❌ Error cancelling policy:\n\n${error.message}`, 'error');
     }
   };
 
@@ -817,6 +847,181 @@ export default function PolicyTable() {
         onSave={handleSaveInceptionDate}
         policyInfo={selectedPolicyForInception}
       />
+
+
+      {/* Void Dialog */}
+      {showVoidDialog && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            minWidth: '400px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          }}>
+            <h3 style={{ marginTop: 0 }}>Void Policy</h3>
+            <p style={{ color: '#666', marginBottom: '20px' }}>
+              This will:
+              <ul style={{ marginTop: '10px' }}>
+                <li>Mark policy as VOIDED</li>
+                <li>Cancel all associated payments</li>
+                <li>Deactivate the policy</li>
+                <li>Prevent any claims or payments</li>
+              </ul>
+            </p>
+            <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
+              Reason for voiding:
+            </label>
+            <textarea
+              value={voidReason}
+              onChange={(e) => setVoidReason(e.target.value)}
+              placeholder="Enter reason..."
+              style={{
+                width: '100%',
+                minHeight: '80px',
+                padding: '10px',
+                borderRadius: '4px',
+                border: '1px solid #ccc',
+                marginBottom: '20px',
+                fontSize: '14px',
+              }}
+            />
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setShowVoidDialog(false);
+                  setPolicyToVoid(null);
+                  setVoidReason('');
+                }}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '4px',
+                  border: '1px solid #ccc',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmVoid}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  cursor: 'pointer',
+                }}
+              >
+                Void Policy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Dialog */}
+      {showCancelDialog && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            minWidth: '400px',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          }}>
+            <h3 style={{ marginTop: 0 }}>Cancel Policy</h3>
+            <p style={{ color: '#666', marginBottom: '20px' }}>
+              This will:
+              <ul style={{ marginTop: '10px' }}>
+                <li>Refund ALL paid/partially-paid payments</li>
+                <li>Cancel all unpaid payments</li>
+                <li>Mark the policy as CANCELLED</li>
+              </ul>
+            </p>
+            <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
+              Reason for cancellation:
+            </label>
+            <textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder="Enter reason..."
+              style={{
+                width: '100%',
+                minHeight: '80px',
+                padding: '10px',
+                borderRadius: '4px',
+                border: '1px solid #ccc',
+                marginBottom: '20px',
+                fontSize: '14px',
+              }}
+            />
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setShowCancelDialog(false);
+                  setPolicyToCancel(null);
+                  setCancelReason('');
+                }}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '4px',
+                  border: '1px solid #ccc',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmCancel}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel Policy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Alert */}
+      {customAlert && (
+        <CustomAlert
+          message={customAlert.message}
+          type={customAlert.type}
+          onClose={() => setCustomAlert(null)}
+        />
+      )}
     </div>
   );
 }
