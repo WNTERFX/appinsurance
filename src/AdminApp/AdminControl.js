@@ -6,7 +6,8 @@ import MessagesTab from "../AdminManagement/MessagesTab";
 import PartnersTab from "../AdminManagement/PartnersTab";
 import CronJobsTab from "../AdminManagement/CronJobsTab";
 import PaymentTypesTab from "../AdminManagement/PaymentsTab";
-import PaymentModesTab from "../AdminManagement/PaymentModesTab"; // ✅ NEW IMPORT
+import PaymentModesTab from "../AdminManagement/PaymentModesTab";
+import EmployeeRolesTab from "../AdminManagement/EmployeeRolesTab"; 
 import "./styles/admin-control-styles.css";
 
 export default function AdminControl() {
@@ -74,7 +75,7 @@ export default function AdminControl() {
               borderRadius: "4px 4px 0 0",
             }}
           >
-            Insurance Partners
+            Insurers
           </button>
 
           <button
@@ -94,7 +95,6 @@ export default function AdminControl() {
             Payment Types
           </button>
 
-          {/* ✅ NEW TAB BUTTON */}
           <button
             onClick={() => controller.setActiveTab("paymentmodes")}
             style={{
@@ -110,6 +110,24 @@ export default function AdminControl() {
             }}
           >
             Payment Modes
+          </button>
+
+          {/* ✅ NEW TAB BUTTON */}
+          <button
+            onClick={() => controller.setActiveTab("employeeroles")}
+            style={{
+              padding: "10px 20px",
+              marginRight: "10px",
+              border: "none",
+              background:
+                controller.activeTab === "employeeroles" ? "#007bff" : "#f8f9fa",
+              color: controller.activeTab === "employeeroles" ? "white" : "#333",
+              cursor: "pointer",
+              fontWeight: "bold",
+              borderRadius: "4px 4px 0 0",
+            }}
+          >
+            Employee Roles
           </button>
 
           <button
@@ -150,6 +168,9 @@ export default function AdminControl() {
         )}
         {controller.activeTab === "paymenttypes" && <PaymentTypesTab />}
         {controller.activeTab === "paymentmodes" && <PaymentModesTab />}
+        {controller.activeTab === "employeeroles" && (
+          <EmployeeRolesTab controller={controller} />
+        )}
         {controller.activeTab === "cronjobs" && (
           <CronJobsTab controller={controller} />
         )}

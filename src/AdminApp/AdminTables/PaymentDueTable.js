@@ -916,7 +916,7 @@ export default function PolicyWithPaymentsList() {
                 minWidth: '180px'
               }}
             >
-              <option value="">All Partners</option>
+              <option value="">All Insurers</option>
               {uniquePartners.map((partner, index) => (
                 <option key={index} value={partner}>
                   {partner}
@@ -991,7 +991,7 @@ export default function PolicyWithPaymentsList() {
                     <div><strong>Client Name:</strong> {clientName}</div>
                     <div><strong>Client Internal ID:</strong> {clientInternalId}</div>
                     <div><strong>Agent:</strong> {agentName}</div>
-                    <div><strong>Partner:</strong> {partnerName}</div>
+                    <div><strong>Insurer:</strong> {partnerName}</div>
                   </div>
                 </div>
 
@@ -1196,7 +1196,7 @@ export default function PolicyWithPaymentsList() {
 
                               {/* Delete button */}
                               {/* We only allow deleting 'not-paid' items to prevent data loss */}
-                              {status === "not-paid" && !isSpecialStatus && (
+                               {/* {status === "not-paid" && !isSpecialStatus && (
                                 <button
                                   onClick={() => handleOpenDeleteModal({ ...p, policy_id: policy.id })}
                                   className="penalty-btn"
@@ -1205,7 +1205,7 @@ export default function PolicyWithPaymentsList() {
                                 >
                                   Delete
                                 </button>
-                              )}
+                              )}*/}
 
                                {(status === "fully-paid" || status === "partially-paid") && !isSpecialStatus && (
                                 <>

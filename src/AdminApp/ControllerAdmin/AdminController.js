@@ -13,6 +13,12 @@ import {
   updateInsurancePartner,
   deleteInsurancePartner
 } from "../AdminActions/AdminControlActions";
+import {
+  fetchAllEmployeeRoles,
+  createEmployeeRole,
+  updateEmployeeRole,
+  deleteEmployeeRole
+} from "../AdminActions/EmployeeRoleActions";
 
 export const useAdminController = () => {
   // Tab state
@@ -39,6 +45,13 @@ export const useAdminController = () => {
   const [editPartnerId, setEditPartnerId] = useState(null);
   const [loadingPartner, setLoadingPartner] = useState(false);
   
+  // Employee Roles state
+  const [roles, setRoles] = useState([]);
+  const [isEditingRole, setIsEditingRole] = useState(false);
+  const [isCreatingRole, setIsCreatingRole] = useState(false);
+  const [editRoleId, setEditRoleId] = useState(null);
+  const [loadingRole, setLoadingRole] = useState(false);
+  
   const [message, setMessage] = useState({ text: "", type: "" });
   
   // Calculation form fields
@@ -61,6 +74,9 @@ export const useAdminController = () => {
   const [address, setAddress] = useState("");
   const [contact, setContact] = useState("");
   const [insuranceRate, setInsuranceRate] = useState("");
+
+  // Employee Role form fields
+  const [roleName, setRoleName] = useState("");
 
   //CronJobs
   const [cronJobs, setCronJobs] = useState([]);
@@ -115,10 +131,22 @@ export const useAdminController = () => {
     }
   };
 
+  // Fetch all employee roles
+  const loadRoles = async () => {
+    try {
+      const data = await fetchAllEmployeeRoles();
+      setRoles(data);
+    } catch (error) {
+      console.error("Error fetching employee roles:", error);
+      showMessage("Error fetching employee roles", "error");
+    }
+  };
+
   useEffect(() => {
     loadCalculations();
     loadMessages();
     loadPartners();
+    loadRoles();
   }, []);
 
   // Show message
@@ -163,6 +191,14 @@ export const useAdminController = () => {
     setEditPartnerId(null);
   };
 
+  // Reset role form
+  const resetRoleForm = () => {
+    setRoleName("");
+    setIsEditingRole(false);
+    setIsCreatingRole(false);
+    setEditRoleId(null);
+  };
+
   // Show create forms
   const showCreateCalcForm = () => {
     resetCalcForm();
@@ -177,6 +213,11 @@ export const useAdminController = () => {
   const showCreatePartnerForm = () => {
     resetPartnerForm();
     setIsCreatingPartner(true);
+  };
+
+  const showCreateRoleForm = () => {
+    resetRoleForm();
+    setIsCreatingRole(true);
   };
 
   // Handle calculation submit
@@ -282,6 +323,35 @@ export const useAdminController = () => {
     }
   };
 
+  // Handle role submit
+  const handleRoleSubmit = async (e) => {
+    e.preventDefault();
+    if (!roleName.trim()) {
+      showMessage("Please enter a role name", "error");
+      return;
+    }
+    setLoadingRole(true);
+    const roleData = {
+      role_name: roleName.trim(),
+    };
+    try {
+      if (isEditingRole) {
+        await updateEmployeeRole(editRoleId, roleData);
+        showMessage("Employee role updated successfully", "success");
+      } else {
+        await createEmployeeRole(roleData);
+        showMessage("Employee role created successfully", "success");
+      }
+      resetRoleForm();
+      loadRoles();
+    } catch (error) {
+      console.error("Error saving employee role:", error);
+      showMessage(error.message || "Error saving employee role", "error");
+    } finally {
+      setLoadingRole(false);
+    }
+  };
+
   // Edit handlers
   const handleEditCalc = (calc) => {
     setIsEditingCalc(true);
@@ -314,6 +384,13 @@ export const useAdminController = () => {
     setAddress(partner.address || "");
     setContact(partner.contact || "");
     setInsuranceRate(partner.insurance_Rate || "");
+  };
+
+  const handleEditRole = (role) => {
+    setIsEditingRole(true);
+    setIsCreatingRole(true);
+    setEditRoleId(role.id);
+    setRoleName(role.role_name);
   };
 
   // Delete handlers
@@ -353,9 +430,23 @@ export const useAdminController = () => {
       await deleteInsurancePartner(id);
       showMessage("Insurance partner deleted successfully", "success");
       loadPartners();
-    } catch (error) { // ✅ SYNTAX FIX HERE
+    } catch (error) {
       console.error("Error deleting insurance partner:", error);
       showMessage("Error deleting insurance partner", "error");
+    }
+  };
+
+  const handleDeleteRole = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this employee role?")) {
+      return;
+    }
+    try {
+      await deleteEmployeeRole(id);
+      showMessage("Employee role deleted successfully", "success");
+      loadRoles();
+    } catch (error) {
+      console.error("Error deleting employee role:", error);
+      showMessage("Error deleting employee role", "error");
     }
   };
 
@@ -552,7 +643,6 @@ export const useAdminController = () => {
     }
   };
 
-  // ✅ NEW: Added the cron test function
   const handleTestCron = async (jobId) => {
     setLoadingCron(true);
     console.log(`Attempting to test job: ${jobId}`);
@@ -655,7 +745,20 @@ export const useAdminController = () => {
     handleEditPartner,
     handleDeletePartner,
 
-    //Cron Jobs
+    // Employee Roles
+    roles,
+    isEditingRole,
+    isCreatingRole,
+    loadingRole,
+    roleName,
+    setRoleName,
+    showCreateRoleForm,
+    handleRoleSubmit,
+    resetRoleForm,
+    handleEditRole,
+    handleDeleteRole,
+
+    // Cron Jobs
     cronJobs,
     isCreatingCron,
     loadingCron,
@@ -688,6 +791,6 @@ export const useAdminController = () => {
     resetCronForm,
     toggleCronJob,
     handleDeleteCron,
-    handleTestCron, // ✅ NEW: Added to the return object
+    handleTestCron,
   };
 };

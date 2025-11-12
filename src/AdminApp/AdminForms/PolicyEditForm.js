@@ -309,7 +309,7 @@ export default function PolicyEditForm({
             </div>
 
             <div className={`form-group-policy-edit ${errors.selectedPartner ? "error" : ""}`}>
-              <label>Partner <span style={{ color: "red" }}>*</span></label>
+              <label>Insurer <span style={{ color: "red" }}>*</span></label>
               <select
                 value={selectedPartner || ""}
                 onChange={(e) => {

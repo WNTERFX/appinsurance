@@ -84,7 +84,7 @@ export default function PolicyArchiveTable() {
                 <th className="policy-id-column">Policy ID</th>
                 <th>Policy Type</th>
                 <th>Client Name</th>
-                <th>Insurance Partner</th>
+                <th>Insurer</th>
                 <th>Inception Date</th>
                 <th>Expiry Date</th>
                 <th>Status</th>

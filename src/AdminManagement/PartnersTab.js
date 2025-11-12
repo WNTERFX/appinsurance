@@ -13,7 +13,7 @@ export default function PartnersTab({ controller }) {
             onClick={controller.showCreatePartnerForm}
             className="admin-controller-btn admin-controller-btn-primary"
           >
-            Add New Insurance Partner
+            Add New Insurer
           </button>
         )}
       </div>
@@ -114,8 +114,7 @@ export default function PartnersTab({ controller }) {
               <th>Insurance Name</th>
               <th>Address</th>
               <th>Contact</th>
-              <th>Insurance Rate</th>
-              <th>Initials</th> {/* ✅ Added column */}
+              <th>Initials</th> 
               <th>Created At</th>
               <th>Actions</th>
             </tr>
@@ -133,7 +132,6 @@ export default function PartnersTab({ controller }) {
                   <td><strong>{partner.insurance_Name}</strong></td>
                   <td>{partner.address || "N/A"}</td>
                   <td>{partner.contact || "N/A"}</td>
-                  <td>{partner.insurance_Rate || "N/A"}</td>
                   <td>{partner.initials || "N/A"}</td> {/* ✅ Display initials */}
                   <td>{formatDate(partner.created_at)}</td>
                   <td>

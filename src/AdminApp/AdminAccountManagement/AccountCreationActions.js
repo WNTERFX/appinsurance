@@ -3,7 +3,7 @@ import { db } from "../../dbServer";
 /**
  * Create a new account
  */
-export async function createAccount({ firstName, middleName, lastName, email, password, isAdmin = false, status = "active" }) {
+export async function createAccount({ firstName, middleName, lastName, email, password, isAdmin = false, accountStatus = "active", roleId = null }) {
   try {
     const { data: { session } } = await db.auth.getSession();
     
@@ -15,7 +15,16 @@ export async function createAccount({ firstName, middleName, lastName, email, pa
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ firstName, middleName, lastName, email, password, isAdmin, status }),
+        body: JSON.stringify({ 
+          firstName, 
+          middleName, 
+          lastName, 
+          email, 
+          password, 
+          isAdmin, 
+          status: accountStatus,
+          roleId // ✅ Added roleId
+        }),
       }
     );
 
@@ -61,7 +70,7 @@ export async function deleteAccount(id) {
  */
 export async function editAccount(
   id,
-  { firstName, middleName, lastName, email, password, isAdmin, accountStatus, emailLocked, passwordLocked }
+  { firstName, middleName, lastName, email, password, isAdmin, accountStatus, emailLocked, passwordLocked, roleId }
 ) {
   try {
     console.log("🟢 editAccount called with:", {
@@ -74,6 +83,7 @@ export async function editAccount(
       accountStatus,
       emailLocked,
       passwordLocked,
+      roleId, // ✅ Added roleId to logging
     });
 
     // 1️⃣ Fetch existing record
@@ -105,6 +115,7 @@ export async function editAccount(
           : accountStatus === "active"
           ? true
           : existing.status_Account,
+      role_id: roleId !== undefined ? (roleId || null) : existing.role_id, // ✅ Added role_id update
     };
 
     console.log("🟢 Update payload:", updatePayload);

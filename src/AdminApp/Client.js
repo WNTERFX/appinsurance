@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import ClientTable from "./AdminTables/ClientTable";
 import ClientArchiveTable from "./AdminTables/ClientArchiveTable";
@@ -10,11 +9,13 @@ import {
   getAllAgentsWithAssignedColors,
   getClientCountByAgent
 } from "./AdminActions/AgentActions";
+import { fetchAllEmployeeRoles } from "./AdminActions/EmployeeRoleActions";
 import ProfileMenu from "../ReusableComponents/ProfileMenu";
 
 import NewClientController from "./ControllerAdmin/NewClientController";
 import EditClientController from "./ControllerAdmin/EditClientController";
 import "./styles/client-styles.css";
+
 export default function Client() {
   const navigate = useNavigate();
 
@@ -29,11 +30,13 @@ export default function Client() {
   const [agentsWithClientCounts, setAgentsWithClientCounts] = useState([]);
   const [selectedAgentId, setSelectedAgentId] = useState(null);
   const [allClientsCount, setAllClientsCount] = useState(0);
+  const [roles, setRoles] = useState([]); // Store employee roles
 
   useEffect(() => {
     loadClients();
     loadAgentsWithClientCounts();
     loadAllClientsCount();
+    loadRoles();
   }, []);
 
   const loadClients = async (agentId = null) => {
@@ -45,6 +48,16 @@ export default function Client() {
 
   const loadAllClientsCount = async () => {
     setAllClientsCount(await getClientCountByAgent(null));
+  };
+
+  const loadRoles = async () => {
+    try {
+      const rolesData = await fetchAllEmployeeRoles();
+      setRoles(rolesData || []);
+    } catch (error) {
+      console.error("Error loading roles:", error);
+      setRoles([]);
+    }
   };
 
   const loadAgentsWithClientCounts = async () => {
@@ -71,6 +84,15 @@ export default function Client() {
     setSelectedAgentId(null);
   };
 
+  // Helper function to get role name or fallback to privilege
+  const getAgentRoleDisplay = (agent) => {
+    if (agent.role_id) {
+      const role = roles.find(r => r.id === agent.role_id);
+      if (role) return role.role_name;
+    }
+    // Fallback to privilege if no role assigned
+    return agent.is_Admin ? "Admin" : "Moderator";
+  };
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -117,7 +139,7 @@ export default function Client() {
           </button>
 
           <div className="profile-menu">
-              <ProfileMenu onDarkMode={() => console.log("Dark Mode toggled")} />  
+            <ProfileMenu onDarkMode={() => console.log("Dark Mode toggled")} />  
           </div>
         </div>
       </div>
@@ -136,7 +158,7 @@ export default function Client() {
                   <FaUser className="agent-icon" />
                   {agent.first_name} {agent.last_name}
                 </h2>
-                <p className="agent-role">{agent.role}</p>
+                <p className="agent-role">{getAgentRoleDisplay(agent)}</p>
                 <p className="agent-client-count">{agent.clientCount} Clients</p>
               </div>
             </div>
@@ -151,7 +173,7 @@ export default function Client() {
           <ClientTable
             agentId={selectedAgentId}
             allClientsCount={allClientsCount}
-            agentsWithClientCounts={agentsWithClientCounts} /* NEW PROP: Pass all agents with counts */
+            agentsWithClientCounts={agentsWithClientCounts}
             onViewAllClients={handleViewAllClients}
             onEditClient={(client) => setEditClient(client)}
           />

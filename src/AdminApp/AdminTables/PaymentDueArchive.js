@@ -251,7 +251,7 @@ export default function PaymentArchiveTable() {
                       }
                       return "N/A";
                     })()}</div>
-                    <div><strong>Partner:</strong> {(() => {
+                    <div><strong>Insurer:</strong> {(() => {
                       const partners = policy.insurance_Partners;
                       if (partners && Array.isArray(partners) && partners.length > 0) {
                         return partners[0].insurance_Name || "N/A";

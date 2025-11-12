@@ -1,14 +1,15 @@
-import { useState, useEffect, useRef } from "react"; // ADDED useRef
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/account-management-styles.css";
 import { createAccount, fetchAccounts, editAccount, deleteAccount } from "./AccountCreationActions";
+import { fetchAllEmployeeRoles } from "../AdminActions/EmployeeRoleActions";
 import ScreenLock from "../../ReusableComponents/ScreenLock";
 import { showGlobalAlert } from "../../ReusableComponents/GlobalAlert";
 import ProfileMenu from "../../ReusableComponents/ProfileMenu";
 import { db } from "../../dbServer";
 
 import DropdownAccounts from "../DropDownAccounts";
-import { FaUserCircle } from "react-icons/fa"; // ADDED FaUserCircle import
+import { FaUserCircle } from "react-icons/fa";
 
 // 🪵 Logging utility
 function logEvent(label, data = null) {
@@ -29,18 +30,19 @@ export default function AccountManagement() {
     password: "",
     isAdmin: false,
     accountStatus: "active",
+    roleId: "", // Added role selection
   });
   const [accounts, setAccounts] = useState([]);
+  const [roles, setRoles] = useState([]); // All available roles
   const [editingAccount, setEditingAccount] = useState(null);
   const [emailLocked, setEmailLocked] = useState(true);
   const [passwordLocked, setPasswordLocked] = useState(true);
   const [showLockScreen, setShowLockScreen] = useState(false);
 
   // Profile Menu State and Refs
-  const profileButtonRef = useRef(null); // Renamed from buttonRef to avoid confusion
-  const dropdownRef = useRef(null);     // ADDED dropdownRef
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false); // Renamed from open to avoid confusion
-
+  const profileButtonRef = useRef(null);
+  const dropdownRef = useRef(null);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   // 🧭 Load current user
   useEffect(() => {
@@ -64,7 +66,11 @@ export default function AccountManagement() {
 
     loadUser();
   }, []);
-  
+
+  // Load roles on mount
+  useEffect(() => {
+    loadRoles();
+  }, []);
 
   // 📋 Load accounts on tab change
   useEffect(() => {
@@ -77,7 +83,7 @@ export default function AccountManagement() {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(e.target) &&
-        profileButtonRef.current && // Use the new ref name here
+        profileButtonRef.current &&
         !profileButtonRef.current.contains(e.target)
       ) {
         setIsProfileMenuOpen(false);
@@ -85,14 +91,25 @@ export default function AccountManagement() {
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []); // ADDED: Dependency array for useEffect
-
+  }, []);
 
   const loadAccounts = async () => {
     logEvent("Fetching accounts...");
     const data = await fetchAccounts();
     logEvent("Accounts loaded", data);
     setAccounts(data);
+  };
+
+  const loadRoles = async () => {
+    logEvent("Fetching employee roles...");
+    try {
+      const data = await fetchAllEmployeeRoles();
+      logEvent("Employee roles loaded", data);
+      setRoles(data || []);
+    } catch (error) {
+      logEvent("Error loading roles", error);
+      showGlobalAlert("Error loading employee roles");
+    }
   };
 
   const handleChange = (e) => {
@@ -104,18 +121,17 @@ export default function AccountManagement() {
   };
 
   const handleAddClick = () => {
-  logEvent("Add Account button clicked");
-  handleBack(false); // Reset form
-  setActiveTab("add"); // Switch to add tab
-};
-
+    logEvent("Add Account button clicked");
+    handleBack(false);
+    setActiveTab("add");
+  };
 
   // 💾 Handle create / edit submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!currentUser) return;
 
-    const { firstName, lastName, email, password } = formData;
+    const { firstName, lastName, email, password, roleId } = formData;
 
     logEvent("Form submit triggered", { formData, editingAccount });
 
@@ -131,10 +147,16 @@ export default function AccountManagement() {
       return;
     }
 
+    // Prepare form data with role
+    const accountData = {
+      ...formData,
+      roleId: roleId || null, // Include role ID
+    };
+
     if (editingAccount) {
       logEvent("Editing existing account", editingAccount);
 
-      const result = await editAccount(editingAccount.id, formData);
+      const result = await editAccount(editingAccount.id, accountData);
       logEvent("Edit result", result);
 
       if (result.success) {
@@ -145,9 +167,9 @@ export default function AccountManagement() {
         showGlobalAlert(`Error: ${result.error}`);
       }
     } else {
-      logEvent("Creating new account", formData);
+      logEvent("Creating new account", accountData);
 
-      const result = await createAccount(formData);
+      const result = await createAccount(accountData);
       logEvent("Create result", result);
 
       if (result.success) {
@@ -189,6 +211,7 @@ export default function AccountManagement() {
       password: "",
       isAdmin: acc.is_Admin || false,
       accountStatus: acc.status_Account ? "active" : "inactive",
+      roleId: acc.role_id || "", // Load existing role
     });
 
     setEmailLocked(true);
@@ -210,8 +233,16 @@ export default function AccountManagement() {
       password: "",
       isAdmin: false,
       accountStatus: "active",
+      roleId: "",
     });
     if (goToEditTab) setActiveTab("edit");
+  };
+
+  // Helper function to get role name by ID
+  const getRoleName = (roleId) => {
+    if (!roleId) return "N/A";
+    const role = roles.find(r => r.id === roleId);
+    return role ? role.role_name : "N/A";
   };
 
   // 🧩 Render
@@ -225,25 +256,25 @@ export default function AccountManagement() {
         </div>
 
         <div className="right-actions-client">
-             {currentUser?.isAdmin && (
-              <>
-                <button
-                  className={`btn-create ${activeTab === "add" ? "active" : ""}`}
-                  onClick={handleAddClick}
-                >
-                  Add Account
-                </button>
-                <button
-                  className={`btn-archive ${activeTab === "edit" ? "active" : ""}`}
-                  onClick={() => setActiveTab("edit")}
-                >
-                  Edit Accounts
-                </button>
-              </>
-            )}
+          {currentUser?.isAdmin && (
+            <>
+              <button
+                className={`btn-create ${activeTab === "add" ? "active" : ""}`}
+                onClick={handleAddClick}
+              >
+                Add Account
+              </button>
+              <button
+                className={`btn-archive ${activeTab === "edit" ? "active" : ""}`}
+                onClick={() => setActiveTab("edit")}
+              >
+                Edit Accounts
+              </button>
+            </>
+          )}
           {/* Profile Menu */}
           <div className="profile-menu">
-              <ProfileMenu onDarkMode={() => console.log("Dark Mode toggled")} />
+            <ProfileMenu onDarkMode={() => console.log("Dark Mode toggled")} />
           </div>
         </div>
       </div>
@@ -259,14 +290,14 @@ export default function AccountManagement() {
                   <tr>
                     <th>Name</th>
                     <th>Email</th>
+                    <th>Role</th>
                     <th>Status</th>
-                     {currentUser?.isAdmin && <th>Admin</th>}
+                    {currentUser?.isAdmin && <th>Privilage</th>}
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-
-                   {accounts.map(acc => (
+                  {accounts.map(acc => (
                     <tr key={acc.id}>
                       <td>
                         {[acc.first_name, acc.middle_name, acc.last_name]
@@ -274,19 +305,15 @@ export default function AccountManagement() {
                           .join(" ")}
                       </td>
                       <td>{acc.employee_email ?? "N/A"}</td>
-
+                      <td><strong>{getRoleName(acc.role_id)}</strong></td>
                       <td>
                         <span className={acc.status_Account ? "account-status-active" : "account-status-inactive"}>
                           {acc.status_Account ? "Active" : "Inactive"}
                         </span>
                       </td>
-                      
                       {currentUser?.isAdmin && <td>{acc.is_Admin ? "Admin" : "Moderator"}</td>}
-
                       <td className="account-table-actions">
                         <button onClick={() => handleEditClick(acc)}>Edit</button>
-
-                        {/* Only admins can delete */}
                         {currentUser?.isAdmin && (
                           <button onClick={() => handleDelete(acc.id)}>Delete</button>
                         )}
@@ -314,23 +341,23 @@ export default function AccountManagement() {
                 <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required />
               </div>
               <label>Email *</label>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      disabled={editingAccount && emailLocked} // ✅ Only lock when editing
-                      style={{ flex: 1 }}
-                    />
-                    {editingAccount && (
-                      <button type="button" onClick={() => setEmailLocked(!emailLocked)}>
-                        {emailLocked ? "Unlock" : "Lock"}
-                      </button>
-                    )}
-                  </div>
-                <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  disabled={editingAccount && emailLocked}
+                  style={{ flex: 1 }}
+                />
+                {editingAccount && (
+                  <button type="button" onClick={() => setEmailLocked(!emailLocked)}>
+                    {emailLocked ? "Unlock" : "Lock"}
+                  </button>
+                )}
+              </div>
+              <div>
                 <label>{editingAccount ? "New Password" : "Password *"}</label>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <input
@@ -347,6 +374,17 @@ export default function AccountManagement() {
                     </button>
                   )}
                 </div>
+              </div>
+              <div>
+                <label>Employee Role</label>
+                <select name="roleId" value={formData.roleId} onChange={handleChange}>
+                  <option value="">Select a role...</option>
+                  {roles.map(role => (
+                    <option key={role.id} value={role.id}>
+                      {role.role_name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label>Account Status</label>
