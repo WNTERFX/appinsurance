@@ -17,7 +17,7 @@ const agentColors = [
     try {
       const { data: agents, error } = await db
         .from("employee_Accounts")
-        .select("id, first_name, last_name, is_Admin"); // include is_Admin
+        .select("id, first_name, last_name, is_Admin, role_id"); // include is_Admin
 
       if (error) {
         console.error("Error fetching agents:", error.message);

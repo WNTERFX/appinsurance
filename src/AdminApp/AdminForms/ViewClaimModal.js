@@ -99,7 +99,7 @@ export default function ViewClaimModal({ policy, claims, onClose }) {
                   <span>{clientName}</span>
                 </div>
                 <div className="info-item">
-                  <label>Partner Company:</label>
+                  <label>Insurer:</label>
                   <span>{partnerCompany}</span>
                 </div>
               </div>

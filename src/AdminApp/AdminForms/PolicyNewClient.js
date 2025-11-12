@@ -281,7 +281,7 @@ export default function PolicyNewClient({
 
             {/* Partner */}
             <div className={`form-group ${errors.selectedPartner ? 'error' : ''}`}>
-              <label>Partners <span style={{ color: 'red' }}>*</span></label>
+              <label>Insurer <span style={{ color: 'red' }}>*</span></label>
               <select
                 id="company-select"
                 value={selectedPartner || ''}

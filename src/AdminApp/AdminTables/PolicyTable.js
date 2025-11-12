@@ -595,7 +595,7 @@ export default function PolicyTable() {
                 <th>Policy ID</th>
                 <th>Policy Type</th>
                 <th>Client Name</th>
-                <th>Insurance Partner</th>
+                <th>Insurer</th>
                 <th>Inception Date</th>
                 <th>Expiry Date</th>
                 <th>Renewal Date</th>
