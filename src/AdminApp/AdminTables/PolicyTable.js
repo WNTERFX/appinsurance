@@ -19,7 +19,15 @@ import { CustomAlert } from '../../ReusableComponents/CustomAlert';
 
 import PolicyInceptionModal from "../PolicyInceptionModal";
 
-export default function PolicyTable() {
+export default function PolicyTable({ 
+  clients,
+  onSelectClient,
+  agentId, 
+  allPoliciesCount, 
+  agentsWithPolicyCounts, 
+  onViewAllPolicies 
+}) {
+
   const [policies, setPolicies] = useState([]);
   const [selectedPolicy, setSelectedPolicy] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -80,7 +88,7 @@ export default function PolicyTable() {
 
   const loadPolicies = async () => {
     try {
-      const data = await fetchPolicies();
+      const data = await fetchPolicies(null, null, null, agentId);
       // Auto-deactivate expired policies
       const updatedData = await Promise.all(
         data.map(async (policy) => {
@@ -189,9 +197,10 @@ export default function PolicyTable() {
     initialize();
     
     // Expose debug function globally for testing in console
-    window.debugCheckPolicy = DebugCheckPolicy;
-    console.log("💡 Debug helper available: window.debugCheckPolicy(policyId)");
-  }, []);
+   /*  window.debugCheckPolicy = DebugCheckPolicy;
+    console.log("💡 Debug helper available: window.debugCheckPolicy(policyId)"); */
+    
+  }, [agentId]); 
 
   const handleCopyClick = (e, textToCopy) => {
     // Stop the row's onClick event from firing
