@@ -13,58 +13,78 @@ const agentColors = [
   "#4682B4", // Steel Blue
 ];
 
-  export async function getAllAgentsWithAssignedColors() {
-    try {
-      const { data: agents, error } = await db
-        .from("employee_Accounts")
-        .select("id, first_name, last_name, is_Admin, role_id"); // include is_Admin
-
-      if (error) {
-        console.error("Error fetching agents:", error.message);
-        return [];
-      }
-
-      if (!agents || !Array.isArray(agents)) {
-        return [];
-      }
-
-      const agentsWithColors = agents.map((agent, index) => ({
-        ...agent,
-        borderColor: agentColors[index % agentColors.length],
-        role: agent.is_Admin ? "Admin" : "Sales Agent", 
-      }));
-
-      return agentsWithColors;
-    } catch (err) {
-      console.error("Unexpected error fetching agents:", err);
+export async function getAllAgentsWithAssignedColors() {
+  try {
+    const { data: agents, error } = await db
+      .from("employee_Accounts")
+      .select("id, first_name, last_name, is_Admin, role_id"); // include is_Admin
+    
+    if (error) {
+      console.error("Error fetching agents:", error.message);
       return [];
     }
+    
+    if (!agents || !Array.isArray(agents)) {
+      return [];
+    }
+    
+    const agentsWithColors = agents.map((agent, index) => ({
+      ...agent,
+      borderColor: agentColors[index % agentColors.length],
+      role: agent.is_Admin ? "Admin" : "Sales Agent", 
+    }));
+    
+    return agentsWithColors;
+  } catch (err) {
+    console.error("Unexpected error fetching agents:", err);
+    return [];
   }
+}
 
 // Modified getClientCountByAgent to handle null agentId for total count
-export async function getClientCountByAgent(agentId = null) { // Accept null
+export async function getClientCountByAgent(agentId = null) {
   try {
     let query = db
       .from("clients_Table")
       .select("uid", { count: "exact" }); // Count 'uid' column
-
+    
     // Only apply agent_Id filter if agentId is explicitly provided (not null)
     if (agentId) {
       query = query.eq("agent_Id", agentId); 
     }
-
+    
     // Always filter for non-archived clients
     query = query.or("is_archived.is.null,is_archived.eq.false");
-
+    
     const { count, error } = await query;
-
+    
     if (error) {
       console.error(`Error fetching client count for agent ${agentId}:`, error.message);
       return 0;
     }
+    
     return count || 0;
   } catch (err) {
     console.error(`Unexpected error fetching client count for agent ${agentId}:`, err);
+    return 0;
+  }
+}
+
+// New function to get policy count by agent
+export async function getPolicyCountByAgent(agentId = null) {
+  try {
+    const { data, error } = await db.rpc('get_policy_count_by_agent', {
+      agent_uuid: agentId
+    });
+    
+    if (error) {
+      console.error(`Error fetching policy count for agent ${agentId}:`, error);
+      return 0;
+    }
+    
+    return data || 0;
+  } catch (err) {
+    console.error(`Unexpected error fetching policy count for agent ${agentId}:`, err);
     return 0;
   }
 }
