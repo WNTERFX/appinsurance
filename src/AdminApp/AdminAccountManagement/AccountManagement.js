@@ -147,6 +147,24 @@ export default function AccountManagement() {
       return;
     }
 
+      if (password && password.length < 10) {
+      showGlobalAlert("Password must be at least 10 characters long.");
+      logEvent("Password length too short");
+      return;
+    }
+
+    const passRegex = new RegExp(
+      "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"|<>?,./`~])"
+    );
+
+    if (!passRegex.test(password)) {
+      showGlobalAlert(
+        "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character."
+      );
+      logEvent("Password failed complexity check");
+      return;
+    }
+
     // Prepare form data with role
     const accountData = {
       ...formData,
