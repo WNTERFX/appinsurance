@@ -1,0 +1,87 @@
+/* overlay + modal */
+.addrpkr-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px;
+}
+.addrpkr-overlay.nested { z-index: 1002; background: rgba(0,0,0,.35); }
+
+.addrpkr-modal {
+  background: #fff; border: 1px solid #d1d5db; border-radius: 12px;
+  max-width: 900px; width: 100%; padding: 24px; position: relative;
+}
+.addrpkr-editor {
+  background: #fff; border: 1px solid #d1d5db; border-radius: 12px;
+  max-width: 760px; width: 100%; padding: 24px; position: relative; margin-top: 8px;
+}
+
+.addrpkr-close {
+  position: absolute; top: 12px; right: 12px;
+  background: transparent; border: none; font-size: 20px; cursor: pointer;
+}
+
+.addrpkr-title { margin: 0 0 16px; font-size: 22px; font-weight: 800; }
+.addrpkr-subtitle { margin: 0 0 12px; font-size: 20px; font-weight: 700; }
+
+.addrpkr-loading { padding: 20px; }
+
+.addrpkr-card {
+  border: 1px solid #cdd3df; border-radius: 10px; padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: #fff; margin-bottom: 12px;
+}
+.addrpkr-line { font-weight: 700; }
+
+.addrpkr-badges { display: flex; gap: 8px; margin-top: 8px; }
+.badge { font-size: 12px; padding: 2px 8px; border-radius: 8px; border: 1px solid #e5e7eb; }
+.badge-default { background: #fff7ed; border-color: #f59e0b; color: #b45309; }
+.badge-delivered { background: #ecfeff; border-color: #06b6d4; color: #0e7490; }
+
+.addrpkr-row-actions { display: flex; align-items: center; gap: 10px; }
+.addrpkr-btn-secondary {
+  border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 8px; padding: 6px 10px;
+  cursor: pointer; font-weight: 600;
+}
+.addrpkr-btn-edit {
+  border: 1px solid #d1d5db; background: #fff; border-radius: 8px; padding: 6px 10px;
+  cursor: pointer; font-weight: 600;
+}
+
+.addrpkr-addnew {
+  width: 100%; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 12px;
+  background: #fff; cursor: pointer; margin: 8px 0 16px; font-weight: 600;
+}
+
+.addrpkr-footer {
+  display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px;
+}
+.addrpkr-cancel {
+  background: #fee2e2; color: #b91c1c; border: none; border-radius: 10px; padding: 10px 16px; font-weight: 700;
+}
+.addrpkr-submit {
+  background: #3b82f6; color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-weight: 700;
+}
+
+/* editor form */
+.addrpkr-grid {
+  display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px;
+}
+.addrpkr-grid input, .addrpkr-grid select {
+  width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px;
+}
+.addrpkr-checkbox { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+
+/* main form tiny badges under box */
+.delivery-form-badges { display: flex; gap: 8px; margin-top: 6px; }
+.delivery-form-badges .badge-default { background: #fff7ed; border: 1px solid #f59e0b; color: #b45309; border-radius: 8px; padding: 2px 8px; font-size: 12px; }
+.delivery-form-badges .badge-delivered { background: #ecfeff; border: 1px solid #06b6d4; color: #0e7490; border-radius: 8px; padding: 2px 8px; font-size: 12px; }
+
+/* clickable address box in the delivery form */
+.delivery-form-address-display {
+  width: 100%; border: 1px solid #111; border-radius: 10px;
+  padding: 14px 16px; display: flex; justify-content: space-between; align-items: center;
+  background: #fff; font-weight: 800;
+}
+.delivery-form-address-display.clickable { cursor: pointer; }
+.delivery-form-address-right { font-size: 20px; line-height: 1; }

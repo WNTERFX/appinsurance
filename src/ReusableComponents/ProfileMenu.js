@@ -5,6 +5,7 @@ import DropdownAccounts from "../AdminApp/DropDownAccounts";
 export default function ProfileMenu({ onDarkMode }) {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [displayName, setDisplayName] = useState("User");
   const profileButtonRef = useRef(null);
   const dropdownRef = useRef(null);
 
@@ -13,7 +14,25 @@ export default function ProfileMenu({ onDarkMode }) {
     const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
       try {
-        setCurrentUser(JSON.parse(storedUser));
+        const user = JSON.parse(storedUser);
+        setCurrentUser(user);
+        
+        // Build display name from first_name and last_name
+        const firstName = user.first_name?.trim() || "";
+        const lastName = user.last_name?.trim() || "";
+        
+        if (firstName && lastName) {
+          setDisplayName(`${firstName} ${lastName}`);
+        } else if (firstName) {
+          setDisplayName(firstName);
+        } else if (lastName) {
+          setDisplayName(lastName);
+        } else if (user.personnel_Name) {
+          setDisplayName(user.personnel_Name);
+        } else {
+          // Fallback to role if no name available
+          setDisplayName(user.is_Admin ? "Admin" : "Moderator");
+        }
       } catch (err) {
         console.error("Error parsing currentUser from localStorage:", err);
       }
@@ -29,9 +48,7 @@ export default function ProfileMenu({ onDarkMode }) {
         aria-haspopup="true"
         aria-expanded={isProfileMenuOpen}
       >
-        <span className="profile-name">
-          {currentUser?.is_Admin ? "Admin" : "Moderator"}
-        </span>
+        <span className="profile-name">{displayName}</span>
         <FaUserCircle className="profile-icon" />
       </button>
 

@@ -18,6 +18,63 @@ body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
 
+/* Tabs Container */
+.claims-tabs-container {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.claims-tab {
+    flex: 1;
+    padding: 12px 20px;
+    background-color: #f5f5f5;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    min-width: 120px;
+}
+
+.claims-tab:hover {
+    background-color: #e8e8e8;
+    color: #333;
+}
+
+.claims-tab.active {
+    background-color: #ffffff;
+    color: #333;
+    font-weight: 600;
+    border-bottom-color: #673b92;
+}
+
+/* Specific tab colors when active */
+.claims-tab:nth-child(1).active {
+    border-bottom-color: #92400e; /* Pending - brown */
+}
+
+.claims-tab:nth-child(2).active {
+    border-bottom-color: #9a3412; /* Under Review - orange */
+}
+
+.claims-tab:nth-child(3).active {
+    border-bottom-color: #881337; /* Rejected - red */
+}
+
+.claims-tab:nth-child(4).active {
+    border-bottom-color: #065f46 ; /* Approved - green */
+}
+
+.claims-tab:nth-child(5).active {
+    border-bottom-color: #1e40af; /* Completed - blue */
+}
+
 .claims-overview-header {
     display: flex;
     justify-content: space-between;
@@ -132,9 +189,9 @@ body {
 }
 
 .policy-info-right {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 20px;
+    gap: 0;
 }
 
 /* Status Badges */
@@ -176,16 +233,20 @@ body {
     border: none;
     font-size: 18px;
     cursor: pointer;
-    padding: 0 5px;
-    margin-left: 5px;
+    padding: 0;
+    margin-left: 8px;
     transition: transform 0.3s ease;
     color: #555;
     outline: none;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
 }
 
 .expand-toggle .arrow {
     display: block;
     line-height: 1;
+    margin: 0;
 }
 
 .expand-toggle.expanded .arrow {
@@ -249,7 +310,7 @@ body {
     background-color: #f9f9f9;
 }
 
-/* ✅ Radio Button Column */
+/* Radio Button Column */
 .claims-table .radio-cell {
     width: 45px;
     text-align: center;
@@ -268,57 +329,46 @@ body {
     border-left: 4px solid #0d6efd;
 }
 
-/*  Shared Status Badge Styles */
-.status,
+/* Shared Status Badge Styles */
 .claim-status-badge {
     display: inline-block;
-    padding: 5px 12px;
-    border-radius: 5px;
+    padding: 8px 16px;
+    border-radius: 8px;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     white-space: nowrap;
-    text-transform: capitalize;
-    border: 1px solid transparent;
+    border: none;
+    margin: 0;
 }
 
-/* 🔸 Pending */
-.status.pending,
+/* Pending - Yellow/Tan */
 .claim-status-badge.pending {
-    background-color: #fff3cd;
-    color: #856404;
-    border-color: #ffeeba;
+    background-color: #fef3c7;
+    color: #92400e;
 }
 
-/* 🔸 Under Review */
-.status.under-review,
+/* Under Review - Orange */
 .claim-status-badge.under-review {
-    background-color: #cfe2ff;
-    color: #084298;
-    border-color: #b6d4fe;
+    background-color: #fed7aa;
+    color: #9a3412;
 }
 
-/* 🔸 Approved */
-.status.approved,
-.claim-status-badge.approved {
-    background-color: #d4edda;
-    color: #155724;
-    border-color: #c3e6cb;
-}
-
-/* 🔸 Rejected */
-.status.rejected,
+/* Rejected - Pink/Red */
 .claim-status-badge.rejected {
-    background-color: #f8d7da;
-    color: #721c24;
-    border-color: #f5c6cb;
+    background-color: #fecdd3;
+    color: #881337;
 }
 
-/* 🔸 Completed (🟣 New) */
-.status.completed,
+/* Approved - Green */
+.claim-status-badge.approved {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+/* Completed - Blue */
 .claim-status-badge.completed {
-    background-color: #e6e0f8;
-    color: #4a148c;
-    border-color: #d1c4e9;
+    background-color: #dbeafe;
+    color: #1e40af;
 }
 
 /* Claim Actions in Table */
@@ -386,37 +436,46 @@ body {
 
 .view-claim-btn {
     background-color: #6c757d;
+      font-weight: 550;
 }
 .view-claim-btn:hover {
     background-color: #5a6268;
 }
 
 .under-review-btn {
-    background-color: #0d6efd;
+    background-color: #FFDEA1;
+       color: #7F5200;
+    font-weight: 700;
 }
 .under-review-btn:hover {
-    background-color: #0b5ed7;
+    background-color: #f5d08d;
 }
 
 .reject-claim-btn {
-    background-color: #dc3545;
+    background-color: #F8D7DA;
+    color: #721C24;
+    font-weight: 700;
 }
 .reject-claim-btn:hover {
-    background-color: #c82333;
+    background-color: #f5bdc2;
 }
 
 .approve-claim-btn {
-    background-color: #28a745;
+    background-color: #D4EDDA;
+    color: #155724;
+    font-weight: 700;
 }
 .approve-claim-btn:hover {
-    background-color: #218838;
+    background-color: #b7f4c5;
 }
 
 .completed-btn {
-    background-color: #6f42c1;
+    background-color: #CFE2FF;
+    color: #084298;
+    font-weight: 700;
 }
 .completed-btn:hover {
-    background-color: #5936a2;
+    background-color: #b2cffa;
 }
 
 /* Pagination */
@@ -450,12 +509,39 @@ body {
     cursor: not-allowed;
 }
 
+/* Unarchive Button */
+.unarchive-btn {
+    background-color: #6f42c1;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s ease;
+}
+
+.unarchive-btn:hover {
+    background-color: #5936a2;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .claims-overview-section {
         padding: 15px;
         margin: 15px 0;
         max-width: unset;
+    }
+
+    .claims-tabs-container {
+        overflow-x: auto;
+    }
+
+    .claims-tab {
+        flex: 0 0 auto;
+        min-width: 100px;
+        padding: 10px 15px;
+        font-size: 13px;
     }
 
     .claims-overview-header {
@@ -543,58 +629,4 @@ body {
         flex-direction: column;
         gap: 5px;
     }
-}
-
-.unarchive-btn {
-    background-color: #6f42c1;
-    color: white;
-    border: none;
-    padding: 6px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: background-color 0.2s ease;
-}
-
-.unarchive-btn:hover {
-    background-color: #5936a2;
-}
-
-.search-filter-refresh-bar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.search-input {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  width: 250px;
-}
-
-.rows-per-page-select,
-.result-select {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background-color: white;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.refresh-btn {
-  background-color: #673b92;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.refresh-btn:hover {
-  background-color: #542c78;
 }

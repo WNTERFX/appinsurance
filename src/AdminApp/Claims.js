@@ -1,11 +1,12 @@
 import "./styles/claims-styles.css";
 import React, { useState, useRef, useEffect } from "react";
-import { FaArchive, FaUserCircle } from "react-icons/fa";
+import { FaArchive } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import DropdownAccounts from "./DropDownAccounts";
+import ProfileMenu from "../ReusableComponents/ProfileMenu";
 
 import ClaimsTable from "./AdminTables/ClaimsTable";
-import ClaimsArchiveTable from "./AdminTables/ClaimsArchiveTable"; // ✅ new archive version
+import ClaimsArchiveTable from "./AdminTables/ClaimsArchiveTable";
 
 export default function Claims() {
   const navigate = useNavigate();
@@ -51,26 +52,9 @@ export default function Claims() {
             {showArchive ? "Back to Claims" : "View Archive"}
           </button>
 
-          {/* Profile dropdown */}
+          {/* Profile dropdown - Using ProfileMenu component */}
           <div className="profile-menu">
-            <button
-              ref={buttonRef}
-              className="profile-button"
-              onClick={() => setOpen((s) => !s)}
-              aria-haspopup="true"
-              aria-expanded={open}
-            >
-              <span className="profile-name">Admin</span>
-              <FaUserCircle className="profile-icon" />
-            </button>
-
-            <div>
-              <DropdownAccounts
-                open={open}
-                onClose={() => setOpen(false)}
-                onDarkMode={() => console.log("Dark Mode toggled")}
-              />
-            </div>
+            <ProfileMenu onDarkMode={() => console.log("Dark Mode toggled")} />
           </div>
         </div>
       </div>

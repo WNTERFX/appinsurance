@@ -1,66 +1,99 @@
-import React, { useState, useEffect } from 'react';
-import { X, FileText, Trash2 } from 'lucide-react';
-import { getClaimDocumentUrls, updateClaim, deleteClaimDocumentFromStorage } from '../AdminActions/ClaimsTableActions';
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, FileText } from 'lucide-react';
+import { getClaimDocumentUrls, updateClaim } from '../AdminActions/ClaimsTableActions';
 import '../styles/edit-claims-modal.css';
+
+/* ---------- Helpers ---------- */
+function toLocalISODateOnly(inputDate) {
+  const d = inputDate ? new Date(inputDate) : new Date();
+  const tzOffset = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - tzOffset).toISOString().split('T')[0];
+}
+
+function parseIncidentTypes(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw.filter(Boolean);
+  if (typeof raw === 'string') {
+    const s = raw.trim();
+    if (s.startsWith('[')) {
+      try {
+        const arr = JSON.parse(s);
+        if (Array.isArray(arr)) return arr.filter(Boolean);
+      } catch {}
+    }
+    return s.split(',').map(x => x.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+function serializeIncidentTypes(arr) {
+  if (!arr || !Array.isArray(arr)) return '';
+  return arr.filter(Boolean).join(', ');
+}
+
+const MIN_APPROVED_AMOUNT = 10000;           // ₱10,000
+const MONEY_RE = /^\d*\.?\d{0,2}$/;          // digits + optional '.' + up to 2 decimals
 
 export default function EditClaimsModal({ claim, onClose, onSave }) {
   const [formData, setFormData] = useState({
-    type_of_incident: '',
-    phone_number: '',
+    type_of_incident: [],
     estimate_amount: '',
     approved_amount: '',
-    location_of_incident: '',
-    description_of_incident: '',
     incident_date: '',
-    claim_date: '',
-    message: ''
+    claim_date: ''
   });
 
   const [documents, setDocuments] = useState([]);
   const [loadingDocs, setLoadingDocs] = useState(true);
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
   const [approvedAmountError, setApprovedAmountError] = useState('');
 
-  const isFinalized = claim?.status === 'Approved' || claim?.status === 'Rejected' || claim?.status === 'Completed';
+  const isFinalized = ['Approved', 'Rejected', 'Completed'].includes(claim?.status);
+  const todayLocal = useMemo(() => toLocalISODateOnly(), []);
+
+  // Prevent closing via ESC
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, []);
 
   useEffect(() => {
-    if (claim) {
-      setFormData({
-        type_of_incident: claim.type_of_incident || '',
-        phone_number: claim.phone_number || '',
-        estimate_amount: claim.estimate_amount || '',
-        approved_amount: claim.approved_amount || '',
-        incident_date: claim.incident_date ? new Date(claim.incident_date).toISOString().split('T')[0] : '',
-        claim_date: claim.claim_date ? new Date(claim.claim_date).toISOString().split('T')[0] : '',
-        message: claim.message || ''
-      });
+    if (!claim) return;
 
-      loadDocuments();
-    }
+    setFormData({
+      type_of_incident: parseIncidentTypes(claim.type_of_incident),
+      estimate_amount: claim.estimate_amount ?? '',
+      approved_amount: claim.approved_amount ?? '',
+      incident_date: claim.incident_date ? toLocalISODateOnly(claim.incident_date) : '',
+      claim_date: claim.claim_date ? toLocalISODateOnly(claim.claim_date) : ''
+    });
+
+    loadDocuments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [claim]);
 
   const loadDocuments = async () => {
     setLoadingDocs(true);
     setError(null);
-    setSuccessMessage(null);
 
     if (!claim?.documents || !Array.isArray(claim.documents)) {
       setDocuments([]);
       setLoadingDocs(false);
-      console.log('No documents array found on claim (ID:', claim?.id, ')');
       return;
     }
-
-    console.log('Raw documents from claim (ID:', claim?.id, '):', claim.documents);
 
     try {
       const docsWithUrls = await getClaimDocumentUrls(claim.documents);
       setDocuments(docsWithUrls);
-      console.log('Documents loaded successfully:', docsWithUrls);
     } catch (err) {
-      console.error('Error loading documents for claim (ID:', claim?.id, '):', err);
+      console.error('Error loading documents:', err);
       setError('Failed to load documents. Please check console for details.');
       setDocuments([]);
     } finally {
@@ -70,102 +103,87 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // NOTE: approved_amount uses a stricter handler below
+    if (name === 'approved_amount') return;
     setFormData(prev => ({ ...prev, [name]: value }));
-
-    // Validate approved amount when it changes
-    if (name === 'approved_amount') {
-      validateApprovedAmount(value, formData.estimate_amount);
-    }
   };
 
-  const validateApprovedAmount = (approvedAmount, estimateAmount) => {
-    const approved = parseFloat(approvedAmount);
-    const estimate = parseFloat(estimateAmount);
+  /* ---- Approved Amount: numeric-only (optional '.' up to 2 decimals), 0 invalid, min ₱10,000 ---- */
+  const handleApprovedAmountChange = (e) => {
+    const raw = e.target.value.replace(/[^\d.]/g, ''); // strip anything not digit/dot
+    if (raw === '' || MONEY_RE.test(raw)) {
+      setFormData(prev => ({ ...prev, approved_amount: raw }));
 
-    if (approvedAmount && estimate) {
-      const minRequired = estimate * 0.5;
-      if (approved < minRequired) {
-        setApprovedAmountError(`Approved amount must be at least 50% of estimate amount (₱${minRequired.toLocaleString('en-PH', { minimumFractionDigits: 2 })})`);
+      if (raw === '') {
+        setApprovedAmountError('');
+        return;
+      }
+
+      const val = parseFloat(raw);
+      if (!Number.isFinite(val)) {
+        setApprovedAmountError('Enter a valid number.');
+      } else if (val === 0) {
+        setApprovedAmountError('Approved amount cannot be 0.');
+      } else if (val < MIN_APPROVED_AMOUNT) {
+        setApprovedAmountError(`Approved amount must be at least ₱${MIN_APPROVED_AMOUNT.toLocaleString('en-PH')}.`);
       } else {
         setApprovedAmountError('');
       }
-    } else {
-      setApprovedAmountError('');
     }
   };
 
-  const handleCheckboxChange = (type) => {
-    setFormData(prev => ({ ...prev, type_of_incident: type }));
-  };
+  const handleApprovedAmountKeyDown = (e) => {
+    const allow = ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'];
+    const ctrl = (e.ctrlKey || e.metaKey) && ['a','c','v','x'].includes(e.key.toLowerCase());
+    if (allow.includes(e.key) || ctrl) return;
 
-  const handleDeleteDocument = (doc) => {
-    setDeleteConfirm(doc);
-    setError(null);
-    setSuccessMessage(null);
-  };
-
-  const confirmDeleteDocument = async () => {
-    if (deleteConfirm) {
-      try {
-        setError(null);
-        setSuccessMessage(null);
-
-        await deleteClaimDocumentFromStorage(deleteConfirm.path);
-
-        const updatedDocs = documents.filter(d => d.path !== deleteConfirm.path);
-        setDocuments(updatedDocs);
-
-        const updatedData = {
-          ...formData,
-          incident_date: formData.incident_date ? new Date(formData.incident_date).toISOString() : null,
-          claim_date: formData.claim_date ? new Date(formData.claim_date).toISOString() : null,
-          approved_amount: formData.approved_amount === '' ? null : parseFloat(formData.approved_amount),
-          documents: updatedDocs.map(doc => ({
-            path: doc.path,
-            name: doc.name,
-            size: doc.size,
-            type: doc.type,
-            uploadedAt: doc.uploadedAt
-          }))
-        };
-
-        await updateClaim(claim.id, updatedData);
-        onSave(claim.id, updatedData);
-
-        setSuccessMessage(`Document "${deleteConfirm.name}" deleted successfully.`);
-        setDeleteConfirm(null);
-
-        setTimeout(() => setSuccessMessage(null), 3000);
-      } catch (err) {
-        console.error('Error confirming document deletion:', err);
-        setError(`Failed to delete document: ${err.message}`);
-        setDeleteConfirm(null);
-      }
+    if (e.key === '.') {
+      if (String(formData.approved_amount || '').includes('.')) e.preventDefault();
+      return;
     }
+    if (!/^\d$/.test(e.key)) e.preventDefault();
   };
 
-  const cancelDeleteDocument = () => {
-    setDeleteConfirm(null);
+  const handleApprovedAmountPaste = (e) => {
+    const text = (e.clipboardData.getData('text') || '').replace(/[^\d.]/g, '');
+    if (!(text === '' || MONEY_RE.test(text))) e.preventDefault();
+  };
+
+  /* ---- Incident type toggles (keep your existing styles/markup) ---- */
+  const toggleIncidentType = (type) => {
+    if (isFinalized) return;
+    setFormData(prev => {
+      const has = prev.type_of_incident.includes(type);
+      const next = has ? prev.type_of_incident.filter(t => t !== type) : [...prev.type_of_incident, type];
+      return { ...prev, type_of_incident: next };
+    });
   };
 
   const handleSubmit = async () => {
     setError(null);
-    setSuccessMessage(null);
 
-    // Validate approved amount before submission
-    const approved = parseFloat(formData.approved_amount);
-    const estimate = parseFloat(formData.estimate_amount);
+    // Require at least one incident type
+    if (!formData.type_of_incident.length) {
+      setError('Select the applicable incident type to proceed.');
+      return;
+    }
 
-    if (formData.approved_amount && estimate) {
-      const minRequired = estimate * 0.5;
-      if (approved < minRequired) {
-        setError(`Approved amount must be at least 50% of estimate amount (₱${minRequired.toLocaleString('en-PH', { minimumFractionDigits: 2 })})`);
+    // Validate Approved Amount if present
+    if (formData.approved_amount !== '') {
+      const n = parseFloat(formData.approved_amount);
+      if (!Number.isFinite(n) || n === 0 || n < MIN_APPROVED_AMOUNT) {
+        setError(
+          n === 0
+            ? 'Approved amount cannot be 0.'
+            : `Approved amount must be at least ₱${MIN_APPROVED_AMOUNT.toLocaleString('en-PH')}.`
+        );
         return;
       }
     }
 
     const updatedData = {
       ...formData,
+      type_of_incident: serializeIncidentTypes(formData.type_of_incident),
       incident_date: formData.incident_date ? new Date(formData.incident_date).toISOString() : null,
       claim_date: formData.claim_date ? new Date(formData.claim_date).toISOString() : null,
       approved_amount: formData.approved_amount === '' ? null : parseFloat(formData.approved_amount),
@@ -181,12 +199,8 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
 
     try {
       await updateClaim(claim.id, updatedData);
-      setSuccessMessage('Claim updated successfully!');
       onSave(claim.id, updatedData);
-
-      setTimeout(() => {
-        onClose();
-      }, 1000);
+      onClose(); // success banner removed; just close
     } catch (err) {
       console.error('Error submitting claim update:', err);
       setError(`Failed to update claim: ${err.message}`);
@@ -194,7 +208,8 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
   };
 
   return (
-    <div className="edit-claims-modal-overlay" onClick={onClose}>
+    /* Do NOT close when clicking overlay */
+    <div className="edit-claims-modal-overlay" role="dialog" aria-modal="true">
       <div className="edit-claims-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="edit-claims-modal-header">
           <div>
@@ -207,40 +222,29 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
         </div>
 
         <div className="edit-claims-modal-body">
-          {error && (
-            <div className="edit-claims-error-message">
-              {error}
-            </div>
-          )}
+          {error && <div className="edit-claims-error-message">{error}</div>}
 
           <div className="edit-claims-header-row">
             <div className="edit-claims-field">
               <label>Policy ID:</label>
-              <input
-                type="text"
-                value={claim?.policy_Table?.internal_id || 'N/A'}
-                disabled
-              />
+              <input type="text" value={claim?.policy_Table?.internal_id || 'N/A'} disabled />
             </div>
             <div className="edit-claims-field">
               <label>Claim ID:</label>
-              <input
-                type="text"
-                value={claim?.id || 'N/A'}
-                disabled
-              />
+              <input type="text" value={claim?.id || 'N/A'} disabled />
             </div>
           </div>
 
           <div className="edit-claims-grid">
+            {/* Type of Incident — keep your original label structure/styles */}
             <div className="edit-claims-field edit-claims-type-of-incident">
               <label>Type of Incident:</label>
               <div className="edit-claims-checkboxes">
                 <label className="edit-claims-checkbox-label">
                   <input
                     type="checkbox"
-                    checked={formData.type_of_incident === 'Own Damage'}
-                    onChange={() => handleCheckboxChange('Own Damage')}
+                    checked={formData.type_of_incident.includes('Own Damage')}
+                    onChange={() => toggleIncidentType('Own Damage')}
                     disabled={isFinalized}
                   />
                   Own Damage
@@ -248,8 +252,8 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
                 <label className="edit-claims-checkbox-label">
                   <input
                     type="checkbox"
-                    checked={formData.type_of_incident === 'Third-party'}
-                    onChange={() => handleCheckboxChange('Third-party')}
+                    checked={formData.type_of_incident.includes('Third-party')}
+                    onChange={() => toggleIncidentType('Third-party')}
                     disabled={isFinalized}
                   />
                   Third-party
@@ -264,7 +268,7 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
                 name="estimate_amount"
                 value={formData.estimate_amount}
                 onChange={handleChange}
-                disabled={isFinalized}
+                disabled
                 min="0"
                 step="0.01"
               />
@@ -278,59 +282,41 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
                 value={formData.incident_date}
                 onChange={handleChange}
                 disabled={isFinalized}
+                max={todayLocal}   /* block future dates */
               />
             </div>
 
             <div className="edit-claims-field">
               <label>Approved Amount</label>
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 name="approved_amount"
                 value={formData.approved_amount}
-                onChange={handleChange}
+                onChange={handleApprovedAmountChange}
+                onKeyDown={handleApprovedAmountKeyDown}
+                onPaste={handleApprovedAmountPaste}
                 disabled={isFinalized}
-                min="0"
-                step="0.01"
-                style={{
-                  borderColor: approvedAmountError ? '#dc2626' : undefined
-                }}
               />
               {approvedAmountError && (
-                <span style={{ 
-                  color: '#dc2626', 
-                  fontSize: '12px', 
-                  marginTop: '4px',
-                  display: 'block'
-                }}>
+                <span style={{ color: '#dc2626', fontSize: 12, marginTop: 4, display: 'block' }}>
                   {approvedAmountError}
                 </span>
               )}
-              {formData.estimate_amount && (
-                <span style={{ 
-                  color: '#6b7280', 
-                  fontSize: '12px', 
-                  marginTop: '4px',
-                  display: 'block'
-                }}>
-                  Minimum: ₱{(parseFloat(formData.estimate_amount) * 0.5).toLocaleString('en-PH', { minimumFractionDigits: 2 })} (50% of estimate)
-                </span>
-              )}
+              <span style={{ color: '#6b7280', fontSize: 12, marginTop: 4, display: 'block' }}>
+                Minimum: ₱10,000
+              </span>
             </div>
 
             <div className="edit-claims-field">
               <label>Claim Date</label>
-              <input
-                type="date"
-                name="claim_date"
-                value={formData.claim_date}
-                onChange={handleChange}
-                disabled={isFinalized}
-              />
+              <input type="date" name="claim_date" value={formData.claim_date} disabled />
             </div>
 
             <div className="edit-claims-field edit-claims-full-width">
               <label>Supporting Documents:</label>
-              <div className="edit-claims-documents-list">
+              {/* Only the link is clickable */}
+              <div className="edit-claims-documents-list only-links-clickable">
                 {loadingDocs ? (
                   <p className="no-docs">Loading documents...</p>
                 ) : documents.length === 0 ? (
@@ -343,42 +329,15 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="edit-claims-document-link"
-                        title="Click to open document in new tab"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
+                        title="Open document in new tab"
                       >
                         <FileText size={16} />
                         <span>{doc.name}</span>
                       </a>
-                      {!isFinalized && (
-                        <button
-                          className="edit-claims-delete-doc-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteDocument(doc);
-                          }}
-                          type="button"
-                          title="Remove document"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
                     </div>
                   ))
                 )}
               </div>
-            </div>
-
-            <div className="edit-claims-field edit-claims-full-width">
-              <label>Message:</label>
-              <textarea
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                rows={4}
-                placeholder="Enter a message to send to the client (optional)"
-              />
             </div>
           </div>
         </div>
@@ -396,23 +355,6 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
             Submit
           </button>
         </div>
-
-        {deleteConfirm && (
-          <div className="delete-confirm-overlay" onClick={cancelDeleteDocument}>
-            <div className="delete-confirm-modal" onClick={(e) => e.stopPropagation()}>
-              <h3>Confirm</h3>
-              <p>Are you sure you want to remove this attachment?</p>
-              <div className="delete-confirm-actions">
-                <button className="delete-confirm-cancel" onClick={cancelDeleteDocument}>
-                  Cancel
-                </button>
-                <button className="delete-confirm-ok" onClick={confirmDeleteDocument}>
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
