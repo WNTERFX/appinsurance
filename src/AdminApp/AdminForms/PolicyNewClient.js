@@ -93,6 +93,8 @@ export default function PolicyNewClient({
     if (validateForm()) onSaveClient();
   };
 
+  const startDate = new Date();
+
   return (
     <div className="new-client-container">
       <div className="form-card">
@@ -323,12 +325,17 @@ export default function PolicyNewClient({
                 style={{ borderColor: errors.selectedPaymentType ? 'red' : '' }}
               >
                 <option value="">-- Select Payment Type --</option>
-                {Array.isArray(paymentTypes) &&
-                  paymentTypes.map((pt) => (
-                    <option key={pt.id} value={pt.id}>
-                      {pt.payment_type_name} ({pt.months_payment} months)
-                    </option>
-                  ))}
+                 {Array.isArray(paymentTypes) &&
+                  paymentTypes.map((pt) => {
+
+                    const monthText = pt.months_payment === 1 ? 'month' : 'months';
+
+                    return (
+                      <option key={pt.id} value={pt.id}>
+                        {pt.payment_type_name} ({pt.months_payment} {monthText})
+                      </option>
+                    );
+                  })}
               </select>
               {errors.selectedPaymentType && <small style={{ color: 'red' }}>Payment Type is required</small>}
             </div>
@@ -488,23 +495,35 @@ export default function PolicyNewClient({
                     Monthly Payment Schedule ({months} months)
                   </h4>
                   <div style={{ maxHeight: '200px', overflowY: 'auto', fontSize: '14px' }}>
-                    {Array.from({ length: months }, (_, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          padding: '6px 8px',
-                          borderBottom: '1px solid #e0e0e0',
-                          background: i % 2 === 0 ? 'white' : '#f8f9fa'
-                        }}
-                      >
-                        <span style={{ fontWeight: '500' }}>Month {i + 1}:</span>
-                        <span style={{ color: '#10b981', fontWeight: '600' }}>
-                          ₱{monthlyPayment.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    ))}
+                    {/* MODIFIED LOOP BELOW */}
+                    {Array.from({ length: months }, (_, i) => {
+                      // Create a new date based on the start date
+                      const paymentDate = new Date(startDate);
+                      // Add 'i' months to it (for Month 1, i=0, so it's today)
+                      paymentDate.setMonth(paymentDate.getMonth() + i);
+                      
+                      // Format it to MM/DD/YYYY
+                      const formattedDate = paymentDate.toLocaleDateString('en-US');
+
+                      return (
+                        <div
+                          key={i}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            padding: '6px 8px',
+                            borderBottom: '1px solid #e0e0e0',
+                            background: i % 2 === 0 ? 'white' : '#f8f9fa'
+                          }}
+                        >
+                          {/* Use the formatted date here */}
+                          <span style={{ fontWeight: '500' }}>{formattedDate}:</span>
+                          <span style={{ color: '#10b981', fontWeight: '600' }}>
+                            ₱{monthlyPayment.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
