@@ -1,86 +1,215 @@
 import { db } from "../../dbServer";
-
 import { recalculateClaimableAmount } from "./ClaimableAmountActions";
 
 /**
- * Fetch all claims with policy and client information
+ * Get current user and check if they are admin or moderator
  */
+async function getCurrentUserRole() {
+  try {
+    const { data: { user }, error } = await db.auth.getUser();
+    
+    if (error || !user) {
+      console.error("Error getting current user:", error);
+      return { isAdmin: false, isModerator: false, userId: null };
+    }
+
+    // Check if user is an employee (moderator or admin)
+    const { data: employee, error: empError } = await db
+      .from("employee_Accounts")
+      .select("id, is_Admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (empError) {
+      console.error("Error checking employee status:", empError);
+      return { isAdmin: false, isModerator: false, userId: user.id };
+    }
+
+    if (!employee) {
+      return { isAdmin: false, isModerator: false, userId: user.id };
+    }
+
+    return {
+      isAdmin: employee.is_Admin === true,
+      isModerator: !employee.is_Admin, // If not admin, then moderator
+      userId: employee.id
+    };
+  } catch (err) {
+    console.error("getCurrentUserRole error:", err);
+    return { isAdmin: false, isModerator: false, userId: null };
+  }
+}
+
 /**
  * Fetch all claims with policy and client information
+ * Moderators only see claims for their assigned clients
+ * Admins see all claims
  */
 export const fetchClaims = async (onlyArchived = false) => {
   console.log("Fetching claims from Supabase...");
 
-  // Step 1: Fetch claims with filter applied at database level
-  let query = db
-    .from('claims_Table')
-    .select(`
-      *,
-      policy_Table (
-        id,
-        internal_id,
-        policy_type,
-        policy_inception,
-        policy_expiry,
-        client_id,
-        partner_id,
-        clients_Table (
-          uid,
-          first_Name,
-          middle_Name,
-          family_Name,
-          prefix,
-          suffix,
-          phone_Number,
-          internal_id
-        ),
-        insurance_Partners (
-          id,
-          insurance_Name
-        )
-      )
-    `)
-    .order('created_at', { ascending: false });
+  try {
+    // Get current user role
+    const { isAdmin, isModerator, userId } = await getCurrentUserRole();
+    console.log("User role:", { isAdmin, isModerator, userId });
 
-  // ✅ Filter by archived status at database level
-  if (onlyArchived) {
-    query = query.eq('is_archived', true);
-  } else {
-    query = query.eq('is_archived', false); // Only fetch non-archived claims by default
+    // Step 1: Get the appropriate client UIDs based on role
+    let clientUids = [];
+    
+    if (isModerator) {
+      // Moderator: Only get their assigned clients
+      const { data: clients, error: clientsError } = await db
+        .from("clients_Table")
+        .select("uid")
+        .eq("agent_Id", userId);
+
+      if (clientsError) {
+        console.error("Error fetching moderator's clients:", clientsError);
+        throw clientsError;
+      }
+
+      if (!clients || clients.length === 0) {
+        console.log("🔒 No clients assigned to this moderator");
+        return [];
+      }
+
+      clientUids = clients.map(c => c.uid);
+      console.log(`🔒 Moderator has ${clientUids.length} assigned clients`);
+    }
+    // If admin, clientUids remains empty array (fetch all)
+
+    // Step 2: Get policies for these clients (or all policies if admin)
+    let policyQuery = db
+      .from("policy_Table")
+      .select("id, client_id");
+
+    if (isModerator) {
+      // Filter by client UIDs for moderators
+      policyQuery = policyQuery.in("client_id", clientUids);
+    }
+
+    const { data: policies, error: policiesError } = await policyQuery;
+
+    if (policiesError) {
+      console.error("Error fetching policies:", policiesError);
+      throw policiesError;
+    }
+
+    if (!policies || policies.length === 0) {
+      console.log("No policies found");
+      return [];
+    }
+
+    const policyIds = policies.map(p => p.id);
+    console.log(`Found ${policyIds.length} policies`);
+
+    // Step 3: Fetch claims for these policies
+    let claimsQuery = db
+      .from('claims_Table')
+      .select('*')
+      .in('policy_id', policyIds)
+      .order('created_at', { ascending: false });
+
+    // Filter by archived status
+    if (onlyArchived) {
+      claimsQuery = claimsQuery.eq('is_archived', true);
+    } else {
+      claimsQuery = claimsQuery.eq('is_archived', false);
+    }
+
+    const { data: claims, error: claimsError } = await claimsQuery;
+
+    if (claimsError) {
+      console.error("Error fetching claims:", claimsError);
+      throw claimsError;
+    }
+
+    console.log(`Found ${claims?.length || 0} claims`);
+
+    // Step 4: Manually enrich each claim with policy and client data
+    const enrichedClaims = await Promise.all(
+      (claims || []).map(async (claim) => {
+        // Fetch policy data
+        const { data: policyData } = await db
+          .from("policy_Table")
+          .select(`
+            id,
+            internal_id,
+            policy_type,
+            policy_inception,
+            policy_expiry,
+            client_id,
+            partner_id
+          `)
+          .eq("id", claim.policy_id)
+          .single();
+
+        // Fetch client data
+        let clientData = null;
+        if (policyData?.client_id) {
+          const { data: client } = await db
+            .from("clients_Table")
+            .select(`
+              uid,
+              first_Name,
+              middle_Name,
+              family_Name,
+              prefix,
+              suffix,
+              phone_Number,
+              internal_id
+            `)
+            .eq("uid", policyData.client_id)
+            .single();
+          clientData = client;
+        }
+
+        // Fetch insurance partner
+        let partnerData = null;
+        if (policyData?.partner_id) {
+          const { data: partner } = await db
+            .from("insurance_Partners")
+            .select("id, insurance_Name")
+            .eq("id", policyData.partner_id)
+            .single();
+          partnerData = partner;
+        }
+
+        // Fetch computation data
+        let computationData = null;
+        if (claim.policy_id) {
+          const { data: computation } = await db
+            .from("policy_Computation_Table")
+            .select("policy_claim_amount")
+            .eq("policy_id", claim.policy_id)
+            .single();
+          computationData = computation;
+        }
+
+        return {
+          ...claim,
+          policy_Table: {
+            ...policyData,
+            clients_Table: clientData,
+            insurance_Partners: partnerData,
+            policy_Computation_Table: computationData
+          }
+        };
+      })
+    );
+
+    console.log(
+      onlyArchived
+        ? "Archived claims fetched and enriched:"
+        : "Non-archived claims fetched and enriched:",
+      enrichedClaims.length
+    );
+
+    return enrichedClaims;
+  } catch (err) {
+    console.error("fetchClaims error:", err);
+    return [];
   }
-
-  const { data: claims, error: claimsError } = await query;
-
-  if (claimsError) throw claimsError;
-
-  // Step 2: Fetch computation data separately
-  const { data: computations, error: compError } = await db
-    .from('policy_Computation_Table')
-    .select('policy_id, policy_claim_amount');
-
-  if (compError) throw compError;
-
-  // Step 3: Merge claim + computation by policy_id
-  const computationsMap = Object.fromEntries(
-    computations.map(c => [c.policy_id, c])
-  );
-
-  const enrichedClaims = claims.map(c => ({
-    ...c,
-    policy_Table: {
-      ...c.policy_Table,
-      policy_Computation_Table: computationsMap[c.policy_id] || null,
-    },
-  }));
-
-  console.log(
-    onlyArchived
-      ? "Archived claims fetched and enriched:"
-      : "Non-archived claims fetched and enriched:",
-    enrichedClaims
-  );
-
-  return enrichedClaims;
 };
 
 /**
@@ -171,13 +300,11 @@ export const updateClaimToApproved = async (policyId, approvedAmount = null) => 
     
     if (!success) {
       console.error("⚠️ Warning: Failed to update claimable amount:", recalcError);
-      // Don't throw error - claim approval was successful
     } else {
       console.log(`✅ Claimable amount updated to ₱${newClaimableAmount}`);
     }
   } catch (recalcError) {
     console.error("⚠️ Warning: Error recalculating claimable amount:", recalcError);
-    // Don't throw error - claim approval was successful
   }
 
   return data;
@@ -297,7 +424,6 @@ export async function getClaimDocumentUrls(documents) {
 
 /**
  * Update a single claim record
- * If the claim is being approved and has an approved_amount, update the claimable amount
  */
 export async function updateClaim(claimId, updatedData) {
   try {
@@ -330,7 +456,6 @@ export async function updateClaim(claimId, updatedData) {
     console.log(`Claim ${claimId} updated successfully:`, data);
 
     // 🔄 RECALCULATE CLAIMABLE AMOUNT IF NEEDED
-    // Check if status changed to Approved or approved_amount changed
     const statusChanged = updatedData.status && updatedData.status !== currentClaim.status;
     const approvedAmountChanged = updatedData.approved_amount !== undefined && 
                                    updatedData.approved_amount !== currentClaim.approved_amount;
@@ -345,11 +470,9 @@ export async function updateClaim(claimId, updatedData) {
         
         if (!success) {
           console.error("⚠️ Warning: Failed to update claimable amount:", recalcError);
-          // Don't throw error - claim update was successful
         }
       } catch (recalcError) {
         console.error("⚠️ Warning: Error recalculating claimable amount:", recalcError);
-        // Don't throw error - claim update was successful
       }
     }
 
@@ -391,7 +514,7 @@ export async function deleteClaimDocumentFromStorage(filePath) {
 }
 
 /**
- * Archive a claim by moving it to the archive table or flagging as archived
+ * Archive a claim
  */
 export const archiveClaim = async (claimId) => {
   console.log(`Archiving claim ${claimId}...`);

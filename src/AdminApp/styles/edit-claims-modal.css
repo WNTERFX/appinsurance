@@ -377,3 +377,34 @@
     padding: 12px 20px 16px 20px;
   }
 }
+
+
+
+
+/* --- Type of Incident: keep look, only the ☐ is clickable --- */
+.edit-claims-type-of-incident .edit-claims-checkbox-label {
+  /* Block clicks on the label surface (text), but not the checkbox */
+  pointer-events: none;
+}
+.edit-claims-type-of-incident .edit-claims-checkbox-label input[type="checkbox"] {
+  pointer-events: auto; /* allow clicking the box */
+}
+
+/* --- Supporting Documents: only the link is clickable --- */
+.edit-claims-documents-list.only-links-clickable .edit-claims-document-item {
+  pointer-events: none;            /* row itself not clickable */
+}
+.edit-claims-documents-list.only-links-clickable .edit-claims-document-link {
+  pointer-events: auto;            /* link stays clickable */
+  flex: 0 0 auto;                  /* IMPORTANT: prevent link from stretching full row */
+}
+
+
+/* Supporting Documents: only the link clickable; ensure link doesn't stretch */
+.edit-claims-documents-list.only-links-clickable .edit-claims-document-item {
+  pointer-events: none;
+}
+.edit-claims-documents-list.only-links-clickable .edit-claims-document-link {
+  pointer-events: auto;
+  flex: 0 0 auto !important; /* override your original flex:1 */
+}

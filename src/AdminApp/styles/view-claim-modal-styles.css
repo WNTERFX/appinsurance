@@ -1,5 +1,5 @@
 /* Modal Overlay */
-.modal-overlay {
+.modal-overlay-view-claims {
   position: fixed;
   top: 0;
   left: 0;
@@ -17,15 +17,17 @@
 .view-claim-modal {
   background: white;
   border-radius: 12px;
-  width: 100%;
-  max-width: 1200px;
+  /* ⬇️ Ensure it uses most of the viewport, but capped */
+  width: min(96vw, 1200px);
+  /* ⬇️ Give a reasonable desktop floor so it doesn't look tiny */
+  min-width: 820px;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow: hidden;              /* header sticky, body scrolls */
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 /* Modal Header */
-.modal-header {
+.modal-header-view-claims {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -43,11 +45,11 @@
   gap: 12px;
 }
 
-.modal-icon {
+.modal-icon-view-claims {
   font-size: 28px;
 }
 
-.modal-header h2 {
+.modal-header-view-claims h2 {
   margin: 0;
   font-size: 24px;
   color: #1f2937;
@@ -69,35 +71,41 @@
   color: #1f2937;
 }
 
+/* ⬇️ Body should scroll instead of the whole modal, and have desktop padding */
+.modal-body-view-claims {
+  padding: 24px 30px;           /* was only set in mobile before */
+  overflow-y: auto;
+  max-height: calc(90vh - 72px); /* header height approx */
+}
 
 /* IDs Section */
-.ids-section {
+.ids-section-view-claims {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   margin-bottom: 30px;
 }
 
-.id-item {
+.id-item-view-claims {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.id-item label {
+.id-item-view-claims label {
   font-weight: 600;
   color: #6b7280;
   font-size: 14px;
 }
 
-.id-item span {
+.id-item-view-claims span {
   font-size: 16px;
   color: #1f2937;
   font-weight: 500;
 }
 
 /* Details Grid */
-.details-grid {
+.details-grid-view-claims {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
@@ -105,14 +113,14 @@
 }
 
 /* Info Card */
-.info-card {
+.info-card-view-claims {
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 20px;
   background-color: #f9fafb;
 }
 
-.info-card h3 {
+.info-card-view-claims h3 {
   margin: 0 0 20px 0;
   font-size: 18px;
   color: #1f2937;
@@ -121,40 +129,40 @@
 }
 
 /* Info Row */
-.info-row {
+.info-row-view-claims {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   margin-bottom: 16px;
 }
 
-.info-row:last-child {
+.info-row-view-claims:last-child {
   margin-bottom: 0;
 }
 
-.info-item {
+.info-item-view-claims {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.info-item.full-width {
+.info-item-view-claims.full-width {
   grid-column: 1 / -1;
 }
 
-.info-item label {
+.info-item-view-claims label {
   font-weight: 600;
   color: #6b7280;
   font-size: 13px;
 }
 
-.info-item span {
+.info-item-view-claims span {
   font-size: 15px;
   color: #1f2937;
 }
 
 /* Documents Section */
-.documents-section {
+.documents-section-view-claims {
   margin-top: 30px;
   padding: 20px;
   background-color: #f9fafb;
@@ -162,19 +170,19 @@
   border-radius: 8px;
 }
 
-.documents-section h3 {
+.documents-section-view-claims h3 {
   margin: 0 0 16px 0;
   font-size: 18px;
   color: #1f2937;
 }
 
-.documents-list {
+.documents-list-view-claims {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.document-item {
+.document-item-view-claims {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -186,20 +194,18 @@
   transition: all 0.2s ease;
 }
 
-
-
-.doc-icon {
+.doc-icon-view-claims {
   font-size: 20px;
   flex-shrink: 0;
 }
 
-.doc-name {
+.doc-name-view-claims {
   font-size: 14px;
   color: #1f2937;
 }
 
-.no-documents,
-.loading-documents {
+.no-documents-view-claims,
+.loading-documents-view-claims {
   color: #6b7280;
   font-style: italic;
   margin: 0;
@@ -207,28 +213,14 @@
   padding: 16px;
 }
 
-/* Message Section */
-.message-section {
-  margin-top: 30px;
-  padding: 20px;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-}
-
-.message-section h3 {
-  margin: 0 0 12px 0;
-  font-size: 18px;
-  color: #1f2937;
-}
-
-.message-section p {
-  margin: 0;
-  color: #374151;
-  line-height: 1.6;
-}
-
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .view-claim-modal {
+    min-width: 0;               /* allow to shrink on tablets */
+    width: 96vw;
+  }
+}
+
 @media (max-width: 768px) {
   .view-claim-modal {
     max-width: 100%;
@@ -237,19 +229,19 @@
     max-height: 100vh;
   }
 
-  .details-grid {
+  .details-grid-view-claims {
     grid-template-columns: 1fr;
   }
 
-  .ids-section {
+  .ids-section-view-claims {
     grid-template-columns: 1fr;
   }
 
-  .info-row {
+  .info-row-view-claims {
     grid-template-columns: 1fr;
   }
 
-  .modal-body {
+  .modal-body-view-claims {
     padding: 20px;
   }
 }
