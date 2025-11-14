@@ -23,6 +23,7 @@ export function CustomAlert({ message, type, onClose }) {
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
     position: 'relative',
     animation: 'slideIn 0.3s ease-out',
+    whiteSpace: 'pre-line', // This will preserve line breaks in the message
   };
 
   const closeButtonStyle = {
@@ -40,6 +41,13 @@ export function CustomAlert({ message, type, onClose }) {
   return (
     <div style={overlayStyle} onClick={onClose}>
       <div style={alertStyle} onClick={(e) => e.stopPropagation()}>
+        <button 
+          style={closeButtonStyle} 
+          onClick={onClose}
+          aria-label="Close"
+        >
+          ×
+        </button>
         {message}
       </div>
       <style>

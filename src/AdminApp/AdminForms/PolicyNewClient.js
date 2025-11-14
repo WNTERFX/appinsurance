@@ -220,26 +220,29 @@ export default function PolicyNewClient({
               {errors.vehicleEngineNumber && <small style={{ color: 'red' }}>Engine Serial is required</small>}
             </div>
 
-            {/* Plate */}
+           {/* Plate */}
             <div className={`form-group ${errors.vehiclePlateNumber ? 'error' : ''}`}>
               <label>Vehicle Plate Number <span style={{ color: 'red' }}>*</span></label>
               <input
                 type="text"
                 value={vehiclePlateNumber || ""}
                 onChange={(e) => {
-                  const upperValue = e.target.value.toUpperCase().trim();
-                  const invalidCharsRegex = /[^A-Z0-9]/g;
+                  // 1. Convert to uppercase and trim whitespace from start/end
+                  const upperValue = e.target.value.toUpperCase();
+                  // 2. Allow letters (A-Z), numbers (0-9), AND SPACE (' ')
+                  const invalidCharsRegex = /[^A-Z0-9 ]/g; 
                   const cleanedValue = upperValue.replace(invalidCharsRegex, '');
+                  
                   setPlateNumber(cleanedValue);
                   setErrors(prev => ({ ...prev, vehiclePlateNumber: false }));
                 }}
-                maxLength={8}
+                maxLength={8} // Max Length is 8 including the space
                 style={{
                   borderColor: errors.vehiclePlateNumber ? 'red' : '',
                   textTransform: 'uppercase'
                 }}
               />
-              <small style={{ color: vehiclePlateNumber?.length >= 8 ? "green" : errors.vehiclePlateNumber ? "red" : "gray" }}>
+              <small style={{ color: vehiclePlateNumber?.length === 8 ? "green" : errors.vehiclePlateNumber ? "red" : "gray" }}>
                 {vehiclePlateNumber?.length || 0}/8 characters {errors.vehiclePlateNumber && '- Required'}
               </small>
             </div>

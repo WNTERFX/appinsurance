@@ -240,27 +240,46 @@ export default function PolicyEditForm({
             </div>
 
             <div className={`form-group-policy-edit ${errors.vehiclePlateNumber ? "error" : ""}`}>
-              <label>Vehicle Plate Number <span style={{ color: "red" }}>*</span></label>
+              <label>
+                Vehicle Plate Number <span style={{ color: "red" }}>*</span>
+              </label>
+
               <input
                 type="text"
                 value={vehiclePlateNumber || ""}
                 onChange={(e) => {
-                  const upperValue = e.target.value.toUpperCase().trim();
-                  const invalidCharsRegex = /[^A-Z0-9]/g;      
-                  const cleanedValue = upperValue.replace(invalidCharsRegex, '');
+                  // 1. Convert to uppercase (but DO NOT trim spaces inside)
+                  const upperValue = e.target.value.toUpperCase();
+
+                  // 2. Allow A–Z, 0–9, and spaces
+                  const invalidCharsRegex = /[^A-Z0-9 ]/g;
+                  const cleanedValue = upperValue.replace(invalidCharsRegex, "");
+
+                  // 3. Save cleaned value
                   setPlateNumber(cleanedValue);
-                  setErrors((p) => ({ ...p, vehiclePlateNumber: false }));
+
+                  // 4. Clear error
+                  setErrors((prev) => ({ ...prev, vehiclePlateNumber: false }));
                 }}
-                maxLength={8}
+                maxLength={8} // 8 including space
                 style={{
-                  borderColor: errors.vehiclePlateNumber ? 'red' : '',
-                  textTransform: 'uppercase'
+                  borderColor: errors.vehiclePlateNumber ? "red" : "",
+                  textTransform: "uppercase",
                 }}
               />
-              <small style={{
-                color: vehiclePlateNumber?.length >= 8 ? "green" : errors.vehiclePlateNumber ? "red" : "gray",
-              }}>
-                {vehiclePlateNumber?.length || 0}/8 characters {errors.vehiclePlateNumber && "- Required"}
+
+              <small
+                style={{
+                  color:
+                    vehiclePlateNumber?.length === 8
+                      ? "green"
+                      : errors.vehiclePlateNumber
+                      ? "red"
+                      : "gray",
+                }}
+              >
+                {vehiclePlateNumber?.length || 0}/8 characters{" "}
+                {errors.vehiclePlateNumber && "- Required"}
               </small>
             </div>
 

@@ -289,17 +289,18 @@ export default function PolicyTable({
         // Reload policies to show updated dates
         await loadPolicies();
         
-        alert(
-          `✅ Inception date set successfully!\n\n` +
+        showCustomAlert(
+          `Inception date set successfully!\n\n` +
           `Inception: ${new Date(inceptionTimestamp).toLocaleString("en-PH")}\n` +
-          `Expiry: ${new Date(expiryTimestamp).toLocaleString("en-PH")}`
+          `Expiry: ${new Date(expiryTimestamp).toLocaleString("en-PH")}`,
+          'success'
         );
       } else {
-        alert("❌ Error setting inception date:\n\n" + result.error);
+        showCustomAlert(`❌ Error setting inception date:\n\n${result.error}`, 'error');
       }
     } catch (error) {
       console.error("Error setting inception date:", error);
-      throw error;
+      showCustomAlert(`❌ Error setting inception date:\n\n${error.message}`, 'error');
     }
   };
 
