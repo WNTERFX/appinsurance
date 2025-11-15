@@ -203,3 +203,33 @@
     padding: 0.5rem;
   }
 }
+
+/* Update the .admin-controller-btn-toggle class */
+.admin-controller-btn-toggle {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  margin-right: 0.25rem;
+  min-width: 90px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-controller-btn-toggle.activate {
+  background-color: #28a745;
+  color: white;
+}
+
+.admin-controller-btn-toggle.activate:hover {
+  background-color: #218838;
+}
+
+.admin-controller-btn-toggle.deactivate {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.admin-controller-btn-toggle.deactivate:hover {
+  background-color: #e0a800;
+}
