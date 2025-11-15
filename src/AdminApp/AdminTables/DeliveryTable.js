@@ -21,7 +21,7 @@ export default function DeliveryTable({
   onEditDelivery,
   onSelectPolicyForClientInfo,
   onRefreshData,
-  EditDeliveryComponent, // New prop: The EditDeliveryController component
+  EditDeliveryComponent,
 }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
@@ -41,7 +41,8 @@ export default function DeliveryTable({
   const [alertModal, setAlertModal] = useState({ isOpen: false, message: "", title: "Alert" });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: "", title: "Confirm", onConfirm: null });
 
-  const tabs = ["Pending", "Scheduled", "Out for Delivery", "Delivered", "Rescheduled"];
+  // ✅ Updated tabs to include "Completed"
+  const tabs = ["Pending", "Scheduled", "Out for Delivery", "Delivered", "Completed", "Rescheduled"];
 
   // Helper functions for modals
   const showAlert = (message, title = "Alert") => {
@@ -222,6 +223,7 @@ export default function DeliveryTable({
     );
   };
 
+  // ✅ Archive now only works in Completed tab
   const handleArchive = async (deliveryId) => {
     showConfirm(
       "Proceed to archive this delivery?",
@@ -289,10 +291,7 @@ export default function DeliveryTable({
         </div>
 
         <div className="delivery-table-header">
-          <h2>
-            {activeTab} Deliveries{" "}
-            <span className="delivery-count">({filteredAndSearchedDeliveries.length})</span>
-          </h2>
+          <h2>Active Deliveries</h2>
 
           <div className="delivery-header-controls">
             <input
@@ -341,17 +340,17 @@ export default function DeliveryTable({
               <table>
                 <thead>
                   <tr>
-                    <th>Delivery ID</th>
-                    <th>Policy ID</th>
-                    <th>Policy Holder</th>
-                    <th>Address</th>
-                    <th>Phone Number</th>
-                    <th>Date Created</th>
-                    <th>Est. Delivery / Delivered Date</th>
-                    <th>Status</th>
-                    <th>Remarks</th>
-                    <th>Proof of Delivery</th>
-                    <th>Action</th>
+                    <th style={{ minWidth: '100px' }}>Delivery ID</th>
+                    <th style={{ minWidth: '100px' }}>Policy ID</th>
+                    <th style={{ minWidth: '180px' }}>Policy Holder</th>
+                    <th style={{ minWidth: '250px' }}>Address</th>
+                    <th style={{ minWidth: '130px' }}>Phone Number</th>
+                    <th style={{ minWidth: '120px' }}>Date Created</th>
+                    <th style={{ minWidth: '150px' }}>Est. Delivery / Delivered Date</th>
+                    <th style={{ minWidth: '110px' }}>Status</th>
+                    <th style={{ minWidth: '200px' }}>Remarks</th>
+                    <th style={{ minWidth: '140px' }}>Proof of Delivery</th>
+                    <th style={{ minWidth: '180px' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -472,7 +471,13 @@ export default function DeliveryTable({
                             </>
                           )}
 
+                          {/* ✅ Delivered tab - Only View Proof, no action buttons */}
                           {activeTab === "Delivered" && (
+                            <span className="no-action-text">No actions available</span>
+                          )}
+
+                          {/* ✅ Completed tab - Archive button (View Proof is always visible in the Proof column) */}
+                          {activeTab === "Completed" && (
                             <button
                               className="archive-btn-delivery"
                               onClick={(e) => {
@@ -490,7 +495,6 @@ export default function DeliveryTable({
                                 className="edit-btn-delivery"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  // Edit opens modal, after save it should go to Scheduled
                                   onEditDelivery(delivery);
                                 }}
                               >

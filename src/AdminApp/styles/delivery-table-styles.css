@@ -1,3 +1,5 @@
+/* ===== REMOVED MAIN HEADER - Using inline header like Client table ===== */
+
 /* --------------------------- */
 /* Container + Header          */
 /* --------------------------- */
@@ -18,6 +20,7 @@
   gap: 0;
   border-bottom: 2px solid #e0e0e0;
   margin-bottom: 20px;
+  margin-top: 0; /* ✅ Remove top margin */
   overflow-x: auto;
 }
 
@@ -50,7 +53,7 @@
 
 /* Specific tab colors when active */
 .delivery-tab:nth-child(1).active {
-  border-bottom-color: #f59e0b; /* Pending - amber */
+  border-bottom-color: #856404; /* Pending - yellow/brown */
 }
 
 .delivery-tab:nth-child(2).active {
@@ -58,14 +61,19 @@
 }
 
 .delivery-tab:nth-child(3).active {
-  border-bottom-color: #8b5cf6; /* Out for Delivery - purple */
+  border-bottom-color: #FF9800; /* Out for Delivery - orange */
 }
 
 .delivery-tab:nth-child(4).active {
   border-bottom-color: #10b981; /* Delivered - green */
 }
 
+/* ✅ NEW: Completed tab color */
 .delivery-tab:nth-child(5).active {
+  border-bottom-color: #198754; /* Completed - darker green */
+}
+
+.delivery-tab:nth-child(6).active {
   border-bottom-color: #ef4444; /* Rescheduled - red */
 }
 
@@ -80,18 +88,14 @@
 
 .delivery-table-container h2 {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.delivery-count {
-  font-size: 1.2rem;
-  color: #666;
-  font-weight: 400;
-}
+/* ✅ Remove delivery count span styling - not used anymore */
 
 /* ------------------------------------- */
 /* Group for all right-aligned controls */
@@ -185,29 +189,109 @@
 
 .delivery-table-scroll > table {
   width: 100%;
-  min-width: 1200px;
   border-collapse: collapse;
+  table-layout: auto; /* ✅ Changed to auto for flexible columns */
 }
 
 /* --------------------------- */
 /* Table Headings + Cells      */
 /* --------------------------- */
 .delivery-table-scroll > table > thead > tr > th {
-  padding: 16px 15px;
+  padding: 12px 15px;
   text-align: left;
   background-color: #f2f5fa;
   white-space: nowrap;
-  min-width: 150px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.875rem;
+  vertical-align: middle;
+  border-bottom: 2px solid #ddd;
+  border-right: 1px solid #e5e7eb;
+}
+
+.delivery-table-scroll > table > thead > tr > th:last-child {
+  border-right: none;
 }
 
 .delivery-table-scroll > table > tbody > tr > td {
-  padding: 14px 15px;
+  padding: 12px 15px;
   text-align: left;
-  white-space: nowrap;
+  white-space: normal; /* ✅ Changed from nowrap to normal for wrapping */
+  word-wrap: break-word;
   border-bottom: 1px solid #ddd;
-  font-size: 0.9rem;
+  border-right: 1px solid #e5e7eb;
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+.delivery-table-scroll > table > tbody > tr > td:last-child {
+  border-right: none;
+}
+
+/* ✅ Fix alignment for Remarks column */
+.delivery-table-scroll > table > tbody > tr > td.remarks,
+.delivery-table-scroll > table > thead > tr > th.remarks {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  vertical-align: top;
+  padding: 12px 15px;
+  max-width: 250px; /* Limit width for better layout */
+}
+
+.remarks .remarks-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  display: block;
+  text-align: left;
+}
+
+/* ✅ NEW: No action text styling */
+.no-action-text {
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+/* Delivery Status Badges */
+.delivery-status-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.delivery-status-badge.pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.delivery-status-badge.scheduled {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.delivery-status-badge.out-for-delivery {
+  background-color: #e9d5ff;
+  color: #6b21a8;
+}
+
+.delivery-status-badge.delivered {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+/* ✅ NEW: Completed badge styling */
+.delivery-status-badge.completed {
+  background-color: #d1fae5;
+  color: #14532d;
+  font-weight: 700;
+}
+
+.delivery-status-badge.rescheduled {
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
 /* Delivery Status Badges */
@@ -256,7 +340,6 @@
     text-align: left;
     background-color: #F2F5FA;
     white-space: nowrap;
-    min-width: 150px;
     font-size: 1rem;
   }
 }
@@ -308,6 +391,7 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .delivery-table-actions button {
@@ -317,9 +401,10 @@
   cursor: pointer;
   font-size: 13px;
   transition: all 0.2s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 5px;
+  white-space: nowrap;
 }
 
 .edit-btn-delivery {
@@ -429,32 +514,6 @@
 .delivery-table-actions .delivered-btn-delivery:hover {
   background-color: #059669;
   color: white;
-}
-
-/* --------------------------- */
-/* Remarks Column Styling      */
-/* --------------------------- */
-.delivery-table-scroll > table > tbody > tr > td.remarks,
-.delivery-table-scroll > table > thead > tr > th.remarks {
-  white-space: normal !important;
-  min-width: 0 !important;
-  max-width: 300px;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  vertical-align: top;
-  padding: 12px 15px;
-  vertical-align: middle;
-}
-
-/* Inner content (keeps manual line breaks and wraps) */
-.remarks .remarks-content,
-td.remarks .remarks-content {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  display: block;
-  max-width: 100%;
-  text-align: center;
 }
 
 /* Loading overlay */
@@ -986,7 +1045,52 @@ td.remarks .remarks-content {
   background-color: #2563eb;
 }
 
+.no-proof {
+  color: #9ca3af;
+  font-style: italic;
+}
 
+/* Proof Images Grid for Multiple Images */
+.proof-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.proof-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 15px;
+  background: #f9fafb;
+}
+
+.proof-item-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.proof-item .proof-image-container {
+  width: 100%;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.proof-item .proof-image-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 
 /* Responsive tweaks */
 @media (max-width: 768px) {
@@ -1014,11 +1118,6 @@ td.remarks .remarks-content {
 
   .delivery-search-input {
     width: 100%;
-  }
-
-  .delivery-table-scroll > table > tbody > tr > td.remarks {
-    max-width: 160px;
-    font-size: 0.85rem;
   }
 }
 
