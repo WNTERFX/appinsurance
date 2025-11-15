@@ -87,6 +87,18 @@ export default function PartnersTab({ controller }) {
             </label>
           </div>
 
+          <div className="admin-controller-form-group">
+            <label className="admin-controller-label">
+              <input
+                type="checkbox"
+                checked={controller.isActive}
+                onChange={(e) => controller.setIsActive(e.target.checked)}
+                style={{ marginRight: "8px" }}
+              />
+              Active (Available for selection)
+            </label>
+          </div>
+
           <div className="admin-controller-button-group">
             <button
               type="submit"
@@ -115,6 +127,7 @@ export default function PartnersTab({ controller }) {
               <th>Address</th>
               <th>Contact</th>
               <th>Initials</th> 
+              <th>Status</th> 
               <th>Created At</th>
               <th>Actions</th>
             </tr>
@@ -122,8 +135,8 @@ export default function PartnersTab({ controller }) {
           <tbody>
             {controller.partners.length === 0 ? (
               <tr>
-                <td colSpan="7" className="admin-controller-empty">
-                  No insurance partners found. Click "Add New Insurance Partner" to create one.
+                <td colSpan="8" className="admin-controller-empty">
+                  No insurance partners found. Click "Add New Insurer" to create one.
                 </td>
               </tr>
             ) : (
@@ -132,9 +145,27 @@ export default function PartnersTab({ controller }) {
                   <td><strong>{partner.insurance_Name}</strong></td>
                   <td>{partner.address || "N/A"}</td>
                   <td>{partner.contact || "N/A"}</td>
-                  <td>{partner.initials || "N/A"}</td> {/* ✅ Display initials */}
+                  <td>{partner.initials || "N/A"}</td>
+                  <td>
+                    <span style={{
+                      padding: "4px 8px",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      backgroundColor: partner.is_active !== false ? "#d4edda" : "#f8d7da",
+                      color: partner.is_active !== false ? "#155724" : "#721c24"
+                    }}>
+                      {partner.is_active !== false ? "Active" : "Inactive"}
+                    </span>
+                  </td>
                   <td>{formatDate(partner.created_at)}</td>
                   <td>
+                    <button
+                      onClick={() => controller.togglePartnerActive(partner.id, partner.is_active !== false)}
+                      className={`admin-controller-btn admin-controller-btn-toggle ${partner.is_active !== false ? 'deactivate' : 'activate'}`}
+                    >
+                      {partner.is_active !== false ? "Deactivate" : "Activate"}
+                    </button>
                     <button
                       onClick={() => controller.handleEditPartner(partner)}
                       className="admin-controller-btn admin-controller-btn-edit"

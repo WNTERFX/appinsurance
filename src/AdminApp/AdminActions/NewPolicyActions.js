@@ -79,7 +79,8 @@ export async function fetchClients() {
 export async function fetchPartners() {
   const { data, error } = await db
     .from("insurance_Partners")
-    .select("id, insurance_Name");
+    .select("id, insurance_Name")
+    .eq('is_active', true);
 
   if (error) {
     console.error("Error fetching partners:", error);

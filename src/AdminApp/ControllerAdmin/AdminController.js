@@ -44,6 +44,7 @@ export const useAdminController = () => {
   const [isCreatingPartner, setIsCreatingPartner] = useState(false);
   const [editPartnerId, setEditPartnerId] = useState(null);
   const [loadingPartner, setLoadingPartner] = useState(false);
+  const [isActive, setIsActive] = useState(true);
   
   // Employee Roles state
   const [roles, setRoles] = useState([]);
@@ -74,6 +75,7 @@ export const useAdminController = () => {
   const [address, setAddress] = useState("");
   const [contact, setContact] = useState("");
   const [insuranceRate, setInsuranceRate] = useState("");
+  const [initials, setInitials] = useState(""); 
 
   // Employee Role form fields
   const [roleName, setRoleName] = useState("");
@@ -186,6 +188,8 @@ export const useAdminController = () => {
     setAddress("");
     setContact("");
     setInsuranceRate("");
+    setInitials("");
+    setIsActive(true);
     setIsEditingPartner(false);
     setIsCreatingPartner(false);
     setEditPartnerId(null);
@@ -304,6 +308,8 @@ export const useAdminController = () => {
       address: address.trim() || null,
       contact: contact.trim() || null,
       insurance_Rate: parseFloat(insuranceRate) || null,
+      initials: initials.trim() || null,
+      is_active: isActive,
     };
     try {
       if (isEditingPartner) {
@@ -384,6 +390,8 @@ export const useAdminController = () => {
     setAddress(partner.address || "");
     setContact(partner.contact || "");
     setInsuranceRate(partner.insurance_Rate || "");
+    setInitials(partner.initials || "");
+    setIsActive(partner.is_active !== false);
   };
 
   const handleEditRole = (role) => {
@@ -674,6 +682,21 @@ export const useAdminController = () => {
     }
   };
 
+
+  const togglePartnerActive = async (id, currentState) => {
+    setLoadingPartner(true);
+    try {
+      await updateInsurancePartner(id, { is_active: !currentState });
+      showMessage(`Partner ${!currentState ? 'activated' : 'deactivated'} successfully`, "success");
+      loadPartners();
+    } catch (error) {
+      console.error("Error toggling partner status:", error);
+      showMessage("Error updating partner status", "error");
+    } finally {
+      setLoadingPartner(false);
+    }
+  };
+
   return {
     // Tab state
     activeTab,
@@ -739,11 +762,16 @@ export const useAdminController = () => {
     setContact,
     insuranceRate,
     setInsuranceRate,
+    initials,           // ✅ ADD THIS
+    setInitials, 
     showCreatePartnerForm,
     handlePartnerSubmit,
     resetPartnerForm,
     handleEditPartner,
     handleDeletePartner,
+    isActive,
+    setIsActive,
+    togglePartnerActive,
 
     // Employee Roles
     roles,

@@ -239,6 +239,13 @@ export default function ClientEditForm({
   const handleEmailBlur = async () => {
     const v = formData.email?.trim();
     if (!v || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return;
+    
+    // Skip uniqueness check if email hasn't changed
+    if (v === originalData.email?.trim()) {
+      setLocalErrors((p) => ({ ...p, email: "" }));
+      return;
+    }
+    
     try {
       const exists = await checkIfEmailExists(v);
       if (exists) setLocalErrors((p) => ({ ...p, email: "Email already exists" }));
@@ -277,6 +284,13 @@ export default function ClientEditForm({
   const handlePhoneBlur = async () => {
     const v = formData.phone_Number?.trim();
     if (!v || !/^09\d{9}$/.test(v)) return;
+    
+    // Skip uniqueness check if phone hasn't changed
+    if (v === originalData.phone_Number?.trim()) {
+      setLocalErrors((p) => ({ ...p, phone_Number: "" }));
+      return;
+    }
+    
     try {
       const exists = await checkIfPhoneExists(v);
       if (exists)
@@ -413,9 +427,11 @@ export default function ClientEditForm({
     const hasLocalErrors = Object.values({ ...localErrors, ...newErr }).some(Boolean);
     if (hasLocalErrors) return;
 
-    // optional: check uniqueness again before final submit
+    // Email uniqueness check in handleSubmit
     try {
-      if (formData.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      if (formData.email && 
+          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
+          formData.email.trim() !== originalData.email?.trim()) {
         const eExists = await checkIfEmailExists(formData.email.trim());
         if (eExists) {
           setLocalErrors((p) => ({ ...p, email: "Email already exists" }));
@@ -426,8 +442,11 @@ export default function ClientEditForm({
       console.error("checkIfEmailExists failed", err);
     }
 
+    // Phone uniqueness check in handleSubmit
     try {
-      if (formData.phone_Number && /^09\d{9}$/.test(formData.phone_Number)) {
+      if (formData.phone_Number && 
+          /^09\d{9}$/.test(formData.phone_Number) &&
+          formData.phone_Number.trim() !== originalData.phone_Number?.trim()) {
         const pExists = await checkIfPhoneExists(formData.phone_Number.trim());
         if (pExists) {
           setLocalErrors((p) => ({ ...p, phone_Number: "Phone number already exists" }));
