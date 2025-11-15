@@ -225,3 +225,153 @@ export async function getThisMonthsDuePaymentsDetails() {
     return [];
   }
 }
+
+/**
+ * Get current user and check if they are admin or moderator
+ */
+async function getCurrentUserRole() {
+  try {
+    const { data: { user }, error } = await db.auth.getUser();
+    
+    if (error || !user) {
+      console.error("Error getting current user:", error);
+      return { isAdmin: false, isModerator: false, userId: null };
+    }
+
+    // Check if user is an employee (moderator or admin)
+    const { data: employee, error: empError } = await db
+      .from("employee_Accounts")
+      .select("id, is_Admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (empError) {
+      console.error("Error checking employee status:", empError);
+      return { isAdmin: false, isModerator: false, userId: user.id };
+    }
+
+    if (!employee) {
+      return { isAdmin: false, isModerator: false, userId: user.id };
+    }
+
+    return {
+      isAdmin: employee.is_Admin === true,
+      isModerator: !employee.is_Admin, // If not admin, then moderator
+      userId: employee.id
+    };
+  } catch (err) {
+    console.error("getCurrentUserRole error:", err);
+    return { isAdmin: false, isModerator: false, userId: null };
+  }
+}
+
+/**
+ * Get pending claims with user-level access control
+ * - Admins see all pending claims
+ * - Moderators only see pending claims for their assigned clients
+ */
+export async function getPendingClaims() {
+  try {
+    console.log("Fetching pending claims with user access control...");
+    
+    // Get current user role
+    const { isAdmin, isModerator, userId } = await getCurrentUserRole();
+    console.log("User role:", { isAdmin, isModerator, userId });
+
+    // Step 1: Get the appropriate client UIDs based on role
+    let clientUids = [];
+    
+    if (isModerator) {
+      // Moderator: Only get their assigned clients
+      const { data: clients, error: clientsError } = await db
+        .from("clients_Table")
+        .select("uid")
+        .eq("agent_Id", userId)
+        .or("is_archived.is.null,is_archived.eq.false");
+
+      if (clientsError) {
+        console.error("Error fetching moderator's clients:", clientsError);
+        throw clientsError;
+      }
+
+      if (!clients || clients.length === 0) {
+        console.log("🔒 No clients assigned to this moderator");
+        return [];
+      }
+
+      clientUids = clients.map(c => c.uid);
+      console.log(`🔒 Moderator has ${clientUids.length} assigned clients`);
+    }
+    // If admin, clientUids remains empty array (fetch all)
+
+    // Step 2: Get policies for these clients (or all policies if admin)
+    let policyQuery = db
+      .from("policy_Table")
+      .select("id, client_id")
+      .or("is_archived.is.null,is_archived.eq.false")
+      .is("archival_date", null);
+
+    if (isModerator) {
+      // Filter by client UIDs for moderators
+      policyQuery = policyQuery.in("client_id", clientUids);
+    }
+
+    const { data: policies, error: policiesError } = await policyQuery;
+
+    if (policiesError) {
+      console.error("Error fetching policies:", policiesError);
+      throw policiesError;
+    }
+
+    if (!policies || policies.length === 0) {
+      console.log("No policies found");
+      return [];
+    }
+
+    const policyIds = policies.map(p => p.id);
+    console.log(`Found ${policyIds.length} policies`);
+
+    // Step 3: Fetch pending claims for these policies
+    const { data: claims, error: claimsError } = await db
+      .from('claims_Table')
+      .select(`
+        id,
+        policy_id,
+        status,
+        policy_Table (
+          internal_id,
+          client_id,
+          clients_Table (
+            first_Name,
+            middle_Name,
+            family_Name
+          )
+        )
+      `)
+      .in('policy_id', policyIds)
+      .eq('status', 'Pending')
+      .eq('is_archived', false)
+      .order('id', { ascending: false })
+      .limit(10); // limit to 10 for dashboard
+
+    if (claimsError) {
+      console.error("Error fetching pending claims:", claimsError);
+      throw claimsError;
+    }
+
+    console.log(`Found ${claims?.length || 0} pending claims`);
+
+    // Format results
+    return claims.map((claim) => ({
+      id: claim.id,
+      policy_id: claim.policy_Table?.internal_id || "N/A",
+      status: claim.status,
+      policy_holder: claim.policy_Table?.clients_Table
+        ? `${claim.policy_Table.clients_Table.first_Name || ""} ${claim.policy_Table.clients_Table.middle_Name || ""} ${claim.policy_Table.clients_Table.family_Name || ""}`.trim()
+        : "N/A",
+    }));
+  } catch (err) {
+    console.error("Error fetching pending claims:", err.message);
+    return [];
+  }
+}
