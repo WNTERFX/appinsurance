@@ -13,13 +13,11 @@ import CustomConfirmModal from "../AdminForms/CustomConfirmModal";
 import "../styles/claims-table-styles.css";
 
 export default function ClaimsTable() {
-  const [policies, setPolicies] = useState([]);
-  const [policyClaimsMap, setPolicyClaimsMap] = useState({});
-  const [loadingClaims, setLoadingClaims] = useState({});
+  const [claims, setClaims] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState({});
   const [editingClaim, setEditingClaim] = useState(null);
   const [viewingClaim, setViewingClaim] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(15);
@@ -96,78 +94,30 @@ export default function ClaimsTable() {
     try {
       const allClaims = await fetchClaims();
       if (!allClaims || allClaims.length === 0) {
-        setPolicies([]);
-        setPolicyClaimsMap({});
+        setClaims([]);
         setLoading(false);
         return;
       }
 
       const nonArchivedClaims = allClaims.filter((claim) => !claim.is_archived);
-
-      const uniquePolicies = {};
-      const claimsMap = {};
       
-      nonArchivedClaims.forEach((claim) => {
-        if (claim.policy_Table && !uniquePolicies[claim.policy_id]) {
-          uniquePolicies[claim.policy_id] = {
-            id: claim.policy_id,
-            internal_id: claim.policy_Table.internal_id,
-            clients_Table: claim.policy_Table.clients_Table,
-          };
-        }
-        
-        if (!claimsMap[claim.policy_id]) {
-          claimsMap[claim.policy_id] = [];
-        }
-        claimsMap[claim.policy_id].push(claim);
-      });
+      // Sort claims by claim date (most recent first)
+      nonArchivedClaims.sort((a, b) => new Date(b.claim_date) - new Date(a.claim_date));
 
-      Object.keys(claimsMap).forEach(policyId => {
-        claimsMap[policyId].sort((a, b) => new Date(b.claim_date) - new Date(a.claim_date));
-      });
-
-      setPolicies(Object.values(uniquePolicies));
-      setPolicyClaimsMap(claimsMap);
+      setClaims(nonArchivedClaims);
     } catch (error) {
       console.error("Error loading claims:", error);
-      setPolicies([]);
+      setClaims([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadClaimsForPolicy = async (policyId) => {
-    if (policyClaimsMap[policyId] && policyClaimsMap[policyId].length > 0) {
-      return;
-    }
-    
-    setLoadingClaims((prev) => ({ ...prev, [policyId]: true }));
-    try {
-      const allClaims = await fetchClaims();
-      const claimsForPolicy = allClaims.filter(
-        (c) => c.policy_id === policyId && !c.is_archived
-      );
-      claimsForPolicy.sort((a, b) => new Date(b.claim_date) - new Date(a.claim_date));
-      
-      setPolicyClaimsMap((prev) => ({
-        ...prev,
-        [policyId]: claimsForPolicy,
-      }));
-    } catch (err) {
-      console.error("Error fetching claims for policy:", err);
-    } finally {
-      setLoadingClaims((prev) => ({ ...prev, [policyId]: false }));
-    }
+  const toggleExpand = (uniqueKey) => {
+    setExpanded((prev) => ({ ...prev, [uniqueKey]: !prev[uniqueKey] }));
   };
 
-  const toggleExpand = async (policyId) => {
-    setExpanded((prev) => ({ ...prev, [policyId]: !prev[policyId] }));
-    if (!policyClaimsMap[policyId] || policyClaimsMap[policyId].length === 0) {
-      await loadClaimsForPolicy(policyId);
-    }
-  };
-
-  const handleClaimAction = async (claim, actionType, policyId) => {
+  const handleClaimAction = async (claim, actionType, uniqueKey) => {
     try {
       if (actionType === "edit") {
         if (!claim.status || claim.status === "Pending") {
@@ -195,9 +145,8 @@ export default function ClaimsTable() {
           showAlert("Failed to archive claim.", "Error");
         }
       } else if (actionType === "view") {
-        const policy = policies.find((p) => p.id === policyId);
         setViewingClaim({
-          policy: policy,
+          policy: claim.policy_Table,
           claims: [claim],
         });
       }
@@ -219,8 +168,8 @@ export default function ClaimsTable() {
     }
   };
 
-  const handleUnderReview = async (policyId) => {
-    const selectedClaimId = selectedClaims[policyId];
+  const handleUnderReview = async (uniqueKey) => {
+    const selectedClaimId = selectedClaims[uniqueKey];
     if (!selectedClaimId) {
       showAlert("Please select a claim first.", "No Claim Selected");
       return;
@@ -249,8 +198,8 @@ export default function ClaimsTable() {
     }
   };
 
-  const handleRejectClaim = async (policyId) => {
-    const selectedClaimId = selectedClaims[policyId];
+  const handleRejectClaim = async (uniqueKey) => {
+    const selectedClaimId = selectedClaims[uniqueKey];
     if (!selectedClaimId) {
       showAlert("Please select a claim first.", "No Claim Selected");
       return;
@@ -280,16 +229,10 @@ export default function ClaimsTable() {
     }
   };
 
-  const handleApproveClaim = async (policyId) => {
-    const selectedClaimId = selectedClaims[policyId];
+  const handleApproveClaim = async (uniqueKey) => {
+    const selectedClaimId = selectedClaims[uniqueKey];
     if (!selectedClaimId) {
       showAlert("Please select a claim first.", "No Claim Selected");
-      return;
-    }
-    const claimsForPolicy = policyClaimsMap[policyId] || [];
-    const selectedClaim = claimsForPolicy.find((c) => c.id === selectedClaimId);
-    if (!selectedClaim) {
-      showAlert("Selected claim not found.", "Error");
       return;
     }
     
@@ -317,8 +260,8 @@ export default function ClaimsTable() {
     }
   };
 
-  const handleCompleted = async (policyId) => {
-    const selectedClaimId = selectedClaims[policyId];
+  const handleCompleted = async (uniqueKey) => {
+    const selectedClaimId = selectedClaims[uniqueKey];
     if (!selectedClaimId) {
       showAlert("Please select a claim first.", "No Claim Selected");
       return;
@@ -360,37 +303,32 @@ export default function ClaimsTable() {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const getPolicyOverallStatus = (policyId) => {
-    const claimsForPolicy = policyClaimsMap[policyId] || [];
+  // Group claims by policy AND status (each policy-status combination is separate)
+  const groupedClaims = claims.reduce((acc, claim) => {
+    const policyId = claim.policy_id;
+    const status = claim.status || "Pending";
+    const uniqueKey = `${policyId}-${status}`;
     
-    if (claimsForPolicy.length === 0) return "Pending";
-    
-    const statuses = claimsForPolicy.map((c) => (c.status || "Pending").trim());
-    const nonCompleted = statuses.filter((s) => s !== "Completed");
-    
-    let overallStatus = "Pending";
-    if (statuses.length > 0 && statuses.every((s) => s === "Completed")) {
-      overallStatus = "Completed";
-    } else if (nonCompleted.some((s) => s === "Under Review")) {
-      overallStatus = "Under Review";
-    } else if (nonCompleted.every((s) => s === "Approved")) {
-      overallStatus = "Approved";
-    } else if (nonCompleted.some((s) => s === "Rejected")) {
-      overallStatus = "Rejected";
-    } else {
-      overallStatus = "Pending";
+    if (!acc[uniqueKey]) {
+      acc[uniqueKey] = {
+        policyId: policyId,
+        status: status,
+        policy_Table: claim.policy_Table,
+        claims: []
+      };
     }
-    
-    return overallStatus;
-  };
+    acc[uniqueKey].claims.push(claim);
+    return acc;
+  }, {});
 
-  const filteredPoliciesByTab = policies.filter((policy) => {
-    const overallStatus = getPolicyOverallStatus(policy.id);
-    return overallStatus === activeTab;
+  // Filter by active tab
+  const filteredGroups = Object.entries(groupedClaims).filter(([key, group]) => {
+    return group.status === activeTab;
   });
 
-  const filteredPolicies = filteredPoliciesByTab.filter((policy) => {
-    const client = policy.clients_Table;
+  // Filter by search term
+  const searchFilteredGroups = filteredGroups.filter(([key, group]) => {
+    const client = group.policy_Table?.clients_Table;
     const clientName = client
       ? [
         client.prefix,
@@ -403,21 +341,18 @@ export default function ClaimsTable() {
         .join(" ")
         .toLowerCase()
       : "";
-    const policyId = policy.internal_id?.toLowerCase() || "";
+    const policyId = group.policy_Table?.internal_id?.toLowerCase() || "";
     const search = searchTerm.toLowerCase().trim();
     return policyId.includes(search) || clientName.includes(search);
   });
 
   const indexOfLast = currentPage * rowsPerPage;
   const indexOfFirst = indexOfLast - rowsPerPage;
-  const currentPolicies = filteredPolicies.slice(indexOfFirst, indexOfLast);
-  const totalPages = Math.ceil(filteredPolicies.length / rowsPerPage);
+  const currentGroups = searchFilteredGroups.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(searchFilteredGroups.length / rowsPerPage);
 
   const getTabCount = (tabName) => {
-    return policies.filter((policy) => {
-      const overallStatus = getPolicyOverallStatus(policy.id);
-      return overallStatus === tabName;
-    }).length;
+    return Object.values(groupedClaims).filter(group => group.status === tabName).length;
   };
 
   if (loading) {
@@ -448,7 +383,7 @@ export default function ClaimsTable() {
       </div>
 
       <div className="claims-overview-header">
-        <h2>Claims Overview </h2>
+        <h2>Claims Overview</h2>
         <div className="search-filter-refresh-bar">
           <input
             type="text"
@@ -482,14 +417,14 @@ export default function ClaimsTable() {
         </div>
       </div>
 
-      {currentPolicies.length === 0 ? (
+      {currentGroups.length === 0 ? (
         <p style={{ textAlign: "center", padding: "40px", fontSize: "18px", color: "#666" }}>
           No claims in {activeTab} status
         </p>
       ) : (
         <div className="policies-list">
-          {currentPolicies.map((policy) => {
-            const client = policy.clients_Table;
+          {currentGroups.map(([uniqueKey, group]) => {
+            const client = group.policy_Table?.clients_Table;
             const clientName = client
               ? [
                 client.prefix,
@@ -502,17 +437,15 @@ export default function ClaimsTable() {
                 .join(" ")
               : "Unknown Client";
 
-            const claimsForPolicy = policyClaimsMap[policy.id] || [];
-            const isOpen = expanded[policy.id];
+            const claimsForGroup = group.claims;
+            const isOpen = expanded[uniqueKey];
 
-            const selectedClaimId = selectedClaims[policy.id];
+            const selectedClaimId = selectedClaims[uniqueKey];
             const selectedClaim = selectedClaimId
-              ? claimsForPolicy.find((c) => c.id === selectedClaimId)
+              ? claimsForGroup.find((c) => c.id === selectedClaimId)
               : null;
 
-            const overallStatus = getPolicyOverallStatus(policy.id);
-
-            const claimStatus = selectedClaim?.status || "Pending";
+            const claimStatus = selectedClaim?.status || group.status;
             const approvedAmount = selectedClaim?.approved_amount || 0;
             const estimateAmount = selectedClaim?.estimate_amount || 0;
             const hasValidApprovedAmount =
@@ -559,13 +492,13 @@ export default function ClaimsTable() {
             }
 
             return (
-              <div key={policy.id} className="policy-item-card">
+              <div key={uniqueKey} className="policy-item-card">
                 <div
                   className="policy-summary"
-                  onClick={() => toggleExpand(policy.id)}
+                  onClick={() => toggleExpand(uniqueKey)}
                 >
                   <div className="policy-info-left">
-                    <span className="policy-id">Policy ID: {policy.internal_id}</span>
+                    <span className="policy-id">Policy ID: {group.policy_Table?.internal_id}</span>
                     <span className="policy-holder">
                       Policy Holder: {clientName}
                     </span>
@@ -573,10 +506,10 @@ export default function ClaimsTable() {
 
                   <div className="policy-info-right">
                     <span
-                      className={`claim-status-badge ${(overallStatus || "Pending").toLowerCase().replace(/\s+/g, "-")}`}
-                      title={`Overall Status: ${overallStatus}`}
+                      className={`claim-status-badge ${group.status.toLowerCase().replace(/\s+/g, "-")}`}
+                      title={`Status: ${group.status}`}
                     >
-                      Status: {overallStatus || "Pending"}
+                      Status: {group.status}
                     </span>
 
                     <button
@@ -593,9 +526,7 @@ export default function ClaimsTable() {
                 >
                   <h3 className="claim-details-title">Claims</h3>
 
-                  {loadingClaims[policy.id] ? (
-                    <p className="no-claims-message">Loading claims...</p>
-                  ) : claimsForPolicy.length > 0 ? (
+                  {claimsForGroup.length > 0 ? (
                     <table className="claims-table">
                       <thead>
                         <tr>
@@ -611,7 +542,7 @@ export default function ClaimsTable() {
                         </tr>
                       </thead>
                       <tbody>
-                        {claimsForPolicy.map((claim) => {
+                        {claimsForGroup.map((claim) => {
                           let documentCount = 0;
                           if (claim.documents) {
                             if (Array.isArray(claim.documents)) {
@@ -626,12 +557,12 @@ export default function ClaimsTable() {
                               <td>
                                 <input
                                   type="radio"
-                                  name={`selected-claim-${policy.id}`}
-                                  checked={selectedClaims[policy.id] === claim.id}
+                                  name={`selected-claim-${uniqueKey}`}
+                                  checked={selectedClaims[uniqueKey] === claim.id}
                                   onChange={() =>
                                     setSelectedClaims((prev) => ({
                                       ...prev,
-                                      [policy.id]: claim.id,
+                                      [uniqueKey]: claim.id,
                                     }))
                                   }
                                 />
@@ -652,94 +583,94 @@ export default function ClaimsTable() {
                                   className="document-count-badge"
                                   title={`${documentCount} document${documentCount !== 1 ? 's' : ''} uploaded`}
                                 >
-                                   {documentCount}
+                                  {documentCount}
                                 </span>
                               </td>
 
-                            <td className="claim-actions-cell">
-                              <button
-                                onClick={() =>
-                                  handleClaimAction(claim, "edit", policy.id)
-                                }
-                                className="edit-claim-btn"
-                                disabled={
-                                  !isClaimSelected ||
-                                  selectedClaim?.id !== claim.id ||
-                                  claim.status === "Pending" ||
-                                  claim.status === "Approved" ||
-                                  claim.status === "Rejected" ||
-                                  claim.status === "Completed"
-                                }
-                                style={{
-                                  opacity:
+                              <td className="claim-actions-cell">
+                                <button
+                                  onClick={() =>
+                                    handleClaimAction(claim, "edit", uniqueKey)
+                                  }
+                                  className="edit-claim-btn"
+                                  disabled={
                                     !isClaimSelected ||
                                     selectedClaim?.id !== claim.id ||
                                     claim.status === "Pending" ||
                                     claim.status === "Approved" ||
                                     claim.status === "Rejected" ||
                                     claim.status === "Completed"
-                                      ? 0.5
-                                      : 1,
-                                  cursor:
-                                    !isClaimSelected ||
-                                    selectedClaim?.id !== claim.id ||
-                                    claim.status === "Pending" ||
-                                    claim.status === "Approved" ||
-                                    claim.status === "Rejected" ||
-                                    claim.status === "Completed"
-                                      ? "not-allowed"
-                                      : "pointer",
-                                }}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleClaimAction(claim, "archive", policy.id)
-                                }
-                                className="archive-claim-btn"
-                                disabled={
-                                  !isClaimSelected || 
-                                  selectedClaim?.id !== claim.id ||
-                                  claim.status === "Pending" ||
-                                  claim.status === "Under Review" ||
-                                  claim.status === "Approved"
-                                }
-                                style={{
-                                  opacity:
+                                  }
+                                  style={{
+                                    opacity:
+                                      !isClaimSelected ||
+                                      selectedClaim?.id !== claim.id ||
+                                      claim.status === "Pending" ||
+                                      claim.status === "Approved" ||
+                                      claim.status === "Rejected" ||
+                                      claim.status === "Completed"
+                                        ? 0.5
+                                        : 1,
+                                    cursor:
+                                      !isClaimSelected ||
+                                      selectedClaim?.id !== claim.id ||
+                                      claim.status === "Pending" ||
+                                      claim.status === "Approved" ||
+                                      claim.status === "Rejected" ||
+                                      claim.status === "Completed"
+                                        ? "not-allowed"
+                                        : "pointer",
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleClaimAction(claim, "archive", uniqueKey)
+                                  }
+                                  className="archive-claim-btn"
+                                  disabled={
                                     !isClaimSelected || 
                                     selectedClaim?.id !== claim.id ||
                                     claim.status === "Pending" ||
                                     claim.status === "Under Review" ||
                                     claim.status === "Approved"
-                                      ? 0.5
-                                      : 1,
-                                  cursor:
-                                    !isClaimSelected || 
-                                    selectedClaim?.id !== claim.id ||
-                                    claim.status === "Pending" ||
-                                    claim.status === "Under Review" ||
-                                    claim.status === "Approved"
-                                      ? "not-allowed"
-                                      : "pointer",
-                                }}
-                                title={
-                                  !isClaimSelected
-                                    ? "Please select a claim first"
-                                    : selectedClaim?.id !== claim.id
-                                      ? "Please select this claim to archive"
-                                      : claim.status === "Pending" ||
-                                        claim.status === "Under Review" ||
-                                        claim.status === "Approved"
-                                        ? "Only Rejected or Completed claims can be archived"
-                                        : "Archive this claim"
-                                }
-                              >
-                                Archive
-                              </button>
-                            </td>
-                          </tr>
-                        );
+                                  }
+                                  style={{
+                                    opacity:
+                                      !isClaimSelected || 
+                                      selectedClaim?.id !== claim.id ||
+                                      claim.status === "Pending" ||
+                                      claim.status === "Under Review" ||
+                                      claim.status === "Approved"
+                                        ? 0.5
+                                        : 1,
+                                    cursor:
+                                      !isClaimSelected || 
+                                      selectedClaim?.id !== claim.id ||
+                                      claim.status === "Pending" ||
+                                      claim.status === "Under Review" ||
+                                      claim.status === "Approved"
+                                        ? "not-allowed"
+                                        : "pointer",
+                                  }}
+                                  title={
+                                    !isClaimSelected
+                                      ? "Please select a claim first"
+                                      : selectedClaim?.id !== claim.id
+                                        ? "Please select this claim to archive"
+                                        : claim.status === "Pending" ||
+                                          claim.status === "Under Review" ||
+                                          claim.status === "Approved"
+                                          ? "Only Rejected or Completed claims can be archived"
+                                          : "Archive this claim"
+                                  }
+                                >
+                                  Archive
+                                </button>
+                              </td>
+                            </tr>
+                          );
                         })}
                       </tbody>
                     </table>
@@ -752,7 +683,7 @@ export default function ClaimsTable() {
                       <button
                         className="view-claim-btn"
                         onClick={() =>
-                          handleClaimAction(selectedClaim, "view", policy.id)
+                          handleClaimAction(selectedClaim, "view", uniqueKey)
                         }
                         disabled={!buttons.viewClaim}
                         style={{
@@ -772,7 +703,7 @@ export default function ClaimsTable() {
                     {buttons.underReview && (
                       <button
                         className="under-review-btn"
-                        onClick={() => handleUnderReview(policy.id)}
+                        onClick={() => handleUnderReview(uniqueKey)}
                         disabled={!isClaimSelected || claimStatus !== "Pending"}
                         style={{
                           opacity:
@@ -797,7 +728,7 @@ export default function ClaimsTable() {
                     {buttons.rejectClaim && (
                       <button
                         className="reject-claim-btn"
-                        onClick={() => handleRejectClaim(policy.id)}
+                        onClick={() => handleRejectClaim(uniqueKey)}
                         disabled={
                           !isClaimSelected ||
                           claimStatus === "Pending" ||
@@ -834,7 +765,7 @@ export default function ClaimsTable() {
                     {buttons.approveClaim && (
                       <button
                         className="approve-claim-btn"
-                        onClick={() => handleApproveClaim(policy.id)}
+                        onClick={() => handleApproveClaim(uniqueKey)}
                         disabled={
                           !isClaimSelected ||
                           claimStatus === "Pending" ||
@@ -871,7 +802,7 @@ export default function ClaimsTable() {
                     {buttons.completed && (
                       <button
                         className="completed-btn"
-                        onClick={() => handleCompleted(policy.id)}
+                        onClick={() => handleCompleted(uniqueKey)}
                         disabled={!isClaimSelected || claimStatus !== "Approved"}
                         style={{
                           opacity:

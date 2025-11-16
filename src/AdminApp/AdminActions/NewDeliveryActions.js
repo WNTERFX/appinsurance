@@ -29,12 +29,14 @@ export async function getCurrentUser() {
 }
 
 // ✅ Fetch policies with proper join through clients_Table.agent_Id
+// ✅ UPDATED: Fetch policies regardless of policy_is_active status (true or false)
 export async function fetchPolicies() {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) return [];
 
     // ✅ Fetch policies with client info (includes agent_Id from clients_Table)
+    // ✅ REMOVED: .eq("policy_is_active", true) to allow both active and inactive policies
     let policyQuery = db
       .from("policy_Table")
       .select(`
@@ -46,10 +48,13 @@ export async function fetchPolicies() {
         policy_expiry,
         policy_is_active,
         is_archived,
+        policy_status,
+        void_reason,
+        voided_date,
         client:clients_Table(agent_Id)
       `)
-      .eq("policy_is_active", true)
-      .or("is_archived.is.null,is_archived.eq.false");
+      .or("is_archived.is.null,is_archived.eq.false") // Only exclude archived policies
+      .or("policy_status.is.null,policy_status.neq.voided"); // ✅ Exclude voided policies
 
     const { data: policies, error: policyError } = await policyQuery;
 
