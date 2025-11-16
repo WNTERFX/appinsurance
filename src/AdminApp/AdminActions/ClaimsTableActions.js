@@ -45,19 +45,16 @@ async function getCurrentUserRole() {
  * Moderators only see claims for their assigned clients
  * Admins see all claims
  */
-export const fetchClaims = async (onlyArchived = false) => {
+export const fetchClaims = async (from = null, to = null, onlyArchived = false) => {
   console.log("Fetching claims from Supabase...");
 
   try {
-    // Get current user role
     const { isAdmin, isModerator, userId } = await getCurrentUserRole();
     console.log("User role:", { isAdmin, isModerator, userId });
 
-    // Step 1: Get the appropriate client UIDs based on role
     let clientUids = [];
-    
+
     if (isModerator) {
-      // Moderator: Only get their assigned clients
       const { data: clients, error: clientsError } = await db
         .from("clients_Table")
         .select("uid")
@@ -76,15 +73,12 @@ export const fetchClaims = async (onlyArchived = false) => {
       clientUids = clients.map(c => c.uid);
       console.log(`🔒 Moderator has ${clientUids.length} assigned clients`);
     }
-    // If admin, clientUids remains empty array (fetch all)
 
-    // Step 2: Get policies for these clients (or all policies if admin)
     let policyQuery = db
       .from("policy_Table")
       .select("id, client_id");
 
     if (isModerator) {
-      // Filter by client UIDs for moderators
       policyQuery = policyQuery.in("client_id", clientUids);
     }
 
@@ -103,19 +97,24 @@ export const fetchClaims = async (onlyArchived = false) => {
     const policyIds = policies.map(p => p.id);
     console.log(`Found ${policyIds.length} policies`);
 
-    // Step 3: Fetch claims for these policies
     let claimsQuery = db
-      .from('claims_Table')
-      .select('*')
-      .in('policy_id', policyIds)
-      .order('created_at', { ascending: false });
+      .from("claims_Table")
+      .select("*")
+      .in("policy_id", policyIds);
 
-    // Filter by archived status
     if (onlyArchived) {
-      claimsQuery = claimsQuery.eq('is_archived', true);
+      claimsQuery = claimsQuery.eq("is_archived", true);
     } else {
-      claimsQuery = claimsQuery.eq('is_archived', false);
+      claimsQuery = claimsQuery.eq("is_archived", false);
     }
+
+    if (from && to) {
+      claimsQuery = claimsQuery.gte("created_at", `${from}T00:00:00.000Z`);
+      claimsQuery = claimsQuery.lte("created_at", `${to}T23:59:59.999Z`);
+      console.log(`Filtering claims from ${from} to ${to}`);
+    }
+
+    claimsQuery = claimsQuery.order("created_at", { ascending: false });
 
     const { data: claims, error: claimsError } = await claimsQuery;
 
@@ -126,10 +125,8 @@ export const fetchClaims = async (onlyArchived = false) => {
 
     console.log(`Found ${claims?.length || 0} claims`);
 
-    // Step 4: Manually enrich each claim with policy and client data
     const enrichedClaims = await Promise.all(
       (claims || []).map(async (claim) => {
-        // Fetch policy data
         const { data: policyData } = await db
           .from("policy_Table")
           .select(`
@@ -144,7 +141,6 @@ export const fetchClaims = async (onlyArchived = false) => {
           .eq("id", claim.policy_id)
           .single();
 
-        // Fetch client data
         let clientData = null;
         if (policyData?.client_id) {
           const { data: client } = await db
@@ -164,7 +160,6 @@ export const fetchClaims = async (onlyArchived = false) => {
           clientData = client;
         }
 
-        // Fetch insurance partner
         let partnerData = null;
         if (policyData?.partner_id) {
           const { data: partner } = await db
@@ -175,7 +170,6 @@ export const fetchClaims = async (onlyArchived = false) => {
           partnerData = partner;
         }
 
-        // Fetch computation data
         let computationData = null;
         if (claim.policy_id) {
           const { data: computation } = await db
@@ -211,6 +205,7 @@ export const fetchClaims = async (onlyArchived = false) => {
     return [];
   }
 };
+
 
 /**
  * Update claim status to Under Review

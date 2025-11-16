@@ -7,6 +7,7 @@ import { fetchClients } from "../AdminActions/ClientActions";
 import { fetchPolicies, fetchRenewals } from "../AdminActions/PolicyActions";
 import { fetchAllDues, fetchPaymentsWithPenalties } from "../AdminActions/PaymentDueActions";
 import { fetchReportCreator, fetchQuotations, fetchDeliveries } from "./PrintingActions";
+import { fetchClaims } from "../AdminActions/ClaimsTableActions";
 
 import "../styles/printing-record-styles.css";
 
@@ -27,12 +28,10 @@ export default function PrintingModal({ recordType, onClose }) {
 
   const safeRecordType = recordType || "client";
 
-  // Load report creator
   useEffect(() => {
     fetchReportCreator().then(setReportCreator);
   }, []);
 
-  // Fetch employees
   useEffect(() => {
     db.from("employee_Accounts")
       .select("id, personnel_Name, first_name, last_name")
@@ -42,7 +41,6 @@ export default function PrintingModal({ recordType, onClose }) {
       });
   }, []);
 
-  // Fetch insurance partners if needed
   useEffect(() => {
     if (safeRecordType === "policy" || safeRecordType === "quotation") {
       db.from("insurance_Partners")
@@ -78,6 +76,10 @@ export default function PrintingModal({ recordType, onClose }) {
         case "delivery":
           dateA = new Date(a.delivery_date || a.estimated_delivery_date || a.created_at);
           dateB = new Date(b.delivery_date || b.estimated_delivery_date || b.created_at);
+          break;
+        case "claim":
+          dateA = new Date(a.created_at);
+          dateB = new Date(b.created_at);
           break;
         default:
           return 0;
@@ -133,7 +135,7 @@ export default function PrintingModal({ recordType, onClose }) {
   const handleFetch = async () => {
     const { start, end } = getDateRange();
     if (!start || !end) {
-      alert("Please select a valid range.");
+      console.error("Please select a valid range.");
       return;
     }
 
@@ -167,6 +169,9 @@ export default function PrintingModal({ recordType, onClose }) {
           break;
         case "delivery":
           data = await fetchDeliveries(from, to, selectedEmployee || null);
+          break;
+        case "claim":
+          data = await fetchClaims(from, to, false);
           break;
       }
 
@@ -258,11 +263,10 @@ export default function PrintingModal({ recordType, onClose }) {
       case "delivery":
         headers = ["#", "Policy No", "Client", "Agent", "Est. Delivery", "Actual Delivery", "Status"];
         body = records.map((d, i) => {
-          const agentName = d.employee_Accounts?.personnel_Name || 
-                           `${d.employee_Accounts?.first_name || ""} ${d.employee_Accounts?.last_name || ""}`.trim() || "-";
+          const agentName = d.employee_Accounts?.personnel_Name || `${d.employee_Accounts?.first_name || ""} ${d.employee_Accounts?.last_name || ""}`.trim() || "-";
           const clientName = `${d.policy_Table?.clients_Table?.first_Name || ""} ${d.policy_Table?.clients_Table?.family_Name || ""}`.trim() || "-";
           const status = d.delivered_at ? "Delivered" : d.is_archived ? "Archived" : "Pending";
-          
+
           return [
             i + 1,
             d.policy_Table?.internal_id || "-",
@@ -271,6 +275,25 @@ export default function PrintingModal({ recordType, onClose }) {
             d.estimated_delivery_date ? new Date(d.estimated_delivery_date).toLocaleDateString() : "-",
             d.delivered_at ? new Date(d.delivered_at).toLocaleDateString() : "-",
             status,
+          ];
+        });
+        break;
+      case "claim":
+        headers = ["#", "Policy No", "Client", "Partner", "Type", "Status", "Amount", "Reported"];
+        body = records.map((c, i) => {
+          const policy = c.policy_Table;
+          const client = policy?.clients_Table;
+          const partner = policy?.insurance_Partners;
+
+          return [
+            i + 1,
+            policy?.internal_id || "-",
+            `${client?.first_Name || ""} ${client?.family_Name || ""}`.trim() || "-",
+            partner?.insurance_Name || "-",
+            c.claim_type || "-",
+            c.status || "Unknown",
+            c.claim_amount ? `₱${c.claim_amount.toLocaleString()}` : "-",
+            c.created_at ? new Date(c.created_at).toLocaleDateString() : "-",
           ];
         });
         break;
@@ -287,28 +310,23 @@ export default function PrintingModal({ recordType, onClose }) {
     const formattedEnd = end ? new Date(end).toLocaleDateString() : "N/A";
     const createdDate = new Date().toLocaleString();
 
-    // Count summary
     const recordCount = records.length;
     const typeLabel = safeRecordType.charAt(0).toUpperCase() + safeRecordType.slice(1);
     const rangeLabel = rangeType.charAt(0).toUpperCase() + rangeType.slice(1);
 
-    // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.text(`${typeLabel.toUpperCase()} REPORT`, 14, 15);
 
-    // Report metadata
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`Created by: ${reportCreator || "System"}`, 14, 22);
     doc.text(`Report range: ${formattedStart} — ${formattedEnd} (${rangeLabel})`, 14, 27);
     doc.text(`Generated on: ${createdDate}`, 14, 32);
 
-    // Add summary of how many records were fetched
     doc.setFont("helvetica", "bold");
     doc.text(`${recordCount} ${recordCount === 1 ? "record" : "records"} fetched.`, 14, 37);
 
-    // Table
     autoTable(doc, {
       head: [headers],
       body,
