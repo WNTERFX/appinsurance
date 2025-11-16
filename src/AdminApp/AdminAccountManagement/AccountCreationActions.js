@@ -7,6 +7,7 @@ export async function createAccount({ firstName, middleName, lastName, email, pa
   try {
     const { data: { session } } = await db.auth.getSession();
     
+    // NOTE: Assuming 'create-employee' Edge Function handles user creation AND employee_Accounts table insertion.
     const response = await fetch(
       "https://ezmvecxqcjnrspmjfgkk.functions.supabase.co/create-employee",
       {
@@ -42,6 +43,7 @@ export async function createAccount({ firstName, middleName, lastName, email, pa
  */
 export async function fetchAccounts() {
   try {
+    // Correct table based on user's schema
     const { data, error } = await db.from("employee_Accounts").select("*");
     if (error) throw error;
     return data;
@@ -56,8 +58,12 @@ export async function fetchAccounts() {
  */
 export async function deleteAccount(id) {
   try {
-    await db.auth.admin.deleteUser(id);
-    await db.from("employee_Accounts").delete().eq("id", id);
+    // The foreign key constraint on employee_Accounts (ON DELETE CASCADE)
+    // means deleting from auth.users also deletes the employee record.
+    await db.auth.admin.deleteUser(id); 
+    // The explicit employee_Accounts delete is redundant if CASCADE is set, 
+    // but kept here for robustness in case RLS interferes or CASCADE is missing.
+    // await db.from("employee_Accounts").delete().eq("id", id); 
     return { success: true };
   } catch (err) {
     console.error("Error deleting account:", err);
@@ -67,97 +73,75 @@ export async function deleteAccount(id) {
 
 /**
  * Edit/update an account by ID using Supabase Edge Function
+ * This function now sends ALL profile data to the Edge Function for server-side processing.
  */
 export async function editAccount(
   id,
-  { firstName, middleName, lastName, email, password, isAdmin, accountStatus, emailLocked, passwordLocked, roleId }
+  { firstName, middleName, lastName, email, password, isAdmin, accountStatus, emailLocked, passwordLocked, roleId, phoneNumber, employeeEmail, employeeRole }
 ) {
   try {
     console.log("🟢 editAccount called with:", {
       id,
       firstName,
-      middleName,
       lastName,
       email,
       isAdmin,
       accountStatus,
-      emailLocked,
+      roleId,
+      emailLocked, 
       passwordLocked,
-      roleId, // ✅ Added roleId to logging
     });
 
-    // 1️⃣ Fetch existing record
-    const { data: existing, error: fetchError } = await db
-      .from("employee_Accounts")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (fetchError) throw new Error("Fetch failed: " + fetchError.message);
-    if (!existing) throw new Error("Account not found for ID: " + id);
-
-    console.log("📦 Existing record:", existing);
-
-    // 2️⃣ Build name safely
-    const personnel_Name = [firstName, middleName, lastName].filter(Boolean).join(" ");
-
-    // 3️⃣ Build payload
+    // 1️⃣ Get session to authorize the Edge Function call
+    const { data: { session } } = await db.auth.getSession();
+    
+    // 2️⃣ Prepare the data payload for the Edge Function
     const updatePayload = {
-      personnel_Name: personnel_Name || existing.personnel_Name,
-      first_name: firstName ?? existing.first_name,
-      middle_name: middleName ?? existing.middle_name,
-      last_name: lastName ?? existing.last_name,
-      employee_email: emailLocked ? existing.employee_email : email ?? existing.employee_email,
-      is_Admin: typeof isAdmin === "boolean" ? isAdmin : existing.is_Admin,
-      status_Account:
-        typeof accountStatus === "boolean"
-          ? accountStatus
-          : accountStatus === "active"
-          ? true
-          : existing.status_Account,
-      role_id: roleId !== undefined ? (roleId || null) : existing.role_id, // ✅ Added role_id update
+      id,
+      // Employee Profile Fields
+      first_name: firstName,
+      middle_name: middleName,
+      last_name: lastName,
+      employee_email: email, // Always send the email field value from the form
+      // status_Account field conversion to boolean for the database
+      status_Account: accountStatus === 'active', 
+      is_Admin: isAdmin,
+      role_id: roleId || null,
+      
+      // Auth Fields (only sent if unlocked)
+      email_auth: emailLocked ? undefined : email,
+      password_auth: passwordLocked ? undefined : password,
     };
+    
+    // 3️⃣ Call the Edge Function
+    const response = await fetch(
+      "https://ezmvecxqcjnrspmjfgkk.functions.supabase.co/pass-admin-reset",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Send Authorization header if session token is available
+          ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }), 
+        },
+        body: JSON.stringify(updatePayload),
+      }
+    );
 
-    console.log("🟢 Update payload:", updatePayload);
-
-    // 4️⃣ Force Supabase to update even if same data
-    const { data: updated, error: updateError, status } = await db
-      .from("employee_Accounts")
-      .update(updatePayload)
-      .eq("id", id)
-      .select();
-
-    console.log("🟣 Update response status:", status);
-    console.log("🟣 Update response:", updated);
-
-    if (updateError) throw new Error("Update error: " + updateError.message);
-    if (!updated || !updated.length) throw new Error("No rows updated for ID: " + id);
-
-    console.log("✅ Updated successfully:", updated[0]);
-
-    // 5️⃣ Call edge function if email/password unlocked
-    if (!emailLocked || !passwordLocked) {
-      const { data: { session } } = await db.auth.getSession();
-
-      const response = await fetch(
-        "https://ezmvecxqcjnrspmjfgkk.functions.supabase.co/pass-admin-reset",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(session?.access_token && { Authorization: `Bearer ${session.access_token}` }),
-          },
-          body: JSON.stringify({
-            id,
-            email: emailLocked ? undefined : email,
-            password: passwordLocked ? undefined : password,
-          }),
-        }
-      );
-
-      const resText = await response.text();
-      console.log("🔹 Edge function response:", resText);
+    const resText = await response.text();
+    let result;
+    try {
+        result = JSON.parse(resText);
+    } catch {
+        console.error("❌ Edge function returned non-JSON response:", resText);
+        throw new Error("Server error occurred during account update.");
     }
+
+    if (!response.ok || result.error) {
+        console.error("❌ Edge function error:", result.error);
+        throw new Error(`Update failed: ${result.error || response.statusText}`);
+    }
+
+    console.log("✅ Edge function response:", result);
 
     return { success: true };
   } catch (err) {

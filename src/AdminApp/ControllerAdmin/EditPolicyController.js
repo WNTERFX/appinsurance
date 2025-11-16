@@ -24,6 +24,8 @@ import {
   updateComputation
 } from "../AdminActions/EditPolicyActions";
 import PolicyEditForm from "../AdminForms/PolicyEditForm";
+import CustomAlertModal from "../AdminForms/CustomAlertModal";
+import CustomConfirmModal from "../AdminForms/CustomConfirmModal";
 
 export default function EditPolicyController() {
   const navigate = useNavigate();
@@ -68,7 +70,15 @@ export default function EditPolicyController() {
   const [policyInception, setPolicyInception] = useState(null);
   const [policyExpiry, setPolicyExpiry] = useState(null);
 
+  // Modal states
+  const [alertModal, setAlertModal] = useState({ isOpen: false, title: "", message: "", onCloseCallback: null });
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: "", message: "", onConfirm: null });
+
   const safeNumber = (val) => (isNaN(Number(val)) ? 0 : Number(val));
+
+  const showAlert = (title, message, onCloseCallback = null) => {
+    setAlertModal({ isOpen: true, title, message, onCloseCallback });
+  };
 
   const fetchPaymentTypes = async () => {
     try {
@@ -166,7 +176,7 @@ export default function EditPolicyController() {
           console.log("=== SETTING COMPUTATION VALUES ===");
           console.log("original_Value:", computation.original_Value);
           console.log("current_Value:", computation.current_Value);
-          console.log("basic_Premium:", computation.basic_Premium); // ✅ NEW
+          console.log("basic_Premium:", computation.basic_Premium);
           console.log("total_Premium:", computation.total_Premium);
           console.log("aon_Cost:", computation.aon_Cost);
           console.log("commission_fee:", computation.commission_fee);
@@ -206,7 +216,7 @@ export default function EditPolicyController() {
         setIsDataLoaded(true);
       } catch (err) {
         console.error("Error loading policy data:", err);
-        alert("Error loading policy data. See console.");
+        showAlert("Error", "Error loading policy data. See console.");
       }
     })();
   }, [policyId, clients, vehicleTypes]);
@@ -217,7 +227,6 @@ export default function EditPolicyController() {
   const vehicleValue = ComputationActionsVehicleValue(originalVehicleCost, yearInput);
   const vehicleValueRate = ComputatationRate(rateInput, vehicleValue);
 
-  // ✅ Basic Premium (without commission)
   const basicPremiumValue = ComputationActionsBasicPre(
     bodilyInjury,
     propertyDamage,
@@ -255,7 +264,7 @@ export default function EditPolicyController() {
   const handleRenewPolicy = async () => {
     try {
       if (!selectedPaymentType) {
-        alert("Please select a payment type");
+        showAlert("Validation Error", "Please select a payment type");
         return;
       }
 
@@ -300,11 +309,10 @@ export default function EditPolicyController() {
 
       if (!vehicleResult.success) throw new Error(vehicleResult.error);
 
-      // ✅ Include basic_Premium
       const computationData = {
         original_Value: originalVehicleCost,
         current_Value: vehicleValue,
-        basic_Premium: basicPremiumValue, // ✅ NEW
+        basic_Premium: basicPremiumValue,
         vehicle_Rate_Value: vehicleValueRate,
         total_Premium: totalPremiumFinal,
         aon_Cost: actOfNatureCost,
@@ -317,18 +325,19 @@ export default function EditPolicyController() {
       const computationResult = await updateComputation(policyId, computationData);
       if (!computationResult.success) throw new Error(computationResult.error);
 
-      alert("Policy renewed successfully — inception and expiry cleared!");
-      navigate("/appinsurance/main-app/policy");
+      showAlert("Success", "Policy renewed successfully — inception and expiry cleared!", () => {
+        navigate("/appinsurance/main-app/policy");
+      });
     } catch (err) {
       console.error("Error renewing policy:", err);
-      alert(`Error renewing policy: ${err.message}`);
+      showAlert("Error", `Error renewing policy: ${err.message}`);
     }
   };
 
   const handleUpdatePolicy = async () => {
     try {
       if (!selectedPaymentType) {
-        alert("Please select a payment type");
+        showAlert("Validation Error", "Please select a payment type");
         return;
       }
 
@@ -364,11 +373,10 @@ export default function EditPolicyController() {
       });
       if (!vehicleResult.success) throw new Error(vehicleResult.error);
 
-      // ✅ Include basic_Premium
       const computationData = {
         original_Value: originalVehicleCost,
         current_Value: vehicleValue,
-        basic_Premium: basicPremiumValue, // ✅ NEW
+        basic_Premium: basicPremiumValue,
         vehicle_Rate_Value: vehicleValueRate,
         total_Premium: totalPremiumFinal,
         aon_Cost: actOfNatureCost,
@@ -381,64 +389,87 @@ export default function EditPolicyController() {
       const computationResult = await updateComputation(policyId, computationData);
       if (!computationResult.success) throw new Error(computationResult.error);
 
-      alert("Policy updated successfully!");
-      navigate("/appinsurance/main-app/policy");
+      showAlert("Success", "Policy updated successfully!", () => {
+        navigate("/appinsurance/main-app/policy");
+      });
     } catch (err) {
       console.error("Error updating policy:", err);
-      alert(`Error updating policy: ${err.message}`);
+      showAlert("Error", `Error updating policy: ${err.message}`);
     }
   };
 
   return (
-    <PolicyEditForm
-      vehicleTypes={vehicleTypes}
-      selected={selectedVehicleType}
-      setSelected={setSelectedVehicleType}
-      vehicleDetails={vehicleDetails}
-      yearInput={yearInput}
-      setYearInput={setYearInput}
-      vehicleOriginalValueFromDB={vehicleOriginalValueFromDB}
-      setVehicleOriginalValueFromDB={setVehicleOriginalValueFromDB}
-      basicPremiumValue={basicPremiumValue}
-      basicPremiumWithCommission={basicPremiumWithCommission}
-      isAoN={isAon}
-      setIsAoN={setIsAoN}
-      setOriginalVehicleCost={setOriginalVehicleCost}
-      originalVehicleCost={originalVehicleCost}
-      currentVehicleValueCost={vehicleValue}
-      totalVehicleValueRate={vehicleValueRate}
-      totalPremiumCost={totalPremiumFinal}
-      actOfNatureCost={actOfNatureCost}
-      commissionRate={commissionFee}
-      setCommissionRate={setCommissionFee}
-      commissionValue={commissionValue}
-      vehicleName={vehicleName}
-      setVehicleName={setVehicleName}
-      vehicleMaker={vehicleMaker}
-      setVehicleMaker={setVehicleMaker}
-      vehicleColor={vehicleColor}
-      setVehicleColor={setVehicleColor}
-      vehicleVinNumber={vehicleVin}
-      setVinNumber={setVehicleVin}
-      vehiclePlateNumber={vehiclePlate}
-      setPlateNumber={setVehiclePlate}
-      vehicleEngineNumber={vehicleEngine}
-      setEngineNumber={setVehicleEngine}
-      clients={clients}
-      selectedClient={selectedClient}
-      setSelectedClient={setSelectedClient}
-      partners={partners}
-      selectedPartner={selectedPartner}
-      setSelectedPartner={setSelectedPartner}
-      paymentTypes={paymentTypes}
-      selectedPaymentType={selectedPaymentType}
-      setSelectedPaymentType={setSelectedPaymentType}
-      onSaveClient={handleUpdatePolicy}
-      onRenewPolicy={handleRenewPolicy}
-      isRenewalMode={isRenewalMode}
-      setIsRenewalMode={setIsRenewalMode}
-      policyExpiry={policyExpiry}
-      navigate={navigate}
-    />
+    <>
+      <PolicyEditForm
+        vehicleTypes={vehicleTypes}
+        selected={selectedVehicleType}
+        setSelected={setSelectedVehicleType}
+        vehicleDetails={vehicleDetails}
+        yearInput={yearInput}
+        setYearInput={setYearInput}
+        vehicleOriginalValueFromDB={vehicleOriginalValueFromDB}
+        setVehicleOriginalValueFromDB={setVehicleOriginalValueFromDB}
+        basicPremiumValue={basicPremiumValue}
+        basicPremiumWithCommission={basicPremiumWithCommission}
+        isAoN={isAon}
+        setIsAoN={setIsAoN}
+        setOriginalVehicleCost={setOriginalVehicleCost}
+        originalVehicleCost={originalVehicleCost}
+        currentVehicleValueCost={vehicleValue}
+        totalVehicleValueRate={vehicleValueRate}
+        totalPremiumCost={totalPremiumFinal}
+        actOfNatureCost={actOfNatureCost}
+        commissionRate={commissionFee}
+        setCommissionRate={setCommissionFee}
+        commissionValue={commissionValue}
+        vehicleName={vehicleName}
+        setVehicleName={setVehicleName}
+        vehicleMaker={vehicleMaker}
+        setVehicleMaker={setVehicleMaker}
+        vehicleColor={vehicleColor}
+        setVehicleColor={setVehicleColor}
+        vehicleVinNumber={vehicleVin}
+        setVinNumber={setVehicleVin}
+        vehiclePlateNumber={vehiclePlate}
+        setPlateNumber={setVehiclePlate}
+        vehicleEngineNumber={vehicleEngine}
+        setEngineNumber={setVehicleEngine}
+        clients={clients}
+        selectedClient={selectedClient}
+        setSelectedClient={setSelectedClient}
+        partners={partners}
+        selectedPartner={selectedPartner}
+        setSelectedPartner={setSelectedPartner}
+        paymentTypes={paymentTypes}
+        selectedPaymentType={selectedPaymentType}
+        setSelectedPaymentType={setSelectedPaymentType}
+        onSaveClient={handleUpdatePolicy}
+        onRenewPolicy={handleRenewPolicy}
+        isRenewalMode={isRenewalMode}
+        setIsRenewalMode={setIsRenewalMode}
+        policyExpiry={policyExpiry}
+        navigate={navigate}
+      />
+
+      <CustomAlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => {
+          setAlertModal({ ...alertModal, isOpen: false });
+          if (alertModal.onCloseCallback) {
+            alertModal.onCloseCallback();
+          }
+        }}
+        title={alertModal.title}
+        message={alertModal.message}
+      />
+
+      <CustomConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+      />
+    </>
   );
 }

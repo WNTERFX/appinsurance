@@ -40,45 +40,60 @@ async function getCurrentUserRole() {
   }
 }
 
-/**
- * Fetch all claims with policy and client information
- * Moderators only see claims for their assigned clients
- * Admins see all claims
- */
-export const fetchClaims = async (from = null, to = null, onlyArchived = false) => {
+
+
+export const fetchClaims = async (from = null, to = null, onlyArchived = false, agentId = null) => {
   console.log("Fetching claims from Supabase...");
 
   try {
     const { isAdmin, isModerator, userId } = await getCurrentUserRole();
-    console.log("User role:", { isAdmin, isModerator, userId });
+    console.log("User role:", { isAdmin, isModerator, userId, agentId });
 
     let clientUids = [];
+    let effectiveAgentId = null;
 
-    if (isModerator) {
+    // --- Determine the effective agent ID for filtering ---
+    if (agentId) {
+      // Priority 1: Use the explicit agentId provided by the UI filter
+      effectiveAgentId = agentId;
+      console.log(`Filtering by selected Agent ID: ${effectiveAgentId}`);
+    } else if (isModerator && !isAdmin) {
+      // Priority 2: If no agent is selected, but the user is a Moderator, restrict to their own clients
+      effectiveAgentId = userId;
+      console.log(`Restricting to current Moderator's clients: ${effectiveAgentId}`);
+    } else if (isAdmin && !agentId) {
+      // Admin viewing all claims (no agent filter needed)
+      console.log("Admin viewing all claims.");
+    }
+    
+    // --- If an agent filter is active, fetch the corresponding client IDs ---
+    if (effectiveAgentId) {
       const { data: clients, error: clientsError } = await db
         .from("clients_Table")
         .select("uid")
-        .eq("agent_Id", userId);
+        .eq("agent_Id", effectiveAgentId);
 
       if (clientsError) {
-        console.error("Error fetching moderator's clients:", clientsError);
+        console.error("Error fetching agent's clients:", clientsError);
         throw clientsError;
       }
 
       if (!clients || clients.length === 0) {
-        console.log("🔒 No clients assigned to this moderator");
+        console.log(`🔒 No clients found for agent ${effectiveAgentId}. Returning empty.`);
         return [];
       }
 
       clientUids = clients.map(c => c.uid);
-      console.log(`🔒 Moderator has ${clientUids.length} assigned clients`);
+      console.log(`Filtering claims for ${clientUids.length} clients assigned to agent ${effectiveAgentId}`);
     }
 
+    // --- Query for Policies based on client access ---
     let policyQuery = db
       .from("policy_Table")
-      .select("id, client_id");
+      .select("id, client_id, partner_id"); // Ensure partner_id is selected for enrichment
 
-    if (isModerator) {
+    if (clientUids.length > 0) {
+      // If we are filtering by agent (either explicit or moderator self-filter)
       policyQuery = policyQuery.in("client_id", clientUids);
     }
 
@@ -90,13 +105,15 @@ export const fetchClaims = async (from = null, to = null, onlyArchived = false) 
     }
 
     if (!policies || policies.length === 0) {
-      console.log("No policies found");
+      console.log("No policies found matching the criteria.");
       return [];
     }
 
     const policyIds = policies.map(p => p.id);
-    console.log(`Found ${policyIds.length} policies`);
+    const policyMap = new Map(policies.map(p => [p.id, p]));
+    console.log(`Found ${policyIds.length} policies.`);
 
+    // --- Query for Claims based on policy access and date range ---
     let claimsQuery = db
       .from("claims_Table")
       .select("*")
@@ -123,53 +140,27 @@ export const fetchClaims = async (from = null, to = null, onlyArchived = false) 
       throw claimsError;
     }
 
-    console.log(`Found ${claims?.length || 0} claims`);
+    console.log(`Found ${claims?.length || 0} claims.`);
+
+    // --- Enrich Claims with Policy, Client, and Partner Data ---
+    const clientIds = [...new Set(policies.map(p => p.client_id))].filter(Boolean);
+    const partnerIds = [...new Set(policies.map(p => p.partner_id))].filter(Boolean);
+
+    const [{ data: allClients }, { data: allPartners }] = await Promise.all([
+      db.from("clients_Table").select("uid, first_Name, family_Name, internal_id").in("uid", clientIds),
+      db.from("insurance_Partners").select("id, insurance_Name").in("id", partnerIds),
+    ]);
+    
+    const clientMap = new Map((allClients || []).map(c => [c.uid, c]));
+    const partnerMap = new Map((allPartners || []).map(p => [p.id, p]));
 
     const enrichedClaims = await Promise.all(
       (claims || []).map(async (claim) => {
-        const { data: policyData } = await db
-          .from("policy_Table")
-          .select(`
-            id,
-            internal_id,
-            policy_type,
-            policy_inception,
-            policy_expiry,
-            client_id,
-            partner_id
-          `)
-          .eq("id", claim.policy_id)
-          .single();
+        const policyData = policyMap.get(claim.policy_id);
+        const clientData = policyData?.client_id ? clientMap.get(policyData.client_id) : null;
+        const partnerData = policyData?.partner_id ? partnerMap.get(policyData.partner_id) : null;
 
-        let clientData = null;
-        if (policyData?.client_id) {
-          const { data: client } = await db
-            .from("clients_Table")
-            .select(`
-              uid,
-              first_Name,
-              middle_Name,
-              family_Name,
-              prefix,
-              suffix,
-              phone_Number,
-              internal_id
-            `)
-            .eq("uid", policyData.client_id)
-            .single();
-          clientData = client;
-        }
-
-        let partnerData = null;
-        if (policyData?.partner_id) {
-          const { data: partner } = await db
-            .from("insurance_Partners")
-            .select("id, insurance_Name")
-            .eq("id", policyData.partner_id)
-            .single();
-          partnerData = partner;
-        }
-
+        // Fetch computation data separately, as it's policy-specific and single
         let computationData = null;
         if (claim.policy_id) {
           const { data: computation } = await db
@@ -192,13 +183,7 @@ export const fetchClaims = async (from = null, to = null, onlyArchived = false) 
       })
     );
 
-    console.log(
-      onlyArchived
-        ? "Archived claims fetched and enriched:"
-        : "Non-archived claims fetched and enriched:",
-      enrichedClaims.length
-    );
-
+    console.log("Claims fetched and enriched:", enrichedClaims.length);
     return enrichedClaims;
   } catch (err) {
     console.error("fetchClaims error:", err);

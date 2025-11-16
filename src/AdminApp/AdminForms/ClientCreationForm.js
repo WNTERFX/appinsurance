@@ -9,8 +9,12 @@ import {
   fetchBarangays,
   fetchCitiesForNCR,
 } from "../AdminActions/PhilippineAddressAPI";
+import CustomAlertModal from "./CustomAlertModal";
 
 export default function ClientCreationForm({ clientData, onChange, onSubmit, onCancel }) {
+  // --- Modal state ---
+  const [alertModal, setAlertModal] = useState({ isOpen: false, message: "", title: "Alert" });
+
   // --- Errors ---
   const [errors, setErrors] = useState({
     phoneNumber: "",
@@ -44,6 +48,15 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
   // --- Refs (for phone input caret control) ---
   const phoneRef = useRef(null);
 
+  // Helper to show alert modal
+  const showAlert = (message, title = "Alert") => {
+    setAlertModal({ isOpen: true, message, title });
+  };
+
+  const closeAlert = () => {
+    setAlertModal({ isOpen: false, message: "", title: "Alert" });
+  };
+
   // ---------------------------
   // Load regions on mount
   // ---------------------------
@@ -56,7 +69,6 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
         if (!mounted) return;
         setRegions(data || []);
       } catch (err) {
-        // optional: setRegions([]) or handle error
         console.error("Failed to load regions", err);
       } finally {
         if (mounted) setLoadingRegions(false);
@@ -73,7 +85,6 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
   // ---------------------------
   useEffect(() => {
     const loadRegionData = async () => {
-      // reset downstream selects & clientData fields
       setSelectedProvinceCode("");
       setSelectedCityCode("");
       setBarangays([]);
@@ -93,7 +104,6 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
         selectedRegionCode === "130000000";
 
       if (isNCR) {
-        // NCR: skip provinces, load cities for NCR
         try {
           setLoadingCities(true);
           const data = await fetchCitiesForNCR(selectedRegionCode);
@@ -106,12 +116,11 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
           setLoadingCities(false);
         }
       } else {
-        // Normal region: load provinces
         try {
           setLoadingProvinces(true);
           const data = await fetchProvinces(selectedRegionCode);
           setProvinces(data || []);
-          setCities([]); // will load cities once province selected
+          setCities([]);
         } catch (err) {
           console.error("Failed to load provinces", err);
           setProvinces([]);
@@ -149,7 +158,6 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
       };
       loadCities();
 
-      // reset downstream
       setSelectedCityCode("");
       setBarangays([]);
       onChange({ target: { name: "city", value: "" } });
@@ -256,7 +264,6 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
       setErrors((prev) => ({ ...prev, email: "Email is required" }));
       return;
     }
-    // simple RFC-lite regex
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
       setErrors((prev) => ({ ...prev, email: "Please enter a valid email address" }));
       return;
@@ -273,28 +280,19 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
       if (exists) setErrors((prev) => ({ ...prev, email: "This email is already registered" }));
     } catch (err) {
       console.error("checkIfEmailExists failed", err);
-      // don't block user for API failure; optionally show message
     }
   };
 
   // ---------------------------
   // PHONE: enforce "09" prefix and block deleting prefix
   // ---------------------------
-  // Strategy:
-  // - onChange: keep only digits, ensure it begins with "09", trim to 11 digits.
-  // - onKeyDown: block backspace/delete if trying to remove the prefix.
-  // - onFocus: if empty, autofill "09" and place caret after prefix.
   const sanitizePhone = (raw) => {
     if (!raw) return "09";
-    // strip non-digits
     let digits = raw.replace(/\D/g, "");
-    // ensure it starts with 09
     if (!digits.startsWith("09")) {
-      // if user types "9xxxx", convert to "09xxxx"
       if (digits.startsWith("9")) digits = "0" + digits;
-      else digits = "09" + digits.replace(/^0+/, ""); // avoid multiple zeros
+      else digits = "09" + digits.replace(/^0+/, "");
     }
-    // limit to 11 digits
     digits = digits.slice(0, 11);
     return digits;
   };
@@ -304,7 +302,6 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
     const sanitized = sanitizePhone(raw);
     onChange({ target: { name: "phoneNumber", value: sanitized } });
 
-    // set inline error
     let err = "";
     if (!/^09\d{9}$/.test(sanitized)) err = "Phone must be 11 digits and start with 09";
     setErrors((prev) => ({ ...prev, phoneNumber: err }));
@@ -315,7 +312,6 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
     if (!current || !current.startsWith("09")) {
       const prefixed = sanitizePhone(current);
       onChange({ target: { name: "phoneNumber", value: prefixed } });
-      // move caret to end (after prefix) after DOM update
       setTimeout(() => {
         const input = phoneRef.current;
         if (input && input.setSelectionRange) {
@@ -324,7 +320,6 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
         }
       }, 0);
     } else {
-      // ensure caret isn't put before prefix
       setTimeout(() => {
         const input = phoneRef.current;
         if (input && input.selectionStart < 2) {
@@ -340,26 +335,19 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
     const selStart = input.selectionStart;
     const selEnd = input.selectionEnd;
 
-    // If selection includes prefix (index < 2) disallow Backspace/Delete
     if (selStart < 2) {
-      // Backspace or Delete attempts that would remove prefix
       if (e.key === "Backspace") {
-        // If caret at position 2 and no selection, prevent removing prefix
         if (selStart === selEnd) {
           e.preventDefault();
-          // keep caret at 2
           setTimeout(() => input.setSelectionRange(2, 2), 0);
         } else {
-          // if selection spans into prefix, prevent
           if (selEnd > 2) {
-            // allow editing only the portion after prefix
             e.preventDefault();
             setTimeout(() => input.setSelectionRange(2, 2), 0);
           }
         }
       }
       if (e.key === "Delete") {
-        // if deletion would start from prefix region
         if (selStart < 2) {
           e.preventDefault();
           setTimeout(() => input.setSelectionRange(2, 2), 0);
@@ -367,11 +355,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
       }
     }
 
-    // Disallow typing non-digit chars (except navigation)
-    if (
-      e.key.length === 1 && // printable
-      !/[0-9]/.test(e.key)
-    ) {
+    if (e.key.length === 1 && !/[0-9]/.test(e.key)) {
       e.preventDefault();
     }
   };
@@ -379,7 +363,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
   const handlePhoneBlur = async () => {
     const val = clientData.phoneNumber?.trim();
     if (!val) return;
-    if (!/^09\d{9}$/.test(val)) return; // don't call uniqueness check if invalid
+    if (!/^09\d{9}$/.test(val)) return;
     try {
       const exists = await checkIfPhoneExists(val);
       if (exists) setErrors((prev) => ({ ...prev, phoneNumber: "This phone number is already registered" }));
@@ -394,14 +378,11 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
   const handleSubmit = async () => {
     const newErrors = {};
 
-    // Names & street
     if (!clientData?.firstName?.trim()) newErrors.firstName = "First Name is required";
     if (!clientData?.familyName?.trim()) newErrors.familyName = "Last Name is required";
     if (!clientData?.streetAddress?.trim()) newErrors.streetAddress = "Street Address is required";
 
-    // Address fields
     if (!clientData?.region) newErrors.region = "Region is required";
-    // find region to decide province requirement
     const regionObj = regions.find((r) => r.code === selectedRegionCode);
     const regionIsNCR =
       regionObj?.name?.toLowerCase().includes("national capital region") ||
@@ -410,14 +391,12 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
     if (!clientData?.city) newErrors.city = "City is required";
     if (!clientData?.barangay) newErrors.barangay = "Barangay is required";
 
-    // Phone
     if (!clientData?.phoneNumber?.trim()) {
       newErrors.phoneNumber = "Phone number is required";
     } else if (!/^09\d{9}$/.test(clientData.phoneNumber)) {
       newErrors.phoneNumber = "Phone must be 11 digits and start with 09";
     }
 
-    // Email
     if (!clientData?.email?.trim()) newErrors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientData.email)) newErrors.email = "Invalid email address";
 
@@ -428,7 +407,6 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
       return;
     }
 
-    // All good — call provided onSubmit
     await onSubmit();
   };
 
@@ -436,204 +414,212 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
   // Render
   // ---------------------------
   return (
-    <div className="client-creation-container">
-      <div className="form-card-client-creation">
-        <h2>Client Creation Form</h2>
-        <div className="form-grid-client-creation">
-          <div className="form-left-column-creation">
-            {/* Prefix */}
-            <div className="form-group-client-creation">
-              <label>Prefix</label>
-              <input type="text" name="prefix" value={clientData?.prefix || ""} onChange={onChange} />
-            </div>
+    <>
+      <CustomAlertModal
+        isOpen={alertModal.isOpen}
+        onClose={closeAlert}
+        message={alertModal.message}
+        title={alertModal.title}
+      />
 
-            {/* First Name */}
-            <div className="form-group-client-creation">
-              <label>First Name *</label>
-              <input
-                type="text"
-                name="firstName"
-                value={clientData?.firstName || ""}
-                onChange={handleFirstNameChange}
-              />
-              {errors.firstName && <p style={{ color: "red" }}>{errors.firstName}</p>}
-            </div>
-
-            {/* Middle Name */}
-            <div className="form-group-client-creation">
-              <label>Middle Name</label>
-              <input type="text" name="middleName" value={clientData?.middleName || ""} onChange={onChange} />
-            </div>
-
-            {/* Last Name */}
-            <div className="form-group-client-creation">
-              <label>Last Name *</label>
-              <input
-                type="text"
-                name="familyName"
-                value={clientData?.familyName || ""}
-                onChange={handleFamilyNameChange}
-              />
-              {errors.familyName && <p style={{ color: "red" }}>{errors.familyName}</p>}
-            </div>
-
-            {/* Suffix */}
-            <div className="form-group-client-creation">
-              <label>Suffix</label>
-              <input type="text" name="suffix" value={clientData?.suffix || ""} onChange={onChange} />
-            </div>
-
-            {/* Phone */}
-            <div className="form-group-client-creation">
-              <label>Phone Number *</label>
-              <input
-                ref={phoneRef}
-                type="tel"
-                name="phoneNumber"
-                value={clientData?.phoneNumber || ""}
-                onChange={handlePhoneChange}
-                onBlur={handlePhoneBlur}
-                onFocus={handlePhoneFocus}
-                onKeyDown={handlePhoneKeyDown}
-                placeholder="09XXXXXXXXX"
-                maxLength={11}
-                inputMode="numeric"
-              />
-              {errors.phoneNumber && <p style={{ color: "red" }}>{errors.phoneNumber}</p>}
-            </div>
-
-            {/* Email */}
-            <div className="form-group-client-creation">
-              <label>Email Address *</label>
-              <input
-                type="email"
-                name="email"
-                value={clientData?.email || ""}
-                onChange={handleEmailChange}
-                onBlur={handleEmailBlur}
-                placeholder="example@email.com"
-              />
-              {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
-            </div>
-
-            {/* Street Address */}
-            <div className="form-group-client-creation">
-              <label>Street Address / Unit No. *</label>
-              <input
-                type="text"
-                name="streetAddress"
-                value={clientData?.streetAddress || ""}
-                onChange={handleStreetAddressChange}
-              />
-              {errors.streetAddress && <p style={{ color: "red" }}>{errors.streetAddress}</p>}
-            </div>
-
-            {/* Region */}
-            <div className="form-group-client-creation">
-              <label>Region *</label>
-              <select
-                value={selectedRegionCode}
-                onChange={handleRegionChange}
-                disabled={loadingRegions}
-                name="regionSelect"
-              >
-                <option value="">{loadingRegions ? "Loading regions..." : "Select Region"}</option>
-                {regions.map((region) => (
-                  <option key={region.code} value={region.code}>
-                    {region.name}
-                  </option>
-                ))}
-              </select>
-              {errors.region && <p style={{ color: "red" }}>{errors.region}</p>}
-            </div>
-
-            {/* Province (hidden when NCR) */}
-            {!isNCR && (
+      <div className="client-creation-container">
+        <div className="form-card-client-creation">
+          <h2>Client Creation Form</h2>
+          <div className="form-grid-client-creation">
+            <div className="form-left-column-creation">
+              {/* Prefix */}
               <div className="form-group-client-creation">
-                <label>Province *</label>
+                <label>Prefix</label>
+                <input type="text" name="prefix" value={clientData?.prefix || ""} onChange={onChange} />
+              </div>
+
+              {/* First Name */}
+              <div className="form-group-client-creation">
+                <label>First Name *</label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={clientData?.firstName || ""}
+                  onChange={handleFirstNameChange}
+                />
+                {errors.firstName && <p style={{ color: "red" }}>{errors.firstName}</p>}
+              </div>
+
+              {/* Middle Name */}
+              <div className="form-group-client-creation">
+                <label>Middle Name</label>
+                <input type="text" name="middleName" value={clientData?.middleName || ""} onChange={onChange} />
+              </div>
+
+              {/* Last Name */}
+              <div className="form-group-client-creation">
+                <label>Last Name *</label>
+                <input
+                  type="text"
+                  name="familyName"
+                  value={clientData?.familyName || ""}
+                  onChange={handleFamilyNameChange}
+                />
+                {errors.familyName && <p style={{ color: "red" }}>{errors.familyName}</p>}
+              </div>
+
+              {/* Suffix */}
+              <div className="form-group-client-creation">
+                <label>Suffix</label>
+                <input type="text" name="suffix" value={clientData?.suffix || ""} onChange={onChange} />
+              </div>
+
+              {/* Phone */}
+              <div className="form-group-client-creation">
+                <label>Phone Number *</label>
+                <input
+                  ref={phoneRef}
+                  type="tel"
+                  name="phoneNumber"
+                  value={clientData?.phoneNumber || ""}
+                  onChange={handlePhoneChange}
+                  onBlur={handlePhoneBlur}
+                  onFocus={handlePhoneFocus}
+                  onKeyDown={handlePhoneKeyDown}
+                  placeholder="09XXXXXXXXX"
+                  maxLength={11}
+                  inputMode="numeric"
+                />
+                {errors.phoneNumber && <p style={{ color: "red" }}>{errors.phoneNumber}</p>}
+              </div>
+
+              {/* Email */}
+              <div className="form-group-client-creation">
+                <label>Email Address *</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={clientData?.email || ""}
+                  onChange={handleEmailChange}
+                  onBlur={handleEmailBlur}
+                  placeholder="example@email.com"
+                />
+                {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
+              </div>
+
+              {/* Street Address */}
+              <div className="form-group-client-creation">
+                <label>Street Address / Unit No. *</label>
+                <input
+                  type="text"
+                  name="streetAddress"
+                  value={clientData?.streetAddress || ""}
+                  onChange={handleStreetAddressChange}
+                />
+                {errors.streetAddress && <p style={{ color: "red" }}>{errors.streetAddress}</p>}
+              </div>
+
+              {/* Region */}
+              <div className="form-group-client-creation">
+                <label>Region *</label>
                 <select
-                  value={selectedProvinceCode}
-                  onChange={handleProvinceChange}
-                  disabled={!selectedRegionCode || loadingProvinces}
-                  name="provinceSelect"
+                  value={selectedRegionCode}
+                  onChange={handleRegionChange}
+                  disabled={loadingRegions}
+                  name="regionSelect"
                 >
-                  <option value="">{loadingProvinces ? "Loading provinces..." : "Select Province"}</option>
-                  {provinces.map((prov) => (
-                    <option key={prov.code} value={prov.code}>
-                      {prov.name}
+                  <option value="">{loadingRegions ? "Loading regions..." : "Select Region"}</option>
+                  {regions.map((region) => (
+                    <option key={region.code} value={region.code}>
+                      {region.name}
                     </option>
                   ))}
                 </select>
-                {errors.province && <p style={{ color: "red" }}>{errors.province}</p>}
+                {errors.region && <p style={{ color: "red" }}>{errors.region}</p>}
               </div>
-            )}
 
-            {/* City / Municipality */}
-            <div className="form-group-client-creation">
-              <label>City / Municipality *</label>
-              <select
-                value={selectedCityCode}
-                onChange={handleCityChange}
-                disabled={(!isNCR && !selectedProvinceCode) || loadingCities}
-                name="citySelect"
-              >
-                <option value="">{loadingCities ? "Loading cities..." : "Select City/Municipality"}</option>
-                {cities.map((city) => (
-                  <option key={city.code} value={city.code}>
-                    {city.name}
-                  </option>
-                ))}
-              </select>
-              {errors.city && <p style={{ color: "red" }}>{errors.city}</p>}
-            </div>
+              {/* Province (hidden when NCR) */}
+              {!isNCR && (
+                <div className="form-group-client-creation">
+                  <label>Province *</label>
+                  <select
+                    value={selectedProvinceCode}
+                    onChange={handleProvinceChange}
+                    disabled={!selectedRegionCode || loadingProvinces}
+                    name="provinceSelect"
+                  >
+                    <option value="">{loadingProvinces ? "Loading provinces..." : "Select Province"}</option>
+                    {provinces.map((prov) => (
+                      <option key={prov.code} value={prov.code}>
+                        {prov.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.province && <p style={{ color: "red" }}>{errors.province}</p>}
+                </div>
+              )}
 
-            {/* Barangay */}
-            <div className="form-group-client-creation">
-              <label>Barangay *</label>
-              <select
-                value={clientData?.barangay || ""}
-                onChange={handleBarangayChange}
-                disabled={!selectedCityCode || loadingBarangays}
-                name="barangaySelect"
-              >
-                <option value="">{loadingBarangays ? "Loading barangays..." : "Select Barangay"}</option>
-                {barangays.map((b) => (
-                  <option key={b.code} value={b.name}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-              {errors.barangay && <p style={{ color: "red" }}>{errors.barangay}</p>}
-            </div>
+              {/* City / Municipality */}
+              <div className="form-group-client-creation">
+                <label>City / Municipality *</label>
+                <select
+                  value={selectedCityCode}
+                  onChange={handleCityChange}
+                  disabled={(!isNCR && !selectedProvinceCode) || loadingCities}
+                  name="citySelect"
+                >
+                  <option value="">{loadingCities ? "Loading cities..." : "Select City/Municipality"}</option>
+                  {cities.map((city) => (
+                    <option key={city.code} value={city.code}>
+                      {city.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.city && <p style={{ color: "red" }}>{errors.city}</p>}
+              </div>
 
-            {/* Zip Code (optional) */}
-            <div className="form-group-client-creation">
-              <label>Zip Code</label>
-              <input
-                type="tel"
-                name="zipCode"
-                value={clientData?.zipCode || ""}
-                onChange={(e) => {
-                  // allow only digits up to 4
-                  const raw = e.target.value.replace(/\D/g, "").slice(0, 4);
-                  onChange({ target: { name: "zipCode", value: raw } });
-                }}
-                placeholder="e.g., 1000"
-                maxLength={4}
-              />
+              {/* Barangay */}
+              <div className="form-group-client-creation">
+                <label>Barangay *</label>
+                <select
+                  value={clientData?.barangay || ""}
+                  onChange={handleBarangayChange}
+                  disabled={!selectedCityCode || loadingBarangays}
+                  name="barangaySelect"
+                >
+                  <option value="">{loadingBarangays ? "Loading barangays..." : "Select Barangay"}</option>
+                  {barangays.map((b) => (
+                    <option key={b.code} value={b.name}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.barangay && <p style={{ color: "red" }}>{errors.barangay}</p>}
+              </div>
+
+              {/* Zip Code (optional) */}
+              <div className="form-group-client-creation">
+                <label>Zip Code</label>
+                <input
+                  type="tel"
+                  name="zipCode"
+                  value={clientData?.zipCode || ""}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\D/g, "").slice(0, 4);
+                    onChange({ target: { name: "zipCode", value: raw } });
+                  }}
+                  placeholder="e.g., 1000"
+                  maxLength={4}
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="client-creation-controls">
-          <button className="client-creation-cancel-btn" type="button" onClick={onCancel}>
-            Cancel
-          </button>
-          <button className="client-creation-submit-btn" type="button" onClick={handleSubmit}>
-            Submit
-          </button>
+          <div className="client-creation-controls">
+            <button className="client-creation-cancel-btn" type="button" onClick={onCancel}>
+              Cancel
+            </button>
+            <button className="client-creation-submit-btn" type="button" onClick={handleSubmit}>
+              Submit
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

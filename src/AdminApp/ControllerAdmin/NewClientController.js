@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ClientCreationForm from "../AdminForms/ClientCreationForm";
-import { CustomAlert } from "../../ReusableComponents/CustomAlert";
+import CustomAlertModal from "../AdminForms/CustomAlertModal";
 import {
   NewClientCreation,
   getCurrentUser,
@@ -9,7 +9,7 @@ import {
   checkIfPhoneExists,
 } from "../AdminActions/NewClientActions";
 
-export default function NewClientController({ onCancel }) {
+export default function NewClientController({ onCancel, onSuccess }) {
   const [clientData, setClientData] = useState({
     prefix: "",
     firstName: "",
@@ -26,9 +26,8 @@ export default function NewClientController({ onCancel }) {
     email: "",
   });
 
-  // Add state for custom alerts
-  const [alertMessage, setAlertMessage] = useState("");
-  const [alertType, setAlertType] = useState(""); // 'error' or 'success'
+  // Modal state
+  const [alertModal, setAlertModal] = useState({ isOpen: false, message: "", title: "Alert", isSuccess: false });
 
   const navigate = useNavigate();
 
@@ -40,23 +39,50 @@ export default function NewClientController({ onCancel }) {
     }));
   };
 
-  // Helper function to show alerts
-  const showAlert = (message, type) => {
-    setAlertMessage(message);
-    setAlertType(type);
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-      setAlertMessage("");
-      setAlertType("");
-    }, 5000);
+  // Helper functions for alert modal
+  const showAlert = (message, title = "Alert", isSuccess = false) => {
+    setAlertModal({ isOpen: true, message, title, isSuccess });
+  };
+
+  const closeAlert = () => {
+    const wasSuccess = alertModal.isSuccess;
+    setAlertModal({ isOpen: false, message: "", title: "Alert", isSuccess: false });
+    
+    // If it was a success alert, trigger refresh and close ONLY when OK is clicked
+    if (wasSuccess) {
+      // Reset form data
+      setClientData({
+        prefix: "",
+        firstName: "",
+        middleName: "",
+        familyName: "",
+        suffix: "",
+        streetAddress: "",
+        barangay: "",
+        city: "",
+        province: "",
+        region: "",
+        zipCode: "",
+        phoneNumber: "",
+        email: "",
+      });
+      
+      // Trigger parent refresh if callback provided
+      if (onSuccess) {
+        onSuccess();
+      }
+      
+      // Close modal or navigate
+      if (onCancel) {
+        onCancel();
+      } else {
+        navigate("/appinsurance/main-area/client");
+      }
+    }
   };
 
   const handleSubmit = async () => {
     console.log("Submitting (camelCase):", clientData);
-
-    // Clear any existing alerts
-    setAlertMessage("");
-    setAlertType("");
 
     // ✅ 1. Validate required fields
     if (
@@ -66,40 +92,40 @@ export default function NewClientController({ onCancel }) {
       !clientData.phoneNumber.trim() ||
       !clientData.email.trim()
     ) {
-      showAlert("Please fill in all required fields.", "error");
+      showAlert("Please fill in all required fields.", "Validation Error");
       return false;
     }
 
     // ✅ 2. Check email format
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientData.email)) {
-      showAlert("Please enter a valid email address.", "error");
+      showAlert("Please enter a valid email address.", "Invalid Email");
       return false;
     }
 
     // ✅ 3. Check phone format (11 digits)
     if (!/^\d{11}$/.test(clientData.phoneNumber)) {
-      showAlert("Phone number must be 11 digits (e.g., 09XXXXXXXXX).", "error");
+      showAlert("Phone number must be 11 digits (e.g., 09XXXXXXXXX).", "Invalid Phone Number");
       return false;
     }
 
     // ✅ 4. Check for duplicate email
     const emailExists = await checkIfEmailExists(clientData.email);
     if (emailExists) {
-      showAlert("This email is already registered. Please use another one.", "error");
+      showAlert("This email is already registered. Please use another one.", "Duplicate Email");
       return false;
     }
 
     // ✅ 5. Check for duplicate phone number
     const phoneExists = await checkIfPhoneExists(clientData.phoneNumber);
     if (phoneExists) {
-      showAlert("This phone number is already registered. Please use another one.", "error");
+      showAlert("This phone number is already registered. Please use another one.", "Duplicate Phone Number");
       return false;
     }
 
     // ✅ 6. Ensure logged-in user
     const user = await getCurrentUser();
     if (!user) {
-      showAlert("No logged-in user. Please sign in again.", "error");
+      showAlert("No logged-in user. Please sign in again.", "Authentication Error");
       return false;
     }
 
@@ -122,46 +148,28 @@ export default function NewClientController({ onCancel }) {
       agent_Id: user.id,
     };
 
-    // ✅ 8. Insert into Supabase
+    // ✅ 7. Insert into Supabase
     const { success, error } = await NewClientCreation(dbPayload);
     if (!success) {
-      showAlert("Error saving client: " + error, "error");
+      showAlert("Error saving client: " + error, "Error");
       return false;
     }
 
-    // ✅ 9. Success — reset form and navigate
-    showAlert("Client successfully created!", "success");
-    
-    // Wait a moment before navigation so user sees the success message
-    setTimeout(() => {
-      if (onCancel) {
-        onCancel();
-      } else {
-        navigate("/appinsurance/main-area/client");
-        setClientData({
-          prefix: "",
-          firstName: "",
-          middleName: "",
-          familyName: "",
-          suffix: "",
-          streetAddress: "",
-          barangay: "",
-          city: "",
-          province: "",
-          region: "",
-          zipCode: "",
-          phoneNumber: "",
-          email: "",
-        });
-      }
-    }, 1500);
+    // ✅ 8. Success — show modal (refresh happens when user clicks OK)
+    showAlert("Client successfully created!", "Success", true);
 
     return true;
   };
 
   return (
     <>
-      {alertMessage && <CustomAlert message={alertMessage} type={alertType} />}
+      <CustomAlertModal
+        isOpen={alertModal.isOpen}
+        onClose={closeAlert}
+        message={alertModal.message}
+        title={alertModal.title}
+      />
+      
       <ClientCreationForm
         clientData={clientData}
         onChange={handleChange}

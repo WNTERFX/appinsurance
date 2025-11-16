@@ -35,10 +35,10 @@ export default function ProfileDropdown({ open, onClose, onDarkMode }) {
       role="menu"
       aria-hidden={!open}
     >
-      <button className="dropdown-item" onClick={onDarkMode}>
+     {/* <button className="dropdown-item" onClick={onDarkMode}>
         <FaMoon className="dropdown-icon" />
         Dark Mode
-      </button>
+      </button>*/}
 
       <button className="dropdown-item" onClick={handleLogout}>
         <FaSignOutAlt className="dropdown-icon" />

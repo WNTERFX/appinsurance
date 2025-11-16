@@ -5,6 +5,8 @@ import ClientInfo from "../ClientInfo";
 import { FaEdit, FaBell } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import ScrollToTopButton from "../../ReusableComponents/ScrollToTop";
+import CustomAlertModal from "../AdminForms/CustomAlertModal";
+import CustomConfirmModal from "../AdminForms/CustomConfirmModal";
 import "../styles/client-table-styles.css";
 
 export default function ClientTable({ agentId, allClientsCount, agentsWithClientCounts, onViewAllClients, onEditClient }) {
@@ -23,11 +25,26 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
   const [emailEnabled, setEmailEnabled] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Custom Modal states
+  const [alertModal, setAlertModal] = useState({ 
+    isOpen: false, 
+    message: "", 
+    title: "Alert",
+    onCloseCallback: null 
+  });
+  const [confirmModal, setConfirmModal] = useState({ 
+    isOpen: false, 
+    message: "", 
+    title: "Confirm",
+    onConfirmCallback: null 
+  });
+
   const filteredClients = clients.filter((client) =>
     (client.internal_id || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const loadClientsData = async () => {
+    console.log("loadClientsData called - refreshing client table");
     const data = await fetchClients(agentId, false);
     setClients(data);
     setCurrentPage(1);
@@ -39,16 +56,56 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
 
   const handleRowClick = (id) => setSelectedClientID(id);
 
-  const handleArchiveClick = async (clientId) => {
-    const confirmArchive = window.confirm("Proceed to archive this client?");
-    if (!confirmArchive) return;
+  // Helper functions for modals
+  const showAlert = (message, title = "Alert", onCloseCallback = null) => {
+    setAlertModal({ isOpen: true, message, title, onCloseCallback });
+  };
 
-    try {
-      await archiveClient(clientId);
-      await loadClientsData();
-    } catch (error) {
-      console.error("Error archiving client:", error);
+  const closeAlert = () => {
+    const callback = alertModal.onCloseCallback;
+    setAlertModal({ isOpen: false, message: "", title: "Alert", onCloseCallback: null });
+    if (callback) {
+      console.log("Executing alert callback");
+      callback();
     }
+  };
+
+  const showConfirm = (message, title = "Confirm", onConfirmCallback) => {
+    setConfirmModal({ isOpen: true, message, title, onConfirmCallback });
+  };
+
+  const closeConfirm = () => {
+    setConfirmModal({ isOpen: false, message: "", title: "Confirm", onConfirmCallback: null });
+  };
+
+  const handleConfirm = () => {
+    if (confirmModal.onConfirmCallback) {
+      confirmModal.onConfirmCallback();
+    }
+    closeConfirm();
+  };
+
+  // Edit button handler - just calls parent's onEditClient
+  const handleEditClick = (client) => {
+    if (client && onEditClient) {
+      onEditClient(client);
+    }
+  };
+
+  const handleArchiveClick = async (clientId) => {
+    showConfirm(
+      "Proceed to archive this client?",
+      "Archive Client",
+      async () => {
+        try {
+          await archiveClient(clientId);
+          showAlert("Client archived successfully!", "Success", loadClientsData);
+        } catch (error) {
+          console.error("Error archiving client:", error);
+          showAlert("Failed to archive client. Please try again.", "Error");
+        }
+      }
+    );
   };
 
   const handleNotificationClick = (client) => {
@@ -68,12 +125,12 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
         notification_allowed_email: emailEnabled,
       });
       
-      alert("Notification preferences updated successfully!");
-      await loadClientsData();
       setShowNotificationModal(false);
+      showAlert("Notification preferences updated successfully!", "Success", loadClientsData);
+      
     } catch (error) {
       console.error("Error updating notification preferences:", error);
-      alert("Failed to update notification preferences.");
+      showAlert("Failed to update notification preferences.", "Error");
     } finally {
       setSaving(false);
     }
@@ -97,16 +154,14 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
     return `(${allClientsCount})`;
   };
 
-  // MODIFIED: Helper function to format address with Region and Zip Code
+  // Helper function to format address with Region and Zip Code
   const formatAddress = (client) => {
     const parts = [];
     
-    // Part 1: Street Address
     if (client.address) {
       parts.push(client.address);
     }
     
-    // Part 2: Barangay, City
     const line2Parts = [];
     if (client.barangay_address) line2Parts.push(client.barangay_address);
     if (client.city_address) line2Parts.push(client.city_address);
@@ -114,15 +169,14 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
       parts.push(line2Parts.join(", "));
     }
     
-    // Part 3: Province, Region, Zip Code
     const line3Parts = [];
     if (client.province_address) {
       line3Parts.push(client.province_address);
     }
-    if (client.region_address) { // ADDED
+    if (client.region_address) {
       line3Parts.push(client.region_address);
     }
-    if (client.zip_code) { // ADDED
+    if (client.zip_code) {
       line3Parts.push(client.zip_code);
     }
     if (line3Parts.length > 0) {
@@ -152,6 +206,23 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
 
   return (
     <>
+      {/* Custom Alert Modal */}
+      <CustomAlertModal
+        isOpen={alertModal.isOpen}
+        onClose={closeAlert}
+        message={alertModal.message}
+        title={alertModal.title}
+      />
+
+      {/* Custom Confirm Modal */}
+      <CustomConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirm}
+        onConfirm={handleConfirm}
+        message={confirmModal.message}
+        title={confirmModal.title}
+      />
+
       <div className="client-table-container">
         <div className="client-table-header">
           <h2>Active Clients {getHeaderCount()}</h2>
@@ -220,7 +291,6 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
                           .join(" ")}
                       </td>
                       <td>{client.employee?.personnel_Name || "Unknown"}</td>
-                      {/* MODIFIED: This now uses the updated function */}
                       <td>{formatAddress(client)}</td>
                       <td>{client.phone_Number}</td>
                       <td>{client.email}</td>
@@ -230,9 +300,7 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
                           title="Edit this client"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if(client){
-                              onEditClient(client);
-                            }
+                            handleEditClick(client);
                           }}
                         >
                           <FaEdit /> Edit
@@ -368,7 +436,7 @@ export default function ClientTable({ agentId, allClientsCount, agentsWithClient
 
               {!smsEnabled && !emailEnabled && (
                 <div className="notification-warning">
-                  Warning: Client will not receive any policy updates if both notifications are disabled.
+                   Warning: Client will not receive any policy updates if both notifications are disabled.
                 </div>
               )}
             </div>
