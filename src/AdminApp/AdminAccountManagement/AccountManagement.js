@@ -141,29 +141,34 @@ export default function AccountManagement() {
       return;
     }
 
+    // Password check logic
     if (!editingAccount && !password) {
       showGlobalAlert("Password is required for new accounts.");
       logEvent("Missing password for new account");
       return;
     }
+    
+    // Check password complexity only if a password is provided
+    if (password) {
+        if (password.length < 10) {
+            showGlobalAlert("Password must be at least 10 characters long.");
+            logEvent("Password length too short");
+            return;
+        }
 
-      if (password && password.length < 10) {
-      showGlobalAlert("Password must be at least 10 characters long.");
-      logEvent("Password length too short");
-      return;
+        const passRegex = new RegExp(
+            "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"|<>?,./`~])"
+        );
+
+        if (!passRegex.test(password)) {
+            showGlobalAlert(
+                "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character."
+            );
+            logEvent("Password failed complexity check");
+            return;
+        }
     }
 
-    const passRegex = new RegExp(
-      "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"|<>?,./`~])"
-    );
-
-    if (!passRegex.test(password)) {
-      showGlobalAlert(
-        "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character."
-      );
-      logEvent("Password failed complexity check");
-      return;
-    }
 
     // Prepare form data with role
     const accountData = {
@@ -232,6 +237,7 @@ export default function AccountManagement() {
       roleId: acc.role_id || "", // Load existing role
     });
 
+    // When clicking edit, email and password fields start locked regardless of user role
     setEmailLocked(true);
     setPasswordLocked(true);
     setActiveTab("add");
@@ -348,15 +354,38 @@ export default function AccountManagement() {
             <form className="add-account-form" onSubmit={handleSubmit}>
               <div>
                 <label>First Name *</label>
-                <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required />
+                <input 
+                  type="text" 
+                  name="firstName" 
+                  value={formData.firstName} 
+                  onChange={handleChange} 
+                  required
+                  // MODIFIED: Lock name field if editing and current user is not Admin
+                  disabled={editingAccount && !currentUser?.isAdmin}
+                />
               </div>
               <div>
                 <label>Middle Name</label>
-                <input type="text" name="middleName" value={formData.middleName} onChange={handleChange} />
+                <input 
+                  type="text" 
+                  name="middleName" 
+                  value={formData.middleName} 
+                  onChange={handleChange}
+                  // MODIFIED: Lock name field if editing and current user is not Admin
+                  disabled={editingAccount && !currentUser?.isAdmin}
+                />
               </div>
               <div>
                 <label>Last Name *</label>
-                <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required />
+                <input 
+                  type="text" 
+                  name="lastName" 
+                  value={formData.lastName} 
+                  onChange={handleChange} 
+                  required
+                  // MODIFIED: Lock name field if editing and current user is not Admin
+                  disabled={editingAccount && !currentUser?.isAdmin}
+                />
               </div>
               <label>Email *</label>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -366,16 +395,19 @@ export default function AccountManagement() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  disabled={editingAccount && emailLocked}
+                  // MODIFIED: Lock email field if editing AND current user is not Admin (or if locked for Admin)
+                  disabled={editingAccount && (emailLocked || !currentUser?.isAdmin)}
                   style={{ flex: 1 }}
                 />
-                {editingAccount && (
+                {editingAccount && currentUser?.isAdmin && ( // Only Admins see the unlock button
                   <button type="button" onClick={() => setEmailLocked(!emailLocked)}>
                     {emailLocked ? "Unlock" : "Lock"}
                   </button>
                 )}
               </div>
-              <div>
+              
+              {/* PASSWORD FIELD - REMAINS EDITABLE/UNLOCKED FOR MODERATOR */}
+              <div> 
                 <label>{editingAccount ? "New Password" : "Password *"}</label>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <input
@@ -385,36 +417,45 @@ export default function AccountManagement() {
                     onChange={handleChange}
                     required={!editingAccount}
                     style={{ flex: 1 }}
+                    // Password field is never disabled, allowing mods to change it.
                   />
-                  {editingAccount && (
+                  {/* Show/Hide button for the password text input */}
+                  {editingAccount && ( 
                     <button type="button" onClick={() => setPasswordLocked(!passwordLocked)}>
-                      {passwordLocked ? "Unlock" : "Lock"}
+                      {passwordLocked ? "Show" : "Hide"}
                     </button>
                   )}
                 </div>
               </div>
-              <div>
-                <label>Employee Role</label>
-                <select name="roleId" value={formData.roleId} onChange={handleChange}>
-                  <option value="">Select a role...</option>
-                  {roles.map(role => (
-                    <option key={role.id} value={role.id}>
-                      {role.role_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label>Account Status</label>
-                <select name="accountStatus" value={formData.accountStatus} onChange={handleChange}>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-              <div>
-                <label>Administrative Rights</label>
-                <input type="checkbox" name="isAdmin" checked={formData.isAdmin} onChange={handleChange} />
-              </div>
+
+              {/* ROLE, STATUS, AND ADMIN RIGHTS - RESTRICTED TO ADMINS */}
+              {currentUser?.isAdmin && (
+                <>
+                  <div>
+                    <label>Employee Role</label>
+                    <select name="roleId" value={formData.roleId} onChange={handleChange}>
+                      <option value="">Select a role...</option>
+                      {roles.map(role => (
+                        <option key={role.id} value={role.id}>
+                          {role.role_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label>Account Status</label>
+                    <select name="accountStatus" value={formData.accountStatus} onChange={handleChange}>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label>Administrative Rights</label>
+                    <input type="checkbox" name="isAdmin" checked={formData.isAdmin} onChange={handleChange} />
+                  </div>
+                </>
+              )}
+              
               <button type="submit" className="btn-add-account-submit">
                 {editingAccount ? "Update Account" : "Create Account"}
               </button>

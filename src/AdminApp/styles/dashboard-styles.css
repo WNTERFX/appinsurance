@@ -38,8 +38,8 @@
 .dashboard-title-container {
   display: flex;
   flex-direction: column;
-  justify-content: center; /* centers text vertically within header */
-  height: 100%; /* fills the entire header height */
+  justify-content: center;
+  height: 100%;
 }
 
 .dashboard-title {
@@ -63,7 +63,6 @@
   gap: 12px;
 }
 
-/* ✅ Optional tweak: make search and profile vertically aligned */
 .Dashboard-search {
   padding: 8px 14px;
   font-size: 15px;
@@ -151,12 +150,12 @@
 
 .dashboard-content {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 equal columns */
+  grid-template-columns: repeat(4, 1fr);
   gap: 18px;
   margin-top: 20px;
 }
 
-/* Top 4 small metric cards (outer wrapper) */
+/* Top 4 small metric cards */
 .active-clients,
 .active-policy,
 .delivered-policy,
@@ -164,9 +163,9 @@
   background: #fff;
   border-radius: 8px;
   box-shadow: 2px 2px 10px rgba(0,0,0,0.08);
-  border-left: 6px solid transparent; /* colored per-card below */
-  min-height:200px;                   /* gives room for top + bottom spacing */
-  display: flex;                       /* make child stretch to full height */
+  border-left: 6px solid transparent;
+  min-height:200px;
+  display: flex;
   align-items: stretch;
   cursor: pointer;
   transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
@@ -179,34 +178,32 @@
   font-size: 20px;
 }
 
-/* inner container - where we pin header to top and value to bottom */
 .active-clients .active-clients-data,
 .active-policy .active-policy-data,
 .delivered-policy .delivered-policy-data,
 .payment .payment-data {
   width: 100%;
-  padding: 18px 20px;        /* change padding safely here */
+  padding: 18px 20px;
   display: flex;
-  flex-direction: column;    /* stack h2 / p vertically */
-  justify-content: space-between; /* pushes h2 to top, p to bottom */
-  height: 100%;              /* stretch to parent's min-height */
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
   box-sizing: border-box;
 }
 
-/* accent colors (left thick border) */
-.active-clients { border-left-color: #7B5F97; }     /* violet */
-.active-policy { border-left-color: #4b0082; }        /* indigo */
-.delivered-policy { border-left-color: #f5a623; } /* orange */
-.payment { border-left-color: #28a745; }   /* green */
+/* accent colors */
+.active-clients { border-left-color: #7B5F97; }
+.active-policy { border-left-color: #4b0082; }
+.delivered-policy { border-left-color: #f5a623; }
+.payment { border-left-color: #28a745; }
 
-/* headings & numbers — no margin surprises */
 .active-clients h2, .active-policy h2, .delivered-policy h2, .payment h2 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
   color: #333;
   line-height: 1.1;
-    display: flex;
+  display: flex;
   align-items: center;
   gap: 8px;
 }
@@ -216,10 +213,8 @@
   font-size: 28px;
   font-weight: 700;
   color: #222;
-  /* if you want bottom-left indentation, use padding on the inner container instead */
 }
 
-/* Hover effect */
 .active-clients:hover,
 .active-policy:hover,
 .delivered-policy:hover,
@@ -229,8 +224,7 @@
   background-color: #EFF6FF;
 }
 
-/* ---------- Bottom row: Monthly Data (wider) + Pending Claims (smaller) ---------- */
-/* Ensure parent grid has 4 columns; monthly takes more columns than pending */
+/* Monthly Data */
 .monthly-data {
   grid-column: span 3;
   min-height: 540px;
@@ -240,87 +234,165 @@
   border-left: 6px solid #4b0082;
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* ⬅ pushes header up, chart down */
+  justify-content: space-between;
 }
 
 .monthly-data-chart {
   flex-grow: 1;
   display: flex;
   align-items: flex-end;
-  width: 100%;          /* ✅ ensures it stays inside parent */
-  overflow: hidden;     /* ✅ hides any accidental overflow */
+  width: 100%;
+  overflow: hidden;
 }
 
 .monthly-data-chart canvas {
-  max-width: 100% !important; /* ✅ prevents overflow */
+  max-width: 100% !important;
   height: auto !important;
 }
 
+/* Pending Claims */
 .pending-claims {
   grid-column: span 1;
   min-height: 540px;
-  padding: 10px 25px 25px 25px; /* ⬅ Reduced top padding */
+  padding: 20px;
   border-radius: 8px;
   background: #fff;
   border-left: 6px solid #f5a623;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* ⬅ align content to top */
-  align-items: flex-start;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-/* Monthly / Pending heading styles */
+.pending-claims-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 20px; /* Space between title and button */
+  padding-top: 4px; /* Move header slightly higher */
+}
+
+.pending-claims-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+/* View All Claims Button */
+.view-all-claims-btn {
+  background-color: #fff;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+.view-all-claims-btn:hover {
+  background-color: #EFF6FF;
+  color: #000000;
+  border-color: #EFF6FF;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(245, 166, 35, 0.3);
+}
+
+.pending-claims-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.no-claims-message {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  padding: 20px;
+}
+
+.claim-item {
+  background: #f9f9f9;
+  border-radius: 6px;
+  padding: 12px;
+  border-left: 3px solid #f5a623;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.claim-item:hover {
+  background-color: #f0f0f0;
+}
+
+.claim-info {
+  flex: 1;
+}
+
+.claim-policy-id {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.claim-policy-holder {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.claim-status-badge {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 .monthly-data h2,
 .pending-claims h2 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-   line-height: 1.1;
+  line-height: 1.1;
   color: #333;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-/* Responsive: stack on small screens */
-@media (max-width: 1024px) {
-  .dashboard-content {
-    grid-template-columns: 1fr; /* single column stack */
-  }
-
-  .monthly-data,
-  .pending-claims {
-    grid-column: span 1;
-    min-height: 260px;
-  }
-}
-
-/*        fgfg                      */
-
-/* ---------- Monthly Data Header ---------- */
+/* Monthly Data Header */
 .monthly-data-header {
-  flex-shrink: 0; /* keep header fixed height */
+  flex-shrink: 0;
 }
 
-
-
-/* Legend container styled like in the picture */
 .partner-container {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 5px;
-  padding: 4px 0 10px 0;     /* ⬅ add bottom padding for scrollbar space */
+  padding: 4px 0 10px 0;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
-
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
-  scrollbar-width: thin;      /* for Firefox */
+  scrollbar-width: thin;
 }
 
-/* Optional: subtle custom scrollbar */
 .partner-container::-webkit-scrollbar {
   height: 6px;
 }
@@ -330,7 +402,7 @@
 }
 .partner-container::-webkit-scrollbar-track {
   background: transparent;
-  margin-top: 2px;           /* ⬅ adds a little gap between chips & scrollbar */
+  margin-top: 2px;
 }
 
 .partner {
@@ -341,7 +413,6 @@
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-
 }
 
 .partner::before {
@@ -357,49 +428,15 @@
 .partner.stronghold::before { background-color: #443C9E; }
 .partner.cocogen::before { background-color: #A58AC8; }
 
-/* ---------- Pending Claims Header ---------- */
-.pending-claims-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0;               /* ⬅ remove gap */
-  width: 100%;             /* ⬅ span entire box */
-}
-
-.pending-claims-header h2 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-/* Button styled exactly like in image */
-.view-claims-btn {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  transition: all 0.2s ease;
-}
-
-.view-claims-btn:hover {
-  background-color: #f5f5f5;
-}
-
-/* Pending payments list */
+/* Due Payments List - Added left border */
 .due-payments-list {
-  grid-column: span 4; /* full width under chart */
+  grid-column: span 4;
   background: #fff;
   border-radius: 8px;
   padding: 20px;
-  margin-top: 20px;
+  margin-top: 1px;
   box-shadow: 2px 2px 10px rgba(0,0,0,0.08);
+  border-left: 6px solid #CD402F; /* Red left border */
 }
 
 .due-payments-list h2 {
@@ -409,6 +446,7 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 16px;
+  margin-top: 1px;
 }
 
 .due-payments-list table {
@@ -433,12 +471,11 @@
 }
 
 .scrollable-table {
-  max-height: 300px; /* set the height you want */
+  max-height: 300px;
   overflow-y: auto;
-  overflow-x: hidden; /* optional if table fits horizontally */
+  overflow-x: hidden;
 }
 
-/* Optional: fix header while scrolling */
 .scrollable-table table {
   width: 100%;
   border-collapse: collapse;
@@ -447,19 +484,30 @@
 .scrollable-table thead tr {
   position: sticky;
   top: 0;
-  background-color: #fff; /* match the card background */
+  background-color: #fff;
   z-index: 10;
-  box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1); /* subtle shadow for distinction */
+  box-shadow: 0 2px 2px -1px rgba(0,0,0,0.1);
 }
 
-/* ---------- Responsive ---------- */
+/* Responsive */
 @media (max-width: 1024px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+  }
+
+  .monthly-data,
+  .pending-claims {
+    grid-column: span 1;
+    min-height: 260px;
+  }
+  
   .monthly-data-header,
   .pending-claims-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
+  
   .partner-container {
     flex-wrap: wrap;
     justify-content: flex-start;
