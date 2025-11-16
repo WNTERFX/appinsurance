@@ -12,9 +12,6 @@ export default function LoginForm({ anotherLoginDetected }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   
-  
-  
-  
   // Add alert state
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState("");
@@ -40,13 +37,18 @@ export default function LoginForm({ anotherLoginDetected }) {
     setAlertType("");
   };
 
-
   const handleLogin = async (e) => {
     e.preventDefault();
     
     // Clear any existing alerts
     setAlertMessage("");
     setAlertType("");
+    
+    // ✅ Check if fields are empty
+    if (!email.trim() || !password.trim()) {
+      showAlert("Login failed: Invalid login credentials", "error");
+      return;
+    }
     
     const result = await loginFunction(email, password);
     
@@ -103,7 +105,7 @@ export default function LoginForm({ anotherLoginDetected }) {
             placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
+            // ✅ Removed required attribute to allow custom validation
           />
           
           <label>Password</label>
@@ -113,7 +115,7 @@ export default function LoginForm({ anotherLoginDetected }) {
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              // ✅ Removed required attribute to allow custom validation
             />
             <span onClick={togglePassword} className="eye-icon">
               {passwordVisible ? <FaEyeSlash /> : <FaEye />}

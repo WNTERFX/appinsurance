@@ -172,12 +172,13 @@ export default function PartnersTab({ controller }) {
                     >
                       Edit
                     </button>
-                    <button
+                    
+                    {/*<button
                       onClick={() => controller.handleDeletePartner(partner.id)}
                       className="admin-controller-btn admin-controller-btn-delete"
                     >
                       Delete
-                    </button>
+                    </button>*/}
                   </td>
                 </tr>
               ))
