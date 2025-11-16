@@ -266,7 +266,7 @@ export default function PaymentModesTab() {
                 >
                   Edit
                 </button>
-                <button
+               {/* <button
                   onClick={() => handleDelete(mode.id)}
                   // 2. Add disabled prop based on usage_count
                   disabled={mode.usage_count > 0}
@@ -288,7 +288,7 @@ export default function PaymentModesTab() {
                   }}
                 >
                   Delete
-                </button>
+                </button>*/}
               </td>
             </tr>
           ))}

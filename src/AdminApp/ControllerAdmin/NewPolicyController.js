@@ -32,7 +32,12 @@ export default function NewPolicyController() {
   // -----------------------------------
   // Modal states
   // -----------------------------------
-  const [alertModal, setAlertModal] = useState({ isOpen: false, message: "", title: "Alert" });
+  const [alertModal, setAlertModal] = useState({ 
+    isOpen: false, 
+    message: "", 
+    title: "Alert",
+    onCloseCallback: null // Add callback for when modal closes
+  });
 
   // -----------------------------------
   // Lookup data
@@ -95,9 +100,25 @@ export default function NewPolicyController() {
 
   const safeNumber = (v) => isNaN(Number(v)) ? 0 : Number(v);
 
-  // Helper function to show alert
-  const showAlert = (message, title = "Alert") => {
-    setAlertModal({ isOpen: true, message, title });
+  // Helper function to show alert with optional callback
+  const showAlert = (message, title = "Alert", onCloseCallback = null) => {
+    setAlertModal({ 
+      isOpen: true, 
+      message, 
+      title,
+      onCloseCallback 
+    });
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    const callback = alertModal.onCloseCallback;
+    setAlertModal({ isOpen: false, message: "", title: "Alert", onCloseCallback: null });
+    
+    // Execute callback if it exists
+    if (callback && typeof callback === 'function') {
+      callback();
+    }
   };
 
   // -----------------------------------
@@ -281,11 +302,14 @@ export default function NewPolicyController() {
       return;
     }
 
-    showAlert("Policy created successfully!", "Success");
-    // Navigate after user closes the success modal
-    setTimeout(() => {
-      navigate("/appinsurance/main-app/policy");
-    }, 1500);
+    // ✅ Show success modal with callback to navigate when user clicks OK
+    showAlert(
+      "Policy created successfully!", 
+      "Success",
+      () => {
+        navigate("/appinsurance/main-app/policy");
+      }
+    );
   };
 
   // -----------------------------------
@@ -354,7 +378,7 @@ export default function NewPolicyController() {
       
       <CustomAlertModal
         isOpen={alertModal.isOpen}
-        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        onClose={handleModalClose}
         message={alertModal.message}
         title={alertModal.title}
       />

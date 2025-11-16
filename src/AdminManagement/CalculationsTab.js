@@ -208,12 +208,12 @@ export default function CalculationsTab({ controller }) {
                     >
                       Edit
                     </button>
-                    <button
+                    {/*<button
                       onClick={() => controller.handleDeleteCalc(calc.id)}
                       className="admin-controller-btn admin-controller-btn-delete"
                     >
                       Delete
-                    </button>
+                    </button>*/}
                   </td>
                 </tr>
               ))

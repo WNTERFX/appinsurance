@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import ClaimsArchiveController from "./TableController/ClaimsArchiveController";
+import CustomConfirmModal from "../AdminForms/CustomConfirmModal";
 import "../styles/claims-table-styles.css";
 
 export default function ClaimsArchiveTable() {
@@ -16,6 +17,34 @@ export default function ClaimsArchiveTable() {
     rowsPerPage,
     setRowsPerPage,
   } = ClaimsArchiveController();
+
+  // Confirm modal state
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    message: "",
+    title: "Confirm",
+    onConfirm: null
+  });
+
+  // Handle unarchive with modal
+  const handleUnarchiveClick = (claimId) => {
+    setConfirmModal({
+      isOpen: true,
+      message: "Proceed to unarchive this claim?",
+      title: "Unarchive Claim",
+      onConfirm: () => handleUnarchive(claimId)
+    });
+  };
+
+  // Close confirm modal
+  const closeConfirmModal = () => {
+    setConfirmModal({
+      isOpen: false,
+      message: "",
+      title: "Confirm",
+      onConfirm: null
+    });
+  };
 
   return (
     <div className="claims-overview-section">
@@ -100,7 +129,7 @@ export default function ClaimsArchiveTable() {
                 <td className="claim-actions-cell">
                   <button
                     className="edit-claim-btn"
-                    onClick={() => handleUnarchive(claim.id)}
+                    onClick={() => handleUnarchiveClick(claim.id)}
                   >
                     Unarchive
                   </button>
@@ -130,6 +159,15 @@ export default function ClaimsArchiveTable() {
           </button>
         </div>
       )}
+
+      {/* Confirm Modal */}
+      <CustomConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={confirmModal.onConfirm}
+        message={confirmModal.message}
+        title={confirmModal.title}
+      />
     </div>
   );
 }

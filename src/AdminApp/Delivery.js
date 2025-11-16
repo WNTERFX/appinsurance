@@ -10,7 +10,7 @@ import { fetchPolicies } from "./AdminActions/PolicyActions";
 import ProfileMenu from "../ReusableComponents/ProfileMenu";
 import "./styles/delivery-styles.css";
 
-import ClientInfo from "./ClientInfo";
+
 
 export default function Delivery() {
   const [open, setOpen] = useState(false);
@@ -154,10 +154,6 @@ export default function Delivery() {
         </div>
       )}
 
-      <ClientInfo
-        selectedPolicy={selectedPolicyForClientInfo}
-        onClose={() => setSelectedPolicyForClientInfo(null)}
-      />
     </div>
   );
 }

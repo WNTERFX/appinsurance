@@ -149,7 +149,8 @@ body, html {
 }
 .side-bar .side-bar-item.active {
 
-   color: #7B5F97;
+   color: #402158;
+   background-color: #e2d5ef;
 }
 
 .nav-bar.minimize {           /* little side bar*/

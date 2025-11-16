@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ClientInfo from "../ClientInfo";
+import CustomConfirmModal from "../AdminForms/CustomConfirmModal";
 import "../styles/policy-archive-table.css"; 
 
 import { fetchPolicies, unArchivePolicy, deletePolicy } from "../AdminActions/PolicyArchiveActions";
@@ -7,6 +8,14 @@ import { fetchPolicies, unArchivePolicy, deletePolicy } from "../AdminActions/Po
 export default function PolicyArchiveTable() {
   const [policies, setPolicies] = useState([]);
   const [selectedPolicy, setSelectedPolicy] = useState(null);
+
+  // Confirm modal state
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    message: "",
+    title: "Confirm",
+    onConfirm: null
+  });
 
   useEffect(() => {
     loadPolicies();
@@ -29,30 +38,46 @@ export default function PolicyArchiveTable() {
     });
   };
 
-  const handleUnArchive = async (policyId) => {
-    const confirmUnarchive = window.confirm("Un-archive this policy?");
-    if (!confirmUnarchive) return;
-
-    try {
-      await unArchivePolicy(policyId);
-      setPolicies((prev) => prev.filter((p) => p.id !== policyId));
-    } catch (err) {
-      console.error("Error un-archiving policy:", err.message);
-    }
+  const handleUnArchive = (policyId) => {
+    setConfirmModal({
+      isOpen: true,
+      message: "Un-archive this policy?",
+      title: "Un-Archive Policy",
+      onConfirm: async () => {
+        try {
+          await unArchivePolicy(policyId);
+          setPolicies((prev) => prev.filter((p) => p.id !== policyId));
+        } catch (err) {
+          console.error("Error un-archiving policy:", err.message);
+        }
+      }
+    });
   };
 
-  const handleDelete = async (policyId) => {
-    const confirmDelete = window.confirm(
-      "This will permanently delete the policy, this should only be done when needed. Continue?"
-    );
-    if (!confirmDelete) return;
+  const handleDelete = (policyId) => {
+    setConfirmModal({
+      isOpen: true,
+      message: "This will permanently delete the policy, this should only be done when needed. Continue?",
+      title: "Delete Policy",
+      onConfirm: async () => {
+        try {
+          await deletePolicy(policyId);
+          setPolicies((prev) => prev.filter((p) => p.id !== policyId));
+        } catch (err) {
+          console.error("Error deleting policy:", err.message);
+        }
+      }
+    });
+  };
 
-    try {
-      await deletePolicy(policyId);
-      setPolicies((prev) => prev.filter((p) => p.id !== policyId));
-    } catch (err) {
-      console.error("Error deleting policy:", err.message);
-    }
+  // Close confirm modal
+  const closeConfirmModal = () => {
+    setConfirmModal({
+      isOpen: false,
+      message: "",
+      title: "Confirm",
+      onConfirm: null
+    });
   };
 
   return (
@@ -150,14 +175,14 @@ export default function PolicyArchiveTable() {
                         >
                           Un-Archive
                         </button>
-                        <button
+                       {/* <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDelete(policy.id);
                           }}
                         >
                           Delete
-                        </button>
+                        </button>*/}
                       </td>
                     </tr>
                   );
@@ -172,9 +197,19 @@ export default function PolicyArchiveTable() {
         </div>
       </div>
 
+      {/* Client Info Modal */}
       <ClientInfo
         selectedPolicy={selectedPolicy}
         onClose={() => setSelectedPolicy(null)}
+      />
+
+      {/* Confirm Modal */}
+      <CustomConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={confirmModal.onConfirm}
+        message={confirmModal.message}
+        title={confirmModal.title}
       />
     </div>
   );

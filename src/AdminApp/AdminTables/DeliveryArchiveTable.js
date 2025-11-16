@@ -4,6 +4,7 @@ import {
   unarchiveDelivery,
   deleteDelivery,
 } from "../AdminActions/DeliveryArchiveActions"; 
+import CustomConfirmModal from "../AdminForms/CustomConfirmModal";
 import "../styles/delivery-archive-table.css";
 
 export default function DeliveryArchiveTable() {
@@ -12,6 +13,14 @@ export default function DeliveryArchiveTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
+
+  // Confirm modal state
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    message: "",
+    title: "Confirm",
+    onConfirm: null
+  });
 
   // Load archived deliveries
   const loadDeliveries = async () => {
@@ -53,30 +62,46 @@ export default function DeliveryArchiveTable() {
     setSelectedDeliveryID(delivery.uid);
   };
 
-  const handleUnarchiveClick = async (deliveryId) => {
-    const confirmUnarchive = window.confirm("Proceed to unarchive this delivery?");
-    if (!confirmUnarchive) return;
-
-    try {
-      await unarchiveDelivery(deliveryId);
-      setDeliveries((prev) => prev.filter((d) => d.uid !== deliveryId));
-    } catch (error) {
-      console.error("Error unarchiving delivery:", error);
-    }
+  const handleUnarchiveClick = (deliveryId) => {
+    setConfirmModal({
+      isOpen: true,
+      message: "Proceed to unarchive this delivery?",
+      title: "Unarchive Delivery",
+      onConfirm: async () => {
+        try {
+          await unarchiveDelivery(deliveryId);
+          setDeliveries((prev) => prev.filter((d) => d.uid !== deliveryId));
+        } catch (error) {
+          console.error("Error unarchiving delivery:", error);
+        }
+      }
+    });
   };
 
-  const handleDelete = async (deliveryId) => {
-    const confirmDelete = window.confirm(
-      "This will permanently delete the delivery record. Continue?"
-    );
-    if (!confirmDelete) return;
+  const handleDelete = (deliveryId) => {
+    setConfirmModal({
+      isOpen: true,
+      message: "This will permanently delete the delivery record. Continue?",
+      title: "Delete Delivery",
+      onConfirm: async () => {
+        try {
+          await deleteDelivery(deliveryId);
+          setDeliveries((prev) => prev.filter((d) => d.uid !== deliveryId));
+        } catch (err) {
+          console.error("Error deleting delivery:", err.message);
+        }
+      }
+    });
+  };
 
-    try {
-      await deleteDelivery(deliveryId);
-      setDeliveries((prev) => prev.filter((d) => d.uid !== deliveryId));
-    } catch (err) {
-      console.error("Error deleting delivery:", err.message);
-    }
+  // Close confirm modal
+  const closeConfirmModal = () => {
+    setConfirmModal({
+      isOpen: false,
+      message: "",
+      title: "Confirm",
+      onConfirm: null
+    });
   };
 
   return (
@@ -156,14 +181,14 @@ export default function DeliveryArchiveTable() {
                       >
                         Unarchive
                       </button>
-                      <button
+                      {/*<button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDelete(delivery.uid);
                         }}
                       >
                         Delete
-                      </button>
+                      </button>*/}
                     </td>
                   </tr>
                 ))
@@ -195,6 +220,15 @@ export default function DeliveryArchiveTable() {
           Next
         </button>
       </div>
+
+      {/* Confirm Modal */}
+      <CustomConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={confirmModal.onConfirm}
+        message={confirmModal.message}
+        title={confirmModal.title}
+      />
     </div>
   );
 }
