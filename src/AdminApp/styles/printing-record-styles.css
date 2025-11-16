@@ -1,11 +1,12 @@
-/* ====== Modal Overlay ====== */
+/* =========================================================
+   MODAL OVERLAY
+   ========================================================= */
 .printing-record-modal-container {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -13,12 +14,14 @@
   font-family: 'Inter', sans-serif;
 }
 
-/* ====== Modal Box ====== */
+/* =========================================================
+   MODAL BOX
+   ========================================================= */
 .printing-record-modal-content {
-  background-color: #ffffff;
+  background: #ffffff;
   width: 70%;
-  max-width: 1400px; /* wider for ultrawide screens */
-  min-width: 700px;  /* ensures decent size on smaller desktops */
+  max-width: 1400px;
+  min-width: 700px;
   border-radius: 12px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
   display: flex;
@@ -27,9 +30,11 @@
   transition: width 0.3s ease, max-width 0.3s ease;
 }
 
-/* ====== Header ====== */
+/* =========================================================
+   HEADER
+   ========================================================= */
 .printing-record-modal-header {
-  background-color: #1f3c88;
+  background: #1f3c88;
   color: #ffffff;
   padding: 16px 24px;
   font-size: 1.3rem;
@@ -47,21 +52,31 @@
   cursor: pointer;
 }
 
-/* ====== Body ====== */
+/* =========================================================
+   BODY
+   ========================================================= */
 .printing-record-modal-body {
   display: flex;
   padding: 20px;
   gap: 20px;
 }
 
-/* ====== Left Column ====== */
-.printing-record-modal-body .left-column {
+/* Fix flexbox overflow issues */
+.printing-record-modal-body .left-column,
+.printing-record-modal-body .right-column {
+  min-width: 0; /* IMPORTANT for scroll to work */
+}
+
+/* =========================================================
+   LEFT COLUMN
+   ========================================================= */
+.left-column {
   flex: 1;
   border-right: 1px solid #ddd;
   padding-right: 20px;
 }
 
-.printing-record-modal-body .left-column p {
+.left-column p {
   margin-bottom: 12px;
   font-weight: 500;
 }
@@ -82,26 +97,36 @@
 }
 
 .printing-record-selection button:hover {
-  background-color: #f2f5fa;
+  background: #f2f5fa;
 }
 
-/* ====== Right Column ====== */
-.printing-record-modal-body .right-column {
+/* =========================================================
+   RIGHT COLUMN
+   ========================================================= */
+.right-column {
   flex: 2;
   padding-left: 20px;
 }
 
+/* =========================================================
+   TABLE OUTPUT – FIXED FOR HORIZONTAL SCROLL
+   ========================================================= */
 .printing-record-output {
+  display: block;
+  width: 100%;
   max-height: 300px;
-  overflow-y: auto;
+  overflow: auto; /* both x and y scroll */
   border: 1px solid #e0e0e0;
   border-radius: 6px;
-  background-color: #fafafa;
+  background: #fafafa;
   padding: 10px;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
 }
 
 .printing-record-output table {
-  width: 100%;
+  display: inline-table;        /* allows table to exceed width */
+  min-width: max-content;       /* fits contents properly */
   border-collapse: collapse;
   font-size: 0.9rem;
 }
@@ -110,15 +135,18 @@
 .printing-record-output td {
   padding: 8px;
   border-bottom: 1px solid #ddd;
+  white-space: nowrap;          /* makes horizontal scroll appear */
   text-align: left;
 }
 
 .printing-record-output th {
-  background-color: #f2f5fa;
+  background: #f2f5fa;
   font-weight: 600;
 }
 
-/* ====== Footer ====== */
+/* =========================================================
+   FOOTER
+   ========================================================= */
 .printing-record-modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -135,98 +163,65 @@
   font-size: 0.95rem;
 }
 
-.printing-record-modal-footer .btn-cancel {
-  background-color: #ccc;
+.btn-cancel {
+  background: #ccc;
 }
 
-.printing-record-modal-footer .btn-print {
-  background-color: #1f3c88;
-  color: #fff;
+.btn-print {
+  background: #1f3c88;
+  color: white;
 }
 
-.printing-record-modal-footer .btn-print:hover {
-  background-color: #2a4fa5;
+.btn-print:hover {
+  background: #2a4fa5;
 }
 
-/* ====== Font and UI Scaling for Large & Ultrawide Screens ====== */
-
-/* For large monitors (1440px and up) */
+/* =========================================================
+   LARGE SCREEN SCALING
+   ========================================================= */
 @media (min-width: 1440px) {
-  .printing-record-modal-content {
-    font-size: 1.05rem;
-  }
-
-  .printing-record-modal-header {
-    font-size: 1.4rem;
-    padding: 20px 28px;
-  }
-
-  .printing-record-modal-body {
-    padding: 24px;
-    gap: 24px;
-  }
+  .printing-record-modal-content { font-size: 1.05rem; }
+  .printing-record-modal-header { font-size: 1.4rem; padding: 20px 28px; }
+  .printing-record-modal-body { padding: 24px; gap: 24px; }
 
   .printing-record-selection button,
-  .printing-record-selection input,
-  .printing-record-selection select {
-    font-size: 1rem;
-    padding: 10px 12px;
-  }
+  .printing-record-selection input { padding: 10px 12px; font-size: 1rem; }
 
   .printing-record-output th,
-  .printing-record-output td {
-    font-size: 1rem;
-    padding: 10px;
-  }
+  .printing-record-output td { padding: 10px; font-size: 1rem; }
 
-  .printing-record-modal-footer button {
-    font-size: 1rem;
-    padding: 10px 18px;
-  }
+  .printing-record-modal-footer button { padding: 10px 18px; font-size: 1rem; }
 }
 
-/* For ultrawide monitors (2560px and up) */
+/* Ultrawide */
 @media (min-width: 2560px) {
-  .printing-record-modal-content {
-    font-size: 1.15rem;
-  }
+  .printing-record-modal-content { font-size: 1.15rem; }
 
-  .printing-record-modal-header {
-    font-size: 1.6rem;
-    padding: 24px 32px;
-  }
+  .printing-record-modal-header { font-size: 1.6rem; padding: 24px 32px; }
 
   .printing-record-selection button,
-  .printing-record-selection input,
-  .printing-record-selection select {
-    font-size: 1.1rem;
-    padding: 12px 14px;
-  }
+  .printing-record-selection input { padding: 12px 14px; font-size: 1.1rem; }
 
   .printing-record-output th,
-  .printing-record-output td {
-    font-size: 1.05rem;
-    padding: 12px;
-  }
+  .printing-record-output td { padding: 12px; font-size: 1.05rem; }
 
-  .printing-record-modal-footer button {
-    font-size: 1.1rem;
-    padding: 12px 20px;
-  }
+  .printing-record-modal-footer button { padding: 12px 20px; font-size: 1.1rem; }
 }
 
-/* ====== Responsive Adjustments for Modal ====== */
+/* =========================================================
+   RESPONSIVE BEHAVIOR
+   ========================================================= */
 @media (min-width: 1600px) {
   .printing-record-modal-content {
     width: 60%;
-    max-width: 1600px; /* expand even more on ultrawide */
+    max-width: 1600px;
   }
 }
 
 @media (min-width: 2560px) {
   .printing-record-modal-content {
     width: 50%;
-    max-width: 1800px; /* large but still centered */
+    max-width: 1800px;
   }
 }
 
@@ -241,13 +236,15 @@
   .printing-record-modal-body {
     flex-direction: column;
   }
-  .printing-record-modal-body .left-column {
+
+  .left-column {
     border-right: none;
     border-bottom: 1px solid #ddd;
     padding-right: 0;
     padding-bottom: 15px;
   }
-  .printing-record-modal-body .right-column {
+
+  .right-column {
     padding-left: 0;
     padding-top: 15px;
   }

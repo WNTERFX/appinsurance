@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { jsPDF } from "jspdf";
-import { autoTable } from "jspdf-autotable";
+import autoTable from "jspdf-autotable"; // Using direct import for better jspdf-autotable compatibility
 
 import { db } from "../../dbServer";
 import { fetchClients } from "../AdminActions/ClientActions";
@@ -159,7 +159,7 @@ export default function PrintingModal({ recordType, onClose }) {
           data = await fetchAllDues(from, to, selectedEmployee || null);
           break;
         case "payment":
-          data = await fetchPaymentsWithPenalties(selectedEmployee || null);
+          data = await fetchPaymentsWithPenalties(selectedEmployee || null); 
           break;
         case "renewal":
           data = await fetchRenewals(from, to, selectedEmployee || null);
@@ -172,6 +172,9 @@ export default function PrintingModal({ recordType, onClose }) {
           break;
         case "claim":
           data = await fetchClaims(from, to, false, selectedEmployee || null);
+          break;
+        default:
+          data = [];
           break;
       }
 
@@ -249,11 +252,14 @@ export default function PrintingModal({ recordType, onClose }) {
         ]);
         break;
       case "quotation":
-        headers = ["#", "Quote No", "Client Name", "Vehicle", "Partner", "Total Premium", "Created"];
+        // UPDATED HEADERS: Added Contact and Email
+        headers = ["#", "Quote No", "Client Name", "Contact", "Email", "Vehicle", "Partner", "Total Premium", "Created"];
         body = records.map((q, i) => [
           i + 1,
           q.quotation_number || "-",
           q.client_name || `${q.firstName || ""} ${q.lastName || ""}`.trim() || "-",
+          q.client_contact || "-", 
+          q.client_email || "-", 
           q.vehicle_name || `${q.make || ""} ${q.model || ""}`.trim() || "-",
           q.insurance_partner || "-",
           q.total_premium ? `₱${q.total_premium.toLocaleString()}` : "-",
@@ -296,6 +302,10 @@ export default function PrintingModal({ recordType, onClose }) {
             c.created_at ? new Date(c.created_at).toLocaleDateString() : "-",
           ];
         });
+        break;
+      default:
+        headers = [];
+        body = [];
         break;
     }
 
@@ -381,7 +391,7 @@ export default function PrintingModal({ recordType, onClose }) {
                 </div>
               )}
 
-              {["policy", "due", "payment", "client", "renewal", "delivery", "claim"].includes(safeRecordType) && ( // << NEW LINE
+              {["policy", "due", "payment", "client", "renewal", "delivery", "claim"].includes(safeRecordType) && ( 
                 <div>
                   <label>Filter by Employee:</label>
                   <select
@@ -391,7 +401,7 @@ export default function PrintingModal({ recordType, onClose }) {
                     <option value="">All Employees</option>
                     {employees.map((emp) => (
                       <option key={emp.id} value={emp.id}>
-                        {emp.personnel_Name || `${emp.first_name} ${emp.last_name}`}
+                        {emp.personnel_Name || `${emp.first_name || ""} ${emp.last_name || ""}`}
                       </option>
                     ))}
                   </select>
@@ -411,7 +421,9 @@ export default function PrintingModal({ recordType, onClose }) {
                 </>
               )}
 
-              <button onClick={handleFetch}>Fetch Data</button>
+              <button onClick={handleFetch} disabled={isLoading}>
+                {isLoading ? 'Fetching...' : 'Fetch Data'}
+              </button>
             </div>
           </div>
 
