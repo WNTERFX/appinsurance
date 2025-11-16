@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { X, FileText } from 'lucide-react';
 import { getClaimDocumentUrls, updateClaim } from '../AdminActions/ClaimsTableActions';
@@ -32,7 +31,6 @@ function serializeIncidentTypes(arr) {
   return arr.filter(Boolean).join(', ');
 }
 
-const MIN_APPROVED_AMOUNT = 10000;           // ₱10,000
 const MONEY_RE = /^\d*\.?\d{0,2}$/;          // digits + optional '.' + up to 2 decimals
 
 export default function EditClaimsModal({ claim, onClose, onSave }) {
@@ -108,7 +106,7 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  /* ---- Approved Amount: numeric-only (optional '.' up to 2 decimals), 0 invalid, min ₱10,000 ---- */
+  /* ---- Approved Amount: numeric-only (optional '.' up to 2 decimals), cannot be 0 ---- */
   const handleApprovedAmountChange = (e) => {
     const raw = e.target.value.replace(/[^\d.]/g, ''); // strip anything not digit/dot
     if (raw === '' || MONEY_RE.test(raw)) {
@@ -124,8 +122,6 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
         setApprovedAmountError('Enter a valid number.');
       } else if (val === 0) {
         setApprovedAmountError('Approved amount cannot be 0.');
-      } else if (val < MIN_APPROVED_AMOUNT) {
-        setApprovedAmountError(`Approved amount must be at least ₱${MIN_APPROVED_AMOUNT.toLocaleString('en-PH')}.`);
       } else {
         setApprovedAmountError('');
       }
@@ -149,7 +145,7 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
     if (!(text === '' || MONEY_RE.test(text))) e.preventDefault();
   };
 
-  /* ---- Incident type toggles (keep your existing styles/markup) ---- */
+  /* ---- Incident type toggles ---- */
   const toggleIncidentType = (type) => {
     if (isFinalized) return;
     setFormData(prev => {
@@ -168,15 +164,11 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
       return;
     }
 
-    // Validate Approved Amount if present
+    // Validate Approved Amount if present - only check if it's 0
     if (formData.approved_amount !== '') {
       const n = parseFloat(formData.approved_amount);
-      if (!Number.isFinite(n) || n === 0 || n < MIN_APPROVED_AMOUNT) {
-        setError(
-          n === 0
-            ? 'Approved amount cannot be 0.'
-            : `Approved amount must be at least ₱${MIN_APPROVED_AMOUNT.toLocaleString('en-PH')}.`
-        );
+      if (!Number.isFinite(n) || n === 0) {
+        setError('Approved amount cannot be 0.');
         return;
       }
     }
@@ -200,7 +192,7 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
     try {
       await updateClaim(claim.id, updatedData);
       onSave(claim.id, updatedData);
-      onClose(); // success banner removed; just close
+      onClose();
     } catch (err) {
       console.error('Error submitting claim update:', err);
       setError(`Failed to update claim: ${err.message}`);
@@ -208,7 +200,6 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
   };
 
   return (
-    /* Do NOT close when clicking overlay */
     <div className="edit-claims-modal-overlay" role="dialog" aria-modal="true">
       <div className="edit-claims-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="edit-claims-modal-header">
@@ -236,7 +227,6 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
           </div>
 
           <div className="edit-claims-grid">
-            {/* Type of Incident — keep your original label structure/styles */}
             <div className="edit-claims-field edit-claims-type-of-incident">
               <label>Type of Incident:</label>
               <div className="edit-claims-checkboxes">
@@ -282,7 +272,7 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
                 value={formData.incident_date}
                 onChange={handleChange}
                 disabled={isFinalized}
-                max={todayLocal}   /* block future dates */
+                max={todayLocal}
               />
             </div>
 
@@ -303,9 +293,6 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
                   {approvedAmountError}
                 </span>
               )}
-              <span style={{ color: '#6b7280', fontSize: 12, marginTop: 4, display: 'block' }}>
-                Minimum: ₱10,000
-              </span>
             </div>
 
             <div className="edit-claims-field">
@@ -315,7 +302,6 @@ export default function EditClaimsModal({ claim, onClose, onSave }) {
 
             <div className="edit-claims-field edit-claims-full-width">
               <label>Supporting Documents:</label>
-              {/* Only the link is clickable */}
               <div className="edit-claims-documents-list only-links-clickable">
                 {loadingDocs ? (
                   <p className="no-docs">Loading documents...</p>
