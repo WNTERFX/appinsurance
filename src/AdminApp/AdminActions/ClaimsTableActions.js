@@ -90,7 +90,7 @@ export const fetchClaims = async (from = null, to = null, onlyArchived = false, 
     // --- Query for Policies based on client access ---
     let policyQuery = db
       .from("policy_Table")
-      .select("id, client_id, partner_id"); // Ensure partner_id is selected for enrichment
+      .select("id, client_id, partner_id, internal_id"); // Ensure partner_id is selected for enrichment
 
     if (clientUids.length > 0) {
       // If we are filtering by agent (either explicit or moderator self-filter)
