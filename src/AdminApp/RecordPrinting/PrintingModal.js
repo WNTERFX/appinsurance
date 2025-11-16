@@ -171,7 +171,7 @@ export default function PrintingModal({ recordType, onClose }) {
           data = await fetchDeliveries(from, to, selectedEmployee || null);
           break;
         case "claim":
-          data = await fetchClaims(from, to, false);
+          data = await fetchClaims(from, to, false, selectedEmployee || null);
           break;
       }
 
@@ -381,7 +381,7 @@ export default function PrintingModal({ recordType, onClose }) {
                 </div>
               )}
 
-              {["policy", "due", "payment", "client", "renewal", "delivery"].includes(safeRecordType) && (
+              {["policy", "due", "payment", "client", "renewal", "delivery", "claim"].includes(safeRecordType) && ( // << NEW LINE
                 <div>
                   <label>Filter by Employee:</label>
                   <select
