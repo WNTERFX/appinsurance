@@ -259,13 +259,13 @@ export default function CronJobsTab({ controller }) {
                         >
                           {job.enabled ? "Disable" : "Enable"}
                         </button>
-                        <button
+                        {/*<button
                           onClick={() => controller.handleDeleteCron(job.jobId)}
                           className="admin-controller-btn admin-controller-btn-delete"
                           disabled={controller.loadingCron}
                         >
                           Delete
-                        </button>
+                        </button>*/}
                       </td>
                     </tr>
                   ))

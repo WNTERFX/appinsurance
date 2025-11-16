@@ -79,12 +79,12 @@ export default function EmployeeRolesTab({ controller }) {
                     >
                       Edit
                     </button>
-                    <button
+                   {/* <button
                       onClick={() => controller.handleDeleteRole(role.id)}
                       className="admin-controller-btn admin-controller-btn-delete"
                     >
                       Delete
-                    </button>
+                    </button>*/}
                   </td>
                 </tr>
               ))

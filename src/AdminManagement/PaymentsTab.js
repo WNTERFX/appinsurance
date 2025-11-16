@@ -304,7 +304,7 @@ export default function PaymentTypesTab() {
                       Edit
                     </button>
                     {/* 3. Add disabled prop, title, and conditional styles */}
-                    <button
+                   {/* <button
                       onClick={() => handleDelete(paymentType.id)}
                       disabled={paymentType.usage_count > 0}
                       title={
@@ -324,7 +324,7 @@ export default function PaymentTypesTab() {
                       }}
                     >
                       Delete
-                    </button>
+                    </button>*/}
                   </td>
                 </tr>
               ))
