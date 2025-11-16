@@ -73,7 +73,7 @@ export async function deleteAccount(id) {
 
 /**
  * Edit/update an account by ID using Supabase Edge Function
- * This function now sends ALL profile data to the Edge Function for server-side processing.
+ * This function now allows moderators to change their own password.
  */
 export async function editAccount(
   id,
@@ -95,23 +95,58 @@ export async function editAccount(
     // 1️⃣ Get session to authorize the Edge Function call
     const { data: { session } } = await db.auth.getSession();
     
+    // Check if current user is updating their own account
+    const isSelfUpdate = session?.user?.id === id;
+    
+    // Get current user's admin status
+    let currentUserIsAdmin = false;
+    if (session?.user?.id) {
+      const { data: currentUser } = await db
+        .from("employee_Accounts")
+        .select("is_Admin")
+        .eq("id", session.user.id)
+        .single();
+      currentUserIsAdmin = currentUser?.is_Admin || false;
+    }
+    
     // 2️⃣ Prepare the data payload for the Edge Function
     const updatePayload = {
       id,
-      // Employee Profile Fields
-      first_name: firstName,
-      middle_name: middleName,
-      last_name: lastName,
-      employee_email: email, // Always send the email field value from the form
-      // status_Account field conversion to boolean for the database
-      status_Account: accountStatus === 'active', 
-      is_Admin: isAdmin,
-      role_id: roleId || null,
-      
-      // Auth Fields (only sent if unlocked)
-      email_auth: emailLocked ? undefined : email,
-      password_auth: passwordLocked ? undefined : password,
     };
+
+    // For non-admin self-updates, only allow password changes
+    if (isSelfUpdate && !currentUserIsAdmin) {
+      // Only send password if provided
+      if (password) {
+        updatePayload.password_auth = password;
+      }
+    } else {
+      // Admin updating any account - send all fields
+      updatePayload.first_name = firstName;
+      updatePayload.middle_name = middleName;
+      updatePayload.last_name = lastName;
+      updatePayload.employee_email = email;
+      updatePayload.status_Account = accountStatus === 'active';
+      updatePayload.is_Admin = isAdmin;
+      updatePayload.role_id = roleId || null;
+      
+      // Auth fields (only if unlocked)
+      if (!emailLocked && email) {
+        updatePayload.email_auth = email;
+      }
+      if (!passwordLocked && password) {
+        updatePayload.password_auth = password;
+      }
+    }
+    
+    // Remove undefined values from payload
+    Object.keys(updatePayload).forEach(key => {
+      if (updatePayload[key] === undefined) {
+        delete updatePayload[key];
+      }
+    });
+    
+    console.log("📤 Sending payload to Edge Function:", updatePayload);
     
     // 3️⃣ Call the Edge Function
     const response = await fetch(

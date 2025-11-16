@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable"; // Using direct import for better jspdf-autotable compatibility
+import autoTable from "jspdf-autotable";
 
 import { db } from "../../dbServer";
 import { fetchClients } from "../AdminActions/ClientActions";
@@ -227,16 +227,16 @@ export default function PrintingModal({ recordType, onClose }) {
           d.is_paid ? "Paid" : "Unpaid",
         ]);
         break;
-      case "payment":
+     case "payment":
         headers = ["#", "Month", "Payment Date", "Amount", "Paid", "Penalty", "Total Due"];
         body = records.map((p, i) => [
           i + 1,
           `Month ${i + 1}`,
           new Date(p.payment_date).toLocaleDateString(),
-          `₱${p.amount_to_be_paid.toLocaleString()}`,
+          `PHP ${p.amount_to_be_paid.toFixed(2)}`,
           p.is_paid ? "Yes" : "No",
-          `₱${p.totalPenalty.toLocaleString()}`,
-          `₱${p.totalDue.toLocaleString()}`,
+          `PHP ${p.totalPenalty.toFixed(2)}`,
+          `PHP ${p.totalDue.toFixed(2)}`,
         ]);
         break;
       case "renewal":
@@ -252,7 +252,6 @@ export default function PrintingModal({ recordType, onClose }) {
         ]);
         break;
       case "quotation":
-        // UPDATED HEADERS: Added Contact and Email
         headers = ["#", "Quote No", "Client Name", "Contact", "Email", "Vehicle", "Partner", "Total Premium", "Created"];
         body = records.map((q, i) => [
           i + 1,
@@ -342,6 +341,7 @@ export default function PrintingModal({ recordType, onClose }) {
       body,
       startY: 42,
       styles: { fontSize: 8 },
+      font: "courier",
       headStyles: { fillColor: [103, 59, 146] },
     });
 
