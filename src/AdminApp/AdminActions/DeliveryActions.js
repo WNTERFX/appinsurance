@@ -139,14 +139,13 @@ export async function cancelDelivery(deliveryId) {
     })
     .eq("id", deliveryId)
     .eq("status", "Pending")
-    .select()
-    .single();
+    .select();
   
   if (error) {
     console.error("Error canceling delivery:", error.message);
     throw error;
   }
-  return data;
+  return data && data.length > 0 ? data[0] : null;
 }
 
 // ✅ Update Delivery (Edit button in Pending tab)
@@ -155,14 +154,13 @@ export async function updateDelivery(deliveryId, updateData) {
     .from("delivery_Table")
     .update(updateData)
     .eq("id", deliveryId)
-    .select()
-    .single();
+    .select();
   
   if (error) {
     console.error("Error updating delivery:", error.message);
     throw error;
   }
-  return data;
+  return data && data.length > 0 ? data[0] : null;
 }
 
 // ✅ Mark as Scheduled (Move from Pending to Scheduled)
@@ -174,14 +172,13 @@ export async function markAsScheduled(deliveryId) {
       scheduled_date: new Date().toISOString().split("T")[0],
     })
     .eq("id", deliveryId)
-    .select()
-    .single();
+    .select();
   
   if (error) {
     console.error("Error marking as scheduled:", error.message);
     throw error;
   }
-  return data;
+  return data && data.length > 0 ? data[0] : null;
 }
 
 // ✅ Mark as Out for Delivery (Move from Scheduled to Out for Delivery)
@@ -193,14 +190,13 @@ export async function markAsOutForDelivery(deliveryId) {
       out_for_delivery_date: new Date().toISOString().split("T")[0],
     })
     .eq("id", deliveryId)
-    .select()
-    .single();
+    .select();
   
   if (error) {
     console.error("Error marking as out for delivery:", error.message);
     throw error;
   }
-  return data;
+  return data && data.length > 0 ? data[0] : null;
 }
 
 // ✅ Mark as Delivered with Multiple Proof Images
@@ -237,14 +233,13 @@ export async function markAsDelivered(deliveryId, proofImageFiles) {
         proof_of_delivery: JSON.stringify(proofPaths), // Store as JSON array
       })
       .eq("id", deliveryId)
-      .select()
-      .single();
+      .select();
     
     if (error) {
       console.error("Error marking as delivered:", error.message);
       throw error;
     }
-    return data;
+    return data && data.length > 0 ? data[0] : null;
   } catch (error) {
     console.error("Error in markAsDelivered:", error);
     throw error;
@@ -260,14 +255,13 @@ export async function markAsRescheduled(deliveryId) {
       rescheduled_date: new Date().toISOString().split("T")[0],
     })
     .eq("id", deliveryId)
-    .select()
-    .single();
+    .select();
   
   if (error) {
     console.error("Error marking as rescheduled:", error.message);
     throw error;
   }
-  return data;
+  return data && data.length > 0 ? data[0] : null;
 }
 
 // ✅ Reschedule Delivery (Edit in Rescheduled tab, then move back to Scheduled)
@@ -287,17 +281,16 @@ export async function rescheduleDelivery(deliveryId, newEstimatedDate, newAddres
     .from("delivery_Table")
     .update(updateData)
     .eq("id", deliveryId)
-    .select()
-    .single();
+    .select();
   
   if (error) {
     console.error("Error rescheduling delivery:", error.message);
     throw error;
   }
-  return data;
+  return data && data.length > 0 ? data[0] : null;
 }
 
-// ✅ Archive Delivery (only for Delivered status)
+// ✅ Archive Delivery (for Completed status) - FIXED: Removed .single() and updated status check
 export async function archiveDelivery(deliveryId) {
   const { data, error } = await db
     .from("delivery_Table")
@@ -306,15 +299,14 @@ export async function archiveDelivery(deliveryId) {
       archival_date: new Date().toISOString().split("T")[0],
     })
     .eq("id", deliveryId)
-    .eq("status", "Delivered")
-    .select()
-    .single();
+    .eq("status", "Completed")  // ✅ Changed from "Delivered" to "Completed"
+    .select();
   
   if (error) {
     console.error("Error archiving delivery:", error.message);
     throw error;
   }
-  return data;
+  return data && data.length > 0 ? data[0] : null;
 }
 
 // ✅ Get Proof of Delivery URLs (handle multiple images)

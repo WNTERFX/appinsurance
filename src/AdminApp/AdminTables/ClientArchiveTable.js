@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchArchivedClients, unarchiveClient, deleteClient } from "../AdminActions/ClientArchiveActions";
 import ClientInfo from "../ClientInfo";
+import CustomConfirmModal from "../AdminForms/CustomConfirmModal";
 import "../styles/client-archive-table.css";
 
 export default function ClientArchiveTable() {
@@ -9,6 +10,14 @@ export default function ClientArchiveTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(15);
+
+  // Confirm modal state
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    message: "",
+    title: "Confirm",
+    onConfirm: null
+  });
 
   // Fetch archived clients
   const loadClients = async () => {
@@ -48,25 +57,47 @@ export default function ClientArchiveTable() {
   const handleRowClick = (client) => setSelectedClientID(client.uid);
 
   // Unarchive client
-  const handleUnarchiveClick = async (clientId) => {
-    if (!window.confirm("Proceed to unarchive this client?")) return;
-    try {
-      await unarchiveClient(clientId);
-      setClients((prev) => prev.filter((c) => c.uid !== clientId));
-    } catch (error) {
-      console.error("Error unarchiving client:", error);
-    }
+  const handleUnarchiveClick = (clientId) => {
+    setConfirmModal({
+      isOpen: true,
+      message: "Proceed to unarchive this client?",
+      title: "Unarchive Client",
+      onConfirm: async () => {
+        try {
+          await unarchiveClient(clientId);
+          setClients((prev) => prev.filter((c) => c.uid !== clientId));
+        } catch (error) {
+          console.error("Error unarchiving client:", error);
+        }
+      }
+    });
   };
 
   // Delete client
-  const handleDeleteClick = async (clientId) => {
-    if (!window.confirm("This will permanently delete the client. Continue?")) return;
-    try {
-      await deleteClient(clientId);
-      setClients((prev) => prev.filter((c) => c.uid !== clientId));
-    } catch (error) {
-      console.error("Error deleting client:", error);
-    }
+  const handleDeleteClick = (clientId) => {
+    setConfirmModal({
+      isOpen: true,
+      message: "This will permanently delete the client. Continue?",
+      title: "Delete Client",
+      onConfirm: async () => {
+        try {
+          await deleteClient(clientId);
+          setClients((prev) => prev.filter((c) => c.uid !== clientId));
+        } catch (error) {
+          console.error("Error deleting client:", error);
+        }
+      }
+    });
+  };
+
+  // Close confirm modal
+  const closeConfirmModal = () => {
+    setConfirmModal({
+      isOpen: false,
+      message: "",
+      title: "Confirm",
+      onConfirm: null
+    });
   };
 
   return (
@@ -150,9 +181,9 @@ export default function ClientArchiveTable() {
                         <button onClick={(e) => { e.stopPropagation(); handleUnarchiveClick(client.uid); }}>
                           Unarchive
                         </button>
-                        <button onClick={(e) => { e.stopPropagation(); handleDeleteClick(client.uid); }}>
+                        {/*<button onClick={(e) => { e.stopPropagation(); handleDeleteClick(client.uid); }}>
                           Delete
-                        </button>
+                        </button>*/}
                       </td>
                     </tr>
                   );
@@ -176,10 +207,19 @@ export default function ClientArchiveTable() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* Client Info Modal */}
       {selectedClientID && (
         <ClientInfo clientID={selectedClientID} onClose={() => setSelectedClientID(null)} />
       )}
+
+      {/* Confirm Modal */}
+      <CustomConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={closeConfirmModal}
+        onConfirm={confirmModal.onConfirm}
+        message={confirmModal.message}
+        title={confirmModal.title}
+      />
     </div>
   );
 }

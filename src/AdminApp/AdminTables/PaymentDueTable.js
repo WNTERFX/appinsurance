@@ -1,4 +1,3 @@
-
 import PaymentGenerationModal from "../PaymentGenerationModal";
 import "../styles/payment-table-styles.css";
 import PaymentDueController from "./TableController/PaymentDueController"
@@ -9,11 +8,9 @@ export default function PolicyWithPaymentsList() {
 
  
   const calculateDailyPenalty = (baseAmount, daysOverdue) => {
-    const ratePerDay = 0.01; // or whatever logic you used before
+    const ratePerDay = 0.01;
     return baseAmount * ratePerDay * daysOverdue;
   };
-
-  // if you have renderPoliciesList() inside controller, rename to renderPolicies
 
   const {
     // --- Core data ---
@@ -41,7 +38,6 @@ export default function PolicyWithPaymentsList() {
     //search
     searchTerm,
     setSearchTerm,
-
 
     // --- Pagination & filtering ---
     totalPoliciesCount,
@@ -121,7 +117,6 @@ export default function PolicyWithPaymentsList() {
     hasPenaltyForToday,
     getPaymentStatus,
 
-
     //reciept payment attachments
     receiptModalOpen,
     setReceiptModalOpen,
@@ -149,15 +144,23 @@ export default function PolicyWithPaymentsList() {
     // --- UI state ---
     isLoading,
     setIsLoading,
-  } = PaymentDueController ();
+
+    // ✅ ADD: Custom modal exports
+    alertModal,
+    confirmModal,
+    closeAlert,
+    closeConfirm,
+    CustomAlertModal,
+    CustomConfirmModal
+  } = PaymentDueController();
 
    const renderPolicies = renderPoliciesList || [];
 
 
   return (
     <div className="payments-overview-section">
-          {/* PAYMENT MODAL */}
-        {modalOpen && currentPayment && (
+      {/* PAYMENT MODAL */}
+      {modalOpen && currentPayment && (
         <div className="payment-modal-backdrop">
           <div className="payment-modal">
             <h3>Enter Payment</h3>
@@ -351,7 +354,7 @@ export default function PolicyWithPaymentsList() {
         </div>
       )}
 
-      {/* ✅ ADD: DELETE CONFIRMATION MODAL */}
+      {/* DELETE CONFIRMATION MODAL */}
       {deleteModalOpen && selectedPaymentForDelete && (
         <div className="payment-modal-backdrop">
           <div className="payment-modal">
@@ -385,216 +388,216 @@ export default function PolicyWithPaymentsList() {
         </div>
       )}
 
-         {/* UPDATE PAYMENT AMOUNT MODAL */}
-              {updateModalOpen && paymentToUpdate && (
-                <div className="payment-modal-backdrop">
-                  <div className="payment-modal">
-                    <h3>Update Payment Amount</h3>
-                    
-                    <div style={{ 
-                      backgroundColor: '#fff3cd', 
-                      padding: '12px', 
-                      borderRadius: '8px', 
-                      marginBottom: '16px',
-                      border: '1px solid #ffc107'
-                    }}>
-                      <p style={{ margin: 0, fontSize: '0.9em', color: '#856404' }}>
-                        <strong>Note:</strong> Updating the amount will automatically recalculate any existing penalties based on the new amount.
-                      </p>
-                    </div>
-                    
-                    <div style={{
-                      backgroundColor: '#f8f9fa',
-                      padding: '12px',
-                      borderRadius: '6px',
-                      marginBottom: '16px',
-                      border: '1px solid #dee2e6'
-                    }}>
-                      <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
-                        <strong>Payment Date:</strong> {new Date(paymentToUpdate.payment_date).toLocaleDateString('en-US', { 
-                          month: 'long', 
-                          day: 'numeric', 
-                          year: 'numeric' 
-                        })}
-                      </p>
-                      <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
-                        <strong>Current Amount:</strong> {paymentToUpdate.amount_to_be_paid?.toLocaleString(undefined, { 
-                          style: "currency", 
-                          currency: "PHP" 
-                        })}
-                      </p>
-                      {paymentToUpdate.penalties && paymentToUpdate.penalties.length > 0 && (
-                        <p style={{ margin: '0', fontSize: '0.9em', color: '#dc3545' }}>
-                          <strong>Current Penalties:</strong> {calculateTotalPenalties(paymentToUpdate).toLocaleString(undefined, { 
-                            style: "currency", 
-                            currency: "PHP" 
-                          })} ({paymentToUpdate.penalties.length} penalty/penalties)
-                        </p>
-                      )}
-                    </div>
-
-                    <div style={{ marginBottom: '16px' }}>
-                      <label style={{ 
-                        display: 'block', 
-                        marginBottom: '8px', 
-                        fontWeight: '600',
-                        fontSize: '0.9em'
-                      }}>
-                        New Payment Amount: <span style={{ color: 'red' }}>*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={updateAmountInput}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === '' || /^\d*(,\d{3})*(\.\d*)?$/.test(value)) {
-                            setUpdateAmountInput(value);
-                          }
-                        }}
-                        placeholder="Enter new amount"
-                        style={{
-                          width: '100%',
-                          padding: '10px',
-                          fontSize: '1.1em',
-                          border: '2px solid #ced4da',
-                          borderRadius: '4px',
-                          backgroundColor: 'white'
-                        }}
-                      />
-                      <small style={{ 
-                        display: 'block', 
-                        marginTop: '4px', 
-                        color: '#6c757d',
-                        fontSize: '0.85em'
-                      }}>
-                        Enter the corrected payment amount (e.g., 22000 instead of 12000)
-                      </small>
-                    </div>
-
-                    <div className="modal-actions">
-                      <button onClick={handleUpdatePaymentAmount}>Update Amount</button>
-                      <button onClick={() => {
-                        setUpdateModalOpen(false);
-                        setPaymentToUpdate(null);
-                        setUpdateAmountInput("");
-                      }}>Cancel</button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-      {/* EDIT PAYMENT MODAL */}
-        {editModalOpen && paymentToEdit && (
-          <div className="payment-modal-backdrop">
-            <div className="payment-modal">
-              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                Edit Payment Details
-              </h3>
-              
-              {/* Payment Info (Read-only) */}
-              <div style={{
-                backgroundColor: '#f8f9fa',
-                padding: '12px',
-                borderRadius: '6px',
-                marginBottom: '16px',
-                border: '1px solid #dee2e6'
-              }}>
-                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
-                  <strong>Payment Date:</strong> {new Date(paymentToEdit.payment_date).toLocaleDateString('en-US', { 
-                    month: 'long', 
-                    day: 'numeric', 
-                    year: 'numeric' 
-                  })}
-                </p>
-                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
-                  <strong>Amount Paid:</strong> {paymentToEdit.paid_amount?.toLocaleString(undefined, { 
+      {/* UPDATE PAYMENT AMOUNT MODAL */}
+      {updateModalOpen && paymentToUpdate && (
+        <div className="payment-modal-backdrop">
+          <div className="payment-modal">
+            <h3>Update Payment Amount</h3>
+            
+            <div style={{ 
+              backgroundColor: '#fff3cd', 
+              padding: '12px', 
+              borderRadius: '8px', 
+              marginBottom: '16px',
+              border: '1px solid #ffc107'
+            }}>
+              <p style={{ margin: 0, fontSize: '0.9em', color: '#856404' }}>
+                <strong>Note:</strong> Updating the amount will automatically recalculate any existing penalties based on the new amount.
+              </p>
+            </div>
+            
+            <div style={{
+              backgroundColor: '#f8f9fa',
+              padding: '12px',
+              borderRadius: '6px',
+              marginBottom: '16px',
+              border: '1px solid #dee2e6'
+            }}>
+              <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                <strong>Payment Date:</strong> {new Date(paymentToUpdate.payment_date).toLocaleDateString('en-US', { 
+                  month: 'long', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                })}
+              </p>
+              <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                <strong>Current Amount:</strong> {paymentToUpdate.amount_to_be_paid?.toLocaleString(undefined, { 
+                  style: "currency", 
+                  currency: "PHP" 
+                })}
+              </p>
+              {paymentToUpdate.penalties && paymentToUpdate.penalties.length > 0 && (
+                <p style={{ margin: '0', fontSize: '0.9em', color: '#dc3545' }}>
+                  <strong>Current Penalties:</strong> {calculateTotalPenalties(paymentToUpdate).toLocaleString(undefined, { 
                     style: "currency", 
                     currency: "PHP" 
-                  })}
+                  })} ({paymentToUpdate.penalties.length} penalty/penalties)
                 </p>
-                <p style={{ margin: '0', fontSize: '0.9em' }}>
-                  <strong>Payment Type:</strong> {paymentToEdit.payment_type_name}
-                </p>
-              </div>
+              )}
+            </div>
 
-              {/* Editable: Payment Mode */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  marginBottom: '8px', 
-                  fontWeight: '600',
-                  fontSize: '0.9em'
-                }}>
-                  Payment Mode: <span style={{ color: 'red' }}>*</span>
-                </label>
-                <select
-                  value={selectedPaymentMode || ''}
-                  onChange={(e) => setSelectedPaymentMode(e.target.value ? Number(e.target.value) : null)}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    fontSize: '1em',
-                    border: '2px solid #ced4da',
-                    borderRadius: '4px',
-                    backgroundColor: 'white'
-                  }}
-                >
-                  <option value="">-- Select Payment Mode --</option>
-                  {paymentModes.map(mode => (
-                    <option key={mode.id} value={mode.id}>
-                      {mode.payment_mode_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontWeight: '600',
+                fontSize: '0.9em'
+              }}>
+                New Payment Amount: <span style={{ color: 'red' }}>*</span>
+              </label>
+              <input
+                type="text"
+                value={updateAmountInput}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '' || /^\d*(,\d{3})*(\.\d*)?$/.test(value)) {
+                    setUpdateAmountInput(value);
+                  }
+                }}
+                placeholder="Enter new amount"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  fontSize: '1.1em',
+                  border: '2px solid #ced4da',
+                  borderRadius: '4px',
+                  backgroundColor: 'white'
+                }}
+              />
+              <small style={{ 
+                display: 'block', 
+                marginTop: '4px', 
+                color: '#6c757d',
+                fontSize: '0.85em'
+              }}>
+                Enter the corrected payment amount (e.g., 22000 instead of 12000)
+              </small>
+            </div>
 
-              {/* Editable: Manual Reference */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  marginBottom: '8px', 
-                  fontWeight: '600',
-                  fontSize: '0.9em'
-                }}>
-                  Reference Number (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={manualReference}
-                  onChange={(e) => setManualReference(e.target.value)}
-                  placeholder="e.g., OR-12345, TXN-67890"
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    fontSize: '1em',
-                    border: '2px solid #ced4da',
-                    borderRadius: '4px',
-                    backgroundColor: 'white'
-                  }}
-                />
-                <small style={{ 
-                  display: 'block', 
-                  marginTop: '4px', 
-                  color: '#6c757d',
-                  fontSize: '0.85em'
-                }}>
-                  Update or add a reference number for this payment
-                </small>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="modal-actions">
-                <button onClick={handleEditPaymentSave}>Save Changes</button>
-                <button onClick={() => {
-                  setEditModalOpen(false);
-                  setPaymentToEdit(null);
-                  setManualReference("");
-                  setSelectedPaymentMode(null);
-                }}>Cancel</button>
-              </div>
+            <div className="modal-actions">
+              <button onClick={handleUpdatePaymentAmount}>Update Amount</button>
+              <button onClick={() => {
+                setUpdateModalOpen(false);
+                setPaymentToUpdate(null);
+                setUpdateAmountInput("");
+              }}>Cancel</button>
             </div>
           </div>
-        )}
+        </div>
+      )}
+
+      {/* EDIT PAYMENT MODAL */}
+      {editModalOpen && paymentToEdit && (
+        <div className="payment-modal-backdrop">
+          <div className="payment-modal">
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              Edit Payment Details
+            </h3>
+            
+            {/* Payment Info (Read-only) */}
+            <div style={{
+              backgroundColor: '#f8f9fa',
+              padding: '12px',
+              borderRadius: '6px',
+              marginBottom: '16px',
+              border: '1px solid #dee2e6'
+            }}>
+              <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                <strong>Payment Date:</strong> {new Date(paymentToEdit.payment_date).toLocaleDateString('en-US', { 
+                  month: 'long', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                })}
+              </p>
+              <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                <strong>Amount Paid:</strong> {paymentToEdit.paid_amount?.toLocaleString(undefined, { 
+                  style: "currency", 
+                  currency: "PHP" 
+                })}
+              </p>
+              <p style={{ margin: '0', fontSize: '0.9em' }}>
+                <strong>Payment Type:</strong> {paymentToEdit.payment_type_name}
+              </p>
+            </div>
+
+            {/* Editable: Payment Mode */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontWeight: '600',
+                fontSize: '0.9em'
+              }}>
+                Payment Mode: <span style={{ color: 'red' }}>*</span>
+              </label>
+              <select
+                value={selectedPaymentMode || ''}
+                onChange={(e) => setSelectedPaymentMode(e.target.value ? Number(e.target.value) : null)}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  fontSize: '1em',
+                  border: '2px solid #ced4da',
+                  borderRadius: '4px',
+                  backgroundColor: 'white'
+                }}
+              >
+                <option value="">-- Select Payment Mode --</option>
+                {paymentModes.map(mode => (
+                  <option key={mode.id} value={mode.id}>
+                    {mode.payment_mode_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Editable: Manual Reference */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontWeight: '600',
+                fontSize: '0.9em'
+              }}>
+                Reference Number (Optional)
+              </label>
+              <input
+                type="text"
+                value={manualReference}
+                onChange={(e) => setManualReference(e.target.value)}
+                placeholder="e.g., OR-12345, TXN-67890"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  fontSize: '1em',
+                  border: '2px solid #ced4da',
+                  borderRadius: '4px',
+                  backgroundColor: 'white'
+                }}
+              />
+              <small style={{ 
+                display: 'block', 
+                marginTop: '4px', 
+                color: '#6c757d',
+                fontSize: '0.85em'
+              }}>
+                Update or add a reference number for this payment
+              </small>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="modal-actions">
+              <button onClick={handleEditPaymentSave}>Save Changes</button>
+              <button onClick={() => {
+                setEditModalOpen(false);
+                setPaymentToEdit(null);
+                setManualReference("");
+                setSelectedPaymentMode(null);
+              }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* PAYMENT GENERATION MODAL */}
       {generateModalOpen && selectedPolicy && (
@@ -608,259 +611,279 @@ export default function PolicyWithPaymentsList() {
         />
       )}
 
-       {/* RECEIPT UPLOAD MODAL */}
-        {receiptModalOpen && selectedPaymentForReceipt && (
-          <div className="payment-modal-backdrop">
-            <div className="payment-modal">
-              <h3>Attach Receipt</h3>
-              
-              <div style={{
-                backgroundColor: '#f8f9fa',
-                padding: '12px',
-                borderRadius: '6px',
-                marginBottom: '16px',
-                border: '1px solid #dee2e6'
-              }}>
-                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
-                  <strong>Payment Date:</strong> {new Date(selectedPaymentForReceipt.payment_date).toLocaleDateString('en-US', { 
-                    month: 'long', 
-                    day: 'numeric', 
-                    year: 'numeric' 
-                  })}
+      {/* RECEIPT UPLOAD MODAL */}
+      {receiptModalOpen && selectedPaymentForReceipt && (
+        <div className="payment-modal-backdrop">
+          <div className="payment-modal">
+            <h3>Attach Receipt</h3>
+            
+            <div style={{
+              backgroundColor: '#f8f9fa',
+              padding: '12px',
+              borderRadius: '6px',
+              marginBottom: '16px',
+              border: '1px solid #dee2e6'
+            }}>
+              <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                <strong>Payment Date:</strong> {new Date(selectedPaymentForReceipt.payment_date).toLocaleDateString('en-US', { 
+                  month: 'long', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                })}
+              </p>
+              <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                <strong>Amount:</strong> {selectedPaymentForReceipt.amount_to_be_paid?.toLocaleString(undefined, { 
+                  style: "currency", 
+                  currency: "PHP" 
+                })}
+              </p>
+              {selectedPaymentForReceipt.receipts && selectedPaymentForReceipt.receipts.length > 0 && (
+                <p style={{ margin: '0', fontSize: '0.9em', color: '#28a745' }}>
+                  <strong>Existing Receipts:</strong> {selectedPaymentForReceipt.receipts.length}
                 </p>
-                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
-                  <strong>Amount:</strong> {selectedPaymentForReceipt.amount_to_be_paid?.toLocaleString(undefined, { 
-                    style: "currency", 
-                    currency: "PHP" 
-                  })}
-                </p>
-                {selectedPaymentForReceipt.receipts && selectedPaymentForReceipt.receipts.length > 0 && (
-                  <p style={{ margin: '0', fontSize: '0.9em', color: '#28a745' }}>
-                    <strong>Existing Receipts:</strong> {selectedPaymentForReceipt.receipts.length}
-                  </p>
-                )}
-              </div>
-
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ 
-                  display: 'block', 
-                  marginBottom: '8px', 
-                  fontWeight: '600',
-                  fontSize: '0.9em'
-                }}>
-                  Upload Receipt (PDF or Image): <span style={{ color: 'red' }}>*</span>
-                </label>
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png,.webp"
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      handleUploadReceipt(file);
-                    }
-                  }}
-                  disabled={uploadingReceipt}
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    fontSize: '1em',
-                    border: '2px solid #ced4da',
-                    borderRadius: '4px',
-                    backgroundColor: 'white'
-                  }}
-                />
-                <small style={{ 
-                  display: 'block', 
-                  marginTop: '4px', 
-                  color: '#6c757d',
-                  fontSize: '0.85em'
-                }}>
-                  Accepted formats: PDF, JPEG, PNG, WebP (Max 10MB)
-                </small>
-              </div>
-
-              {uploadingReceipt && (
-                <div style={{ 
-                  padding: '12px', 
-                  backgroundColor: '#e3f2fd', 
-                  borderRadius: '4px',
-                  marginBottom: '16px',
-                  textAlign: 'center'
-                }}>
-                  <p style={{ margin: 0, color: '#1976d2' }}>Uploading receipt...</p>
-                </div>
               )}
+            </div>
 
-              <div className="modal-actions">
-                <button onClick={() => {
-                  setReceiptModalOpen(false);
-                  setSelectedPaymentForReceipt(null);
-                }}>Close</button>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '8px', 
+                fontWeight: '600',
+                fontSize: '0.9em'
+              }}>
+                Upload Receipt (PDF or Image): <span style={{ color: 'red' }}>*</span>
+              </label>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.webp"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    handleUploadReceipt(file);
+                  }
+                }}
+                disabled={uploadingReceipt}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  fontSize: '1em',
+                  border: '2px solid #ced4da',
+                  borderRadius: '4px',
+                  backgroundColor: 'white'
+                }}
+              />
+              <small style={{ 
+                display: 'block', 
+                marginTop: '4px', 
+                color: '#6c757d',
+                fontSize: '0.85em'
+              }}>
+                Accepted formats: PDF, JPEG, PNG, WebP (Max 10MB)
+              </small>
+            </div>
+
+            {uploadingReceipt && (
+              <div style={{ 
+                padding: '12px', 
+                backgroundColor: '#e3f2fd', 
+                borderRadius: '4px',
+                marginBottom: '16px',
+                textAlign: 'center'
+              }}>
+                <p style={{ margin: 0, color: '#1976d2' }}>Uploading receipt...</p>
               </div>
+            )}
+
+            <div className="modal-actions">
+              <button onClick={() => {
+                setReceiptModalOpen(false);
+                setSelectedPaymentForReceipt(null);
+              }}>Close</button>
             </div>
           </div>
-        )}
-
-        {/* RECEIPT VIEWER MODAL */}
-        {receiptViewerOpen && viewingReceipts && viewingReceipts.length > 0 && (
-          <div className="payment-modal-backdrop" onClick={() => setReceiptViewerOpen(false)}>
-            <div className="payment-modal" style={{ maxWidth: '900px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ margin: 0 }}>Receipt Viewer ({currentReceiptIndex + 1} of {viewingReceipts.length})</h3>
-                <button 
-                  onClick={() => setReceiptViewerOpen(false)}
-                  style={{ 
-                    background: 'none', 
-                    border: 'none', 
-                    fontSize: '24px', 
-                    cursor: 'pointer',
-                    color: '#666'
-                  }}
-                >×</button>
-              </div>
-
-              {/* Receipt Info */}
-              <div style={{
-                backgroundColor: '#f8f9fa',
-                padding: '12px',
-                borderRadius: '6px',
-                marginBottom: '16px',
-                border: '1px solid #dee2e6'
-              }}>
-                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
-                  <strong>File Name:</strong> {viewingReceipts[currentReceiptIndex].file_name}
-                </p>
-                <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
-                  <strong>Uploaded:</strong> {new Date(viewingReceipts[currentReceiptIndex].created_at).toLocaleString('en-US', { 
-                    month: 'long', 
-                    day: 'numeric', 
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </p>
-                <p style={{ margin: '0', fontSize: '0.9em' }}>
-                  <strong>Size:</strong> {(viewingReceipts[currentReceiptIndex].file_size / 1024).toFixed(2)} KB
-                </p>
-              </div>
-
-              {/* Receipt Display */}
-              <div style={{ 
-                backgroundColor: '#f5f5f5', 
-                padding: '20px', 
-                borderRadius: '8px',
-                marginBottom: '16px',
-                minHeight: '400px',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-                {viewingReceipts[currentReceiptIndex].file_type === 'application/pdf' ? (
-                  <iframe
-                    src={viewingReceipts[currentReceiptIndex].file_url}
-                    style={{ 
-                      width: '100%', 
-                      height: '500px', 
-                      border: 'none',
-                      borderRadius: '4px'
-                    }}
-                    title="Receipt PDF"
-                  />
-                ) : (
-                  <img
-                    src={viewingReceipts[currentReceiptIndex].file_url}
-                    alt="Receipt"
-                    style={{ 
-                      maxWidth: '100%', 
-                      maxHeight: '500px',
-                      objectFit: 'contain',
-                      borderRadius: '4px'
-                    }}
-                  />
-                )}
-              </div>
-
-      {/* Navigation */}
-      {viewingReceipts.length > 1 && (
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          gap: '12px',
-          marginBottom: '16px'
-        }}>
-          <button
-            onClick={() => setCurrentReceiptIndex(i => Math.max(0, i - 1))}
-            disabled={currentReceiptIndex === 0}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: currentReceiptIndex === 0 ? '#ccc' : '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: currentReceiptIndex === 0 ? 'not-allowed' : 'pointer'
-            }}
-          >
-            ← Previous
-          </button>
-          <button
-            onClick={() => setCurrentReceiptIndex(i => Math.min(viewingReceipts.length - 1, i + 1))}
-            disabled={currentReceiptIndex === viewingReceipts.length - 1}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: currentReceiptIndex === viewingReceipts.length - 1 ? '#ccc' : '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: currentReceiptIndex === viewingReceipts.length - 1 ? 'not-allowed' : 'pointer'
-            }}
-          >
-            Next →
-          </button>
         </div>
       )}
 
-      {/* Actions */}
-      <div className="modal-actions">
-        <a
-          href={viewingReceipts[currentReceiptIndex].file_url}
-          download
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#28a745',
-            color: 'white',
-            textDecoration: 'none',
-            borderRadius: '4px',
-            display: 'inline-block'
-          }}
-        >
-          Download
-        </a>
-        <button 
-          onClick={() => handleDeleteReceiptFromViewer(viewingReceipts[currentReceiptIndex].id)}
-          style={{ backgroundColor: '#dc3545' }}
-        >
-          Delete
-        </button>
-        <button onClick={() => setReceiptViewerOpen(false)}>Close</button>
-      </div>
-    </div>
-  </div>
-)} 
+      {/* RECEIPT VIEWER MODAL */}
+      {receiptViewerOpen && viewingReceipts && viewingReceipts.length > 0 && (
+        <div className="payment-modal-backdrop" onClick={() => setReceiptViewerOpen(false)}>
+          <div className="payment-modal" style={{ maxWidth: '900px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0 }}>Receipt Viewer ({currentReceiptIndex + 1} of {viewingReceipts.length})</h3>
+              <button 
+                onClick={() => setReceiptViewerOpen(false)}
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  fontSize: '24px', 
+                  cursor: 'pointer',
+                  color: '#666'
+                }}
+              >×</button>
+            </div>
 
+            {/* Receipt Info */}
+            <div style={{
+              backgroundColor: '#f8f9fa',
+              padding: '12px',
+              borderRadius: '6px',
+              marginBottom: '16px',
+              border: '1px solid #dee2e6'
+            }}>
+              <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                <strong>File Name:</strong> {viewingReceipts[currentReceiptIndex].file_name}
+              </p>
+              <p style={{ margin: '0 0 8px 0', fontSize: '0.9em' }}>
+                <strong>Uploaded:</strong> {new Date(viewingReceipts[currentReceiptIndex].created_at).toLocaleString('en-US', { 
+                  month: 'long', 
+                  day: 'numeric', 
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </p>
+              <p style={{ margin: '0', fontSize: '0.9em' }}>
+                <strong>Size:</strong> {(viewingReceipts[currentReceiptIndex].file_size / 1024).toFixed(2)} KB
+              </p>
+            </div>
+
+            {/* Receipt Display */}
+            <div style={{ 
+              backgroundColor: '#f5f5f5', 
+              padding: '20px', 
+              borderRadius: '8px',
+              marginBottom: '16px',
+              minHeight: '400px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              {viewingReceipts[currentReceiptIndex].file_type === 'application/pdf' ? (
+                <iframe
+                  src={viewingReceipts[currentReceiptIndex].file_url}
+                  style={{ 
+                    width: '100%', 
+                    height: '500px', 
+                    border: 'none',
+                    borderRadius: '4px'
+                  }}
+                  title="Receipt PDF"
+                />
+              ) : (
+                <img
+                  src={viewingReceipts[currentReceiptIndex].file_url}
+                  alt="Receipt"
+                  style={{ 
+                    maxWidth: '100%', 
+                    maxHeight: '500px',
+                    objectFit: 'contain',
+                    borderRadius: '4px'
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Navigation */}
+            {viewingReceipts.length > 1 && (
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                gap: '12px',
+                marginBottom: '16px'
+              }}>
+                <button
+                  onClick={() => setCurrentReceiptIndex(i => Math.max(0, i - 1))}
+                  disabled={currentReceiptIndex === 0}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: currentReceiptIndex === 0 ? '#ccc' : '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: currentReceiptIndex === 0 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  ← Previous
+                </button>
+                <button
+                  onClick={() => setCurrentReceiptIndex(i => Math.min(viewingReceipts.length - 1, i + 1))}
+                  disabled={currentReceiptIndex === viewingReceipts.length - 1}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: currentReceiptIndex === viewingReceipts.length - 1 ? '#ccc' : '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: currentReceiptIndex === viewingReceipts.length - 1 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="modal-actions">
+              <a
+                href={viewingReceipts[currentReceiptIndex].file_url}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  textDecoration: 'none',
+                  borderRadius: '4px',
+                  display: 'inline-block'
+                }}
+              >
+                Download
+              </a>
+              <button 
+                onClick={() => handleDeleteReceiptFromViewer(viewingReceipts[currentReceiptIndex].id)}
+                style={{ backgroundColor: '#dc3545' }}
+              >
+                Delete
+              </button>
+              <button onClick={() => setReceiptViewerOpen(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ CUSTOM ALERT MODAL */}
+      {CustomAlertModal && (
+        <CustomAlertModal 
+          isOpen={alertModal.isOpen}
+          onClose={closeAlert}
+          title={alertModal.title}
+          message={alertModal.message}
+        />
+      )}
+
+      {/* ✅ CUSTOM CONFIRM MODAL */}
+      {CustomConfirmModal && (
+        <CustomConfirmModal
+          isOpen={confirmModal.isOpen}
+          onClose={closeConfirm}
+          onConfirm={confirmModal.onConfirm}
+          title={confirmModal.title}
+          message={confirmModal.message}
+        />
+      )}
 
       <div className="payments-overview-header">
         <h2>Payments Overview ({totalPoliciesCount})</h2>
         
-        {/* UPDATED FILTER BAR */}
+        {/* FILTER BAR */}
         <div className="search-filter-refresh-bar" style={{ 
           display: 'flex', 
           gap: '12px', 
           alignItems: 'center', 
           flexWrap: 'wrap' 
         }}>
-          {/* Search Input - keeps Policy ID and Client Name search */}
+          {/* Search Input */}
           <input 
             type="text" 
             placeholder="Search by Policy ID or Client Name..." 
@@ -899,7 +922,7 @@ export default function PolicyWithPaymentsList() {
             </select>
           </div>
 
-          {/* Partner Filter (NEW - replaces Policy ID dropdown) */}
+          {/* Partner Filter */}
           <div style={{ flex: '0 0 auto' }}>
             <select
               value={selectedPartner || ''}
@@ -954,6 +977,7 @@ export default function PolicyWithPaymentsList() {
           </button>
         </div>
       </div>
+
       {/* Policies list */}
       <div className="policies-list">
         {renderPolicies.map(policy => {
@@ -966,7 +990,6 @@ export default function PolicyWithPaymentsList() {
 
           const partnerName = policy.insurance_Partners?.insurance_Name || "N/A";
 
-          // payments: prefer lazy-loaded store, fallback to paymentsMap (older code)
           const payments = paymentsByPolicy[policy.id] || paymentsMap[policy.id] || [];
           const isOpen = !!expanded[policy.id];
           const isLoadingForPolicy = !!loadingPayments[policy.id];
@@ -1027,150 +1050,147 @@ export default function PolicyWithPaymentsList() {
                   </div>
                 </div>
 
-                {/* Loading indicator for payments */}
+                {/* Loading indicator */}
                 {isLoadingForPolicy && <p style={{ padding: '12px' }}>Loading payments...</p>}
 
-               {(!isLoadingForPolicy && payments && payments.length > 0) ? (
-                <table className="payments-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Type</th>
-                      <th>Mode</th> {/* NEW COLUMN */}
-                      <th>Penalty %</th>
-                      <th>Base Amount</th>
-                      <th>Penalty Amount</th>
-                      <th>Total Due</th>
-                      <th>Paid Amount</th>
-                      <th>Status</th>
-                      <th>Reference</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {payments.map((p, index) => {
-                      const status = getPaymentStatus(p);
-                      const overdueInfo = calculateOverdueInfo(p);
-                      const totalPenalties = calculateTotalPenalties(p);
-                      const totalDue = calculateTotalDue(p);
-                      const remainingBalance = totalDue - calculateTotalPaid(p);
-                      const isOverdue = overdueInfo.daysOverdue > 0 && status !== "fully-paid";
-                      const isCheque = isChequePayment(p);
+                {(!isLoadingForPolicy && payments && payments.length > 0) ? (
+                  <table className="payments-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Mode</th>
+                        <th>Penalty %</th>
+                        <th>Base Amount</th>
+                        <th>Penalty Amount</th>
+                        <th>Total Due</th>
+                        <th>Paid Amount</th>
+                        <th>Status</th>
+                        <th>Reference</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {payments.map((p, index) => {
+                        const status = getPaymentStatus(p);
+                        const overdueInfo = calculateOverdueInfo(p);
+                        const totalPenalties = calculateTotalPenalties(p);
+                        const totalDue = calculateTotalDue(p);
+                        const remainingBalance = totalDue - calculateTotalPaid(p);
+                        const isOverdue = overdueInfo.daysOverdue > 0 && status !== "fully-paid";
+                        const isCheque = isChequePayment(p);
 
-                      const isRefunded = status === "refunded";
-                      const isCancelled = status === "cancelled";
-                      const isVoided = status === "voided";
-                      const isSpecialStatus = isRefunded || isCancelled || isVoided;
+                        const isRefunded = status === "refunded";
+                        const isCancelled = status === "cancelled";
+                        const isVoided = status === "voided";
+                        const isSpecialStatus = isRefunded || isCancelled || isVoided;
 
-                      const hasTodayPenalty = hasPenaltyForToday(p);
+                        const hasTodayPenalty = hasPenaltyForToday(p);
 
-                      const previousPaymentsPaid = payments.slice(0, index).every(pay => {
-                        const payStatus = getPaymentStatus(pay);
-                        return payStatus === "fully-paid" || payStatus === "refunded" || payStatus === "cancelled" || payStatus === "voided";
-                      });
+                        const previousPaymentsPaid = payments.slice(0, index).every(pay => {
+                          const payStatus = getPaymentStatus(pay);
+                          return payStatus === "fully-paid" || payStatus === "refunded" || payStatus === "cancelled" || payStatus === "voided";
+                        });
 
-                      const disablePayment =
-                        isSpecialStatus ||
-                        status === "fully-paid" ||
-                        remainingBalance <= 0 ||
-                        (!isCheque && isOverdue && !hasTodayPenalty) ||
-                        !previousPaymentsPaid;
+                        const disablePayment =
+                          isSpecialStatus ||
+                          status === "fully-paid" ||
+                          remainingBalance <= 0 ||
+                          (!isCheque && isOverdue && !hasTodayPenalty) ||
+                          !previousPaymentsPaid;
 
-                      const rowStyle = {
-                        backgroundColor: isRefunded ? '#e8f5e9' :
-                          isVoided ? '#ffebee' :
-                            isCancelled ? '#fff3e0' : 'white'
-                      };
+                        const rowStyle = {
+                          backgroundColor: isRefunded ? '#e8f5e9' :
+                            isVoided ? '#ffebee' :
+                              isCancelled ? '#fff3e0' : 'white'
+                        };
 
-                      return (
-                        <tr key={p.id} className={`payment-${status} ${!isCheque && overdueInfo.daysOverdue >= 90 && !isSpecialStatus ? 'payment-void-warning' : ''}`} style={rowStyle}>
-                          <td>
-                            {new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                            {!isCheque && overdueInfo.daysOverdue >= 90 && !isSpecialStatus && <span className="void-warning-badge">⚠️ 90+ Days</span>}
-                          </td>
-                          <td>
-                            {p.payment_type_name && <span style={{ backgroundColor: isCheque ? '#e3f2fd' : '#f5f5f5', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85em', fontWeight: '500' }}>{p.payment_type_name}</span>}
-                          </td>
-                          {/* NEW: Payment Mode Column */}
-                          <td>
-                            {p.payment_mode_name ? (
-                              <span style={{ 
-                                backgroundColor: '#e8f4f8', 
-                                padding: '4px 8px', 
-                                borderRadius: '4px', 
-                                fontSize: '0.85em', 
-                                fontWeight: '500',
-                                color: '#0277bd'
-                              }}>
-                                {p.payment_mode_name}
-                              </span>
-                            ) : (
-                              <span style={{ color: '#aaa', fontSize: '0.85em' }}>N/A</span>
-                            )}
-                          </td>
-                          <td>{!isCheque && !isSpecialStatus && overdueInfo.penaltyPercentage > 0 ? <span className={`penalty-badge ${status === "fully-paid" ? "frozen" : ""}`} title={status === "fully-paid" ? "Penalty frozen after full payment" : ""}>{overdueInfo.penaltyPercentage}%</span> : "-"}</td>
-                          <td>{p.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
-                          <td>{totalPenalties > 0 ? totalPenalties.toLocaleString(undefined, { style: "currency", currency: "PHP" }) : "₱0.00"}</td>
-                          <td className="total-due-cell"><strong>{isRefunded ? (<span style={{ color: '#4caf50' }}>₱0.00 (Refunded)</span>) : isVoided ? (<span style={{ color: '#f44336' }}>₱0.00 (Voided)</span>) : isCancelled ? (<span style={{ color: '#ff9800' }}>₱0.00 (Cancelled)</span>) : (totalDue.toLocaleString(undefined, { style: "currency", currency: "PHP" }))}</strong></td>
-                          <td>{isRefunded ? (<span style={{ color: '#4caf50', fontWeight: '600' }}>{p.refund_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" })} (Refunded)</span>) : isVoided ? (<span style={{ color: '#f44336', fontWeight: '600' }}>₱0.00 (Voided)</span>) : isCancelled ? (<span style={{ color: '#ff9800', fontWeight: '600' }}>₱0.00 (Cancelled)</span>) : (calculateTotalPaid(p)?.toLocaleString(undefined, { style: "currency", currency: "PHP" }))}</td>
-                          <td className="payment-status-cell">{isRefunded && <span className="payment-status-badge status-refunded">Refunded</span>}{isCancelled && <span className="payment-status-badge status-cancelled">Cancelled</span>}{isVoided && <span className="payment-status-badge status-voided">Voided</span>}{!isSpecialStatus && status}</td>
-                       <td>
-                            {p.payment_manual_reference ? (
-                              // Show manual reference if it exists
-                              <div style={{ display: "flex", flexDirection: "column" }}>
+                        return (
+                          <tr key={p.id} className={`payment-${status} ${!isCheque && overdueInfo.daysOverdue >= 90 && !isSpecialStatus ? 'payment-void-warning' : ''}`} style={rowStyle}>
+                            <td>
+                              {new Date(p.payment_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                              {!isCheque && overdueInfo.daysOverdue >= 90 && !isSpecialStatus && <span className="void-warning-badge">⚠️ 90+ Days</span>}
+                            </td>
+                            <td>
+                              {p.payment_type_name && <span style={{ backgroundColor: isCheque ? '#e3f2fd' : '#f5f5f5', padding: '4px 8px', borderRadius: '4px', fontSize: '0.85em', fontWeight: '500' }}>{p.payment_type_name}</span>}
+                            </td>
+                            <td>
+                              {p.payment_mode_name ? (
                                 <span style={{ 
-                                  fontWeight: "500",
-                                  color: "#2c3e50",
-                                  backgroundColor: "#e8f5e9",
-                                  padding: "4px 8px",
-                                  borderRadius: "4px",
-                                  fontSize: "0.85em"
+                                  backgroundColor: '#e8f4f8', 
+                                  padding: '4px 8px', 
+                                  borderRadius: '4px', 
+                                  fontSize: '0.85em', 
+                                  fontWeight: '500',
+                                  color: '#0277bd'
                                 }}>
-                                  {p.payment_manual_reference}
+                                  {p.payment_mode_name}
                                 </span>
-                                <small style={{ color: "#6c757d", fontSize: "0.75em", marginTop: "4px" }}>
-                                  Manual Reference
-                                </small>
-                              </div>
-                            ) : p.paymongo_reference ? (
-                              // Show PayMongo reference if no manual reference
-                              <div style={{ display: "flex", flexDirection: "column" }}>
-                                <span style={{ 
-                                  fontWeight: "500",
-                                  color: "#1976d2",
-                                  backgroundColor: "#e3f2fd",
-                                  padding: "4px 8px",
-                                  borderRadius: "4px",
-                                  fontSize: "0.85em"
-                                }}>
-                                  {p.paymongo_reference}
-                                </span>
-                                {p.paymongo_checkout_url && (
-                                  <a
-                                    href={p.paymongo_checkout_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ 
-                                      color: "#1976d2", 
-                                      fontSize: "0.75em",
-                                      marginTop: "4px"
-                                    }}
-                                  >
-                                    View Checkout
-                                  </a>
-                                )}
-                                <small style={{ color: "#6c757d", fontSize: "0.75em", marginTop: "2px" }}>
-                                  PayMongo
-                                </small>
-                              </div>
-                            ) : (
-                              <span style={{ color: "#aaa" }}>N/A</span>
-                            )}
-                          </td>
-                          <td className="payment-actions">
-                            <button disabled={disablePayment} onClick={() => handlePaymentClick({ ...p, policy_id: policy.id }, client?.phone_Number)} className={`payment-btn ${disablePayment ? "disabled-btn" : ""}`} style={{ opacity: disablePayment ? 0.5 : 1, cursor: disablePayment ? "not-allowed" : "pointer" }}>
-                              {isSpecialStatus ? status.charAt(0).toUpperCase() + status.slice(1) : status === "fully-paid" ? "Paid" : "Payment"}
-                            </button>
+                              ) : (
+                                <span style={{ color: '#aaa', fontSize: '0.85em' }}>N/A</span>
+                              )}
+                            </td>
+                            <td>{!isCheque && !isSpecialStatus && overdueInfo.penaltyPercentage > 0 ? <span className={`penalty-badge ${status === "fully-paid" ? "frozen" : ""}`} title={status === "fully-paid" ? "Penalty frozen after full payment" : ""}>{overdueInfo.penaltyPercentage}%</span> : "-"}</td>
+                            <td>{p.amount_to_be_paid?.toLocaleString(undefined, { style: "currency", currency: "PHP" })}</td>
+                            <td>{totalPenalties > 0 ? totalPenalties.toLocaleString(undefined, { style: "currency", currency: "PHP" }) : "₱0.00"}</td>
+                            <td className="total-due-cell"><strong>{isRefunded ? (<span style={{ color: '#4caf50' }}>₱0.00 (Refunded)</span>) : isVoided ? (<span style={{ color: '#f44336' }}>₱0.00 (Voided)</span>) : isCancelled ? (<span style={{ color: '#ff9800' }}>₱0.00 (Cancelled)</span>) : (totalDue.toLocaleString(undefined, { style: "currency", currency: "PHP" }))}</strong></td>
+                            <td>{isRefunded ? (<span style={{ color: '#4caf50', fontWeight: '600' }}>{p.refund_amount?.toLocaleString(undefined, { style: "currency", currency: "PHP" })} (Refunded)</span>) : isVoided ? (<span style={{ color: '#f44336', fontWeight: '600' }}>₱0.00 (Voided)</span>) : isCancelled ? (<span style={{ color: '#ff9800', fontWeight: '600' }}>₱0.00 (Cancelled)</span>) : (calculateTotalPaid(p)?.toLocaleString(undefined, { style: "currency", currency: "PHP" }))}</td>
+                            <td className="payment-status-cell">{isRefunded && <span className="payment-status-badge status-refunded">Refunded</span>}{isCancelled && <span className="payment-status-badge status-cancelled">Cancelled</span>}{isVoided && <span className="payment-status-badge status-voided">Voided</span>}{!isSpecialStatus && status}</td>
+                            <td>
+                              {p.payment_manual_reference ? (
+                                <div style={{ display: "flex", flexDirection: "column" }}>
+                                  <span style={{ 
+                                    fontWeight: "500",
+                                    color: "#2c3e50",
+                                    backgroundColor: "#e8f5e9",
+                                    padding: "4px 8px",
+                                    borderRadius: "4px",
+                                    fontSize: "0.85em"
+                                  }}>
+                                    {p.payment_manual_reference}
+                                  </span>
+                                  <small style={{ color: "#6c757d", fontSize: "0.75em", marginTop: "4px" }}>
+                                    Manual Reference
+                                  </small>
+                                </div>
+                              ) : p.paymongo_reference ? (
+                                <div style={{ display: "flex", flexDirection: "column" }}>
+                                  <span style={{ 
+                                    fontWeight: "500",
+                                    color: "#1976d2",
+                                    backgroundColor: "#e3f2fd",
+                                    padding: "4px 8px",
+                                    borderRadius: "4px",
+                                    fontSize: "0.85em"
+                                  }}>
+                                    {p.paymongo_reference}
+                                  </span>
+                                  {p.paymongo_checkout_url && (
+                                    <a
+                                      href={p.paymongo_checkout_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      style={{ 
+                                        color: "#1976d2", 
+                                        fontSize: "0.75em",
+                                        marginTop: "4px"
+                                      }}
+                                    >
+                                      View Checkout
+                                    </a>
+                                  )}
+                                  <small style={{ color: "#6c757d", fontSize: "0.75em", marginTop: "2px" }}>
+                                    PayMongo
+                                  </small>
+                                </div>
+                              ) : (
+                                <span style={{ color: "#aaa" }}>N/A</span>
+                              )}
+                            </td>
+                            <td className="payment-actions">
+                              <button disabled={disablePayment} onClick={() => handlePaymentClick({ ...p, policy_id: policy.id }, client?.phone_Number)} className={`payment-btn ${disablePayment ? "disabled-btn" : ""}`} style={{ opacity: disablePayment ? 0.5 : 1, cursor: disablePayment ? "not-allowed" : "pointer" }}>
+                                {isSpecialStatus ? status.charAt(0).toUpperCase() + status.slice(1) : status === "fully-paid" ? "Paid" : "Payment"}
+                              </button>
 
                               {(status === "fully-paid" || status === "partially-paid") && !isSpecialStatus && (
                                 <button 
@@ -1179,7 +1199,7 @@ export default function PolicyWithPaymentsList() {
                                   title="Edit payment details"
                                   style={{ backgroundColor: '#17a2b8' }}
                                 >
-                                   Edit
+                                  Edit
                                 </button>
                               )}
 
@@ -1194,20 +1214,7 @@ export default function PolicyWithPaymentsList() {
                                 </button>
                               )}
 
-                              {/* Delete button */}
-                              {/* We only allow deleting 'not-paid' items to prevent data loss */}
-                               {/* {status === "not-paid" && !isSpecialStatus && (
-                                <button
-                                  onClick={() => handleOpenDeleteModal({ ...p, policy_id: policy.id })}
-                                  className="penalty-btn"
-                                  title="Delete this payment"
-                                  style={{ backgroundColor: '#dc3545', color: 'white' }} 
-                                >
-                                  Delete
-                                </button>
-                              )}*/}
-
-                               {(status === "fully-paid" || status === "partially-paid") && !isSpecialStatus && (
+                              {(status === "fully-paid" || status === "partially-paid") && !isSpecialStatus && (
                                 <>
                                   <button
                                     onClick={() => handleOpenReceiptModal({ ...p, policy_id: policy.id })}
@@ -1231,23 +1238,21 @@ export default function PolicyWithPaymentsList() {
                                 </>
                               )}
 
-
-                            {!isCheque && !isSpecialStatus && isOverdue && !hasTodayPenalty && (
-                              <button onClick={() => handleAddPenalty({ ...p, policy_id: policy.id })} className="penalty-btn" title="Add today's penalty">+Penalty</button>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              ) : (!isLoadingForPolicy && <p className="no-payments-message">No payments scheduled</p>)}
+                              {!isCheque && !isSpecialStatus && isOverdue && !hasTodayPenalty && (
+                                <button onClick={() => handleAddPenalty({ ...p, policy_id: policy.id })} className="penalty-btn" title="Add today's penalty">+Penalty</button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                ) : (!isLoadingForPolicy && <p className="no-payments-message">No payments scheduled</p>)}
               </div>
             </div>
           );
         })}
-        {/* sentinel for infinite scroll (append more policies when visible) */}
-        <div ref={sentinelRef} style={{ height: 1 }} />
+        {sentinelRef && <div ref={sentinelRef} style={{ height: 1 }} />}
       </div>
 
       {/* Pagination */}
@@ -1262,7 +1267,6 @@ export default function PolicyWithPaymentsList() {
   );
 }
 
-// your helper as-is
 function getPaymentStatus(payment) {
   if (payment.is_refunded || payment.payment_status === "refunded") return "refunded";
   if (payment.payment_status === "cancelled") return "cancelled";

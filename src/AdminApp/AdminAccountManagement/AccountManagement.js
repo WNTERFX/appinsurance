@@ -288,12 +288,12 @@ export default function AccountManagement() {
               >
                 Add Account
               </button>
-              <button
+             {/* <button
                 className={`btn-archive ${activeTab === "edit" ? "active" : ""}`}
                 onClick={() => setActiveTab("edit")}
               >
                 Edit Accounts
-              </button>
+              </button>*/}
             </>
           )}
           {/* Profile Menu */}
@@ -338,9 +338,10 @@ export default function AccountManagement() {
                       {currentUser?.isAdmin && <td>{acc.is_Admin ? "Admin" : "Moderator"}</td>}
                       <td className="account-table-actions">
                         <button onClick={() => handleEditClick(acc)}>Edit</button>
-                        {currentUser?.isAdmin && (
+                        {/* Delete button commented out */}
+                        {/* {currentUser?.isAdmin && (
                           <button onClick={() => handleDelete(acc.id)}>Delete</button>
-                        )}
+                        )} */}
                       </td>
                     </tr>
                   ))}

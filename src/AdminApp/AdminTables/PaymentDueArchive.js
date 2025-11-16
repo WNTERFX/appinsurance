@@ -276,7 +276,7 @@ export default function PaymentArchiveTable() {
                     >
                       Un-Archive All
                     </button>
-                    <button 
+                    {/*<button 
                       onClick={(e) => { 
                         e.stopPropagation(); 
                         handleOpenDeleteModal(policy, payments); 
@@ -285,7 +285,7 @@ export default function PaymentArchiveTable() {
                       disabled={isLoadingForPolicy || payments.length === 0}
                     >
                       Delete All
-                    </button>
+                    </button>*/}
                   </div>
                 </div>
 

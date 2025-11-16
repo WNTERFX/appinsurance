@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { fetchPolicies } from "../../AdminActions/PolicyActions";
 import {
   fetchPaymentSchedule,
@@ -22,6 +22,9 @@ import {
   fetchPaymentReceipts,
   deleteReceipt
 } from "../../AdminActions/PaymentReceiptActions";
+
+import CustomAlertModal from "../../AdminForms/CustomAlertModal";
+import CustomConfirmModal from "../../AdminForms/CustomConfirmModal";
 
 
 export default function PolicyWithPaymentsController() {
@@ -59,7 +62,7 @@ export default function PolicyWithPaymentsController() {
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // NEW: Filter states
+  // Filter states
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [selectedPartner, setSelectedPartner] = useState(null);
 
@@ -76,15 +79,42 @@ export default function PolicyWithPaymentsController() {
   const [receiptViewerOpen, setReceiptViewerOpen] = useState(false);
   const [viewingReceipts, setViewingReceipts] = useState([]);
   const [currentReceiptIndex, setCurrentReceiptIndex] = useState(0);
-    
 
+  // Custom Alert/Confirm Modal States
+  const [alertModal, setAlertModal] = useState({ isOpen: false, message: "", title: "Alert" });
+  const [confirmModal, setConfirmModal] = useState({ 
+    isOpen: false, 
+    message: "", 
+    title: "Confirm",
+    onConfirm: () => {} 
+  });
+    
   const CHEQUE_PAYMENT_TYPE = 2;
 
-  // NEW: Extract unique agents and partners from policies
+  // Helper functions for modals - use useCallback to prevent recreation
+  const showAlert = useCallback((message, title = "Alert") => {
+    setAlertModal({ isOpen: true, message, title });
+  }, []);
+
+  const showConfirm = useCallback((message, onConfirm, title = "Confirm") => {
+    setConfirmModal({ isOpen: true, message, title, onConfirm });
+  }, []);
+
+  const closeAlert = useCallback(() => {
+    setAlertModal({ isOpen: false, message: "", title: "Alert" });
+  }, []);
+
+  const closeConfirm = useCallback(() => {
+    setConfirmModal({ isOpen: false, message: "", title: "Confirm", onConfirm: () => {} });
+  }, []);
+
+  // Extract unique agents and partners - FIXED: Added safety checks
   const uniqueAgents = useMemo(() => {
+    if (!Array.isArray(policies) || policies.length === 0) return [];
+    
     const agents = policies
       .map(policy => {
-        const client = policy.clients_Table;
+        const client = policy?.clients_Table;
         if (!client?.employee_Accounts) return null;
         const firstName = client.employee_Accounts.first_name || "";
         const lastName = client.employee_Accounts.last_name || "";
@@ -96,13 +126,16 @@ export default function PolicyWithPaymentsController() {
   }, [policies]);
 
   const uniquePartners = useMemo(() => {
+    if (!Array.isArray(policies) || policies.length === 0) return [];
+    
     const partners = policies
-      .map(policy => policy.insurance_Partners?.insurance_Name)
+      .map(policy => policy?.insurance_Partners?.insurance_Name)
       .filter(partner => partner);
     
     return [...new Set(partners)].sort();
   }, [policies]);
 
+  // Load payment modes on mount
   useEffect(() => {
     loadPaymentModes();
   }, []);
@@ -110,26 +143,26 @@ export default function PolicyWithPaymentsController() {
   const loadPaymentModes = async () => {
     try {
       const modes = await fetchAllPaymentModes();
-      setPaymentModes(modes);
+      setPaymentModes(modes || []);
     } catch (err) {
       console.error("Error loading payment modes:", err);
       setPaymentModes([]);
     }
   };
 
-  const handleOpenUpdateModal = (payment) => {
+  const handleOpenUpdateModal = useCallback((payment) => {
     setPaymentToUpdate(payment);
     setUpdateAmountInput(payment.amount_to_be_paid.toString());
     setUpdateModalOpen(true);
-  };
+  }, []);
 
-  const handleUpdatePaymentAmount = async () => {
+  const handleUpdatePaymentAmount = useCallback(async () => {
     if (!paymentToUpdate?.id || !paymentToUpdate?.policy_id) return;
     
     try {
       const newAmount = parseFloat(updateAmountInput.replace(/,/g, ""));
       if (isNaN(newAmount) || newAmount <= 0) {
-        alert("Please enter a valid amount");
+        showAlert("Please enter a valid amount", "Invalid Amount");
         return;
       }
       
@@ -142,16 +175,17 @@ export default function PolicyWithPaymentsController() {
       setPaymentsByPolicy(prev => ({ ...prev, [policyId]: nonArchived }));
       setPaymentsMap(prev => ({ ...prev, [policyId]: nonArchived }));
       
-      alert("Payment amount updated successfully! Penalties have been recalculated.");
+      showAlert("Payment amount updated successfully! Penalties have been recalculated.", "Success");
       setUpdateModalOpen(false);
       setPaymentToUpdate(null);
       setUpdateAmountInput("");
     } catch (err) {
       console.error("Error updating payment amount:", err);
-      alert(err.message || "Failed to update payment amount. Check console for details.");
+      showAlert(err.message || "Failed to update payment amount. Check console for details.", "Error");
     }
-  };
+  }, [paymentToUpdate, updateAmountInput, showAlert]);
 
+  // Load policies on mount
   useEffect(() => {
     loadPolicies();
   }, []);
@@ -269,14 +303,14 @@ export default function PolicyWithPaymentsController() {
     if (!currentPayment?.id || !currentPayment?.policy_id) return;
     
     if (!selectedPaymentMode) {
-      alert("Please select a payment mode");
+      showAlert("Please select a payment mode", "Payment Mode Required");
       return;
     }
     
     try {
       const cleanedInput = parseFloat(paymentInput.replace(/,/g, ""));
       if (isNaN(cleanedInput)) {
-        alert("Please enter a valid number");
+        showAlert("Please enter a valid number", "Invalid Input");
         return;
       }
 
@@ -296,7 +330,7 @@ export default function PolicyWithPaymentsController() {
       }, 0);
 
       if (cleanedInput > totalRemainingAcrossAll + 0.0001) {
-        alert(`You cannot pay more than the total remaining balance (₱${totalRemainingAcrossAll.toLocaleString()}).`);
+        showAlert(`You cannot pay more than the total remaining balance (₱${totalRemainingAcrossAll.toLocaleString()}).`, "Payment Exceeds Balance");
         return;
       }
 
@@ -320,11 +354,11 @@ export default function PolicyWithPaymentsController() {
       setPaymentsMap(prev => ({ ...prev, [policyId]: updatedSchedule }));
 
       if (Math.abs(cleanedInput - totalRemainingAcrossAll) < 0.01) {
-        alert("Full payment applied across remaining months!");
+        showAlert("Full payment applied across remaining months!", "Success");
       } else if (cleanedInput > currentRemaining) {
-        alert("Payment applied with spillover across months.");
+        showAlert("Payment applied with spillover across months.", "Success");
       } else {
-        alert("Payment applied successfully!");
+        showAlert("Payment applied successfully!", "Success");
       }
 
       setModalOpen(false);
@@ -334,7 +368,7 @@ export default function PolicyWithPaymentsController() {
       setManualReference("");
     } catch (err) {
       console.error("Error updating payment:", err);
-      alert("Failed to update payment. Check console for details.");
+      showAlert("Failed to update payment. Check console for details.", "Error");
     }
   };
 
@@ -356,12 +390,12 @@ export default function PolicyWithPaymentsController() {
       setPaymentsByPolicy(prev => ({ ...prev, [policyId]: nonArchived }));
       setPaymentsMap(prev => ({ ...prev, [policyId]: nonArchived }));
 
-      alert("Payment deleted successfully!");
+      showAlert("Payment deleted successfully!", "Success");
       setDeleteModalOpen(false);
       setSelectedPaymentForDelete(null);
     } catch (err) {
       console.error("Error deleting payment:", err);
-      alert("Failed to delete payment. Check console for details.");
+      showAlert("Failed to delete payment. Check console for details.", "Error");
     }
   };
 
@@ -369,7 +403,7 @@ export default function PolicyWithPaymentsController() {
     if (!paymentToEdit?.id || !paymentToEdit?.policy_id) return;
     
     if (!selectedPaymentMode) {
-      alert("Please select a payment mode");
+      showAlert("Please select a payment mode", "Payment Mode Required");
       return;
     }
     
@@ -385,25 +419,25 @@ export default function PolicyWithPaymentsController() {
       setPaymentsByPolicy(prev => ({ ...prev, [policyId]: updatedSchedule }));
       setPaymentsMap(prev => ({ ...prev, [policyId]: updatedSchedule }));
 
-      alert("Payment details updated successfully!");
+      showAlert("Payment details updated successfully!", "Success");
       setEditModalOpen(false);
       setPaymentToEdit(null);
       setManualReference("");
       setSelectedPaymentMode(null);
     } catch (err) {
       console.error("Error updating payment details:", err);
-      alert("Failed to update payment details. Check console for details.");
+      showAlert("Failed to update payment details. Check console for details.", "Error");
     }
   };
 
   const handleAddPenalty = (payment) => {
     if (isChequePayment(payment)) {
-      alert("Cheque payments are not subject to overdue penalties.");
+      showAlert("Cheque payments are not subject to overdue penalties.", "Not Applicable");
       return;
     }
     const overdueInfo = calculateOverdueInfo(payment);
     if (overdueInfo.daysOverdue <= 0) {
-      alert("This payment is not yet overdue. Penalties can only be added to overdue payments.");
+      showAlert("This payment is not yet overdue. Penalties can only be added to overdue payments.", "Not Overdue");
       return;
     }
     setSelectedPaymentForPenalty(payment);
@@ -441,13 +475,13 @@ export default function PolicyWithPaymentsController() {
       setPaymentsByPolicy((prev) => ({ ...prev, [policyId]: updated }));
       setPaymentsMap((prev) => ({ ...prev, [policyId]: updated }));
 
-      alert("Penalty added successfully!");
+      showAlert("Penalty added successfully!", "Success");
       setPenaltyModalOpen(false);
       setSelectedPaymentForPenalty(null);
       
     } catch (err) {
       console.error("Error adding penalty:", err);
-      alert("Failed to add penalty. See console for details.");
+      showAlert("Failed to add penalty. See console for details.", "Error");
     }
   };
 
@@ -459,7 +493,7 @@ export default function PolicyWithPaymentsController() {
         setPaymentsByPolicy(prev => ({ ...prev, [policyId]: updated }));
         setPaymentsMap(prev => ({ ...prev, [policyId]: updated }));
       }
-      alert("Payments generated successfully!");
+      showAlert("Payments generated successfully!", "Success");
     } catch (err) {
       console.error("Error generating payments:", err);
       throw err;
@@ -485,27 +519,29 @@ export default function PolicyWithPaymentsController() {
         const updatedSchedule = await fetchPaymentSchedule(policy_id);
         setPaymentsByPolicy(prev => ({ ...prev, [policy_id]: updatedSchedule }));
         setPaymentsMap(prev => ({ ...prev, [policy_id]: updatedSchedule }));
-        alert(`All ${payments.length} payments archived successfully!`);
+        showAlert(`All ${payments.length} payments archived successfully!`, "Success");
       } else {
         await archivePayment(selectedPaymentForArchive.id);
         const policyId = selectedPaymentForArchive.policy_id;
         const updatedSchedule = await fetchPaymentSchedule(policyId);
         setPaymentsByPolicy(prev => ({ ...prev, [policyId]: updatedSchedule }));
         setPaymentsMap(prev => ({ ...prev, [policyId]: updatedSchedule }));
-        alert("Payment archived successfully!");
+        showAlert("Payment archived successfully!", "Success");
       }
       setArchiveModalOpen(false);
       setSelectedPaymentForArchive(null);
     } catch (err) {
       console.error("Error archiving payment:", err);
-      alert("Failed to archive payment. Check console for details.");
+      showAlert("Failed to archive payment. Check console for details.", "Error");
     }
   };
 
-  // NEW: Enhanced filtering with agent and partner
+  // Enhanced filtering with agent and partner
   const filteredPolicies = useMemo(() => {
+    if (!Array.isArray(policies)) return [];
+    
     return policies.filter((policy) => {
-      const client = policy.clients_Table;
+      const client = policy?.clients_Table;
       
       // Client name and policy ID search
       const clientName = client
@@ -515,7 +551,7 @@ export default function PolicyWithPaymentsController() {
             .toLowerCase()
         : "";
       
-      const policyId = policy.internal_id?.toLowerCase() || "";
+      const policyId = policy?.internal_id?.toLowerCase() || "";
       const search = searchTerm.toLowerCase().trim();
       const matchesSearch = clientName.includes(search) || policyId.includes(search);
       
@@ -526,7 +562,7 @@ export default function PolicyWithPaymentsController() {
       const matchesAgent = !selectedAgent || agentName === selectedAgent;
       
       // Partner filter
-      const partnerName = policy.insurance_Partners?.insurance_Name || "";
+      const partnerName = policy?.insurance_Partners?.insurance_Name || "";
       const matchesPartner = !selectedPartner || partnerName === selectedPartner;
       
       return matchesSearch && matchesAgent && matchesPartner;
@@ -561,10 +597,10 @@ export default function PolicyWithPaymentsController() {
       setPaymentsByPolicy(prev => ({ ...prev, [policyId]: nonArchived }));
       setPaymentsMap(prev => ({ ...prev, [policyId]: nonArchived }));
       
-      alert("Receipt uploaded successfully!");
+      showAlert("Receipt uploaded successfully!", "Success");
     } catch (err) {
       console.error("Error uploading receipt:", err);
-      alert(err.message || "Failed to upload receipt. Check console for details.");
+      showAlert(err.message || "Failed to upload receipt. Check console for details.", "Error");
     } finally {
       setUploadingReceipt(false);
     }
@@ -580,35 +616,39 @@ export default function PolicyWithPaymentsController() {
   };
 
   const handleDeleteReceiptFromViewer = async (receiptId) => {
-    if (!window.confirm("Are you sure you want to delete this receipt?")) return;
-    
-    try {
-      await deleteReceipt(receiptId);
-      
-      const updatedReceipts = viewingReceipts.filter(r => r.id !== receiptId);
-      setViewingReceipts(updatedReceipts);
-      
-      if (updatedReceipts.length === 0) {
-        setReceiptViewerOpen(false);
-      } else if (currentReceiptIndex >= updatedReceipts.length) {
-        setCurrentReceiptIndex(updatedReceipts.length - 1);
-      }
-      
-      const payment = selectedPaymentForReceipt || viewingReceipts[0];
-      if (payment?.payment_id) {
-        const policyId = payment.policy_id;
-        const updatedSchedule = await fetchPaymentSchedule(policyId);
-        const nonArchived = (updatedSchedule || []).filter(p => p.is_archive !== true);
-        
-        setPaymentsByPolicy(prev => ({ ...prev, [policyId]: nonArchived }));
-        setPaymentsMap(prev => ({ ...prev, [policyId]: nonArchived }));
-      }
-      
-      alert("Receipt deleted successfully!");
-    } catch (err) {
-      console.error("Error deleting receipt:", err);
-      alert("Failed to delete receipt. Check console for details.");
-    }
+    showConfirm(
+      "Are you sure you want to delete this receipt?",
+      async () => {
+        try {
+          await deleteReceipt(receiptId);
+          
+          const updatedReceipts = viewingReceipts.filter(r => r.id !== receiptId);
+          setViewingReceipts(updatedReceipts);
+          
+          if (updatedReceipts.length === 0) {
+            setReceiptViewerOpen(false);
+          } else if (currentReceiptIndex >= updatedReceipts.length) {
+            setCurrentReceiptIndex(updatedReceipts.length - 1);
+          }
+          
+          const payment = selectedPaymentForReceipt || viewingReceipts[0];
+          if (payment?.payment_id) {
+            const policyId = payment.policy_id;
+            const updatedSchedule = await fetchPaymentSchedule(policyId);
+            const nonArchived = (updatedSchedule || []).filter(p => p.is_archive !== true);
+            
+            setPaymentsByPolicy(prev => ({ ...prev, [policyId]: nonArchived }));
+            setPaymentsMap(prev => ({ ...prev, [policyId]: nonArchived }));
+          }
+          
+          showAlert("Receipt deleted successfully!", "Success");
+        } catch (err) {
+          console.error("Error deleting receipt:", err);
+          showAlert("Failed to delete receipt. Check console for details.", "Error");
+        }
+      },
+      "Delete Receipt"
+    );
   };
 
   return {
@@ -640,7 +680,6 @@ export default function PolicyWithPaymentsController() {
     searchTerm,
     setSearchTerm,
 
-    // NEW: Filter exports
     selectedAgent,
     setSelectedAgent,
     selectedPartner,
@@ -731,7 +770,17 @@ export default function PolicyWithPaymentsController() {
     currentReceiptIndex,
     setCurrentReceiptIndex,
     handleViewReceipts,
-    handleDeleteReceiptFromViewer
+    handleDeleteReceiptFromViewer,
+
+    // Custom Modal exports
+    alertModal,
+    confirmModal,
+    closeAlert,
+    closeConfirm,
+    showAlert,
+    showConfirm,
+    CustomAlertModal,
+    CustomConfirmModal
   };
 }
 

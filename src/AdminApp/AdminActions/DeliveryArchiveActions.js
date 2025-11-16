@@ -65,15 +65,36 @@ export async function getArchivedDeliveryById(deliveryId) {
     `)
     .eq("id", deliveryId)
     .eq("is_archived", true)          // must be archived
-    .not("archival_date", "is", null) // must have archival date
-    .single();
+    .not("archival_date", "is", null); // must have archival date
 
   if (error) {
     console.error("Error fetching archived delivery:", error.message);
     return null;
   }
 
-  return data;
+  return data && data.length > 0 ? data[0] : null;
+}
+
+/**
+ * Archive a delivery (for active deliveries)
+ */
+export async function archiveDelivery(deliveryId) {
+  const { data, error } = await db
+    .from("delivery_Table")
+    .update({
+      is_archived: true,
+      archival_date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
+    })
+    .eq("id", deliveryId)
+    .select();
+
+  if (error) {
+    console.error("Error archiving delivery:", error.message);
+    throw error;
+  }
+
+  // Return first item or null if no rows were updated
+  return data && data.length > 0 ? data[0] : null;
 }
 
 /**
@@ -94,7 +115,8 @@ export async function unarchiveDelivery(deliveryId) {
     throw error;
   }
 
-  return data?.[0] || null;
+  // Return first item or null if no rows were updated
+  return data && data.length > 0 ? data[0] : null;
 }
 
 /**
@@ -106,6 +128,10 @@ export async function deleteDelivery(deliveryId) {
     .delete()
     .eq("id", deliveryId);
 
-  if (error) throw error;
+  if (error) {
+    console.error("Error deleting delivery:", error.message);
+    throw error;
+  }
+  
   return true;
 }
