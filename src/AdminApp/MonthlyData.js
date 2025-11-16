@@ -28,7 +28,8 @@ export default function MonthlyData({ view, setView }) {
         { label: "Payment", type: "payment" },
         { label: "Renewal", type: "renewal" }, 
         { label: "Quotation", type: "quotation" },
-        { label: "Delivery", type: "delivery" }
+        { label: "Delivery", type: "delivery" },
+        { label: "Claims", type: "claim" }
       ].map(({ label, type }) => (
         <div key={type} className={`${type}-record-container header-with-button`}>
           <p className={`${type}-title`}>{label}</p>
