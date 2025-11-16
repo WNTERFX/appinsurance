@@ -23,10 +23,16 @@ import {
   fetchPartners
 } from "../AdminActions/NewPolicyActions";
 
-import PolicyNewClient from "../AdminForms/PolicyNewClient"; 
+import PolicyNewClient from "../AdminForms/PolicyNewClient";
+import CustomAlertModal from "../AdminForms/CustomAlertModal";
 
 export default function NewPolicyController() {
   const navigate = useNavigate();
+
+  // -----------------------------------
+  // Modal states
+  // -----------------------------------
+  const [alertModal, setAlertModal] = useState({ isOpen: false, message: "", title: "Alert" });
 
   // -----------------------------------
   // Lookup data
@@ -88,6 +94,11 @@ export default function NewPolicyController() {
   
 
   const safeNumber = (v) => isNaN(Number(v)) ? 0 : Number(v);
+
+  // Helper function to show alert
+  const showAlert = (message, title = "Alert") => {
+    setAlertModal({ isOpen: true, message, title });
+  };
 
   // -----------------------------------
   // Load lookup data
@@ -183,7 +194,7 @@ export default function NewPolicyController() {
   useEffect(() => {
     setOriginalVehicleCost(vehicleCost);
     setCurrentVehicleCost(vehicleValue);
-    setClaimableAmount(vehicleValue); // Claimable amount is set to current vehicle value
+    setClaimableAmount(vehicleValue);
     setTotalVehicleValueRate(vehicleValueRate);
     setTotalPremiumCost(totalWithCommission);
     setCommissionValue(computedCommissionValue);
@@ -195,12 +206,12 @@ export default function NewPolicyController() {
   const handleSaveClient = async () => {
     // Validation
     if (!selectedClient?.uid) {
-      alert("Please select a client");
+      showAlert("Please select a client", "Validation Error");
       return;
     }
     
     if (!selectedPartner) {
-      alert("Please select a partner");
+      showAlert("Please select a partner", "Validation Error");
       return;
     }
 
@@ -223,7 +234,10 @@ export default function NewPolicyController() {
     };
 
     const { success: policySuccess, data: policyRow, error: policyError } = await NewPolicyCreation(policyData);
-    if (!policySuccess) return alert("Error saving policy: " + policyError);
+    if (!policySuccess) {
+      showAlert(`Error saving policy: ${policyError}`, "Error");
+      return;
+    }
 
     const policyId = policyRow[0].id;
     const vehicleTypeObj = vehicleTypes.find(v => v.vehicle_type === selected);
@@ -241,15 +255,17 @@ export default function NewPolicyController() {
     };
 
     const newVehicleResult = await NewVehicleCreation(vehicleData);
-    if (!newVehicleResult.success) return alert("Error saving vehicle details");
+    if (!newVehicleResult.success) {
+      showAlert("Error saving vehicle details", "Error");
+      return;
+    }
 
-    // ✅ Include basic_Premium and claimable amount in computation data
     const computationData = {
       policy_id: policyId,
       original_Value: orginalVehicleCost,
       current_Value: currentVehicleValueCost,
-      policy_claim_amount: claimableAmount, // ✅ Store claimable amount
-      basic_Premium: basicPremiumValue, // ✅ Store basic premium
+      policy_claim_amount: claimableAmount,
+      basic_Premium: basicPremiumValue,
       total_Premium: totalWithCommission,
       vehicle_Rate_Value: totalVehicleValueRate,
       aon_Cost: actOfNatureCost,
@@ -261,75 +277,87 @@ export default function NewPolicyController() {
 
     const computationResult = await NewComputationCreation(computationData);
     if (!computationResult.success) {
-      alert("Error saving computation: " + computationResult.error);
+      showAlert(`Error saving computation: ${computationResult.error}`, "Error");
       return;
     }
 
-    alert("Policy created successfully!");
-    navigate("/appinsurance/main-app/policy");
+    showAlert("Policy created successfully!", "Success");
+    // Navigate after user closes the success modal
+    setTimeout(() => {
+      navigate("/appinsurance/main-app/policy");
+    }, 1500);
   };
 
   // -----------------------------------
   // Render
   // -----------------------------------
   return (
-    <PolicyNewClient
-      vehicleTypes={vehicleTypes}
-      selected={selected}
-      setSelected={setSelected}
-      vehicleDetails={vehicleDetails}
-      vehicleName={vehicleName}
-      setVehicleName={setVehicleName}
-      vehicleMaker={vehicleMaker}
-      setVehicleMaker={setVehicleMaker}
-      vehicleColor={vehicleColor}
-      setVehicleColor={setVehicleColor}
-      vehicleVinNumber={vehicleVinNumber}
-      setVinNumber={setVinNumber}
-      vehiclePlateNumber={vehiclePlateNumber}
-      setPlateNumber={setPlateNumber}
-      vehicleEngineNumber={vehicleEngineNumber}
-      setEngineNumber={setEngineNumber}
-      vehicleYear={vehicleYear}
-      setVehicleYear={setVehicleYear}
-      yearInput={yearInput}
-      setYearInput={(v) => setYearInput(v === "" ? 0 : safeNumber(v))}
-      vehicleCost={vehicleCost}
-      setVehicleCost={(v) => setVehicleCost(v === "" ? 0 : safeNumber(v))}
-      rateInput={rateInput}
-      bodily_Injury={bodily_Injury}
-      property_Damage={property_Damage}
-      personal_Accident={personal_Accident}
-      vat_Tax={vat_Tax}
-      docu_Stamp={docu_Stamp}
-      local_Gov_Tax={local_Gov_Tax}
-      AoNRate={AoNRate}
-      isAoN={isAoN}
-      setIsAoN={setIsAoN}
-      orginalVehicleCost={orginalVehicleCost}
-      currentVehicleValueCost={currentVehicleValueCost}
-      claimableAmount={claimableAmount}
-      totalVehicleValueRate={totalVehicleValueRate}
-      basicPremiumValue={basicPremiumValue}
-      totalPremiumValue={totalPremiumBeforeCommission}
-      actOfNatureCost={actOfNatureCost}
-      commissionFee={commissionFee}
-      setCommissionFee={setCommissionFee}
-      commissionValue={commissionValue}
-      totalPremiumWithCommission={totalWithCommission}
-      basicPremiumWithCommissionValue={basicPremiumWithCommissionValue} 
-      totalPremiumCost={totalPremiumCost}
-      clients={clients}
-      selectedClient={selectedClient}
-      setSelectedClient={setSelectedClient}
-      partners={partners}
-      selectedPartner={selectedPartner}
-      setSelectedPartner={setSelectedPartner}
-      paymentTypes={paymentTypes}
-      selectedPaymentType={selectedPaymentType}
-      setSelectedPaymentType={setSelectedPaymentType}
-      onSaveClient={handleSaveClient}
-      navigate={navigate}
-    />
+    <>
+      <PolicyNewClient
+        vehicleTypes={vehicleTypes}
+        selected={selected}
+        setSelected={setSelected}
+        vehicleDetails={vehicleDetails}
+        vehicleName={vehicleName}
+        setVehicleName={setVehicleName}
+        vehicleMaker={vehicleMaker}
+        setVehicleMaker={setVehicleMaker}
+        vehicleColor={vehicleColor}
+        setVehicleColor={setVehicleColor}
+        vehicleVinNumber={vehicleVinNumber}
+        setVinNumber={setVinNumber}
+        vehiclePlateNumber={vehiclePlateNumber}
+        setPlateNumber={setPlateNumber}
+        vehicleEngineNumber={vehicleEngineNumber}
+        setEngineNumber={setEngineNumber}
+        vehicleYear={vehicleYear}
+        setVehicleYear={setVehicleYear}
+        yearInput={yearInput}
+        setYearInput={(v) => setYearInput(v === "" ? 0 : safeNumber(v))}
+        vehicleCost={vehicleCost}
+        setVehicleCost={(v) => setVehicleCost(v === "" ? 0 : safeNumber(v))}
+        rateInput={rateInput}
+        bodily_Injury={bodily_Injury}
+        property_Damage={property_Damage}
+        personal_Accident={personal_Accident}
+        vat_Tax={vat_Tax}
+        docu_Stamp={docu_Stamp}
+        local_Gov_Tax={local_Gov_Tax}
+        AoNRate={AoNRate}
+        isAoN={isAoN}
+        setIsAoN={setIsAoN}
+        orginalVehicleCost={orginalVehicleCost}
+        currentVehicleValueCost={currentVehicleValueCost}
+        claimableAmount={claimableAmount}
+        totalVehicleValueRate={totalVehicleValueRate}
+        basicPremiumValue={basicPremiumValue}
+        totalPremiumValue={totalPremiumBeforeCommission}
+        actOfNatureCost={actOfNatureCost}
+        commissionFee={commissionFee}
+        setCommissionFee={setCommissionFee}
+        commissionValue={commissionValue}
+        totalPremiumWithCommission={totalWithCommission}
+        basicPremiumWithCommissionValue={basicPremiumWithCommissionValue} 
+        totalPremiumCost={totalPremiumCost}
+        clients={clients}
+        selectedClient={selectedClient}
+        setSelectedClient={setSelectedClient}
+        partners={partners}
+        selectedPartner={selectedPartner}
+        setSelectedPartner={setSelectedPartner}
+        paymentTypes={paymentTypes}
+        selectedPaymentType={selectedPaymentType}
+        setSelectedPaymentType={setSelectedPaymentType}
+        onSaveClient={handleSaveClient}
+        navigate={navigate}
+      />
+      
+      <CustomAlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        message={alertModal.message}
+        title={alertModal.title}
+      />
+    </>
   );
 }

@@ -582,7 +582,7 @@ export default function DeliveryTable({
             </div>
 
             <div className="form-group">
-              <label>Receiving copy Image:</label>
+              <label>Proof of Delivery:</label>
 
               {proofImagePreviews.length === 0 ? (
                 <div className="image-upload-area">
@@ -667,7 +667,7 @@ export default function DeliveryTable({
         >
           <div className="delivery-modal proof-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Receiving Copy</h3>
+              <h3>Proof of Delivery</h3>
               <button
                 className="modal-close-btn"
                 onClick={() => {
