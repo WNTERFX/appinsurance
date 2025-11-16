@@ -102,11 +102,11 @@ export default function NavBar() {
             </Link>
           )}
 
-          {/* Change label based on user role */}
+         {/* Change label based on user role */}
           <Link to="/appinsurance/main-app/account-management" className={"side-bar-item" + (isActive("/appinsurance/main-app/account-management") ? " active" : "")}>
             <div className="side-bar-label">
               <LuSettings className="side-bar-icon" />
-              <span>Manage Accounts</span>
+              <span>{isAdmin ? "Manage Accounts" : "Manage Account"}</span>
             </div>
           </Link>
         </div>
