@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import ClientTable from "./AdminTables/ClientTable";
 import ClientArchiveTable from "./AdminTables/ClientArchiveTable";
-import { FaPlus, FaArchive, FaUser, FaUserCircle } from "react-icons/fa";
+import { FaPlus, FaArchive, FaUser, FaSpinner } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import DropdownAccounts from "./DropDownAccounts";
 import { fetchClients } from "./AdminActions/ClientActions";
 import {
   getAllAgentsWithAssignedColors,
-  getClientCountByAgent
+  getClientCountByAgent,
 } from "./AdminActions/AgentActions";
 import { fetchAllEmployeeRoles } from "./AdminActions/EmployeeRoleActions";
 import ProfileMenu from "../ReusableComponents/ProfileMenu";
@@ -30,19 +30,26 @@ export default function Client() {
   const [agentsWithClientCounts, setAgentsWithClientCounts] = useState([]);
   const [selectedAgentId, setSelectedAgentId] = useState(null);
   const [allClientsCount, setAllClientsCount] = useState(0);
-  const [roles, setRoles] = useState([]); // Store employee roles
+  const [roles, setRoles] = useState([]);
 
   useEffect(() => {
-    loadClients();
+    loadClients(selectedAgentId, showArchive);
+  }, [selectedAgentId, showArchive]);
+
+  useEffect(() => {
     loadAgentsWithClientCounts();
     loadAllClientsCount();
     loadRoles();
   }, []);
 
-  const loadClients = async (agentId = null) => {
+  const loadClients = async (agentId = null, isArchive = false) => {
     setLoading(true);
-    const data = await fetchClients(agentId, false);
-    setClients(data || []);
+
+    if (!isArchive) {
+      const data = await fetchClients(agentId, false);
+      setClients(data || []);
+    }
+
     setLoading(false);
   };
 
@@ -84,18 +91,16 @@ export default function Client() {
     setSelectedAgentId(null);
   };
 
-  // Helper function to get role name or fallback to privilege
   const getAgentRoleDisplay = (agent) => {
     if (agent.role_id) {
-      const role = roles.find(r => r.id === agent.role_id);
+      const role = roles.find((r) => r.id === agent.role_id);
       if (role) return role.role_name;
     }
-    // Fallback to privilege if no role assigned
     return agent.is_Admin ? "Admin" : "Moderator";
   };
 
   useEffect(() => {
-    function handleClickOutside(e) {
+    const handleClickOutside = (e) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(e.target) &&
@@ -104,18 +109,18 @@ export default function Client() {
       ) {
         setOpen(false);
       }
-    }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
     <div className="Client-container">
-      {/* ... Client Header ... */}
       <div className="Client-header">
         <div className="right-actions">
           <p className="client-title">
-            {showArchive ? "Client Archive" : "Client"}
+            {showArchive ? "Client Archive" : "Client List"}
           </p>
         </div>
 
@@ -134,12 +139,14 @@ export default function Client() {
             className="btn btn-archive"
             onClick={() => setShowArchive((prev) => !prev)}
           >
-            <FaArchive className="btn-icon" />{" "}
+            <FaArchive className="btn-icon" />
             {showArchive ? "Back to Clients" : "View Archive"}
           </button>
 
           <div className="profile-menu">
-            <ProfileMenu onDarkMode={() => console.log("Dark Mode toggled")} />  
+            <ProfileMenu
+              onDarkMode={() => console.log("Dark Mode toggled")}
+            />
           </div>
         </div>
       </div>
@@ -148,8 +155,10 @@ export default function Client() {
         <div className="agent-cards-container">
           {agentsWithClientCounts.map((agent) => (
             <div
-              className={`agent-content ${selectedAgentId === agent.id ? 'agent-selected' : ''}`}
               key={agent.id}
+              className={`agent-content ${
+                selectedAgentId === agent.id ? "agent-selected" : ""
+              }`}
               style={{ borderLeftColor: agent.borderColor }}
               onClick={() => handleAgentCardClick(agent.id)}
             >
@@ -159,7 +168,9 @@ export default function Client() {
                   {agent.first_name} {agent.last_name}
                 </h2>
                 <p className="agent-role">{getAgentRoleDisplay(agent)}</p>
-                <p className="agent-client-count">{agent.clientCount} Clients</p>
+                <p className="agent-client-count">
+                  {agent.clientCount} Clients
+                </p>
               </div>
             </div>
           ))}
@@ -167,11 +178,17 @@ export default function Client() {
       )}
 
       <div className="client-data-field">
-        {showArchive ? (
+        {loading ? (
+          <div className="loading-overlay">
+            <FaSpinner className="spinner" />
+            <p>Loading client data...</p>
+          </div>
+        ) : showArchive ? (
           <ClientArchiveTable />
         ) : (
           <ClientTable
             agentId={selectedAgentId}
+            clients={clients}
             allClientsCount={allClientsCount}
             agentsWithClientCounts={agentsWithClientCounts}
             onViewAllClients={handleViewAllClients}
@@ -186,7 +203,7 @@ export default function Client() {
             <NewClientController
               onCancel={() => {
                 setShowCreateModal(false);
-                loadClients();
+                loadClients(selectedAgentId, showArchive);
                 loadAgentsWithClientCounts();
                 loadAllClientsCount();
               }}
@@ -194,6 +211,7 @@ export default function Client() {
           </div>
         </div>
       )}
+
       {editClient && (
         <div className="client-creation-modal-overlay-moderator">
           <div className="client-creation-modal-content-moderator">
@@ -201,7 +219,7 @@ export default function Client() {
               client={editClient}
               onClose={() => setEditClient(null)}
               onUpdateSuccess={async () => {
-                await loadClients();
+                await loadClients(selectedAgentId, showArchive);
                 await loadAgentsWithClientCounts();
                 await loadAllClientsCount();
                 setEditClient(null);
