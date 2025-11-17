@@ -8,6 +8,8 @@ import {
   checkIfEmailExists,
   checkIfPhoneExists,
 } from "../AdminActions/NewClientActions";
+import BatchClientUpload from "../BatchUploading";
+import '../styles/batch-client-upload-styles.css';
 
 export default function NewClientController({ onCancel, onSuccess }) {
   const [clientData, setClientData] = useState({
@@ -25,6 +27,9 @@ export default function NewClientController({ onCancel, onSuccess }) {
     phoneNumber: "",
     email: "",
   });
+
+  // batch uploading
+   const [mode, setMode] = useState('single');
 
   // Modal state
   const [alertModal, setAlertModal] = useState({ isOpen: false, message: "", title: "Alert", isSuccess: false });
@@ -161,6 +166,67 @@ export default function NewClientController({ onCancel, onSuccess }) {
     return true;
   };
 
+
+  // batch uploading handler
+
+   const handleBatchSubmit = async (clients) => {
+    const user = await getCurrentUser();
+    if (!user) {
+      showAlert("No logged-in user. Please sign in again.", "Authentication Error");
+      return;
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+    const errors = [];
+
+    for (const client of clients) {
+      // Check for duplicates
+      const emailExists = await checkIfEmailExists(client.email);
+      const phoneExists = await checkIfPhoneExists(client.phoneNumber);
+
+      if (emailExists || phoneExists) {
+        failCount++;
+        errors.push(`${client.firstName} ${client.familyName}: Duplicate ${emailExists ? 'email' : 'phone'}`);
+        continue;
+      }
+
+      const dbPayload = {
+        prefix: client.prefix,
+        first_Name: client.firstName,
+        middle_Name: client.middleName,
+        family_Name: client.familyName,
+        suffix: client.suffix,
+        phone_Number: client.phoneNumber,
+        address: client.streetAddress,
+        barangay_address: client.barangay,
+        city_address: client.city,
+        province_address: client.province,
+        region_address: client.region,
+        zip_code: client.zipCode ? parseInt(client.zipCode, 10) : null,
+        email: client.email,
+        client_active: true,
+        client_Registered: new Date().toISOString().split("T")[0],
+        agent_Id: user.id,
+      };
+
+      const { success } = await NewClientCreation(dbPayload);
+      if (success) successCount++;
+      else {
+        failCount++;
+        errors.push(`${client.firstName} ${client.familyName}: Database error`);
+      }
+    }
+
+    const message = `
+      Successfully created: ${successCount}
+      Failed: ${failCount}
+      ${errors.length > 0 ? '\n\nErrors:\n' + errors.join('\n') : ''}
+    `;
+
+    showAlert(message, "Batch Upload Complete", true);
+  };
+
   return (
     <>
       <CustomAlertModal
@@ -170,14 +236,37 @@ export default function NewClientController({ onCancel, onSuccess }) {
         title={alertModal.title}
       />
       
-      <ClientCreationForm
-        clientData={clientData}
-        onChange={handleChange}
-        onSubmit={async () => {
-          const success = await handleSubmit();
-        }}
-        onCancel={onCancel || (() => navigate("/appinsurance/main-area/client"))}
-      />
+      {/* Mode toggle with styled classes */}
+      <div className="mode-toggle-wrapper">
+        <div className="mode-toggle-container">
+          <button 
+            onClick={() => setMode('single')}
+            className={`mode-toggle-btn ${mode === 'single' ? 'active' : ''}`}
+          >
+            👤 Single Client
+          </button>
+          <button 
+            onClick={() => setMode('batch')}
+            className={`mode-toggle-btn ${mode === 'batch' ? 'active' : ''}`}
+          >
+            Batch Upload
+          </button>
+        </div>
+      </div>
+
+      {mode === 'single' ? (
+        <ClientCreationForm
+          clientData={clientData}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+          onCancel={onCancel}
+        />
+      ) : (
+        <BatchClientUpload
+          onBatchSubmit={handleBatchSubmit}
+          onCancel={onCancel}
+        />
+      )}
     </>
   );
 }
