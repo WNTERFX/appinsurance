@@ -630,3 +630,30 @@ body {
         gap: 5px;
     }
 }
+
+/* Overlay to cover the data area */
+.loading-overlay {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+    font-size: 1.2rem;
+    color: #3b82f6;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+/* Spinner icon styling */
+.spinner {
+    font-size: 3rem;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+/* Keyframe animation for spinning */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

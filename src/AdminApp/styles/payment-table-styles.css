@@ -753,3 +753,27 @@ button.disabled-btn {
   cursor: not-allowed;
   opacity: 0.6;
 }
+
+.loading-overlay {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 400px; /* Give it a fixed height for centering the spinner */
+    font-size: 1.2rem;
+    color: #3b82f6; /* Blue color */
+    background-color: #f9fafb;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.spinner {
+    font-size: 3rem;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

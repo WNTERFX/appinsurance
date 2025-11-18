@@ -205,3 +205,163 @@
   text-align: left;
   padding: 20px 5px 10px 5px;
 }
+
+/* Overlay to cover the data area */
+.loading-overlay {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 400px; /* Give it a fixed height for centering the spinner */
+    font-size: 1.2rem;
+    color: #3b82f6; /* Blue color */
+    background-color: #f9fafb;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+/* Spinner icon styling */
+.spinner {
+    font-size: 3rem;
+    animation: spin 1s linear infinite; /* Apply the spinning animation */
+    margin-bottom: 10px;
+}
+
+/* Keyframe animation for spinning */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Add these styles to your payment-records-styles.css file */
+
+/* View Selector Buttons */
+.view-selector-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-view {
+  padding: 8px 15px;
+  background-color: #f0f0f0;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-view:hover {
+  background-color: #e0e0e0;
+}
+
+.btn-active {
+  padding: 8px 15px;
+  background-color: #007bff;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  color: white;
+  font-weight: 600;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-active:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Payment Stats Summary */
+.payment-stats-summary {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  flex: 1;
+  min-width: 200px;
+  background: linear-gradient(135deg, #53d66f 0%, #6c24b4 100%);
+  padding: 20px;
+  border-radius: 8px;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card:nth-child(2) {
+  background: linear-gradient(135deg, #ca4433 0%, #6c24b4 100%);
+}
+
+.stat-card:nth-child(3) {
+  background: linear-gradient(135deg, #788adb 0%, #6c24b4 100%);
+}
+
+.stat-label {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.9;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Date Range Filters */
+input[type="date"] {
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+/* Responsive adjustments for stats */
+@media (max-width: 768px) {
+  .payment-stats-summary {
+    flex-direction: column;
+  }
+  
+  .stat-card {
+    min-width: 100%;
+  }
+  
+  .view-selector-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .btn-view,
+  .btn-active {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .left-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+  
+  .payment-record-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+}
