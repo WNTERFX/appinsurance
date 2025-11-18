@@ -1,6 +1,6 @@
 // src/AdminTables/DeliveryTable.jsx
 import { useState, useMemo } from "react";
-import { FaEdit, FaTimes, FaDownload, FaEye, FaCamera } from "react-icons/fa";
+import { FaEdit, FaTimes, FaDownload, FaEye, FaCamera, FaSpinner } from "react-icons/fa";
 import {
   cancelDelivery,
   markAsScheduled,
@@ -329,7 +329,10 @@ export default function DeliveryTable({
         </div>
 
         {loading ? (
-          <div className="loading-overlay">Loading deliveries and policies...</div>
+          <div className="loading-overlay">
+            <FaSpinner className="spinner" />
+            <p>Loading deliveries and policies...</p>
+          </div>
         ) : filteredAndSearchedDeliveries.length === 0 ? (
           <div className="no-deliveries-message">
             <p>No deliveries in {activeTab} status</p>

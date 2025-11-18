@@ -2,6 +2,7 @@ import PaymentGenerationModal from "../PaymentGenerationModal";
 import "../styles/payment-table-styles.css";
 import PaymentDueController from "./TableController/PaymentDueController"
 import { useState } from "react";
+import { FaSpinner } from "react-icons/fa";
 
 
 export default function PolicyWithPaymentsList() {
@@ -978,22 +979,33 @@ export default function PolicyWithPaymentsList() {
         </div>
       </div>
 
-      {/* Policies list */}
-      <div className="policies-list">
-        {renderPolicies.map(policy => {
-          const client = policy.clients_Table;
-          const clientName = client ? [client.prefix, client.first_Name, client.middle_Name ? client.middle_Name.charAt(0) + "." : "", client.family_Name, client.suffix].filter(Boolean).join(" ") : "Unknown Client";
-          const clientInternalId = client?.internal_id || "N/A";
-          const agentName = client?.employee_Accounts
-            ? `${client.employee_Accounts.first_name || ""} ${client.employee_Accounts.last_name || ""}`.trim()
-            : "N/A";
+      {/* Policies List Container (Added for correct overlay usage) */}
+      <div className="policies-list-container" style={{ position: 'relative', minHeight: '400px' }}>
+        {isLoading && renderPolicies.length === 0 ? (
+          <div className="loading-overlay">
+            <FaSpinner className="spinner" />
+            <span>Loading Policies with Payments Due...</span>
+          </div>
+        ) : renderPolicies.length === 0 && !isLoading ? (
+          <div className="policies-list" style={{ padding: '20px', textAlign: 'center' }}>
+            <p>No policies found matching the current criteria.</p>
+          </div>
+        ) : (
+          
+          <div className="policies-list">
+            {renderPolicies.map(policy => {
+              const client = policy.clients_Table;
+              const clientName = client ? [client.prefix, client.first_Name, client.middle_Name ? client.middle_Name.charAt(0) + "." : "", client.family_Name, client.suffix].filter(Boolean).join(" ") : "Unknown Client";
+              const clientInternalId = client?.internal_id || "N/A";
+              const agentName = client?.employee_Accounts
+                ? `${client.employee_Accounts.first_name || ""} ${client.employee_Accounts.last_name || ""}`.trim()
+                : "N/A";
 
-          const partnerName = policy.insurance_Partners?.insurance_Name || "N/A";
+              const partnerName = policy.insurance_Partners?.insurance_Name || "N/A";
 
-          const payments = paymentsByPolicy[policy.id] || paymentsMap[policy.id] || [];
-          const isOpen = !!expanded[policy.id];
-          const isLoadingForPolicy = !!loadingPayments[policy.id];
-
+              const payments = paymentsByPolicy[policy.id] || paymentsMap[policy.id] || [];
+              const isOpen = !!expanded[policy.id];
+              const isLoadingForPolicy = !!loadingPayments[policy.id];
           return (
             <div key={policy.id} className="policy-item-card">
               <div className="policy-summary" onClick={() => handleExpand(policy.id)}>
@@ -1051,7 +1063,12 @@ export default function PolicyWithPaymentsList() {
                 </div>
 
                 {/* Loading indicator */}
-                {isLoadingForPolicy && <p style={{ padding: '12px' }}>Loading payments...</p>}
+                {isLoadingForPolicy &&
+                  <div className="loading-overlay">
+                    <FaSpinner className="spinner" />
+                    <span>Loading Policies with Payments Due...</span>
+                  </div>
+}
 
                 {(!isLoadingForPolicy && payments && payments.length > 0) ? (
                   <table className="payments-table">
@@ -1248,11 +1265,13 @@ export default function PolicyWithPaymentsList() {
                     </tbody>
                   </table>
                 ) : (!isLoadingForPolicy && <p className="no-payments-message">No payments scheduled</p>)}
-              </div>
-            </div>
-          );
-        })}
-        {sentinelRef && <div ref={sentinelRef} style={{ height: 1 }} />}
+                  </div>
+                </div>
+              );
+            })}
+            {sentinelRef && <div ref={sentinelRef} style={{ height: 1 }} />}
+          </div>
+        )}
       </div>
 
       {/* Pagination */}

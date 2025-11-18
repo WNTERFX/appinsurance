@@ -10,6 +10,7 @@ import EditClaimsModal from "../AdminForms/EditClaimsModal";
 import ViewClaimModal from "../AdminForms/ViewClaimModal";
 import CustomAlertModal from "../AdminForms/CustomAlertModal";
 import CustomConfirmModal from "../AdminForms/CustomConfirmModal";
+import { FaSpinner } from "react-icons/fa";
 import "../styles/claims-table-styles.css";
 
 export default function ClaimsTable() {
@@ -358,9 +359,10 @@ export default function ClaimsTable() {
   if (loading) {
     return (
       <div className="claims-overview-section">
-        <p style={{ textAlign: "center", padding: "20px", fontSize: "16px" }}>
-          Loading claims data...
-        </p>
+        <div className="loading-overlay">
+          <FaSpinner className="spinner" />
+          <p>Loading claims data...</p>
+        </div>
       </div>
     );
   }

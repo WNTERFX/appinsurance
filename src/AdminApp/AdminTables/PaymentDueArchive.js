@@ -1,5 +1,6 @@
 import PaymentArchiveController from "./TableController/PaymentArchiveController";
 import "../styles/payment-table-styles.css";
+import { FaSpinner } from "react-icons/fa";
 
 export default function PaymentArchiveTable() {
   const {
@@ -201,7 +202,10 @@ export default function PaymentArchiveTable() {
       {/* Policies List */}
       <div className="policies-list">
         {isLoading && renderPolicies.length === 0 ? (
-          <p style={{ padding: '20px', textAlign: 'center' }}>Loading archived payments...</p>
+          <div className="loading-overlay">
+                      <FaSpinner className="spinner" />
+                      <span>Loading Policies with Payments Due...</span>
+          </div>
         ) : (
           renderPolicies.map(policy => {
           const client = policy?.clients_Table;
@@ -291,7 +295,10 @@ export default function PaymentArchiveTable() {
 
                 {/* Loading indicator */}
                 {isLoadingForPolicy && (
-                  <p style={{ padding: '12px' }}>Loading payments...</p>
+                  <div className="loading-overlay">
+                  <FaSpinner className="spinner" />
+                  <span>Loading Policies with Payments Due...</span>
+                </div>
                 )}
 
                 {/* Payments Table */}
