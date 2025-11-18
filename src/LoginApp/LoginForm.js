@@ -11,8 +11,6 @@ export default function LoginForm({ anotherLoginDetected }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
-  // Add alert state
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState("");
   
@@ -22,7 +20,6 @@ export default function LoginForm({ anotherLoginDetected }) {
     setPasswordVisible(!passwordVisible);
   };
   
-  // Helper function to show alerts
   const showAlert = (message, type) => {
     setAlertMessage(message);
     setAlertType(type);
@@ -39,12 +36,9 @@ export default function LoginForm({ anotherLoginDetected }) {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    
-    // Clear any existing alerts
     setAlertMessage("");
     setAlertType("");
     
-    // ✅ Check if fields are empty
     if (!email.trim() || !password.trim()) {
       showAlert("Login failed: Invalid login credentials", "error");
       return;
@@ -57,22 +51,15 @@ export default function LoginForm({ anotherLoginDetected }) {
       return;
     }
     
-    // ✅ Save session locally
-    localStorage.setItem("user_id", result.userId);
-    localStorage.setItem("session_token", result.accessToken);
-    localStorage.setItem("is_admin", result.isAdmin ? "true" : "false");
+    // ✅ Session already saved in loginFunction - no need to save again!
     
     showAlert("Login successful!", "success");
     
-    // ✅ Navigate after saving session (with small delay to show success message)
     setTimeout(() => {
-      if (result.isAdmin) {
-        navigate("/appinsurance/main-app/dashboard");
-      } else {
-        navigate("/appinsurance/main-app/dashboard");
-      }
+      navigate("/appinsurance/main-app/dashboard");
     }, 1000);
   };
+  
   
   return (
     <div className="login-page">
