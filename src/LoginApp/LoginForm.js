@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { loginFunction } from "./LoginFormActions";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { CustomAlert } from "../ReusableComponents/CustomAlert";
+// Make sure this path is correct and the file exists!
+import { CustomAlert } from "../ReusableComponents/CustomAlert"; 
 
 export default function LoginForm({ setSession, setCurrentUser }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -21,6 +22,7 @@ export default function LoginForm({ setSession, setCurrentUser }) {
   const showAlert = (message, type) => {
     setAlertMessage(message);
     setAlertType(type);
+    // Auto hide after 5 seconds
     setTimeout(() => {
       setAlertMessage("");
       setAlertType("");
