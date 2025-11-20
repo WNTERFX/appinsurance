@@ -429,13 +429,13 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
             <div className="form-left-column-creation">
               {/* Prefix */}
               <div className="form-group-client-creation">
-                <label>Prefix</label>
+                <label>Prefix (optional)</label>
                 <input type="text" name="prefix" value={clientData?.prefix || ""} onChange={onChange} />
               </div>
 
               {/* First Name */}
               <div className="form-group-client-creation">
-                <label>First Name *</label>
+                <label>First Name</label>
                 <input
                   type="text"
                   name="firstName"
@@ -447,13 +447,13 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
 
               {/* Middle Name */}
               <div className="form-group-client-creation">
-                <label>Middle Name</label>
+                <label>Middle Name (optional)</label>
                 <input type="text" name="middleName" value={clientData?.middleName || ""} onChange={onChange} />
               </div>
 
               {/* Last Name */}
               <div className="form-group-client-creation">
-                <label>Last Name *</label>
+                <label>Last Name</label>
                 <input
                   type="text"
                   name="familyName"
@@ -465,13 +465,13 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
 
               {/* Suffix */}
               <div className="form-group-client-creation">
-                <label>Suffix</label>
+                <label>Suffix (optional)</label>
                 <input type="text" name="suffix" value={clientData?.suffix || ""} onChange={onChange} />
               </div>
 
               {/* Phone */}
               <div className="form-group-client-creation">
-                <label>Phone Number *</label>
+                <label>Phone Number</label>
                 <input
                   ref={phoneRef}
                   type="tel"
@@ -490,7 +490,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
 
               {/* Email */}
               <div className="form-group-client-creation">
-                <label>Email Address *</label>
+                <label>Email Address</label>
                 <input
                   type="email"
                   name="email"
@@ -504,7 +504,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
 
               {/* Street Address */}
               <div className="form-group-client-creation">
-                <label>Street Address / Unit No. *</label>
+                <label>Street Address / Unit No.</label>
                 <input
                   type="text"
                   name="streetAddress"
@@ -516,7 +516,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
 
               {/* Region */}
               <div className="form-group-client-creation">
-                <label>Region *</label>
+                <label>Region</label>
                 <select
                   value={selectedRegionCode}
                   onChange={handleRegionChange}
@@ -536,7 +536,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
               {/* Province (hidden when NCR) */}
               {!isNCR && (
                 <div className="form-group-client-creation">
-                  <label>Province *</label>
+                  <label>Province</label>
                   <select
                     value={selectedProvinceCode}
                     onChange={handleProvinceChange}
@@ -556,7 +556,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
 
               {/* City / Municipality */}
               <div className="form-group-client-creation">
-                <label>City / Municipality *</label>
+                <label>City / Municipality</label>
                 <select
                   value={selectedCityCode}
                   onChange={handleCityChange}
@@ -575,7 +575,7 @@ export default function ClientCreationForm({ clientData, onChange, onSubmit, onC
 
               {/* Barangay */}
               <div className="form-group-client-creation">
-                <label>Barangay *</label>
+                <label>Barangay</label>
                 <select
                   value={clientData?.barangay || ""}
                   onChange={handleBarangayChange}

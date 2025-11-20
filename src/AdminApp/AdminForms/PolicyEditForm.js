@@ -178,7 +178,7 @@ export default function PolicyEditForm({
             </div>
 
             <div className={`form-group-policy-edit ${errors.vehicleMaker ? "error" : ""}`}>
-              <label>Maker <span style={{ color: "red" }}>*</span></label>
+              <label>Make</label>
               <input
                 type="text"
                 value={vehicleMaker}
@@ -192,7 +192,7 @@ export default function PolicyEditForm({
             </div>
 
             <div className={`form-group-policy-edit ${errors.vehicleName ? "error" : ""}`}>
-              <label>Model <span style={{ color: "red" }}>*</span></label>
+              <label>Model</label>
               <input
                 type="text"
                 value={vehicleName}
@@ -206,7 +206,7 @@ export default function PolicyEditForm({
             </div>
 
             <div className={`form-group-policy-edit ${errors.vehicleVinNumber ? "error" : ""}`}>
-              <label>VIN Number <span style={{ color: "red" }}>*</span></label>
+              <label>VIN Number</label>
                 <input
                   type="text"
                   value={vehicleVinNumber || ""}
@@ -241,7 +241,7 @@ export default function PolicyEditForm({
 
             <div className={`form-group-policy-edit ${errors.vehiclePlateNumber ? "error" : ""}`}>
               <label>
-                Vehicle Plate Number <span style={{ color: "red" }}>*</span>
+                Vehicle Plate Number
               </label>
 
               <input
@@ -284,7 +284,7 @@ export default function PolicyEditForm({
             </div>
 
             <div className={`form-group-policy-edit ${errors.vehicleEngineNumber ? "error" : ""}`}>
-              <label>Vehicle Engine Serial <span style={{ color: "red" }}>*</span></label>
+              <label>Vehicle Engine Serial </label>
               <input
                 type="text"
                 value={vehicleEngineNumber || ""}
@@ -301,7 +301,7 @@ export default function PolicyEditForm({
             </div>
 
             <div className={`form-group-policy-edit ${errors.vehicleColor ? "error" : ""}`}>
-              <label>Vehicle Color <span style={{ color: "red" }}>*</span></label>
+              <label>Vehicle Color </label>
               <input
                 type="text"
                 value={vehicleColor || ""}
@@ -318,7 +318,7 @@ export default function PolicyEditForm({
             </div>
 
             <div className={`form-group-policy-edit ${errors.yearInput ? "error" : ""}`}>
-              <label>Vehicle Year <span style={{ color: "red" }}>*</span></label>
+              <label>Vehicle Year </label>
               <input
                 type="number"
                 value={yearInput || ""}
@@ -332,7 +332,7 @@ export default function PolicyEditForm({
             </div>
 
             <div className={`form-group-policy-edit ${errors.selectedPartner ? "error" : ""}`}>
-              <label>Insurer <span style={{ color: "red" }}>*</span></label>
+              <label>Insurer</label>
               <select
                 value={selectedPartner || ""}
                 onChange={(e) => {
@@ -356,7 +356,7 @@ export default function PolicyEditForm({
               <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 Payment Type 
                 
-                <span style={{ color: "red" }}>*</span>
+      
                  <span 
                       title="This is to set the default value of the payment type, this can be changed later in the payment generation."
                       className="tooltip-icon" 
@@ -390,7 +390,7 @@ export default function PolicyEditForm({
             </div>
 
             <div className={`form-group-policy-edit ${errors.selected ? "error" : ""}`}>
-              <label>Vehicle Type <span style={{ color: "red" }}>*</span></label>
+              <label>Vehicle Type</label>
               <select
                 value={selected || ""}
                 onChange={(e) => {
@@ -410,7 +410,7 @@ export default function PolicyEditForm({
             </div>
 
             <div className={`form-group-policy-edit ${errors.originalVehicleCost ? "error" : ""}`}>
-              <label>Original Value of Vehicle <span style={{ color: "red" }}>*</span></label>
+              <label>Original Value of Vehicle </label>
               <input
                 type="text"
                 value={originalVehicleCost}
@@ -523,7 +523,11 @@ export default function PolicyEditForm({
                       paymentDate.setMonth(paymentDate.getMonth() + i);
                       
                       // Format it to MM/DD/YYYY
-                      const formattedDate = paymentDate.toLocaleDateString('en-US');
+                     const formattedDate = paymentDate.toLocaleDateString('en-US', {
+                        month: 'short',  // This makes it "Nov", "Dec", etc.
+                        day: 'numeric',  // This keeps the day number
+                        year: 'numeric'  // This keeps the year
+                      });
 
                       return (
                         <div key={i} style={{ 

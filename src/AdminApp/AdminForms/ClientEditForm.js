@@ -437,11 +437,11 @@ export default function ClientEditForm({
           <div className="form-grid-client-update">
             <div className="form-left-column-client-update">
               {[
-                ["Prefix", "prefix"],
-                ["First Name *", "first_Name", true],
-                ["Middle Name", "middle_Name"],
+                ["Prefix (optional)", "prefix"],
+                ["First Name", "first_Name", true],
+                ["Middle Name (optional)", "middle_Name"],
                 ["Last Name *", "family_Name", true],
-                ["Suffix", "suffix"],
+                ["Suffix (optional)", "suffix"],
               ].map(([label, field, required]) => (
                 <div className="form-group-client-update" key={field}>
                   <label>{label}</label>
@@ -470,7 +470,7 @@ export default function ClientEditForm({
               ))}
 
               <div className="form-group-client-update">
-                <label>Phone Number *</label>
+                <label>Phone Number</label>
                 <input
                   type="text"
                   value={originalData.phone_Number ?? ""}
@@ -493,7 +493,7 @@ export default function ClientEditForm({
               </div>
 
               <div className="form-group-client-update">
-                <label>Email *</label>
+                <label>Email</label>
                 <input
                   type="text"
                   value={originalData.email ?? ""}
@@ -514,7 +514,7 @@ export default function ClientEditForm({
               </div>
 
               <div className="form-group-client-update">
-                <label>Street Address / Unit No. *</label>
+                <label>Street Address / Unit No.</label>
                 <input
                   type="text"
                   value={originalData.address ?? ""}
