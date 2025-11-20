@@ -1,14 +1,16 @@
-// App.js
 import { useState, useEffect } from "react";
-import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { db } from "./dbServer";
 
-//Reusable Components
-import GlobalAlert from "./ReusableComponents/GlobalAlert";
+import GlobalAlert, { showGlobalAlert } from "./ReusableComponents/GlobalAlert";
 import AuthChecker from "./ReusableComponents/AuthChecker";
 import SessionMonitor from "./ReusableComponents/SessionMonitor";
 
-// Admin Components
 import LoginForm from "./LoginApp/LoginForm";
+import PasswordResetForm from "./LoginApp/ResetForm";
+import PasswordResetConfirm from "./LoginApp/PasswordResetConfirm";
+
+// Admin Components
 import MainArea from "./AdminApp/MainArea";
 import Dashboard from "./AdminApp/Dashboard";
 import Due from "./AdminApp/Due";
@@ -38,7 +40,6 @@ import DueModerator from "./ModeratorApp/DueModerator";
 import PolicyModerator from "./ModeratorApp/PolicyModerator";
 import ClaimTableModerator from "./ModeratorApp/ClaimTableModerator";
 import DeliveryModerator from "./ModeratorApp/DeliveryModerator";
-import ModeratorClientArchiveTable from "./ModeratorApp/ModeratorTables/ModeratorClientArchiveTable";
 import MonthlyDataModerator from "./ModeratorApp/MonthlyDataModerator";
 import PaymentRecordsModerator from "./ModeratorApp/PaymentRecordsModerator";
 import ProfileModerator from "./ModeratorApp/ProfileModerator";
@@ -46,56 +47,85 @@ import PolicyNewClientModerator from "./ModeratorApp/PolicyNewClientModerator";
 import VehicleDetailsModerator from "./ModeratorApp/VehicleDetailsModerator";
 import ModeratorNewClientController from "./ModeratorApp/ControllerModerator/ModeratorNewClientController";
 import ModeratorClientEditForm from "./ModeratorApp/ModeratorForms/ModeratorClientEditForm";
-import ModeratorPolicyNewClientForm from "./ModeratorApp/ModeratorForms/ModeratorPolicyNewClientForm";
 import ModeratorNewPolicyController from "./ModeratorApp/ControllerModerator/ModeratorNewPolicyController";
 import ModeratorEditPolicyController from "./ModeratorApp/ControllerModerator/ModeratorEditPolicyController";
 
-// Password Reset Components
-import PasswordResetForm from "./LoginApp/ResetForm";
-import PasswordResetConfirm from "./LoginApp/PasswordResetConfirm";
-
-
-
-
 function App() {
   const [session, setSession] = useState(null);
-  const [anotherLoginDetected, setAnotherLoginDetected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Check for saved session on app load
+
+  // ---- INITIAL SESSION VALIDATION ----
   useEffect(() => {
-    const checkSavedSession = async () => {
-      // Check localStorage first (remember me), then sessionStorage
-      const savedSession = localStorage.getItem("user_session") || 
-                          sessionStorage.getItem("user_session");
-      
-      if (savedSession) {
-        try {
-          const sessionData = JSON.parse(savedSession);
-          setSession(sessionData);
-        } catch (error) {
-          console.error("Failed to parse saved session:", error);
-          // Clear invalid session data
-          localStorage.removeItem("user_session");
-          sessionStorage.removeItem("user_session");
+    const validateSession = async () => {
+      setIsLoading(true);
+
+      try {
+        // 1. Check Supabase Auth Session first
+        const { data: { session: currentSupabaseSession }, error: sessionError } = await db.auth.getSession();
+
+        if (sessionError || !currentSupabaseSession) {
+          await handleInvalidSession();
+          return;
         }
+
+        // 2. Check Custom Security Token in Database
+        const userId = currentSupabaseSession.user.id;
+        const currentToken = currentSupabaseSession.access_token;
+
+        const { data: accountData, error: dbError } = await db
+          .from("employee_Accounts")
+          .select("current_session_token")
+          .eq("id", userId)
+          .maybeSingle();
+
+        if (dbError) {
+          await handleInvalidSession();
+          return;
+        }
+
+        // 3. Compare Tokens
+        if (accountData && accountData.current_session_token === currentToken) {
+          setSession(currentSupabaseSession);
+        } else {
+          showGlobalAlert("Your session has expired or you logged in elsewhere.");
+          await handleInvalidSession();
+        }
+
+      } catch (err) {
+        console.error("Session check failed:", err);
+        await handleInvalidSession();
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
-    
-    checkSavedSession();
+
+    validateSession();
   }, []);
-  
-  // Show loading state while checking for session
+
+  const handleInvalidSession = async () => {
+    localStorage.removeItem("user_session");
+    sessionStorage.removeItem("user_session");
+    setSession(null);
+    
+    // Check if we need to sign out from Supabase
+    const { data } = await db.auth.getSession();
+    if (data?.session) {
+      await db.auth.signOut();
+    }
+    setIsLoading(false);
+  };
+
   if (isLoading) {
     return (
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center", 
-        height: "100vh" 
+      <div style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        flexDirection: "column",
+        gap: "1rem"
       }}>
-        Loading...
+        <div>Loading...</div>
       </div>
     );
   }
@@ -106,21 +136,27 @@ function App() {
       <SessionMonitor session={session} />
 
       <Routes>
-        {/* Public route - redirect to dashboard if already logged in */}
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
-            session ? 
-              <Navigate to="/appinsurance/main-app/dashboard" replace /> : 
-              <LoginForm anotherLoginDetected={anotherLoginDetected} setSession={setSession} />
-          } 
+            session ? (
+              // If session exists, go to dashboard automatically
+              <Navigate to="/appinsurance/main-app/dashboard" replace />
+            ) : (
+              // Pass setSession so LoginForm can update the state on success
+              <LoginForm setSession={setSession} />
+            )
+          }
         />
+
         <Route path="/appinsurance/reset-password" element={<PasswordResetForm />} />
         <Route path="/appinsurance/reset-password/confirm" element={<PasswordResetConfirm />} />
 
-        {/* Protected routes */}
+
+        {/* PROTECTED ROUTES */}
         <Route element={<AuthChecker />}>
-          {/* Admin routes */}
+
+          {/* Admin Routes */}
           <Route path="/appinsurance/main-app" element={<MainArea />}>
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
@@ -145,7 +181,7 @@ function App() {
             <Route path="about" element={<About />} />
           </Route>
 
-          {/* Moderator routes */}
+          {/* Moderator Routes */}
           <Route path="/appinsurance/MainAreaModerator" element={<MainAreaModerator />}>
             <Route index element={<DashboardModerator />} />
             <Route path="DashboardModerator" element={<DashboardModerator />} />
@@ -165,10 +201,12 @@ function App() {
             <Route path="PolicyModerator/NewClientModerator" element={<PolicyNewClientModerator />} />
             <Route path="PolicyModerator/NewClientModerator/VehicleDetailsModerator" element={<VehicleDetailsModerator />} />
           </Route>
+
         </Route>
 
-        {/* Catch-all route - redirect any undefined path to login */}
+        {/* Fallback for unknown routes */}
         <Route path="*" element={<Navigate to="/" replace />} />
+
       </Routes>
     </>
   );
