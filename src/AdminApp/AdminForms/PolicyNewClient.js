@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import Select from 'react-select';
 import '../styles/Policy-new-client.css';
 import ScrollToTopButton from '../../ReusableComponents/ScrollToTop';
@@ -57,7 +57,21 @@ export default function PolicyNewClient({
   navigate
 }) {
   const [errors, setErrors] = useState({});
-  const [showScrollToTop, setShowScrollToTop] = useState(false); // State to control scroll button
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+
+  // Create refs for each form field
+  const clientRef = useRef(null);
+  const makerRef = useRef(null);
+  const modelRef = useRef(null);
+  const vinRef = useRef(null);
+  const engineRef = useRef(null);
+  const plateRef = useRef(null);
+  const colorRef = useRef(null);
+  const yearRef = useRef(null);
+  const partnerRef = useRef(null);
+  const paymentTypeRef = useRef(null);
+  const vehicleTypeRef = useRef(null);
+  const vehicleCostRef = useRef(null);
 
   const startYear = new Date().getFullYear();
   const years = useMemo(() => Array.from({ length: 50 }, (_, i) => startYear - i), [startYear]);
@@ -91,18 +105,69 @@ export default function PolicyNewClient({
     return Object.keys(newErrors).length === 0;
   };
 
+  const scrollToFirstError = (newErrors) => {
+    // Map errors to their corresponding refs in order
+    const errorRefMap = {
+      selectedClient: clientRef,
+      vehicleMaker: makerRef,
+      vehicleName: modelRef,
+      vehicleVinNumber: vinRef,
+      vehicleEngineNumber: engineRef,
+      vehiclePlateNumber: plateRef,
+      vehicleColor: colorRef,
+      yearInput: yearRef,
+      selectedPartner: partnerRef,
+      selectedPaymentType: paymentTypeRef,
+      selected: vehicleTypeRef,
+      vehicleCost: vehicleCostRef,
+    };
+
+    // Find the first error in order
+    for (const [errorKey, ref] of Object.entries(errorRefMap)) {
+      if (newErrors[errorKey] && ref.current) {
+        // Scroll to the element with offset
+        const elementPosition = ref.current.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - 100; // 100px offset from top
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+
+        // Focus the element after scrolling
+        setTimeout(() => {
+          if (ref.current) {
+            ref.current.focus();
+          }
+        }, 300);
+
+        break; // Stop after finding the first error
+      }
+    }
+  };
+
   const handleConfirm = () => {
-    if (validateForm()) {
+    const newErrors = {};
+    if (!selectedClient) newErrors.selectedClient = true;
+    if (!vehicleMaker) newErrors.vehicleMaker = true;
+    if (!vehicleName) newErrors.vehicleName = true;
+    if (!vehicleVinNumber || vehicleVinNumber.length !== 17) newErrors.vehicleVinNumber = true;
+    if (!vehicleEngineNumber) newErrors.vehicleEngineNumber = true;
+    if (!vehiclePlateNumber) newErrors.vehiclePlateNumber = true;
+    if (!vehicleColor) newErrors.vehicleColor = true;
+    if (!yearInput) newErrors.yearInput = true;
+    if (!selectedPartner) newErrors.selectedPartner = true;
+    if (!selectedPaymentType) newErrors.selectedPaymentType = true;
+    if (!selected) newErrors.selected = true;
+    if (!vehicleCost) newErrors.vehicleCost = true;
+    
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
       onSaveClient();
     } else {
-      // Trigger scroll to top when validation fails
-      setShowScrollToTop(true);
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-      // Hide the button after scrolling
-      setTimeout(() => setShowScrollToTop(false), 1000);
+      // Scroll to the first error field
+      scrollToFirstError(newErrors);
     }
   };
 
@@ -124,39 +189,41 @@ export default function PolicyNewClient({
               {/* Client */}
               <div className={`form-group ${errors.selectedClient ? 'error' : ''}`}>
                 <label>Client</label>
-                <Select
-                  className="client-select"
-                  classNamePrefix="client-select"
-                  options={clients.map(c => ({
-                    value: c.uid,
-                    label: `${c.internal_id} | ${c.first_Name || ""} ${c.middle_Name || ""} ${c.family_Name || ""}`,
-                  }))}
-                  value={
-                    selectedClient
-                      ? {
-                          value: selectedClient.uid,
-                          label: `${selectedClient.internal_id} | ${selectedClient.first_Name || ""} ${selectedClient.middle_Name || ""} ${selectedClient.family_Name || ""}`,
-                        }
-                      : null
-                  }
-                  onChange={(option) => {
-                    if (option) {
-                      const client = clients.find(c => c.uid === option.value);
-                      setSelectedClient(client);
-                    } else {
-                      setSelectedClient(null);
+                <div ref={clientRef}>
+                  <Select
+                    className="client-select"
+                    classNamePrefix="client-select"
+                    options={clients.map(c => ({
+                      value: c.uid,
+                      label: `${c.internal_id} | ${c.first_Name || ""} ${c.middle_Name || ""} ${c.family_Name || ""}`,
+                    }))}
+                    value={
+                      selectedClient
+                        ? {
+                            value: selectedClient.uid,
+                            label: `${selectedClient.internal_id} | ${selectedClient.first_Name || ""} ${selectedClient.middle_Name || ""} ${selectedClient.family_Name || ""}`,
+                          }
+                        : null
                     }
-                    setErrors(prev => ({ ...prev, selectedClient: false }));
-                  }}
-                  placeholder="Search for ID..."
-                  isClearable
-                  styles={{
-                    control: (base) => ({
-                      ...base,
-                      borderColor: errors.selectedClient ? 'red' : base.borderColor,
-                    })
-                  }}
-                />
+                    onChange={(option) => {
+                      if (option) {
+                        const client = clients.find(c => c.uid === option.value);
+                        setSelectedClient(client);
+                      } else {
+                        setSelectedClient(null);
+                      }
+                      setErrors(prev => ({ ...prev, selectedClient: false }));
+                    }}
+                    placeholder="Search for ID..."
+                    isClearable
+                    styles={{
+                      control: (base) => ({
+                        ...base,
+                        borderColor: errors.selectedClient ? 'red' : base.borderColor,
+                      })
+                    }}
+                  />
+                </div>
                 {errors.selectedClient && <small style={{ color: 'red' }}>Client is required</small>}
               </div>
 
@@ -164,6 +231,7 @@ export default function PolicyNewClient({
               <div className={`form-group ${errors.vehicleMaker ? 'error' : ''}`}>
                 <label>Make</label>
                 <select
+                  ref={makerRef}
                   value={vehicleMaker || ''}
                   onChange={(e) => {
                     setVehicleMaker(e.target.value);
@@ -183,6 +251,7 @@ export default function PolicyNewClient({
               <div className={`form-group ${errors.vehicleName ? 'error' : ''}`}>
                 <label>Model</label>
                 <input
+                  ref={modelRef}
                   type="text"
                   value={vehicleName}
                   onChange={(e) => {
@@ -198,6 +267,7 @@ export default function PolicyNewClient({
               <div className={`form-group ${errors.vehicleVinNumber ? 'error' : ''}`}>
                 <label>Vehicle VIN Number</label>
                 <input
+                  ref={vinRef}
                   type="text"
                   value={vehicleVinNumber || ""}
                   maxLength={17}
@@ -223,6 +293,7 @@ export default function PolicyNewClient({
               <div className={`form-group ${errors.vehicleEngineNumber ? 'error' : ''}`}>
                 <label>Vehicle Engine Serial</label>
                 <input
+                  ref={engineRef}
                   type="text"
                   value={vehicleEngineNumber || ""}
                   onChange={(e) => {
@@ -241,19 +312,18 @@ export default function PolicyNewClient({
               <div className={`form-group ${errors.vehiclePlateNumber ? 'error' : ''}`}>
                 <label>Vehicle Plate Number</label>
                 <input
+                  ref={plateRef}
                   type="text"
                   value={vehiclePlateNumber || ""}
                   onChange={(e) => {
-                    // 1. Convert to uppercase and trim whitespace from start/end
                     const upperValue = e.target.value.toUpperCase();
-                    // 2. Allow letters (A-Z), numbers (0-9), AND SPACE (' ')
                     const invalidCharsRegex = /[^A-Z0-9 ]/g; 
                     const cleanedValue = upperValue.replace(invalidCharsRegex, '');
                     
                     setPlateNumber(cleanedValue);
                     setErrors(prev => ({ ...prev, vehiclePlateNumber: false }));
                   }}
-                  maxLength={8} // Max Length is 8 including the space
+                  maxLength={8}
                   style={{
                     borderColor: errors.vehiclePlateNumber ? 'red' : '',
                     textTransform: 'uppercase'
@@ -268,6 +338,7 @@ export default function PolicyNewClient({
               <div className={`form-group ${errors.vehicleColor ? 'error' : ''}`}>
                 <label>Vehicle Color</label>
                 <input
+                  ref={colorRef}
                   type="text"
                   value={vehicleColor || ""}
                   onChange={(e) => {
@@ -286,6 +357,7 @@ export default function PolicyNewClient({
               <div className={`form-group ${errors.yearInput ? 'error' : ''}`}>
                 <label>Vehicle Year</label>
                 <select
+                  ref={yearRef}
                   value={yearInput || ''}
                   onChange={(e) => {
                     setYearInput(Number(e.target.value));
@@ -305,6 +377,7 @@ export default function PolicyNewClient({
               <div className={`form-group ${errors.selectedPartner ? 'error' : ''}`}>
                 <label>Insurer</label>
                 <select
+                  ref={partnerRef}
                   id="company-select"
                   value={selectedPartner || ''}
                   onChange={(e) => {
@@ -336,6 +409,7 @@ export default function PolicyNewClient({
                   </span>
                 </label>
                 <select
+                  ref={paymentTypeRef}
                   value={selectedPaymentType || ''}
                   onChange={(e) => {
                     setSelectedPaymentType(e.target.value);
@@ -346,9 +420,7 @@ export default function PolicyNewClient({
                   <option value="">-- Select Payment Type --</option>
                    {Array.isArray(paymentTypes) &&
                     paymentTypes.map((pt) => {
-
                       const monthText = pt.months_payment === 1 ? 'month' : 'months';
-
                       return (
                         <option key={pt.id} value={pt.id}>
                           {pt.payment_type_name} ({pt.months_payment} {monthText})
@@ -363,6 +435,7 @@ export default function PolicyNewClient({
               <div className={`form-group ${errors.selected ? 'error' : ''}`}>
                 <label>Vehicle Type</label>
                 <select
+                  ref={vehicleTypeRef}
                   id="vehicle-type-select"
                   value={selected || ''}
                   onChange={(e) => {
@@ -385,6 +458,7 @@ export default function PolicyNewClient({
               <div className={`form-group ${errors.vehicleCost ? 'error' : ''}`}>
                 <label>Original Value of Vehicle</label>
                 <input
+                  ref={vehicleCostRef}
                   type="number"
                   value={vehicleCost || ""}
                   onChange={(e) => {
@@ -514,18 +588,14 @@ export default function PolicyNewClient({
                       Monthly Payment Schedule ({months} months)
                     </h4>
                     <div style={{ maxHeight: '200px', overflowY: 'auto', fontSize: '14px' }}>
-                      {/* MODIFIED LOOP BELOW */}
                       {Array.from({ length: months }, (_, i) => {
-                        // Create a new date based on the start date
                         const paymentDate = new Date(startDate);
-                        // Add 'i' months to it (for Month 1, i=0, so it's today)
                         paymentDate.setMonth(paymentDate.getMonth() + i);
                         
-                        // Format it to MM/DD/YYYY
                         const formattedDate = paymentDate.toLocaleDateString('en-US', {
-                          month: 'short',  // This makes it "Nov", "Dec", etc.
-                          day: 'numeric',  // This keeps the day number
-                          year: 'numeric'  // This keeps the year
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
                         });
 
                         return (
@@ -539,7 +609,6 @@ export default function PolicyNewClient({
                               background: i % 2 === 0 ? 'white' : '#f8f9fa'
                             }}
                           >
-                            {/* Use the formatted date here */}
                             <span style={{ fontWeight: '500' }}>{formattedDate}:</span>
                             <span style={{ color: '#10b981', fontWeight: '600' }}>
                               ₱{monthlyPayment.toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

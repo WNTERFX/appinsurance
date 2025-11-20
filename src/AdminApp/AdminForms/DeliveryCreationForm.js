@@ -1,6 +1,7 @@
 // src/AdminForms/DeliveryCreationForm.jsx
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Select from "react-select";
+import CustomAlertModal from "./CustomAlertModal";
 import "../styles/delivery-creation-styles.css";
 
 export default function DeliveryCreationForm({
@@ -16,7 +17,11 @@ export default function DeliveryCreationForm({
   displayAddressText = "",
   addressMeta = { isDefault: false, isDelivered: false },
   onOpenAddressPicker,
+  errors = {},
+  setErrors,
 }) {
+  const [alertModal, setAlertModal] = useState({ isOpen: false, message: "", title: "Alert" });
+
   const lifoByDateOrId = (a, b) => {
     const ad = a?.created_at ? new Date(a.created_at).getTime() : 0;
     const bd = b?.created_at ? new Date(b.created_at).getTime() : 0;
@@ -71,6 +76,11 @@ export default function DeliveryCreationForm({
       option && clients.find((c) => String(c.uid) === String(option.value));
     if (typeof setSelectedClient === "function") setSelectedClient(next || null);
 
+    // Clear client error when selected
+    if (setErrors && errors.clientId) {
+      setErrors((prev) => ({ ...prev, clientId: '' }));
+    }
+
     if (formData?.policyId) {
       const stillValid = filteredPolicies.some(
         (p) => String(p.id) === String(formData.policyId)
@@ -91,153 +101,213 @@ export default function DeliveryCreationForm({
     const val = e.target.value;
     const p = filteredPolicies.find((x) => String(x.id) === String(val));
     if (p?.hasDelivery) {
-      alert("This policy already has a scheduled delivery. Please choose another policy.");
+      // Show custom alert modal instead of browser alert
+      setAlertModal({
+        isOpen: true,
+        title: "Policy Already Scheduled",
+        message: "This policy already has a scheduled delivery. Please choose another policy."
+      });
+      // Prevent the selection
+      e.target.value = formData.policyId || "";
       return;
     }
+    
+    // Clear policy error when selected
+    if (setErrors && errors.policyId) {
+      setErrors((prev) => ({ ...prev, policyId: '' }));
+    }
+    
     if (typeof onChange === "function") {
       onChange({ target: { name: "policyId", value: val } });
     }
   };
 
+  const handleDateChange = (e) => {
+    // Clear date error when changed
+    if (setErrors && errors.estDeliveryDate) {
+      setErrors((prev) => ({ ...prev, estDeliveryDate: '' }));
+    }
+    onChange(e);
+  };
+
+  const closeAlertModal = () => {
+    setAlertModal({ isOpen: false, message: "", title: "Alert" });
+  };
+
   return (
-    <div className="delivery-modal-overlay">
-      <div className="delivery-modal-container">
-        <button
-          onClick={onCancel}
-          type="button"
-          className="delivery-modal-close-btn"
-          aria-label="Close"
-        >
-          ✕
-        </button>
+    <>
+      <div className="delivery-modal-overlay">
+        <div className="delivery-modal-container">
+          <button
+            onClick={onCancel}
+            type="button"
+            className="delivery-modal-close-btn"
+            aria-label="Close"
+          >
+            ✕
+          </button>
 
-        <form onSubmit={onSubmit} className="delivery-form">
-          <h2 className="delivery-form-title">Schedule Policy Delivery</h2>
+          <form onSubmit={onSubmit} className="delivery-form">
+            <h2 className="delivery-form-title">Schedule Policy Delivery</h2>
 
-          <div className="delivery-form-grid delivery-top-two">
+            <div className="delivery-form-grid delivery-top-two">
+              <div className="delivery-form-group">
+                <label className="delivery-form-label">
+                  Client <span style={{ color: "red" }}>*</span>
+                </label>
+                <Select
+                  classNamePrefix="delivery-select"
+                  className="delivery-select"
+                  options={clientOptions}
+                  value={clientValue}
+                  onChange={handleClientChange}
+                  placeholder="Search for ID..."
+                  isClearable
+                  isSearchable
+                  filterOption={filterOption}
+                />
+                {errors.clientId && (
+                  <div style={{ color: 'red', fontSize: '14px', marginTop: '5px' }}>
+                    {errors.clientId}
+                  </div>
+                )}
+              </div>
+
+              <div className="delivery-form-group">
+                <label className="delivery-form-label">
+                  Policy <span style={{ color: 'red' }}>*</span>
+                </label>
+                <select
+                  name="policyId"
+                  value={formData.policyId}
+                  onChange={handlePolicySelect}
+                  className="delivery-form-select"
+                  disabled={!selectedClient}
+                  title={!selectedClient ? "Select a client first" : ""}
+                >
+                  <option value="">-- Select Policy --</option>
+                  {filteredPolicies.map((p) => {
+                    const disabled = !!p.hasDelivery;
+                    return (
+                      <option
+                        key={p.id}
+                        value={p.id}
+                        disabled={disabled}
+                        style={disabled ? { color: "#9b9b9b", fontStyle: "italic" } : {}}
+                      >
+                        {p.internal_id ? `#${p.internal_id}` : `Policy #${p.id}`}
+                        {disabled ? " — [Already Scheduled]" : ""}
+                      </option>
+                    );
+                  })}
+                </select>
+                {errors.policyId && (
+                  <div style={{ color: 'red', fontSize: '14px', marginTop: '5px' }}>
+                    {errors.policyId}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="delivery-form-grid">
+              <div className="delivery-form-group">
+                <label className="delivery-form-label">Delivery Date</label>
+                <input
+                  type="date"
+                  name="deliveryDate"
+                  value={formData.deliveryDate}
+                  readOnly
+                  className="delivery-form-input"
+                />
+              </div>
+
+              <div className="delivery-form-group">
+                <label className="delivery-form-label">
+                  Estimated Delivery Date <span style={{ color: 'red' }}>*</span>
+                </label>
+                <input
+                  type="date"
+                  name="estDeliveryDate"
+                  value={formData.estDeliveryDate}
+                  onChange={handleDateChange}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="delivery-form-input"
+                />
+                {errors.estDeliveryDate && (
+                  <div style={{ color: 'red', fontSize: '14px', marginTop: '5px' }}>
+                    {errors.estDeliveryDate}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Address */}
             <div className="delivery-form-group">
               <label className="delivery-form-label">
-                Client <span style={{ color: "red" }}>*</span>
+                Address <span style={{ color: 'red' }}>*</span>
+                {addressMeta.isDefault && (
+                  <span className="delivery-form-label-secondary"> (Default)</span>
+                )}
               </label>
-              <Select
-                classNamePrefix="delivery-select"
-                className="delivery-select"
-                options={clientOptions}
-                value={clientValue}
-                onChange={handleClientChange}
-                placeholder="Search for ID..."
-                isClearable
-                isSearchable
-                filterOption={filterOption}
-              />
-            </div>
 
-            <div className="delivery-form-group">
-              <label className="delivery-form-label">Policy *</label>
-              <select
-                name="policyId"
-                value={formData.policyId}
-                onChange={handlePolicySelect}
-                required
-                className="delivery-form-select"
-                disabled={!selectedClient}
-                title={!selectedClient ? "Select a client first" : ""}
+              <button
+                type="button"
+                className={`delivery-form-address-display ${selectedClient ? "clickable" : "disabled"}`}
+                onClick={selectedClient ? onOpenAddressPicker : undefined}
+                title={selectedClient ? "Click to choose/add address" : "Select a client first"}
               >
-                <option value="">-- Select Policy --</option>
-                {filteredPolicies.map((p) => {
-                  const disabled = !!p.hasDelivery;
-                  return (
-                    <option
-                      key={p.id}
-                      value={p.id}
-                      disabled={disabled}
-                      style={disabled ? { color: "#9b9b9b", fontStyle: "italic" } : {}}
-                    >
-                      {p.internal_id ? `#${p.internal_id}` : `Policy #${p.id}`}
-                      {disabled ? " — [Already Scheduled]" : ""}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          </div>
+                <span>{displayAddressText || "No address on file"}</span>
+                <span className="delivery-form-address-right">›</span>
+              </button>
 
-          <div className="delivery-form-grid">
-            <div className="delivery-form-group">
-              <label className="delivery-form-label">Delivery Date</label>
-              <input
-                type="date"
-                name="deliveryDate"
-                value={formData.deliveryDate}
-                readOnly
-                className="delivery-form-input"
-              />
-            </div>
-
-            <div className="delivery-form-group">
-              <label className="delivery-form-label">Estimated Delivery Date *</label>
-              <input
-                type="date"
-                name="estDeliveryDate"
-                value={formData.estDeliveryDate}
-                onChange={onChange}
-                required
-                className="delivery-form-input"
-              />
-            </div>
-          </div>
-
-          {/* Address */}
-          <div className="delivery-form-group">
-            <label className="delivery-form-label">
-              Address{" "}
-              {addressMeta.isDefault && (
-                <span className="delivery-form-label-secondary">(Default)</span>
+              <div className="delivery-form-badges">
+                {addressMeta.isDefault && <span className="badge-default">Default</span>}
+                {addressMeta.isDelivered && <span className="badge-delivered">Delivered Address</span>}
+              </div>
+              
+              {errors.address && (
+                <div style={{ color: 'red', fontSize: '14px', marginTop: '5px' }}>
+                  {errors.address}
+                </div>
               )}
-            </label>
-
-            <button
-              type="button"
-              className={`delivery-form-address-display ${selectedClient ? "clickable" : "disabled"}`}
-              onClick={selectedClient ? onOpenAddressPicker : undefined}
-              title={selectedClient ? "Click to choose/add address" : "Select a client first"}
-            >
-              <span>{displayAddressText || "No address on file"}</span>
-              <span className="delivery-form-address-right">›</span>
-            </button>
-
-            <div className="delivery-form-badges">
-              {addressMeta.isDefault && <span className="badge-default">Default</span>}
-              {addressMeta.isDelivered && <span className="badge-delivered">Delivered Address</span>}
             </div>
-          </div>
 
-          <div className="delivery-form-group">
-            <label className="delivery-form-label">Special Instruction</label>
-            <textarea
-              name="remarks"
-              value={formData.remarks}
-              onChange={onChange}
-              placeholder="Enter any special delivery instruction"
-              rows="4"
-              className="delivery-form-textarea"
-            />
-          </div>
+            <div className="delivery-form-group">
+              <label className="delivery-form-label">
+                Special Instruction <span style={{ color: '#9b9b9b' }}>(Optional)</span>
+              </label>
+              <textarea
+                name="remarks"
+                value={formData.remarks}
+                onChange={onChange}
+                placeholder="Enter any special delivery instruction"
+                rows="4"
+                className="delivery-form-textarea"
+              />
+            </div>
 
-          <div className="delivery-form-actions">
-            <button type="button" onClick={onCancel} className="delivery-form-btn-cancel">
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !selectedClient}
-              className="delivery-form-btn-submit"
-            >
-              {loading ? "Saving..." : "Submit"}
-            </button>
-          </div>
-        </form>
+            <div className="delivery-form-actions">
+              <button type="button" onClick={onCancel} className="delivery-form-btn-cancel">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading || !selectedClient}
+                className="delivery-form-btn-submit"
+              >
+                {loading ? "Saving..." : "Submit"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+
+      <CustomAlertModal
+        isOpen={alertModal.isOpen}
+        onClose={closeAlertModal}
+        message={alertModal.message}
+        title={alertModal.title}
+      />
+    </>
   );
 }
