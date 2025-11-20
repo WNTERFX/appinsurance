@@ -50,70 +50,80 @@ import ModeratorClientEditForm from "./ModeratorApp/ModeratorForms/ModeratorClie
 import ModeratorNewPolicyController from "./ModeratorApp/ControllerModerator/ModeratorNewPolicyController";
 import ModeratorEditPolicyController from "./ModeratorApp/ControllerModerator/ModeratorEditPolicyController";
 
+// ---------- APP ----------
+
 function App() {
   const [session, setSession] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ---- INITIAL SESSION VALIDATION ----
+  // ---- RESTORE SESSION & USER DATA ----
   useEffect(() => {
-    const validateSession = async () => {
+    const restoreSession = async () => {
       setIsLoading(true);
-
       try {
-        // 1. Check Supabase Auth Session first
-        const { data: { session: currentSupabaseSession }, error: sessionError } = await db.auth.getSession();
-
-        if (sessionError || !currentSupabaseSession) {
-          await handleInvalidSession();
+        // 1️⃣ Get Supabase session
+        const { data: { session: supabaseSession }, error: sessionError } = await db.auth.getSession();
+        if (!supabaseSession || sessionError) {
+          localStorage.removeItem("user_session");
+          sessionStorage.removeItem("currentUser");
+          setSession(null);
+          setCurrentUser(null);
+          setIsLoading(false);
           return;
         }
 
-        // 2. Check Custom Security Token in Database
-        const userId = currentSupabaseSession.user.id;
-        const currentToken = currentSupabaseSession.access_token;
+        setSession(supabaseSession);
 
-        const { data: accountData, error: dbError } = await db
+        // 2️⃣ Check if user data already in sessionStorage
+        const savedUser = sessionStorage.getItem("currentUser");
+        if (savedUser) {
+          setCurrentUser(JSON.parse(savedUser));
+          setIsLoading(false);
+          return;
+        }
+
+        // 3️⃣ Fetch user data from DB
+        const { data: accountData, error: accountError } = await db
           .from("employee_Accounts")
-          .select("current_session_token")
-          .eq("id", userId)
-          .maybeSingle();
+          .select("id, is_Admin, status_Account, first_name, last_name, employee_email")
+          .eq("id", supabaseSession.user.id)
+          .single();
 
-        if (dbError) {
-          await handleInvalidSession();
+        if (accountError || !accountData) {
+          setCurrentUser(null);
+          setIsLoading(false);
           return;
         }
 
-        // 3. Compare Tokens
-        if (accountData && accountData.current_session_token === currentToken) {
-          setSession(currentSupabaseSession);
-        } else {
-          showGlobalAlert("Your session has expired or you logged in elsewhere.");
-          await handleInvalidSession();
+        if (!accountData.status_Account) {
+          showGlobalAlert("Invalid account. Please contact the administrator.");
+          setCurrentUser(null);
+          setIsLoading(false);
+          return;
         }
+
+        const userData = {
+          id: accountData.id,
+          email: accountData.employee_email,
+          first_name: accountData.first_name,
+          last_name: accountData.last_name,
+          is_Admin: accountData.is_Admin,
+          access_token: supabaseSession.access_token,
+        };
+
+        sessionStorage.setItem("currentUser", JSON.stringify(userData));
+        setCurrentUser(userData);
 
       } catch (err) {
-        console.error("Session check failed:", err);
-        await handleInvalidSession();
+        console.error("Restore session failed", err);
       } finally {
         setIsLoading(false);
       }
     };
 
-    validateSession();
+    restoreSession();
   }, []);
-
-  const handleInvalidSession = async () => {
-    localStorage.removeItem("user_session");
-    sessionStorage.removeItem("user_session");
-    setSession(null);
-    
-    // Check if we need to sign out from Supabase
-    const { data } = await db.auth.getSession();
-    if (data?.session) {
-      await db.auth.signOut();
-    }
-    setIsLoading(false);
-  };
 
   if (isLoading) {
     return (
@@ -133,18 +143,17 @@ function App() {
   return (
     <>
       <GlobalAlert />
-      <SessionMonitor session={session} />
+      <SessionMonitor session={session} currentUser={currentUser} />
 
       <Routes>
+        {/* LOGIN */}
         <Route
           path="/"
           element={
             session ? (
-              // If session exists, go to dashboard automatically
               <Navigate to="/appinsurance/main-app/dashboard" replace />
             ) : (
-              // Pass setSession so LoginForm can update the state on success
-              <LoginForm setSession={setSession} />
+              <LoginForm setSession={setSession} setCurrentUser={setCurrentUser} />
             )
           }
         />
@@ -152,61 +161,37 @@ function App() {
         <Route path="/appinsurance/reset-password" element={<PasswordResetForm />} />
         <Route path="/appinsurance/reset-password/confirm" element={<PasswordResetConfirm />} />
 
-
         {/* PROTECTED ROUTES */}
-        <Route element={<AuthChecker />}>
+        <Route element={<AuthChecker setCurrentUser={setCurrentUser} />}>
 
-          {/* Admin Routes */}
-          <Route path="/appinsurance/main-app" element={<MainArea />}>
-            <Route index element={<Dashboard />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="client" element={<Client />} />
-            <Route path="client/clientCreationForm" element={<NewClientController />} />
-            <Route path="client/clientEditForm" element={<EditClientForm />} />
-            <Route path="due" element={<Due />} />
-            <Route path="policy" element={<Policy />} />
-            <Route path="policy/policy-new-client" element={<NewPolicyController />} />
-            <Route path="policy/edit/:policyId" element={<EditPolicyController />} />
-            <Route path="policy/policyNewClient/vehicle-details" element={<VehicleDetails />} />
-            <Route path="policy/listClient" element={<ListClient />} />
-            <Route path="policy/listClient/edit-client-form" element={<EditClientForm />} />
-            <Route path="policy/listClient/edit-client-form/edit-vehicle-details-form" element={<EditVehicleDetailsForm />} />
-            <Route path="claim" element={<Claims />} />
-            <Route path="delivery" element={<Delivery />} />
-            <Route path="delivery/new-delivery-form" element={<DeliveryCreationForm />} />
-            <Route path="records" element={<MonthlyDataController />} />
-            <Route path="payment-records" element={<PaymentRecords />} />
-            <Route path="account-management" element={<AccountManagement />} />
-            <Route path="admin-controls" element={<AdminControl/>} />
-            <Route path="about" element={<About />} />
+          {/* Admin */}
+          <Route path="/appinsurance/main-app" element={<MainArea currentUser={currentUser} />}>
+            <Route index element={<Dashboard currentUser={currentUser} />} />
+            <Route path="dashboard" element={<Dashboard currentUser={currentUser} />} />
+            <Route path="client" element={<Client currentUser={currentUser} />} />
+            <Route path="client/clientCreationForm" element={<NewClientController currentUser={currentUser} />} />
+            <Route path="client/clientEditForm" element={<EditClientForm currentUser={currentUser} />} />
+            <Route path="due" element={<Due currentUser={currentUser} />} />
+            <Route path="policy" element={<Policy currentUser={currentUser} />} />
+            <Route path="policy/policy-new-client" element={<NewPolicyController currentUser={currentUser} />} />
+            <Route path="policy/edit/:policyId" element={<EditPolicyController currentUser={currentUser} />} />
+            <Route path="policy/policyNewClient/vehicle-details" element={<VehicleDetails currentUser={currentUser} />} />
+            <Route path="policy/listClient" element={<ListClient currentUser={currentUser} />} />
+            <Route path="policy/listClient/edit-client-form" element={<EditClientForm currentUser={currentUser} />} />
+            <Route path="policy/listClient/edit-client-form/edit-vehicle-details-form" element={<EditVehicleDetailsForm currentUser={currentUser} />} />
+            <Route path="claim" element={<Claims currentUser={currentUser} />} />
+            <Route path="delivery" element={<Delivery currentUser={currentUser} />} />
+            <Route path="delivery/new-delivery-form" element={<DeliveryCreationForm currentUser={currentUser} />} />
+            <Route path="records" element={<MonthlyDataController currentUser={currentUser} />} />
+            <Route path="payment-records" element={<PaymentRecords currentUser={currentUser} />} />
+            <Route path="account-management" element={<AccountManagement currentUser={currentUser} />} />
+            <Route path="admin-controls" element={<AdminControl currentUser={currentUser}/>} />
+            <Route path="about" element={<About currentUser={currentUser} />} />
           </Route>
-
-          {/* Moderator Routes */}
-          <Route path="/appinsurance/MainAreaModerator" element={<MainAreaModerator />}>
-            <Route index element={<DashboardModerator />} />
-            <Route path="DashboardModerator" element={<DashboardModerator />} />
-            <Route path="ClientModerator" element={<ClientModerator />} />
-            <Route path="ClientModerator/ModeratorClientCreationForm" element={<ModeratorNewClientController />} />
-            <Route path="ClientModerator/ModeratorClientEditForm" element={<ModeratorClientEditForm />} />
-            <Route path="DueModerator" element={<DueModerator />} />
-            <Route path="PolicyModerator" element={<PolicyModerator />} />
-            <Route path="PolicyModerator/ModeratorPolicyNewClientForm" element={<ModeratorNewPolicyController />} />
-            <Route path="PolicyModerator/Edit/:policyId" element={<ModeratorEditPolicyController />} />
-            <Route path="PolicyModerator/ModeratorNewPolicyController" element={<ModeratorNewPolicyController />} />
-            <Route path="ClaimTableModerator" element={<ClaimTableModerator />} />
-            <Route path="DeliveryModerator" element={<DeliveryModerator />} />
-            <Route path="MonthlyDataModerator" element={<MonthlyDataModerator />} />
-            <Route path="PaymentRecordsModerator" element={<PaymentRecordsModerator />} />
-            <Route path="ProfileModerator" element={<ProfileModerator />} />
-            <Route path="PolicyModerator/NewClientModerator" element={<PolicyNewClientModerator />} />
-            <Route path="PolicyModerator/NewClientModerator/VehicleDetailsModerator" element={<VehicleDetailsModerator />} />
-          </Route>
-
         </Route>
 
-        {/* Fallback for unknown routes */}
+        {/* fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
-
       </Routes>
     </>
   );
