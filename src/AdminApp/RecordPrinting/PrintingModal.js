@@ -334,7 +334,7 @@ export default function PrintingModal({ recordType, onClose }) {
     doc.text(`Generated on: ${createdDate}`, 14, 32);
 
     doc.setFont("helvetica", "bold");
-    doc.text(`${recordCount} ${recordCount === 1 ? "record" : "records"} fetched.`, 14, 37);
+    doc.text(`${recordCount} ${recordCount === 1 ? "record" : "records"} generated.`, 14, 37);
 
     autoTable(doc, {
       head: [headers],
@@ -422,7 +422,7 @@ export default function PrintingModal({ recordType, onClose }) {
               )}
 
               <button onClick={handleFetch} disabled={isLoading}>
-                {isLoading ? 'Fetching...' : 'Fetch Data'}
+                {isLoading ? 'Generating...' : 'Generate Data'}
               </button>
             </div>
           </div>
@@ -433,7 +433,7 @@ export default function PrintingModal({ recordType, onClose }) {
               {isLoading ? (
                 <p>Loading data...</p>
               ) : !hasSearched ? (
-                <p>No data loaded. Click "Fetch Data".</p>
+                <p>No data loaded. Click "Generate Data".</p>
               ) : records.length === 0 ? (
                 <p>No records found for the selected range.</p>
               ) : (

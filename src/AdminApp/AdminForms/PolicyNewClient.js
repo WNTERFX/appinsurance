@@ -123,7 +123,7 @@ export default function PolicyNewClient({
 
               {/* Client */}
               <div className={`form-group ${errors.selectedClient ? 'error' : ''}`}>
-                <label>Client <span style={{ color: 'red' }}>*</span></label>
+                <label>Client</label>
                 <Select
                   className="client-select"
                   classNamePrefix="client-select"
@@ -162,7 +162,7 @@ export default function PolicyNewClient({
 
               {/* Maker (changed to select) */}
               <div className={`form-group ${errors.vehicleMaker ? 'error' : ''}`}>
-                <label>Make <span style={{ color: 'red' }}>*</span></label>
+                <label>Make</label>
                 <select
                   value={vehicleMaker || ''}
                   onChange={(e) => {
@@ -181,7 +181,7 @@ export default function PolicyNewClient({
 
               {/* Model */}
               <div className={`form-group ${errors.vehicleName ? 'error' : ''}`}>
-                <label>Model <span style={{ color: 'red' }}>*</span></label>
+                <label>Model</label>
                 <input
                   type="text"
                   value={vehicleName}
@@ -196,7 +196,7 @@ export default function PolicyNewClient({
 
               {/* VIN */}
               <div className={`form-group ${errors.vehicleVinNumber ? 'error' : ''}`}>
-                <label>Vehicle VIN Number <span style={{ color: 'red' }}>*</span></label>
+                <label>Vehicle VIN Number</label>
                 <input
                   type="text"
                   value={vehicleVinNumber || ""}
@@ -221,7 +221,7 @@ export default function PolicyNewClient({
 
               {/* Engine Serial */}
               <div className={`form-group ${errors.vehicleEngineNumber ? 'error' : ''}`}>
-                <label>Vehicle Engine Serial <span style={{ color: 'red' }}>*</span></label>
+                <label>Vehicle Engine Serial</label>
                 <input
                   type="text"
                   value={vehicleEngineNumber || ""}
@@ -239,7 +239,7 @@ export default function PolicyNewClient({
 
              {/* Plate */}
               <div className={`form-group ${errors.vehiclePlateNumber ? 'error' : ''}`}>
-                <label>Vehicle Plate Number <span style={{ color: 'red' }}>*</span></label>
+                <label>Vehicle Plate Number</label>
                 <input
                   type="text"
                   value={vehiclePlateNumber || ""}
@@ -266,7 +266,7 @@ export default function PolicyNewClient({
 
               {/* Color */}
               <div className={`form-group ${errors.vehicleColor ? 'error' : ''}`}>
-                <label>Vehicle Color <span style={{ color: 'red' }}>*</span></label>
+                <label>Vehicle Color</label>
                 <input
                   type="text"
                   value={vehicleColor || ""}
@@ -284,7 +284,7 @@ export default function PolicyNewClient({
 
               {/* Year */}
               <div className={`form-group ${errors.yearInput ? 'error' : ''}`}>
-                <label>Vehicle Year <span style={{ color: 'red' }}>*</span></label>
+                <label>Vehicle Year</label>
                 <select
                   value={yearInput || ''}
                   onChange={(e) => {
@@ -303,7 +303,7 @@ export default function PolicyNewClient({
 
               {/* Partner */}
               <div className={`form-group ${errors.selectedPartner ? 'error' : ''}`}>
-                <label>Insurer <span style={{ color: 'red' }}>*</span></label>
+                <label>Insurer</label>
                 <select
                   id="company-select"
                   value={selectedPartner || ''}
@@ -328,7 +328,6 @@ export default function PolicyNewClient({
               <div className={`form-group ${errors.selectedPaymentType ? 'error' : ''}`}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   Payment Type
-                  <span style={{ color: 'red' }}>*</span>
                   <span
                     title="This is to set the default value of the payment type, this can be changed later in the payment generation."
                     className="tooltip-icon"
@@ -362,7 +361,7 @@ export default function PolicyNewClient({
 
               {/* Vehicle Type */}
               <div className={`form-group ${errors.selected ? 'error' : ''}`}>
-                <label>Vehicle Type <span style={{ color: 'red' }}>*</span></label>
+                <label>Vehicle Type</label>
                 <select
                   id="vehicle-type-select"
                   value={selected || ''}
@@ -384,7 +383,7 @@ export default function PolicyNewClient({
 
               {/* Original Value */}
               <div className={`form-group ${errors.vehicleCost ? 'error' : ''}`}>
-                <label>Original Value of Vehicle <span style={{ color: 'red' }}>*</span></label>
+                <label>Original Value of Vehicle</label>
                 <input
                   type="number"
                   value={vehicleCost || ""}
@@ -523,7 +522,11 @@ export default function PolicyNewClient({
                         paymentDate.setMonth(paymentDate.getMonth() + i);
                         
                         // Format it to MM/DD/YYYY
-                        const formattedDate = paymentDate.toLocaleDateString('en-US');
+                        const formattedDate = paymentDate.toLocaleDateString('en-US', {
+                          month: 'short',  // This makes it "Nov", "Dec", etc.
+                          day: 'numeric',  // This keeps the day number
+                          year: 'numeric'  // This keeps the year
+                        });
 
                         return (
                           <div
