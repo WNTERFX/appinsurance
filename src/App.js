@@ -1,14 +1,16 @@
-// App.js
 import { useState, useEffect } from "react";
-import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { db } from "./dbServer";
 
-//Reusable Components
-import GlobalAlert from "./ReusableComponents/GlobalAlert";
+import GlobalAlert, { showGlobalAlert } from "./ReusableComponents/GlobalAlert";
 import AuthChecker from "./ReusableComponents/AuthChecker";
 import SessionMonitor from "./ReusableComponents/SessionMonitor";
 
-// Admin Components
 import LoginForm from "./LoginApp/LoginForm";
+import PasswordResetForm from "./LoginApp/ResetForm";
+import PasswordResetConfirm from "./LoginApp/PasswordResetConfirm";
+
+// Admin Components
 import MainArea from "./AdminApp/MainArea";
 import Dashboard from "./AdminApp/Dashboard";
 import Due from "./AdminApp/Due";
@@ -38,7 +40,6 @@ import DueModerator from "./ModeratorApp/DueModerator";
 import PolicyModerator from "./ModeratorApp/PolicyModerator";
 import ClaimTableModerator from "./ModeratorApp/ClaimTableModerator";
 import DeliveryModerator from "./ModeratorApp/DeliveryModerator";
-import ModeratorClientArchiveTable from "./ModeratorApp/ModeratorTables/ModeratorClientArchiveTable";
 import MonthlyDataModerator from "./ModeratorApp/MonthlyDataModerator";
 import PaymentRecordsModerator from "./ModeratorApp/PaymentRecordsModerator";
 import ProfileModerator from "./ModeratorApp/ProfileModerator";
@@ -46,56 +47,89 @@ import PolicyNewClientModerator from "./ModeratorApp/PolicyNewClientModerator";
 import VehicleDetailsModerator from "./ModeratorApp/VehicleDetailsModerator";
 import ModeratorNewClientController from "./ModeratorApp/ControllerModerator/ModeratorNewClientController";
 import ModeratorClientEditForm from "./ModeratorApp/ModeratorForms/ModeratorClientEditForm";
-import ModeratorPolicyNewClientForm from "./ModeratorApp/ModeratorForms/ModeratorPolicyNewClientForm";
 import ModeratorNewPolicyController from "./ModeratorApp/ControllerModerator/ModeratorNewPolicyController";
 import ModeratorEditPolicyController from "./ModeratorApp/ControllerModerator/ModeratorEditPolicyController";
 
-// Password Reset Components
-import PasswordResetForm from "./LoginApp/ResetForm";
-import PasswordResetConfirm from "./LoginApp/PasswordResetConfirm";
-
-
-
+// ---------- APP ----------
 
 function App() {
   const [session, setSession] = useState(null);
-  const [anotherLoginDetected, setAnotherLoginDetected] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Check for saved session on app load
+
   useEffect(() => {
-    const checkSavedSession = async () => {
-      // Check localStorage first (remember me), then sessionStorage
-      const savedSession = localStorage.getItem("user_session") || 
-                          sessionStorage.getItem("user_session");
-      
-      if (savedSession) {
-        try {
-          const sessionData = JSON.parse(savedSession);
-          setSession(sessionData);
-        } catch (error) {
-          console.error("Failed to parse saved session:", error);
-          // Clear invalid session data
-          localStorage.removeItem("user_session");
-          sessionStorage.removeItem("user_session");
+    const restoreSession = async () => {
+      setIsLoading(true);
+
+      try {
+        // 1. Check Supabase Auth first (Source of Truth)
+        const { data: { session: supabaseSession }, error: sessionError } = await db.auth.getSession();
+        
+        // If Supabase says no, we are done.
+        if (!supabaseSession || sessionError) {
+          setSession(null);
+          setCurrentUser(null);
+          setIsLoading(false);
+          return;
         }
+
+        setSession(supabaseSession);
+
+        // 2. Retrieve User Data from Storage (Check BOTH)
+        const savedUserStr = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
+        
+        if (savedUserStr) {
+          setCurrentUser(JSON.parse(savedUserStr));
+          setIsLoading(false);
+          return;
+        }
+
+        // 3. Fallback: Fetch from DB if storage is empty but Supabase is active
+        // (This handles cases where user cleared cache but cookie remains)
+        const { data: accountData, error: accountError } = await db
+          .from("employee_Accounts")
+          .select("id, is_Admin, status_Account, first_name, last_name, employee_email")
+          .eq("id", supabaseSession.user.id)
+          .single();
+
+        if (accountError || !accountData || !accountData.status_Account) {
+          showGlobalAlert("Invalid account. Please contact admin.");
+          setCurrentUser(null);
+          setSession(null); // Kill the session if DB user is invalid
+          await db.auth.signOut();
+          setIsLoading(false);
+          return;
+        }
+
+        const userData = {
+          id: accountData.id,
+          email: accountData.employee_email,
+          first_name: accountData.first_name,
+          last_name: accountData.last_name,
+          is_Admin: accountData.is_Admin,
+          access_token: supabaseSession.access_token,
+        };
+
+        // Default to sessionStorage if recovering from thin air
+        sessionStorage.setItem("currentUser", JSON.stringify(userData));
+        setCurrentUser(userData);
+
+      } catch (err) {
+        console.error("Restore session failed", err);
+        setSession(null);
+        setCurrentUser(null);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
-    
-    checkSavedSession();
+
+    restoreSession();
   }, []);
-  
-  // Show loading state while checking for session
+
   if (isLoading) {
     return (
-      <div style={{ 
-        display: "flex", 
-        justifyContent: "center", 
-        alignItems: "center", 
-        height: "100vh" 
-      }}>
-        Loading...
+      <div style={{ display:"flex", justifyContent:"center", alignItems:"center", height:"100vh", flexDirection:"column", gap:"1rem" }}>
+        <div>Loading...</div>
       </div>
     );
   }
@@ -103,49 +137,60 @@ function App() {
   return (
     <>
       <GlobalAlert />
-      <SessionMonitor session={session} />
+      <SessionMonitor session={session} currentUser={currentUser} />
 
       <Routes>
-        {/* Public route - redirect to dashboard if already logged in */}
-        <Route 
-          path="/" 
+        {/* LOGIN */}
+        <Route
+          path="/"
           element={
-            session ? 
-              <Navigate to="/appinsurance/main-app/dashboard" replace /> : 
-              <LoginForm anotherLoginDetected={anotherLoginDetected} setSession={setSession} />
-          } 
+            session ? (
+              <Navigate to="/appinsurance/main-app/dashboard" replace />
+            ) : (
+              <LoginForm setSession={setSession} setCurrentUser={setCurrentUser} />
+            )
+          }
         />
+
         <Route path="/appinsurance/reset-password" element={<PasswordResetForm />} />
         <Route path="/appinsurance/reset-password/confirm" element={<PasswordResetConfirm />} />
 
-        {/* Protected routes */}
-        <Route element={<AuthChecker />}>
-          {/* Admin routes */}
-          <Route path="/appinsurance/main-app" element={<MainArea />}>
-            <Route index element={<Dashboard />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="client" element={<Client />} />
-            <Route path="client/clientCreationForm" element={<NewClientController />} />
-            <Route path="client/clientEditForm" element={<EditClientForm />} />
-            <Route path="due" element={<Due />} />
-            <Route path="policy" element={<Policy />} />
-            <Route path="policy/policy-new-client" element={<NewPolicyController />} />
-            <Route path="policy/edit/:policyId" element={<EditPolicyController />} />
-            <Route path="policy/policyNewClient/vehicle-details" element={<VehicleDetails />} />
-            <Route path="policy/listClient" element={<ListClient />} />
-            <Route path="policy/listClient/edit-client-form" element={<EditClientForm />} />
-            <Route path="policy/listClient/edit-client-form/edit-vehicle-details-form" element={<EditVehicleDetailsForm />} />
-            <Route path="claim" element={<Claims />} />
-            <Route path="delivery" element={<Delivery />} />
-            <Route path="delivery/new-delivery-form" element={<DeliveryCreationForm />} />
-            <Route path="records" element={<MonthlyDataController />} />
-            <Route path="payment-records" element={<PaymentRecords />} />
-            <Route path="account-management" element={<AccountManagement />} />
-            <Route path="admin-controls" element={<AdminControl/>} />
-            <Route path="about" element={<About />} />
+        {/* PROTECTED ROUTES */}
+        {/* ⭐ FIX: Consolidated AuthChecker here with ALL props passed down ⭐ */}
+        <Route element={
+            <AuthChecker 
+                session={session} 
+                setSession={setSession} 
+                setCurrentUser={setCurrentUser} 
+            />
+        }>
+
+          {/* Admin */}
+          <Route path="/appinsurance/main-app" element={<MainArea currentUser={currentUser} />}>
+            <Route index element={<Dashboard currentUser={currentUser} />} />
+            <Route path="dashboard" element={<Dashboard currentUser={currentUser} />} />
+            <Route path="client" element={<Client currentUser={currentUser} />} />
+            <Route path="client/clientCreationForm" element={<NewClientController currentUser={currentUser} />} />
+            <Route path="client/clientEditForm" element={<EditClientForm currentUser={currentUser} />} />
+            <Route path="due" element={<Due currentUser={currentUser} />} />
+            <Route path="policy" element={<Policy currentUser={currentUser} />} />
+            <Route path="policy/policy-new-client" element={<NewPolicyController currentUser={currentUser} />} />
+            <Route path="policy/edit/:policyId" element={<EditPolicyController currentUser={currentUser} />} />
+            <Route path="policy/policyNewClient/vehicle-details" element={<VehicleDetails currentUser={currentUser} />} />
+            <Route path="policy/listClient" element={<ListClient currentUser={currentUser} />} />
+            <Route path="policy/listClient/edit-client-form" element={<EditClientForm currentUser={currentUser} />} />
+            <Route path="policy/listClient/edit-client-form/edit-vehicle-details-form" element={<EditVehicleDetailsForm currentUser={currentUser} />} />
+            <Route path="claim" element={<Claims currentUser={currentUser} />} />
+            <Route path="delivery" element={<Delivery currentUser={currentUser} />} />
+            <Route path="delivery/new-delivery-form" element={<DeliveryCreationForm currentUser={currentUser} />} />
+            <Route path="records" element={<MonthlyDataController currentUser={currentUser} />} />
+            <Route path="payment-records" element={<PaymentRecords currentUser={currentUser} />} />
+            <Route path="account-management" element={<AccountManagement currentUser={currentUser} />} />
+            <Route path="admin-controls" element={<AdminControl currentUser={currentUser}/>} />
+            <Route path="about" element={<About currentUser={currentUser} />} />
           </Route>
 
-          {/* Moderator routes */}
+          {/* Moderator */}
           <Route path="/appinsurance/MainAreaModerator" element={<MainAreaModerator />}>
             <Route index element={<DashboardModerator />} />
             <Route path="DashboardModerator" element={<DashboardModerator />} />
@@ -165,9 +210,10 @@ function App() {
             <Route path="PolicyModerator/NewClientModerator" element={<PolicyNewClientModerator />} />
             <Route path="PolicyModerator/NewClientModerator/VehicleDetailsModerator" element={<VehicleDetailsModerator />} />
           </Route>
+
         </Route>
 
-        {/* Catch-all route - redirect any undefined path to login */}
+        {/* fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

@@ -1,6 +1,4 @@
-import "./login-styles.css"
-import "./images/logo-login.png"
-import "./images/logo_.png"
+import "./login-styles.css";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { loginFunction } from "./LoginFormActions";
@@ -8,21 +6,18 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 // Make sure this path is correct and the file exists!
 import { CustomAlert } from "../ReusableComponents/CustomAlert"; 
 
-export default function LoginForm({ anotherLoginDetected, setSession }) {
+export default function LoginForm({ setSession, setCurrentUser }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
-  
-  // Alert State
+
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState("");
 
-  let navigate = useNavigate();
+  const navigate = useNavigate();
 
-  const togglePassword = () => {
-    setPasswordVisible(!passwordVisible);
-  };
+  const togglePassword = () => setPasswordVisible(!passwordVisible);
 
   const showAlert = (message, type) => {
     setAlertMessage(message);
@@ -38,11 +33,11 @@ export default function LoginForm({ anotherLoginDetected, setSession }) {
     setAlertMessage("");
     setAlertType("");
   };
-  
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    setAlertMessage(""); // Clear previous alerts
-    
+    setAlertMessage("");
+
     if (!email.trim() || !password.trim()) {
       showAlert("Login failed: Invalid login credentials", "error");
       return;
@@ -55,44 +50,34 @@ export default function LoginForm({ anotherLoginDetected, setSession }) {
       return;
     }
 
-    // Save session locally
-    const sessionData = {
-      userId: result.userId,
-      accessToken: result.accessToken,
-      isAdmin: result.isAdmin,
+    // Save user data
+    const userData = {
+      id: result.id,
+      email: result.email,
       first_name: result.first_name,
       last_name: result.last_name,
-      personnel_Name: result.personnel_Name,
-      email: result.email
+      is_Admin: result.is_Admin,
+      access_token: result.access_token,
     };
 
     const storage = rememberMe ? localStorage : sessionStorage;
-    storage.setItem("user_session", JSON.stringify(sessionData));
+    storage.setItem("currentUser", JSON.stringify(userData));
 
-    if (setSession) {
-      setSession(sessionData);
-    }
+    if (setSession) setSession(result);
+    if (setCurrentUser) setCurrentUser(userData);
 
     showAlert("Login successful!", "success");
 
     setTimeout(() => {
       navigate("/appinsurance/main-app/dashboard");
-    }, 1000);
+    }, 800);
   };
 
   return (
     <div className="login-page">
-      
-      {/* --- FIX: PLACED ALERT HERE (Outside the login-box) --- */}
-      {/* This ensures the overlay covers the whole screen and isn't cut off */}
       {alertMessage && (
-        <CustomAlert 
-          message={alertMessage} 
-          type={alertType} 
-          onClose={closeAlert}
-        />
+        <CustomAlert message={alertMessage} type={alertType} onClose={closeAlert} />
       )}
-      {/* ----------------------------------------------------- */}
 
       <div className="login-box">
         <div className="login-header">
@@ -100,10 +85,10 @@ export default function LoginForm({ anotherLoginDetected, setSession }) {
             <h2>LOGIN</h2>
             <p>Welcome back to Silverstar Insurance Inc.</p>
           </div>
-          <img 
-            className="header-logo" 
-            src={require("./images/logo_.png")} 
-            alt="silverstar_insurance_inc_Logo" 
+          <img
+            className="header-logo"
+            src={require("./images/logo_.png")}
+            alt="silverstar_insurance_inc_Logo"
           />
         </div>
 
@@ -119,7 +104,7 @@ export default function LoginForm({ anotherLoginDetected, setSession }) {
           <label>Password</label>
           <div className="password-wrapper">
             <input
-              type={passwordVisible ? "text" : "password"} 
+              type={passwordVisible ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -140,8 +125,8 @@ export default function LoginForm({ anotherLoginDetected, setSession }) {
             </label>
           </div>
 
-          <a 
-            href="#" 
+          <a
+            href="#"
             className="forgot-password"
             onClick={(e) => {
               e.preventDefault();
@@ -151,9 +136,11 @@ export default function LoginForm({ anotherLoginDetected, setSession }) {
             Forgot password?
           </a>
 
-          <button type="submit" className="login-button">Login</button>
+          <button type="submit" className="login-button">
+            Login
+          </button>
         </form>
       </div>
-    </div>    
+    </div>
   );
 }

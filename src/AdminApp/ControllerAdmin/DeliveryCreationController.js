@@ -9,6 +9,7 @@ import {
 } from "../AdminActions/NewDeliveryActions";
 import DeliveryCreationForm from "../AdminForms/DeliveryCreationForm";
 import AddressPickerModal from "../AdminForms/AddressPickerModal";
+import CustomAlertModal from "../AdminForms/CustomAlertModal";
 import {
   fetchClientDefaultFromClientsTable,
   fetchClientAddresses,
@@ -32,6 +33,13 @@ export default function DeliveryCreationController({ onCancel }) {
   const [clientAddrs, setClientAddrs] = useState([]);
   const [deliveredAddr, setDeliveredAddr] = useState(null);
   const [addrModalOpen, setAddrModalOpen] = useState(false);
+
+  // Custom alert modal state
+  const [alertModal, setAlertModal] = useState({ 
+    isOpen: false, 
+    message: "", 
+    title: "Alert" 
+  });
 
   const [formData, setFormData] = useState({
     policyId: "",
@@ -96,14 +104,24 @@ export default function DeliveryCreationController({ onCancel }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const showAlert = (message, title = "Alert") => {
+    setAlertModal({ isOpen: true, message, title });
+  };
+
+  const closeAlert = () => {
+    setAlertModal({ isOpen: false, message: "", title: "Alert" });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (!selectedClient?.uid) {
-      alert("⚠ Please select a client");
+      showAlert("Please select a client", " Validation Error");
       return;
     }
+    
     if (!formData.policyId) {
-      alert("⚠ Please select a policy");
+      showAlert("Please select a policy", " Validation Error");
       return;
     }
 
@@ -111,7 +129,7 @@ export default function DeliveryCreationController({ onCancel }) {
     const snap = deliveredAddr || defaultAddr || {};
     
     if (!snap.street_address && !snap.address) {
-      alert("⚠ No address available for this client. Please add an address first.");
+      showAlert("No address available for this client. Please add an address first.", "⚠ Address Required");
       return;
     }
 
@@ -137,11 +155,16 @@ export default function DeliveryCreationController({ onCancel }) {
         ...addressPayload,
       });
 
-      alert("✅ Delivery created successfully!");
-      if (onCancel) onCancel();
-      else navigate("/appinsurance/MainArea/Delivery");
+      showAlert("Delivery created successfully!", "✅ Success");
+      
+      // Close form after a short delay to let user see the success message
+      setTimeout(() => {
+        if (onCancel) onCancel();
+        else navigate("/appinsurance/MainArea/Delivery");
+      }, 1500);
+      
     } catch (err) {
-      alert("⚠ Failed to create delivery: " + err.message);
+      showAlert("Failed to create delivery: " + err.message, "⚠ Error");
     } finally {
       setLoading(false);
     }
@@ -178,6 +201,13 @@ export default function DeliveryCreationController({ onCancel }) {
             });
           }
         }}
+      />
+
+      <CustomAlertModal
+        isOpen={alertModal.isOpen}
+        onClose={closeAlert}
+        message={alertModal.message}
+        title={alertModal.title}
       />
     </>
   );
