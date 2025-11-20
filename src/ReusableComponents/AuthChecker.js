@@ -18,6 +18,54 @@ export default function AuthChecker() {
   const lastValidToken = useRef(null);
 
   useEffect(() => {
+    // Check if user has a saved session on mount
+    const checkInitialSession = async () => {
+      const savedSession = localStorage.getItem("user_session") || 
+                           sessionStorage.getItem("user_session");
+      
+      if (!savedSession) {
+        navigate("/", { replace: true });
+        return;
+      }
+
+      try {
+        const sessionData = JSON.parse(savedSession);
+        
+        // Verify the saved session is still valid with Supabase
+        const { data: { session }, error: sessionError } = await db.auth.getSession();
+        
+        if (sessionError || !session) {
+          // Session expired or invalid - clear storage and redirect
+          localStorage.removeItem("user_session");
+          sessionStorage.removeItem("user_session");
+          navigate("/", { replace: true });
+          return;
+        }
+        
+        // If tokens don't match, update the saved session
+        if (session.access_token !== sessionData.accessToken) {
+          const updatedSession = {
+            ...sessionData,
+            accessToken: session.access_token
+          };
+          
+          // Update in the same storage that was used
+          if (localStorage.getItem("user_session")) {
+            localStorage.setItem("user_session", JSON.stringify(updatedSession));
+          } else {
+            sessionStorage.setItem("user_session", JSON.stringify(updatedSession));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to parse saved session:", error);
+        localStorage.removeItem("user_session");
+        sessionStorage.removeItem("user_session");
+        navigate("/", { replace: true });
+      }
+    };
+
+    checkInitialSession();
+
     const lockScreen = (message, showAlert = false, alertMessage = null) => {
       clearTimeout(idleTimeout.current);
       clearTimeout(warningTimeout.current);
@@ -34,12 +82,38 @@ export default function AuthChecker() {
       const { data: { session }, error: sessionError } = await db.auth.getSession();
       
       if (sessionError || !session) {
+        // Clear both storages and redirect
+        localStorage.removeItem("user_session");
+        sessionStorage.removeItem("user_session");
         navigate("/", { replace: true });
         return;
       }
 
       const userId = session.user.id;
       const currentToken = session.access_token;
+      
+      // Update saved session with current token
+      const savedSession = localStorage.getItem("user_session") || 
+                           sessionStorage.getItem("user_session");
+      if (savedSession) {
+        try {
+          const sessionData = JSON.parse(savedSession);
+          if (sessionData.accessToken !== currentToken) {
+            const updatedSession = {
+              ...sessionData,
+              accessToken: currentToken
+            };
+            
+            if (localStorage.getItem("user_session")) {
+              localStorage.setItem("user_session", JSON.stringify(updatedSession));
+            } else {
+              sessionStorage.setItem("user_session", JSON.stringify(updatedSession));
+            }
+          }
+        } catch (error) {
+          console.error("Error updating saved session:", error);
+        }
+      }
       
       try {
         const { data, error } = await db
@@ -85,6 +159,10 @@ export default function AuthChecker() {
 
         // Check if someone else logged in (DB token differs from our current token)
         if (dbToken && dbToken !== currentToken) {
+          // Clear saved sessions
+          localStorage.removeItem("user_session");
+          sessionStorage.removeItem("user_session");
+          
           return lockScreen(
             "Another login has been detected. Click anywhere to go to login.",
             true,
@@ -94,6 +172,10 @@ export default function AuthChecker() {
 
         // Check if token was cleared (logout from another device)
         if (!dbToken) {
+          // Clear saved sessions
+          localStorage.removeItem("user_session");
+          sessionStorage.removeItem("user_session");
+          
           return lockScreen(
             "Session has been invalidated. Click anywhere to go to login.",
             true,
@@ -116,6 +198,9 @@ export default function AuthChecker() {
       }, IDLE_TIMEOUT - WARNING_TIME);
      
       idleTimeout.current = setTimeout(() => {
+        // Clear saved sessions on idle timeout
+        localStorage.removeItem("user_session");
+        sessionStorage.removeItem("user_session");
         lockScreen("You have been logged out due to inactivity.");
       }, IDLE_TIMEOUT);
     };

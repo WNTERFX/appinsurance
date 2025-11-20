@@ -9,7 +9,7 @@ import SessionMonitor from "../ReusableComponents/SessionMonitor";
 import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 
-export default function MainArea() {
+export default function MainArea({ setSession }) {
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function MainArea() {
     <div className="main-area">
       <SessionMonitor />
       <div className="nav-area">
-        <NavBar />
+        <NavBar setSession={setSession} />
       </div>
       <div className="content-area">
         <div className="content-wrapper" style={{ zoom: scale }}>

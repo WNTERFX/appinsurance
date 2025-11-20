@@ -1,8 +1,9 @@
 // App.js
-import { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 
-// Reusable Components
+//Reusable Components
+import GlobalAlert from "./ReusableComponents/GlobalAlert";
 import AuthChecker from "./ReusableComponents/AuthChecker";
 import SessionMonitor from "./ReusableComponents/SessionMonitor";
 
@@ -54,23 +55,66 @@ import PasswordResetForm from "./LoginApp/ResetForm";
 import PasswordResetConfirm from "./LoginApp/PasswordResetConfirm";
 
 
-//Reusable Components
-import GlobalAlert from "./ReusableComponents/GlobalAlert";
+
+
 function App() {
   const [session, setSession] = useState(null);
   const [anotherLoginDetected, setAnotherLoginDetected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
+  // Check for saved session on app load
+  useEffect(() => {
+    const checkSavedSession = async () => {
+      // Check localStorage first (remember me), then sessionStorage
+      const savedSession = localStorage.getItem("user_session") || 
+                          sessionStorage.getItem("user_session");
+      
+      if (savedSession) {
+        try {
+          const sessionData = JSON.parse(savedSession);
+          setSession(sessionData);
+        } catch (error) {
+          console.error("Failed to parse saved session:", error);
+          // Clear invalid session data
+          localStorage.removeItem("user_session");
+          sessionStorage.removeItem("user_session");
+        }
+      }
+      setIsLoading(false);
+    };
+    
+    checkSavedSession();
+  }, []);
+  
+  // Show loading state while checking for session
+  if (isLoading) {
+    return (
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        height: "100vh" 
+      }}>
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <>
-      {/* Only start monitoring after login */}
-       <GlobalAlert />
-       <SessionMonitor session={session} />
-     
+      <GlobalAlert />
+      <SessionMonitor session={session} />
 
       <Routes>
-        {/* Public route */}
-        <Route path="/" element={<LoginForm anotherLoginDetected={anotherLoginDetected} setSession={setSession} />} />
+        {/* Public route - redirect to dashboard if already logged in */}
+        <Route 
+          path="/" 
+          element={
+            session ? 
+              <Navigate to="/appinsurance/main-app/dashboard" replace /> : 
+              <LoginForm anotherLoginDetected={anotherLoginDetected} setSession={setSession} />
+          } 
+        />
         <Route path="/appinsurance/reset-password" element={<PasswordResetForm />} />
         <Route path="/appinsurance/reset-password/confirm" element={<PasswordResetConfirm />} />
 
@@ -99,7 +143,6 @@ function App() {
             <Route path="account-management" element={<AccountManagement />} />
             <Route path="admin-controls" element={<AdminControl/>} />
             <Route path="about" element={<About />} />
-            <Route path="*" element={<div>Page not found</div>} />
           </Route>
 
           {/* Moderator routes */}
@@ -121,9 +164,11 @@ function App() {
             <Route path="ProfileModerator" element={<ProfileModerator />} />
             <Route path="PolicyModerator/NewClientModerator" element={<PolicyNewClientModerator />} />
             <Route path="PolicyModerator/NewClientModerator/VehicleDetailsModerator" element={<VehicleDetailsModerator />} />
-            <Route path="*" element={<div>Page not found</div>} />
           </Route>
         </Route>
+
+        {/* Catch-all route - redirect any undefined path to login */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );
