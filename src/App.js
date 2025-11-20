@@ -57,16 +57,16 @@ function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ---- RESTORE SESSION & USER DATA ----
   useEffect(() => {
     const restoreSession = async () => {
       setIsLoading(true);
+
       try {
-        // 1️⃣ Get Supabase session
+        // 1. Check Supabase Auth first (Source of Truth)
         const { data: { session: supabaseSession }, error: sessionError } = await db.auth.getSession();
+        
+        // If Supabase says no, we are done.
         if (!supabaseSession || sessionError) {
-          localStorage.removeItem("user_session");
-          sessionStorage.removeItem("currentUser");
           setSession(null);
           setCurrentUser(null);
           setIsLoading(false);
@@ -75,30 +75,28 @@ function App() {
 
         setSession(supabaseSession);
 
-        // 2️⃣ Check if user data already in sessionStorage
-        const savedUser = sessionStorage.getItem("currentUser");
-        if (savedUser) {
-          setCurrentUser(JSON.parse(savedUser));
+        // 2. Retrieve User Data from Storage (Check BOTH)
+        const savedUserStr = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
+        
+        if (savedUserStr) {
+          setCurrentUser(JSON.parse(savedUserStr));
           setIsLoading(false);
           return;
         }
 
-        // 3️⃣ Fetch user data from DB
+        // 3. Fallback: Fetch from DB if storage is empty but Supabase is active
+        // (This handles cases where user cleared cache but cookie remains)
         const { data: accountData, error: accountError } = await db
           .from("employee_Accounts")
           .select("id, is_Admin, status_Account, first_name, last_name, employee_email")
           .eq("id", supabaseSession.user.id)
           .single();
 
-        if (accountError || !accountData) {
+        if (accountError || !accountData || !accountData.status_Account) {
+          showGlobalAlert("Invalid account. Please contact admin.");
           setCurrentUser(null);
-          setIsLoading(false);
-          return;
-        }
-
-        if (!accountData.status_Account) {
-          showGlobalAlert("Invalid account. Please contact the administrator.");
-          setCurrentUser(null);
+          setSession(null); // Kill the session if DB user is invalid
+          await db.auth.signOut();
           setIsLoading(false);
           return;
         }
@@ -112,11 +110,14 @@ function App() {
           access_token: supabaseSession.access_token,
         };
 
+        // Default to sessionStorage if recovering from thin air
         sessionStorage.setItem("currentUser", JSON.stringify(userData));
         setCurrentUser(userData);
 
       } catch (err) {
         console.error("Restore session failed", err);
+        setSession(null);
+        setCurrentUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -127,14 +128,7 @@ function App() {
 
   if (isLoading) {
     return (
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        flexDirection: "column",
-        gap: "1rem"
-      }}>
+      <div style={{ display:"flex", justifyContent:"center", alignItems:"center", height:"100vh", flexDirection:"column", gap:"1rem" }}>
         <div>Loading...</div>
       </div>
     );
@@ -162,7 +156,14 @@ function App() {
         <Route path="/appinsurance/reset-password/confirm" element={<PasswordResetConfirm />} />
 
         {/* PROTECTED ROUTES */}
-        <Route element={<AuthChecker setCurrentUser={setCurrentUser} />}>
+        {/* ⭐ FIX: Consolidated AuthChecker here with ALL props passed down ⭐ */}
+        <Route element={
+            <AuthChecker 
+                session={session} 
+                setSession={setSession} 
+                setCurrentUser={setCurrentUser} 
+            />
+        }>
 
           {/* Admin */}
           <Route path="/appinsurance/main-app" element={<MainArea currentUser={currentUser} />}>
@@ -188,6 +189,28 @@ function App() {
             <Route path="admin-controls" element={<AdminControl currentUser={currentUser}/>} />
             <Route path="about" element={<About currentUser={currentUser} />} />
           </Route>
+
+          {/* Moderator */}
+          <Route path="/appinsurance/MainAreaModerator" element={<MainAreaModerator />}>
+            <Route index element={<DashboardModerator />} />
+            <Route path="DashboardModerator" element={<DashboardModerator />} />
+            <Route path="ClientModerator" element={<ClientModerator />} />
+            <Route path="ClientModerator/ModeratorClientCreationForm" element={<ModeratorNewClientController />} />
+            <Route path="ClientModerator/ModeratorClientEditForm" element={<ModeratorClientEditForm />} />
+            <Route path="DueModerator" element={<DueModerator />} />
+            <Route path="PolicyModerator" element={<PolicyModerator />} />
+            <Route path="PolicyModerator/ModeratorPolicyNewClientForm" element={<ModeratorNewPolicyController />} />
+            <Route path="PolicyModerator/Edit/:policyId" element={<ModeratorEditPolicyController />} />
+            <Route path="PolicyModerator/ModeratorNewPolicyController" element={<ModeratorNewPolicyController />} />
+            <Route path="ClaimTableModerator" element={<ClaimTableModerator />} />
+            <Route path="DeliveryModerator" element={<DeliveryModerator />} />
+            <Route path="MonthlyDataModerator" element={<MonthlyDataModerator />} />
+            <Route path="PaymentRecordsModerator" element={<PaymentRecordsModerator />} />
+            <Route path="ProfileModerator" element={<ProfileModerator />} />
+            <Route path="PolicyModerator/NewClientModerator" element={<PolicyNewClientModerator />} />
+            <Route path="PolicyModerator/NewClientModerator/VehicleDetailsModerator" element={<VehicleDetailsModerator />} />
+          </Route>
+
         </Route>
 
         {/* fallback */}
