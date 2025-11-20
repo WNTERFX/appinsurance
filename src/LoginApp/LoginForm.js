@@ -38,7 +38,7 @@ export default function LoginForm({ anotherLoginDetected, setSession }) {
     setAlertMessage("");
     setAlertType("");
   };
-
+  
   const handleLogin = async (e) => {
     e.preventDefault();
     setAlertMessage(""); // Clear previous alerts
