@@ -2,11 +2,12 @@
 import { useRef, useEffect } from "react";
 import { FaMoon, FaSignOutAlt } from "react-icons/fa";
 import { logoutUser } from "./AdminActions/LogoutActions";
-import { useNavigate } from "react-router-dom";
+// You can remove useNavigate, we will use window.location
+// import { useNavigate } from "react-router-dom"; 
 
-export default function ProfileDropdown({ open, onClose, onDarkMode }) {
+export default function ProfileDropdown({ open, onClose, onDarkMode, setSession }) {
   const dropdownRef = useRef(null);
-  const navigate = useNavigate();
+  // const navigate = useNavigate(); // Not needed for the fix
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -21,8 +22,17 @@ export default function ProfileDropdown({ open, onClose, onDarkMode }) {
 
   async function handleLogout() {
     const error = await logoutUser();
+    
+    // 1. Explicitly clear the storage immediately
+    localStorage.removeItem("user_session");
+    sessionStorage.removeItem("user_session");
+
     if (!error) {
-      navigate("/"); // redirect after logout
+        // 2. Use window.location.href instead of navigate.
+        // This forces the browser to reload the page.
+        // When App.js reloads, it will check storage, find nothing, 
+        // and set 'session' to null, allowing the LoginForm to show.
+        window.location.href = "/";
     } else {
       console.error("Logout failed:", error.message);
     }
@@ -35,7 +45,7 @@ export default function ProfileDropdown({ open, onClose, onDarkMode }) {
       role="menu"
       aria-hidden={!open}
     >
-     {/* <button className="dropdown-item" onClick={onDarkMode}>
+      {/* <button className="dropdown-item" onClick={onDarkMode}>
         <FaMoon className="dropdown-icon" />
         Dark Mode
       </button>*/}
