@@ -20,32 +20,26 @@ export default function AuthChecker({ session, setSession, setCurrentUser }) {
 
   // ----------------- Logout Helper -----------------
   const logoutUser = async (message = "You have been logged out.") => {
-    // Prevent double-firing if already locked
     if (locked) return;
 
-    // 1. Clear Both Storages
+    // ✅ Only use localStorage (single source of truth)
     localStorage.removeItem("currentUser");
-    sessionStorage.removeItem("currentUser");
 
-    // 2. Sign out of Supabase
     await db.auth.signOut();
 
-    // 3. Clear Parent State
     if (setSession) setSession(null);
     if (setCurrentUser) setCurrentUser(null);
 
-    // 4. UI Updates
     setLocked(true);
     setLockMessage(message);
     showGlobalAlert(message);
 
-    // 5. Navigate
     setTimeout(() => {
       navigateRef.current("/", { replace: true });
     }, 0);
   };
 
-  // ----------------- Cross-tab detection (localStorage only) -----------------
+  // ----------------- Cross-tab detection -----------------
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === "currentUser" && e.newValue === null) {
@@ -86,11 +80,10 @@ export default function AuthChecker({ session, setSession, setCurrentUser }) {
   // ----------------- Session Verification -----------------
   useEffect(() => {
     const verifySession = async () => {
-      // ⭐ FIX: Check BOTH sessionStorage and localStorage ⭐
-      const currentUserStr = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
+      // ✅ Only check localStorage (single source of truth)
+      const currentUserStr = localStorage.getItem("currentUser");
       
       if (!currentUserStr) {
-        // If we can't find the user in either storage, log out
         if (!locked) logoutUser();
         return;
       }
@@ -98,24 +91,22 @@ export default function AuthChecker({ session, setSession, setCurrentUser }) {
       const userObj = JSON.parse(currentUserStr);
 
       try {
-        // 1. Check Supabase session validity
         const { data: { session: currentSession }, error: sessionError } = await db.auth.getSession();
         
         if (sessionError || !currentSession) {
-            logoutUser("Session expired.");
-            return;
+          logoutUser("Session expired.");
+          return;
         }
 
-        // 2. Database Token Check
         const { data, error } = await db
           .from("employee_Accounts")
           .select("current_session_token")
           .eq("id", userObj.id)
-          .maybeSingle(); // Use maybeSingle to avoid errors if row missing
+          .maybeSingle();
 
         if (error) { 
-            console.error("DB Error", error); 
-            return; 
+          console.error("DB Error", error); 
+          return; 
         }
 
         const dbToken = data?.current_session_token;
@@ -125,7 +116,6 @@ export default function AuthChecker({ session, setSession, setCurrentUser }) {
           lastValidToken.current = currentToken;
         }
 
-        // Only force logout if the DB has a token AND it's different
         if (dbToken && dbToken !== currentToken) {
           logoutUser("You have logged in from another device.");
         }
@@ -138,7 +128,7 @@ export default function AuthChecker({ session, setSession, setCurrentUser }) {
     };
 
     const interval = setInterval(verifySession, 15000);
-    verifySession(); // Run immediately on mount
+    verifySession();
 
     return () => clearInterval(interval);
   }, []); 

@@ -31,7 +31,6 @@ export async function loginFunction(email, password) {
     };
   }
   
-  // ✅ Single source of truth using sessionStorage
   const userData = {
     id: userId,
     email: accountData.employee_email,
@@ -40,9 +39,9 @@ export async function loginFunction(email, password) {
     is_Admin: accountData.is_Admin,
     access_token: sessionToken,
   };
-  
-  sessionStorage.setItem("currentUser", JSON.stringify(userData));
-  
+
+  localStorage.setItem("currentUser", JSON.stringify(userData));
+    
   return {
     success: true,
     ...userData,

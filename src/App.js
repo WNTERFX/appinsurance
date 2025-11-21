@@ -75,8 +75,8 @@ function App() {
 
         setSession(supabaseSession);
 
-        // 2. Retrieve User Data from Storage (Check BOTH)
-        const savedUserStr = sessionStorage.getItem("currentUser") || localStorage.getItem("currentUser");
+        // 2. ✅ Retrieve User Data from localStorage ONLY (cross-tab sync)
+        const savedUserStr = localStorage.getItem("currentUser");
         
         if (savedUserStr) {
           setCurrentUser(JSON.parse(savedUserStr));
@@ -95,7 +95,7 @@ function App() {
         if (accountError || !accountData || !accountData.status_Account) {
           showGlobalAlert("Invalid account. Please contact admin.");
           setCurrentUser(null);
-          setSession(null); // Kill the session if DB user is invalid
+          setSession(null);
           await db.auth.signOut();
           setIsLoading(false);
           return;
@@ -110,8 +110,8 @@ function App() {
           access_token: supabaseSession.access_token,
         };
 
-        // Default to sessionStorage if recovering from thin air
-        sessionStorage.setItem("currentUser", JSON.stringify(userData));
+        // ✅ Store in localStorage for cross-tab persistence
+        localStorage.setItem("currentUser", JSON.stringify(userData));
         setCurrentUser(userData);
 
       } catch (err) {
@@ -156,8 +156,8 @@ function App() {
     
         <Route path="/appinsurance/reset-password" element={<PasswordResetForm />} />
         <Route path="/appinsurance/reset-password/confirm" element={<PasswordResetConfirm />} />
-        
-  
+
+    
         <Route element={
             <AuthChecker 
                 session={session} 
@@ -190,28 +190,6 @@ function App() {
             <Route path="admin-controls" element={<AdminControl currentUser={currentUser}/>} />
             <Route path="about" element={<About currentUser={currentUser} />} />
           </Route>
-
-          {/* Moderator */}
-          <Route path="/appinsurance/MainAreaModerator" element={<MainAreaModerator />}>
-            <Route index element={<DashboardModerator />} />
-            <Route path="DashboardModerator" element={<DashboardModerator />} />
-            <Route path="ClientModerator" element={<ClientModerator />} />
-            <Route path="ClientModerator/ModeratorClientCreationForm" element={<ModeratorNewClientController />} />
-            <Route path="ClientModerator/ModeratorClientEditForm" element={<ModeratorClientEditForm />} />
-            <Route path="DueModerator" element={<DueModerator />} />
-            <Route path="PolicyModerator" element={<PolicyModerator />} />
-            <Route path="PolicyModerator/ModeratorPolicyNewClientForm" element={<ModeratorNewPolicyController />} />
-            <Route path="PolicyModerator/Edit/:policyId" element={<ModeratorEditPolicyController />} />
-            <Route path="PolicyModerator/ModeratorNewPolicyController" element={<ModeratorNewPolicyController />} />
-            <Route path="ClaimTableModerator" element={<ClaimTableModerator />} />
-            <Route path="DeliveryModerator" element={<DeliveryModerator />} />
-            <Route path="MonthlyDataModerator" element={<MonthlyDataModerator />} />
-            <Route path="PaymentRecordsModerator" element={<PaymentRecordsModerator />} />
-            <Route path="ProfileModerator" element={<ProfileModerator />} />
-            <Route path="PolicyModerator/NewClientModerator" element={<PolicyNewClientModerator />} />
-            <Route path="PolicyModerator/NewClientModerator/VehicleDetailsModerator" element={<VehicleDetailsModerator />} />
-          </Route>
-
         </Route>
 
         {/* fallback */}
