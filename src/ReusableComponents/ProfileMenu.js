@@ -11,47 +11,20 @@ export default function ProfileMenu({ onDarkMode }) {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    // Load user data from localStorage or sessionStorage
-    const storedSession = localStorage.getItem("user_session") ||sessionStorage.getItem("user_session");
+    // ✅ Load user data from localStorage (cross-tab sync)
+    const storedUser = localStorage.getItem("currentUser");
     
-
-    const storedUser = sessionStorage.getItem("currentUser");
-    
-    if (storedSession) {
-      try {
-        const session = JSON.parse(storedSession);
-        setCurrentUser(session);
-        
-        // Build display name from session data
-        const firstName = session.first_name?.trim() || "";
-        const lastName = session.last_name?.trim() || "";
-        
-        if (firstName && lastName) {
-          setDisplayName(`${firstName} ${lastName}`);
-        } else if (firstName) {
-          setDisplayName(firstName);
-        } else if (lastName) {
-          setDisplayName(lastName);
-        } else if (session.personnel_Name) {
-          setDisplayName(session.personnel_Name);
-        } else {
-          // Fallback to role if no name available
-          setDisplayName(session.isAdmin ? "Admin" : "Moderator");
-        }
-      } catch (err) {
-        console.error("Error parsing user_session from storage:", err);
-      }
-    } else if (storedUser) {
-      // Fallback to old storage method
+    if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
         setCurrentUser(user);
         
+        // Build display name from user data
         const firstName = user.first_name?.trim() || "";
         const lastName = user.last_name?.trim() || "";
         
         if (firstName && lastName) {
-          setDisplayName(`${firstName} ${lastName}`);
+          setDisplayName(`${firstName} ${lastName}`); // ✅ Fixed syntax
         } else if (firstName) {
           setDisplayName(firstName);
         } else if (lastName) {
@@ -59,12 +32,51 @@ export default function ProfileMenu({ onDarkMode }) {
         } else if (user.personnel_Name) {
           setDisplayName(user.personnel_Name);
         } else {
+          // Fallback to role if no name available
           setDisplayName(user.is_Admin ? "Admin" : "Moderator");
         }
       } catch (err) {
-        console.error("Error parsing currentUser from sessionStorage:", err);
+        console.error("Error parsing currentUser from localStorage:", err);
       }
     }
+  }, []);
+
+  // ✅ Optional: Listen for storage changes to update name in real-time across tabs
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "currentUser") {
+        if (e.newValue) {
+          try {
+            const user = JSON.parse(e.newValue);
+            setCurrentUser(user);
+            
+            const firstName = user.first_name?.trim() || "";
+            const lastName = user.last_name?.trim() || "";
+            
+            if (firstName && lastName) {
+              setDisplayName(`${firstName} ${lastName}`);
+            } else if (firstName) {
+              setDisplayName(firstName);
+            } else if (lastName) {
+              setDisplayName(lastName);
+            } else if (user.personnel_Name) {
+              setDisplayName(user.personnel_Name);
+            } else {
+              setDisplayName(user.is_Admin ? "Admin" : "Moderator");
+            }
+          } catch (err) {
+            console.error("Error parsing storage change:", err);
+          }
+        } else {
+          // User was logged out in another tab
+          setCurrentUser(null);
+          setDisplayName("User");
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   return (

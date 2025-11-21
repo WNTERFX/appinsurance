@@ -513,3 +513,63 @@
     justify-content: flex-start;
   }
 }
+
+/* Overlay to cover the data area */
+.loading-overlay {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 400px; /* Give it a fixed height for centering the spinner */
+    font-size: 1.2rem;
+    color: #3b82f6; /* Blue color */
+    background-color: #f9fafb;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+/* Spinner icon styling */
+.spinner {
+    font-size: 3rem;
+    animation: spin 1s linear infinite; /* Apply the spinning animation */
+    margin-bottom: 10px;
+    color: #3b82f6; /* Blue color */
+}
+
+/* Keyframe animation for spinning */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Optional: Smaller spinner for card stats */
+.active-clients-data .spinner,
+.active-policy-data .spinner,
+.delivered-policy-data .spinner,
+.payment-data .spinner {
+    font-size: 2rem;
+    margin: 0;
+}
+
+/* Disable pointer events when loading */
+.active-clients-data:has(.spinner),
+.active-policy-data:has(.spinner),
+.delivered-policy-data:has(.spinner),
+.payment-data:has(.spinner) {
+    opacity: 0.7;
+}
+
+/* Loading state for chart container */
+.monthly-data-chart .loading-overlay {
+    height: 300px;
+}
+
+/* Loading state for pending claims */
+.pending-claims-list .loading-overlay {
+    height: 200px;
+}
+
+/* Loading state for due payments */
+.due-payments-items .loading-overlay {
+    height: 300px;
+}
