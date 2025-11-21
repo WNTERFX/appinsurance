@@ -29,7 +29,7 @@ export default function NewClientController({ onCancel, onSuccess }) {
   });
 
   // batch uploading
-   const [mode, setMode] = useState('single');
+  const [mode, setMode] = useState('single');
 
   // Modal state
   const [alertModal, setAlertModal] = useState({ isOpen: false, message: "", title: "Alert", isSuccess: false });
@@ -166,10 +166,10 @@ export default function NewClientController({ onCancel, onSuccess }) {
     return true;
   };
 
-
-  // batch uploading handler
-
-   const handleBatchSubmit = async (clients) => {
+  // ✅ FIXED: batch uploading handler - now uses snake_case properties from BatchClientUpload
+  const handleBatchSubmit = async (clients) => {
+    console.log('Batch submit received clients:', clients);
+    
     const user = await getCurrentUser();
     if (!user) {
       showAlert("No logged-in user. Please sign in again.", "Authentication Error");
@@ -181,40 +181,33 @@ export default function NewClientController({ onCancel, onSuccess }) {
     const errors = [];
 
     for (const client of clients) {
-      // Check for duplicates
+      // Check for duplicates using the CORRECT property names from BatchClientUpload
       const emailExists = await checkIfEmailExists(client.email);
-      const phoneExists = await checkIfPhoneExists(client.phoneNumber);
+      const phoneExists = await checkIfPhoneExists(client.phone_Number);
 
       if (emailExists || phoneExists) {
         failCount++;
-        errors.push(`${client.firstName} ${client.familyName}: Duplicate ${emailExists ? 'email' : 'phone'}`);
+        errors.push(`${client.first_Name} ${client.family_Name}: Duplicate ${emailExists ? 'email' : 'phone'}`);
         continue;
       }
 
+      // The client object already has the correct database field names from BatchClientUpload
+      // Just need to add agent_Id and ensure zip_code is a number
       const dbPayload = {
-        prefix: client.prefix,
-        first_Name: client.firstName,
-        middle_Name: client.middleName,
-        family_Name: client.familyName,
-        suffix: client.suffix,
-        phone_Number: client.phoneNumber,
-        address: client.streetAddress,
-        barangay_address: client.barangay,
-        city_address: client.city,
-        province_address: client.province,
-        region_address: client.region,
-        zip_code: client.zipCode ? parseInt(client.zipCode, 10) : null,
-        email: client.email,
-        client_active: true,
-        client_Registered: new Date().toISOString().split("T")[0],
+        ...client,
         agent_Id: user.id,
+        zip_code: client.zip_code ? parseInt(client.zip_code, 10) : null,
       };
 
-      const { success } = await NewClientCreation(dbPayload);
-      if (success) successCount++;
-      else {
+      console.log('Inserting client:', dbPayload);
+
+      const { success, error } = await NewClientCreation(dbPayload);
+      if (success) {
+        successCount++;
+      } else {
         failCount++;
-        errors.push(`${client.firstName} ${client.familyName}: Database error`);
+        errors.push(`${client.first_Name} ${client.family_Name}: ${error || 'Database error'}`);
+        console.error(`Failed to insert ${client.first_Name} ${client.family_Name}:`, error);
       }
     }
 
@@ -224,7 +217,7 @@ export default function NewClientController({ onCancel, onSuccess }) {
       ${errors.length > 0 ? '\n\nErrors:\n' + errors.join('\n') : ''}
     `;
 
-    showAlert(message, "Batch Upload Complete", true);
+    showAlert(message, "Batch Upload Complete", successCount > 0);
   };
 
   return (
@@ -249,7 +242,7 @@ export default function NewClientController({ onCancel, onSuccess }) {
             onClick={() => setMode('batch')}
             className={`mode-toggle-btn ${mode === 'batch' ? 'active' : ''}`}
           >
-            Batch Upload
+            📊 Batch Upload
           </button>
         </div>
       </div>
