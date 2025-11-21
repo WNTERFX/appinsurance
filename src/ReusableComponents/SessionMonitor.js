@@ -1,12 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { db } from "../dbServer";
 import { showGlobalAlert } from "./GlobalAlert";
 
 export default function SessionMonitor({ session }) {
+  const hasShownAlert = useRef(false); // Prevent multiple alerts
+
   useEffect(() => {
     const checkSession = async () => {
       try {
-    
         const { data: { session: currentSession } } = await db.auth.getSession();
         
         if (!currentSession) {
@@ -29,8 +30,20 @@ export default function SessionMonitor({ session }) {
         }
 
         if (data && data.current_session_token !== currentToken) {
-          showGlobalAlert("Your session has expired or logged in elsewhere.");
-          await db.auth.signOut(); 
+          // Prevent multiple alerts
+          if (hasShownAlert.current) return;
+          hasShownAlert.current = true;
+
+          // Show blocking alert (second parameter = true)
+          showGlobalAlert("Your session has expired or logged in elsewhere.", true);
+
+          // Wait 3 seconds so user can see the alert
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          
+          // Sign out
+          await db.auth.signOut();
+          
+          // Reload
           window.location.reload();
         }
       } catch (err) {
@@ -39,7 +52,12 @@ export default function SessionMonitor({ session }) {
     };
 
     if (session) {
+      // Check immediately on mount
+      checkSession();
+      
+      // Then check every 5 seconds
       const interval = setInterval(checkSession, 5000);
+      
       return () => clearInterval(interval);
     }
   }, [session]);

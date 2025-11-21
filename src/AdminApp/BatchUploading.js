@@ -88,21 +88,21 @@ export default function BatchClientUpload({ onBatchSubmit, onCancel }) {
           validationErrors.push({ row: rowNum, errors: rowErrors });
         } else {
           validRecords.push({
-            prefix: row['Prefix'] || '',
-            first_Name: row['First Name'],
-            middle_Name: row['Middle Name'] || '',
-            family_Name: row['Family Name'],
-            suffix: row['Suffix'] || '',
+            prefix: row['Prefix']?.trim() || '',
+            first_Name: row['First Name']?.trim() || '',
+            middle_Name: row['Middle Name']?.trim() || '',
+            family_Name: row['Family Name']?.trim() || '',
+            suffix: row['Suffix']?.trim() || '',
 
-            address: row['Street Address'],
-            barangay_address: row['Barangay'],
-            city_address: row['City'],
-            province_address: row['Province'] || '',
-            region_address: row['Region'],
-            zip_code: row['Zip Code'] || '',
+            address: row['Street Address']?.trim() || '',
+            barangay_address: row['Barangay']?.trim() || '',
+            city_address: row['City']?.trim() || '',
+            province_address: row['Province']?.trim() || '',
+            region_address: row['Region']?.trim() || '',
+            zip_code: row['Zip Code']?.trim() || '',
 
             phone_Number: standardizedPhoneNumber,
-            email: row['Email'],
+            email: row['Email']?.trim() || '',
 
             client_Registered: today,
             client_active: true,
