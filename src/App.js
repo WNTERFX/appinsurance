@@ -139,6 +139,7 @@ function App() {
       <GlobalAlert />
       <SessionMonitor session={session} currentUser={currentUser} />
 
+
       <Routes>
         {/* LOGIN */}
         <Route
@@ -152,6 +153,7 @@ function App() {
           }
         />
 
+    
         <Route path="/appinsurance/reset-password" element={<PasswordResetForm />} />
         <Route path="/appinsurance/reset-password/confirm" element={<PasswordResetConfirm />} />
 
@@ -163,7 +165,7 @@ function App() {
                 setCurrentUser={setCurrentUser} 
             />
         }>
-
+          
           {/* Admin */}
           <Route path="/appinsurance/main-app" element={<MainArea currentUser={currentUser} />}>
             <Route index element={<Dashboard currentUser={currentUser} />} />
